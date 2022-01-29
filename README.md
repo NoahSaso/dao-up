@@ -1,1 +1,2 @@
-# dao-up
+# DAO Up!
+
