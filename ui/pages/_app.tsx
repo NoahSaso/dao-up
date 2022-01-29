@@ -1,4 +1,4 @@
-import "../styles/globals.css"
+import "../styles/globals.scss"
 
 import type { AppProps } from "next/app"
 import Head from "next/head"
@@ -45,12 +45,10 @@ const DAOUp: FC<AppProps> = ({ Component, pageProps }) => (
       <meta property="og:site_name" content={Title} />
     </Head>
 
-    <div className="bg-dark text-light">
-      <Header />
-      <main>
-        <Component {...pageProps} />
-      </main>
-    </div>
+    <Header />
+    <main>
+      <Component {...pageProps} />
+    </main>
   </>
 )
 

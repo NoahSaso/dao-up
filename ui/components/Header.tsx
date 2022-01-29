@@ -1,24 +1,34 @@
 import classnames from "classnames"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/router"
 import { FC } from "react"
+
+import { ButtonLink } from "."
 
 interface NavItemProps {
   href: string
   label: string
   action?: boolean
 }
-const NavItem: FC<NavItemProps> = ({ href, label, action }) => (
-  <Link href={href}>
-    <a
-      className={classnames("ml-8", {
-        "py-2 px-4 rounded-full border border-green text-green": action,
-      })}
-    >
-      {label}
-    </a>
-  </Link>
-)
+const NavItem: FC<NavItemProps> = ({ href, label, action }) => {
+  const { pathname } = useRouter()
+
+  return action ? (
+    <ButtonLink href={href} label={label} outline className="ml-8" />
+  ) : (
+    <Link href={href}>
+      <a
+        className={classnames("ml-8", "hover:underline", "transition", {
+          "py-2 px-4 rounded-full border border-green text-green": action,
+          underline: pathname === href,
+        })}
+      >
+        {label}
+      </a>
+    </Link>
+  )
+}
 
 export const Header: FC = () => (
   <header className="p-10">
@@ -26,7 +36,7 @@ export const Header: FC = () => (
       <Link href="/">
         <a className="flex flex-row items-center">
           <Image src="/logo.svg" alt="logo" width={52} height={30} />
-          <h1 className="text-2xl ml-2">DAO Up!</h1>
+          <h1 className="text-2xl ml-4">DAO Up!</h1>
         </a>
       </Link>
 
