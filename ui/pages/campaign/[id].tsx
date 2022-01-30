@@ -170,7 +170,7 @@ const Campaign: NextPage = () => {
 
             <div
               className={cn(
-                "flex flex-col items-stretch my-8",
+                "flex flex-col items-stretch mt-8",
                 "sm:flex-row lg:self-stretch lg:my-0",
                 { hidden: !open }
               )}
@@ -193,7 +193,7 @@ const Campaign: NextPage = () => {
 
           <div
             className={cn(
-              "bg-card rounded-3xl p-8",
+              "bg-card rounded-3xl p-8 mt-8",
               "flex flex-col items-start self-stretch"
             )}
           >
