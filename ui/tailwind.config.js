@@ -16,6 +16,7 @@ module.exports = {
       green: "#c1eb7c",
       orange: "#daa27a",
       card: "#1c1d1a",
+      placeholder: "#666666",
     },
   },
 }

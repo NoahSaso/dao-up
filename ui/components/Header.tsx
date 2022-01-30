@@ -19,9 +19,9 @@ const NavItem: FC<NavItemProps> = ({ href, label, action }) => {
   ) : (
     <Link href={href}>
       <a
-        className={classnames("ml-8", "hover:underline", "transition", {
+        className={classnames("ml-8", "hover:text-green", "transition", {
           "py-2 px-4 rounded-full border border-green text-green": action,
-          underline: pathname === href,
+          "text-green": pathname === href,
         })}
       >
         {label}

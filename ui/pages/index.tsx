@@ -4,31 +4,7 @@ import Image from "next/image"
 import { FC, ReactNode, useState } from "react"
 import { GoTriangleDown } from "react-icons/go"
 
-import { ButtonLink } from "../components"
-
-interface CenteredColumnProps {
-  children: ReactNode | ReactNode[]
-  className?: string
-  topSpace?: boolean
-}
-const CenteredColumn: FC<CenteredColumnProps> = ({
-  children,
-  className,
-  topSpace,
-}) => (
-  <div
-    className={cn(
-      "relative",
-      `w-5/6 my-0 mx-auto`,
-      {
-        "mt-32 lg:mt-40": topSpace,
-      },
-      className
-    )}
-  >
-    {children}
-  </div>
-)
+import { ButtonLink, CenteredColumn } from "../components"
 
 interface CardProps {
   title: string
