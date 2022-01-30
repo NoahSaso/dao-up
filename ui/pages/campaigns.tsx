@@ -5,75 +5,36 @@ import Image from "next/image"
 import { FC, useEffect, useState } from "react"
 
 import { CenteredColumn } from "../components"
+import { campaigns } from "../services/campaigns"
 
-interface Campaign {
-  id: string
-  name: string
-  pledged: string
-  funded: number
-  description: string
-}
 interface CampaignProps {
   campaign: Campaign
 }
 const Campaign: FC<CampaignProps> = ({
-  campaign: { name, pledged, funded, description },
+  campaign: { name, pledged, asset, goal, description },
 }) => (
   <div
     className={cn(
       "flex flex-row justify-start items-stretch",
       "bg-card p-10 rounded-3xl",
       "border border-card hover:border-green",
-      "transition"
+      "transition",
+      "cursor-pointer"
     )}
   >
     <div className="bg-green w-[135px] h-[135px]"></div>
     <div className="ml-5">
       <h2 className="font-medium text-xl">{name}</h2>
-      <p className="text-lg text-green">{pledged} $JUNO pledged</p>
-      <p className="text-lg text-white">{funded}% funded</p>
+      <p className="text-lg text-green">
+        {pledged.toLocaleString()} {asset} pledged
+      </p>
+      <p className="text-lg text-white">
+        {((100 * pledged) / goal).toFixed(0)}% funded
+      </p>
       <p className="mt-5">{description}</p>
     </div>
   </div>
 )
-
-const campaigns: Campaign[] = [
-  {
-    id: "1",
-    name: "BongDAO",
-    pledged: "100,000",
-    funded: 10,
-    description: "Lorem ipsum dolor sit amet, egestas...",
-  },
-  {
-    id: "2",
-    name: "HouseDAO",
-    pledged: "500,000",
-    funded: 50,
-    description: "Lorem ipsum dolor sit amet, egestas...",
-  },
-  {
-    id: "3",
-    name: "RentDAO",
-    pledged: "200,000",
-    funded: 20,
-    description: "Lorem ipsum dolor sit amet, egestas...",
-  },
-  {
-    id: "4",
-    name: "GroceryDAO",
-    pledged: "900,000",
-    funded: 90,
-    description: "Lorem ipsum dolor sit amet, egestas...",
-  },
-  {
-    id: "5",
-    name: "MicroGridDAO",
-    pledged: "1,200,000",
-    funded: 120,
-    description: "Lorem ipsum dolor sit amet, egestas...",
-  },
-]
 
 let latestFilter = 0
 
