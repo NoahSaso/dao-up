@@ -4,7 +4,7 @@ import Image from "next/image"
 import { FC, ReactNode, useState } from "react"
 import { GoTriangleDown } from "react-icons/go"
 
-import { ButtonLink, CenteredColumn } from "../components"
+import { ButtonLink, CenteredColumn, ResponsiveDecoration } from "../components"
 
 interface CardProps {
   title: string
@@ -105,51 +105,24 @@ const faqQAs = [
 
 const Home: NextPage = () => (
   <>
-    <div
-      className={cn(
-        "absolute top-0 left-0",
-        "opacity-70",
-        "w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3"
-      )}
-    >
-      <Image
-        src="/images/orange_blur.png"
-        alt=""
-        width={393}
-        height={653}
-        layout="responsive"
-      />
-    </div>
-    <div
-      className={cn(
-        "absolute top-40 right-0",
-        "opacity-80",
-        "w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3"
-      )}
-    >
-      <Image
-        src="/images/green_blur.png"
-        alt=""
-        width={322}
-        height={640}
-        layout="responsive"
-      />
-    </div>
-    <div
-      className={cn(
-        "absolute top-80 right-0",
-        "opacity-40",
-        "w-1/2 md:w-2/5 lg:w-1/3 xl:w-1/4"
-      )}
-    >
-      <Image
-        src="/images/circles.svg"
-        alt=""
-        width={487}
-        height={571}
-        layout="responsive"
-      />
-    </div>
+    <ResponsiveDecoration
+      name="orange_blur.png"
+      width={393}
+      height={653}
+      className="top-0 left-0 opacity-70"
+    />
+    <ResponsiveDecoration
+      name="green_blur.png"
+      width={322}
+      height={640}
+      className="top-40 right-0 opacity-80"
+    />
+    <ResponsiveDecoration
+      name="circles.svg"
+      width={487}
+      height={571}
+      className="top-80 right-0 opacity-40"
+    />
 
     <CenteredColumn className="pt-5 text-center">
       <h1 className={cn("font-semibold", "text-4xl lg:text-5xl xl:text-6xl")}>
@@ -252,21 +225,12 @@ const Home: NextPage = () => (
     </div>
 
     <div className="py-16 relative">
-      <div
-        className={cn(
-          "absolute bottom-0 right-0",
-          "opacity-50",
-          "w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3"
-        )}
-      >
-        <Image
-          src="/images/roadmap_orange_blur.png"
-          alt=""
-          width={402}
-          height={421}
-          layout="responsive"
-        />
-      </div>
+      <ResponsiveDecoration
+        name="roadmap_orange_blur.png"
+        width={402}
+        height={421}
+        className="bottom-0 right-0 opacity-50"
+      />
 
       <CenteredColumn>
         <h1 className="text-center font-semibold text-3xl pb-12">

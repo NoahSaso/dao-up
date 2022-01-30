@@ -12,6 +12,7 @@ import {
   ButtonLink,
   CenteredColumn,
   Input,
+  ResponsiveDecoration,
   TooltipInfo,
 } from "../../components"
 import { toMaxDecimals } from "../../helpers/number"
@@ -91,21 +92,12 @@ const Campaign: NextPage = () => {
 
   return (
     <>
-      <div
-        className={cn(
-          "absolute top-0 left-0 pointer-events-none",
-          "opacity-70",
-          "w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3"
-        )}
-      >
-        <Image
-          src="/images/campaign_orange_blur.png"
-          alt=""
-          width={341}
-          height={684}
-          layout="responsive"
-        />
-      </div>
+      <ResponsiveDecoration
+        name="campaign_orange_blur.png"
+        width={341}
+        height={684}
+        className="top-0 left-0 opacity-70"
+      />
 
       {!!daoUrl && (
         <p className="bg-green text-dark text-center w-full px-12 py-2">

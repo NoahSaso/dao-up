@@ -5,7 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { FC, useEffect, useState } from "react"
 
-import { CenteredColumn, Input } from "../components"
+import { CenteredColumn, Input, ResponsiveDecoration } from "../components"
 import { campaigns } from "../services/campaigns"
 
 interface CampaignProps {
@@ -64,21 +64,12 @@ const Campaigns: NextPage = () => {
 
   return (
     <>
-      <div
-        className={cn(
-          "absolute top-0 right-0",
-          "opacity-70",
-          "w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3"
-        )}
-      >
-        <Image
-          src="/images/campaigns_orange_blur.png"
-          alt=""
-          width={406}
-          height={626}
-          layout="responsive"
-        />
-      </div>
+      <ResponsiveDecoration
+        name="campaigns_orange_blur.png"
+        width={406}
+        height={626}
+        className="top-0 right-0 opacity-70"
+      />
 
       <CenteredColumn className="pt-5">
         <h1 className="font-semibold text-4xl">All Campaigns</h1>

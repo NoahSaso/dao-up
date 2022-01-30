@@ -4,7 +4,13 @@ import Image from "next/image"
 import Link from "next/link"
 import { FC } from "react"
 
-import { Button, ButtonLink, CenteredColumn, TooltipInfo } from "../components"
+import {
+  Button,
+  ButtonLink,
+  CenteredColumn,
+  ResponsiveDecoration,
+  TooltipInfo,
+} from "../components"
 import { campaigns } from "../services/campaigns"
 
 interface CampaignProps {
@@ -84,21 +90,12 @@ const Me: NextPage = () => {
 
   return (
     <>
-      <div
-        className={cn(
-          "absolute top-0 right-0",
-          "opacity-70",
-          "w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3"
-        )}
-      >
-        <Image
-          src="/images/me_green_blur.png"
-          alt=""
-          width={344}
-          height={661}
-          layout="responsive"
-        />
-      </div>
+      <ResponsiveDecoration
+        name="me_green_blur.png"
+        width={344}
+        height={661}
+        className="top-0 right-0 opacity-70"
+      />
 
       <CenteredColumn className="pt-5">
         <h1 className="font-semibold text-4xl">Your Wallet</h1>
