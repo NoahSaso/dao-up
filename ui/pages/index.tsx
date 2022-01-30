@@ -159,6 +159,21 @@ const Home: NextPage = () => (
         layout="responsive"
       />
     </div>
+    <div
+      className={cn(
+        "absolute top-80 right-0",
+        "opacity-40",
+        "w-1/2 md:w-2/5 lg:w-1/3 xl:w-1/4"
+      )}
+    >
+      <Image
+        src="/images/circles.svg"
+        alt=""
+        width={487}
+        height={571}
+        layout="responsive"
+      />
+    </div>
 
     <CenteredColumn className="pt-5 text-center">
       <h1 className={cn("font-semibold", "text-4xl lg:text-5xl xl:text-6xl")}>
