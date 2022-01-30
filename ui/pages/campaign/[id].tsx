@@ -168,7 +168,7 @@ const Campaign: NextPage = () => {
             <div
               className={cn(
                 "flex flex-col items-stretch my-8",
-                "lg:flex-row lg:self-stretch lg:my-0"
+                "sm:flex-row lg:self-stretch lg:my-0"
               )}
             >
               <Input
@@ -178,7 +178,7 @@ const Campaign: NextPage = () => {
                 onChange={({ target: { value } }) =>
                   setContribution(value.replaceAll(/[^\d.]/g, ""))
                 }
-                className="!py-3 !px-6 mb-4 lg:mb-0 lg:mr-4 lg:flex-1"
+                className="!py-3 !px-6 mb-4 sm:mb-0 sm:mr-4 sm:flex-1"
               />
 
               <Button onClick={() => alert("thanks")}>
