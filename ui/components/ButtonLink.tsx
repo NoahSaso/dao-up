@@ -17,12 +17,10 @@ export const ButtonLink: FC<ButtonLinkProps> = ({
   <Link href={href}>
     <a
       className={classnames(
-        "py-2",
-        "px-4",
-        "rounded-full",
+        "py-2 px-4 rounded-full",
+        "text-center",
         "transition",
-        "border",
-        "border-green",
+        "border border-green",
         {
           "bg-dark text-green hover:bg-green hover:text-dark": outline,
           "bg-green text-dark hover:bg-[transparent] hover:text-green":
