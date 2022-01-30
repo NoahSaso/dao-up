@@ -9,6 +9,7 @@ import { FaDiscord, FaTwitter } from "react-icons/fa"
 import TimeAgo from "react-timeago"
 
 import { Button, CenteredColumn, Input } from "../../components"
+import { toMaxDecimals } from "../../helpers/number"
 import { campaigns } from "../../services/campaigns"
 
 interface CampaignLinkProps {
@@ -79,6 +80,8 @@ const Campaign: NextPage = () => {
   const fundedPercent = (100 * pledged) / goal
   const funded = pledged >= goal
   const overfunded = pledged > goal
+
+  const userTokens = 0
 
   return (
     <>
@@ -251,8 +254,10 @@ const Campaign: NextPage = () => {
         >
           <h2 className="text-xl text-green mb-2">Your Balance</h2>
           <p className="text-light">
-            0 Tokens{" "}
-            <span className="text-placeholder">0% of total supply</span>
+            {userTokens} Tokens{" "}
+            <span className="text-placeholder ml-2">
+              {toMaxDecimals((100 * userTokens) / supply, 2)}% of total supply
+            </span>
           </p>
 
           <div className={cn({ hidden: !open })}>
