@@ -268,6 +268,32 @@ const Home: NextPage = () => (
         </div>
       </CenteredColumn>
     </div>
+
+    <CenteredColumn className="py-16">
+      <h1 className="text-center font-semibold text-3xl pb-12">
+        DAO Up! Roadmap
+      </h1>
+
+      <div className={cn("hidden md:block", "mx-auto w-3/4 lg:w-1/2")}>
+        <Image
+          src="/images/roadmap_desktop.svg"
+          alt="roadmap"
+          width={730}
+          height={504}
+          layout="responsive"
+        />
+      </div>
+
+      <div className={cn("md:hidden", "mx-auto w-full")}>
+        <Image
+          src="/images/roadmap_mobile.svg"
+          alt="roadmap"
+          width={525}
+          height={504}
+          layout="responsive"
+        />
+      </div>
+    </CenteredColumn>
   </>
 )
 
