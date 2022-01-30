@@ -8,7 +8,7 @@ import { AiOutlineExclamationCircle } from "react-icons/ai"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
 import TimeAgo from "react-timeago"
 
-import { Button, ButtonLink, CenteredColumn, Input } from "../../components"
+import { Button, CenteredColumn, Input } from "../../components"
 import { campaigns } from "../../services/campaigns"
 
 interface CampaignLinkProps {
@@ -99,57 +99,47 @@ const Campaign: NextPage = () => {
       </div>
 
       <CenteredColumn className="pt-5 pb-12">
+        <h1 className="text-4xl">{name}</h1>
+
+        {!!(website || twitter || discord) && (
+          <div
+            className={cn("flex flex-row items-center", "text-green", "mt-4")}
+          >
+            {!!website && (
+              <CampaignLink href={website} label={new URL(website).hostname} />
+            )}
+            {!!twitter && (
+              <CampaignLink
+                href={`https://twitter.com/${twitter}`}
+                label={(twitter.startsWith("@") ? "" : "@") + twitter}
+                Icon={FaTwitter}
+              />
+            )}
+            {!!discord && (
+              <CampaignLink href={discord} label="Discord" Icon={FaDiscord} />
+            )}
+          </div>
+        )}
+
+        <p className="mt-2">{description}</p>
+
+        {overfunded && (
+          <p className="flex flex-row items-center mt-8">
+            This campaign is overfunded.
+            <AiOutlineExclamationCircle className="ml-1" size={18} />
+          </p>
+        )}
+
         <div
           className={cn(
-            "flex flex-col justify-start items-stretch",
+            "mt-8",
+            "flex flex-col-reverse justify-start items-stretch",
             "lg:flex-row lg:justify-between"
           )}
         >
-          <div className="flex flex-col mb-8 lg:mb-0 lg:mr-8">
-            <h1 className="text-4xl">{name}</h1>
-
-            {!!(website || twitter || discord) && (
-              <div
-                className={cn(
-                  "flex flex-row items-center",
-                  "text-green",
-                  "mt-4"
-                )}
-              >
-                {!!website && (
-                  <CampaignLink
-                    href={website}
-                    label={new URL(website).hostname}
-                  />
-                )}
-                {!!twitter && (
-                  <CampaignLink
-                    href={`https://twitter.com/${twitter}`}
-                    label={(twitter.startsWith("@") ? "" : "@") + twitter}
-                    Icon={FaTwitter}
-                  />
-                )}
-                {!!discord && (
-                  <CampaignLink
-                    href={discord}
-                    label="Discord"
-                    Icon={FaDiscord}
-                  />
-                )}
-              </div>
-            )}
-
-            <p className="mt-2">{description}</p>
-
-            {overfunded && (
-              <p className="flex flex-row items-center mt-8">
-                This campaign is overfunded.
-                <AiOutlineExclamationCircle className="ml-1" size={18} />
-              </p>
-            )}
-
-            <div className="mt-8 flex-1 flex flex-col">
-              <div className="flex flex-col items-stretch md:flex-row">
+          <div className="flex flex-col lg:mr-8">
+            <div className="flex-1 flex flex-col mt-8 lg:mt-0">
+              <div className="flex flex-col items-stretch md:flex-row md:self-stretch">
                 <Input
                   type="text"
                   placeholder="Contribute..."
@@ -157,7 +147,7 @@ const Campaign: NextPage = () => {
                   onChange={({ target: { value } }) =>
                     setContribution(value.replaceAll(/[^\d.]/g, ""))
                   }
-                  className="mb-4 md:mb-0 md:mr-4"
+                  className="mb-4 md:mb-0 md:mr-4 md:flex-1"
                 />
 
                 <Button onClick={() => alert("thanks")}>
@@ -165,14 +155,7 @@ const Campaign: NextPage = () => {
                 </Button>
               </div>
 
-              <div
-                className={cn(
-                  "bg-card",
-                  "mt-8 py-8 px-12",
-                  "rounded-3xl",
-                  "flex-1"
-                )}
-              >
+              <div className={cn("bg-card", "mt-8 py-8 px-12", "rounded-3xl")}>
                 <h2 className="text-xl text-green mb-2">Your Balance</h2>
                 <p className="text-light">
                   0 Tokens{" "}
