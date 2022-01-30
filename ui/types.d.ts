@@ -10,6 +10,7 @@ interface Campaign {
   name: string
   description: string
   imageUrl?: string
+  open: boolean
 
   website?: string
   twitter?: string
