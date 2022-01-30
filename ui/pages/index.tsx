@@ -22,7 +22,7 @@ const Card: FC<CardProps> = ({
 }) => (
   <div
     className={cn(
-      "flex flex-col items-center",
+      "flex flex-col justify-between items-center",
       "bg-card",
       "py-8 px-12",
       "rounded-3xl",

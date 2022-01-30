@@ -4,11 +4,10 @@ import Image from "next/image"
 import { useRouter } from "next/router"
 import { FC, useState } from "react"
 import { IconType } from "react-icons"
-import { AiOutlineExclamationCircle } from "react-icons/ai"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
 import TimeAgo from "react-timeago"
 
-import { Button, CenteredColumn, Input } from "../../components"
+import { Button, CenteredColumn, Input, TooltipInfo } from "../../components"
 import { toMaxDecimals } from "../../helpers/number"
 import { campaigns } from "../../services/campaigns"
 
@@ -163,7 +162,7 @@ const Campaign: NextPage = () => {
               {overfunded && (
                 <p className="flex flex-row items-center mt-8">
                   This campaign is overfunded.
-                  <AiOutlineExclamationCircle className="ml-1" size={18} />
+                  <TooltipInfo text="" />
                 </p>
               )}
             </div>
@@ -278,13 +277,15 @@ const Campaign: NextPage = () => {
         </div>
 
         <h2 className="text-green text-xl mt-8">Activity</h2>
-        {activity.length ? (
-          activity.map((item) => (
-            <ActivityItem key={item.when.toString()} item={item} />
-          ))
-        ) : (
-          <p>None yet.</p>
-        )}
+        <div className=" w-full lg:w-3/5">
+          {activity.length ? (
+            activity.map((item) => (
+              <ActivityItem key={item.when.toString()} item={item} />
+            ))
+          ) : (
+            <p>None yet.</p>
+          )}
+        </div>
       </CenteredColumn>
     </>
   )
