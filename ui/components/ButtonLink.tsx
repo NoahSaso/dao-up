@@ -1,16 +1,16 @@
 import classnames from "classnames"
 import Link from "next/link"
-import { FC } from "react"
+import { FC, ReactNode } from "react"
 
 interface ButtonLinkProps {
   href: string
-  label: string
+  children: ReactNode | ReactNode[]
   outline?: boolean
   className?: string
 }
 export const ButtonLink: FC<ButtonLinkProps> = ({
   href,
-  label,
+  children,
   outline,
   className,
 }) => (
@@ -29,7 +29,7 @@ export const ButtonLink: FC<ButtonLinkProps> = ({
         className
       )}
     >
-      {label}
+      {children}
     </a>
   </Link>
 )

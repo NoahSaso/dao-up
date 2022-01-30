@@ -2,26 +2,24 @@ import cn from "classnames"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import { FC } from "react"
+import { FC, ReactNode } from "react"
+import { RiAccountCircleLine } from "react-icons/ri"
 
 import { ButtonLink } from "."
 
 interface NavItemProps {
   href: string
-  label: string
+  children: ReactNode | ReactNode[]
   action?: boolean
   className?: string
 }
-const NavItem: FC<NavItemProps> = ({ href, label, action, className }) => {
+const NavItem: FC<NavItemProps> = ({ href, children, action, className }) => {
   const { pathname } = useRouter()
 
   return action ? (
-    <ButtonLink
-      href={href}
-      label={label}
-      outline
-      className={cn("ml-8", className)}
-    />
+    <ButtonLink href={href} outline className={cn("ml-8", className)}>
+      {children}
+    </ButtonLink>
   ) : (
     <Link href={href}>
       <a
@@ -36,7 +34,7 @@ const NavItem: FC<NavItemProps> = ({ href, label, action, className }) => {
           className
         )}
       >
-        {label}
+        {children}
       </a>
     </Link>
   )
@@ -55,17 +53,22 @@ export const Header: FC = () => (
       </Link>
 
       <div className="flex flex-row items-center">
-        <NavItem href="/campaigns" label="Campaigns" />
+        <NavItem href="/campaigns">Campaigns</NavItem>
 
-        <NavItem href="/#faq" label="FAQ" className="hidden sm:inline-block" />
+        <NavItem href="/#faq" className="hidden sm:inline-block">
+          FAQ
+        </NavItem>
 
-        <NavItem
-          href="/create"
-          label="Create Campaign"
-          action
-          className="hidden sm:inline-block"
-        />
-        <NavItem href="/create" label="Create" action className="sm:hidden" />
+        <NavItem href="/me">
+          <RiAccountCircleLine size={24} />
+        </NavItem>
+
+        <NavItem href="/create" action className="hidden sm:inline-block">
+          Create Campaign
+        </NavItem>
+        <NavItem href="/create" action className="sm:hidden">
+          Create
+        </NavItem>
       </div>
     </nav>
   </header>

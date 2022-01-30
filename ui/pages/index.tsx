@@ -168,11 +168,17 @@ const Home: NextPage = () => (
         Kick start your community with the crowdfunding platform for DAOs.
       </p>
 
-      <ButtonLink href="/create" label="Create Campaign" />
+      <ButtonLink href="/create">Create Campaign</ButtonLink>
     </CenteredColumn>
 
     <CenteredColumn topSpace>
-      <div className="w-full md:w-3/5">
+      <div
+        className={cn(
+          "w-full md:w-3/5",
+          "flex flex-col items-center text-center",
+          "sm:items-start sm:text-left"
+        )}
+      >
         <h2 className={cn("font-semibold", "text-2xl lg:text-3xl xl:text-4xl")}>
           What makes DAO Up! different?
         </h2>
@@ -184,7 +190,7 @@ const Home: NextPage = () => (
           backers.
         </p>
 
-        <ButtonLink href="/campaigns" label="View All Campaigns" />
+        <ButtonLink href="/campaigns">View All Campaigns</ButtonLink>
       </div>
     </CenteredColumn>
 
@@ -201,8 +207,8 @@ const Home: NextPage = () => (
 
       <div
         className={cn(
-          "flex flex-col justify-start items-stretch",
-          "md:flex-row md:justify-between xl:justify-evenly",
+          "flex flex-col justify-start items-center",
+          "md:flex-row md:justify-between md:items-stretch xl:justify-evenly",
           "mt-4 w-full"
         )}
       >
@@ -215,7 +221,7 @@ const Home: NextPage = () => (
             "Set the token distribution for creators.",
             "Kick start your community.",
           ]}
-          button={<ButtonLink href="/create" label="Create Campaign" />}
+          button={<ButtonLink href="/create">Create Campaign</ButtonLink>}
           className="mb-5 md:mb-0 md:mr-10"
         />
 
@@ -228,7 +234,7 @@ const Home: NextPage = () => (
             "Sleep well knowing you control your funds.",
             "Join the greatest DAOs in the cosmos.",
           ]}
-          button={<ButtonLink href="/campaigns" label="View All Campaigns" />}
+          button={<ButtonLink href="/campaigns">View All Campaigns</ButtonLink>}
         />
       </div>
     </CenteredColumn>
