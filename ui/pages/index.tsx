@@ -1,7 +1,8 @@
 import cn from "classnames"
 import type { NextPage } from "next"
 import Image from "next/image"
-import { FC, ReactNode } from "react"
+import { FC, ReactNode, useState } from "react"
+import { GoTriangleDown } from "react-icons/go"
 
 import { ButtonLink } from "../components"
 
@@ -63,94 +64,164 @@ const Card: FC<CardProps> = ({
   </div>
 )
 
-const Home: NextPage = () => {
+interface FAQQuestionProps {
+  question: string
+  answer: string
+}
+const FAQQuestion: FC<FAQQuestionProps> = ({ question, answer }) => {
+  const [open, setOpen] = useState(false)
+
   return (
-    <>
-      <CenteredColumn className="pt-5 text-center">
-        <h1 className={cn("font-semibold", "text-4xl lg:text-5xl xl:text-6xl")}>
-          Trusted Community Fundraising
-          <br />
-          for any Campaign
-        </h1>
-
-        <p
-          className={cn(
-            "my-10 mx-auto",
-            "w-3/4 md:w-1/2 xl:w-2/5",
-            "text-md lg:text-xl xl:text-2xl"
-          )}
-        >
-          Kick start your community with the crowdfunding platform for DAOs.
-        </p>
-
-        <ButtonLink href="/create" label="Create Campaign" />
-      </CenteredColumn>
-
-      <CenteredColumn topSpace>
-        <div className="w-full md:w-3/5">
-          <h2
-            className={cn("font-semibold", "text-2xl lg:text-3xl xl:text-4xl")}
-          >
-            What makes DAO Up! different?
-          </h2>
-
-          <p className={cn("mt-4 mb-10", "text-md lg:text-xl")}>
-            DAO Up! is a crowdfunding tool for communities. Refunds are
-            guaranteed if a project doesn&apos;t hit its funding goal, and
-            successful campaigns have their treasury transferred to a DAO
-            controlled by the backers.
-          </p>
-
-          <ButtonLink href="/campaigns" label="View All Campaigns" />
-        </div>
-      </CenteredColumn>
-
-      <CenteredColumn topSpace>
-        <h2
-          className={cn(
-            "font-semibold text-center",
-            "mb-10",
-            "text-2xl lg:text-3xl xl:text-4xl"
-          )}
-        >
-          Superior experience for both creators and supporters.
-        </h2>
-
-        <div
-          className={cn(
-            "flex flex-col justify-start items-stretch",
-            "md:flex-row md:justify-between xl:justify-evenly",
-            "mt-4 w-full"
-          )}
-        >
-          <Card
-            title="Creators"
-            subtitle="Show your community you mean business by using a platform that guarantees refundability and democratized control over your funds."
-            listItems={[
-              "Select your funding goal.",
-              "Name your token and configure your DAO.",
-              "Set the token distribution for creators.",
-              "Kick start your community.",
-            ]}
-            button={<ButtonLink href="/create" label="Create Campaign" />}
-            className="mb-5 md:mb-0 md:mr-10"
-          />
-
-          <Card
-            title="Supporters"
-            subtitle="Know that your contribution is safe. DAO Up! smart contracts make funding transparent and guarantee democratized control over all funds raised."
-            listItems={[
-              "Back promising projects.",
-              "Get a refund any time before campaign completion.",
-              "Sleep well knowing you control your funds.",
-              "Join the greatest DAOs in the cosmos.",
-            ]}
-            button={<ButtonLink href="/campaigns" label="View All Campaigns" />}
-          />
-        </div>
-      </CenteredColumn>
-    </>
+    <div className={cn("py-5", "border-t border-dark last:border-b")}>
+      <div
+        className={cn(
+          "flex flex-row justify-between items-center",
+          "pr-4",
+          "cursor-pointer select-non"
+        )}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <h2 className="font-medium text-xl pr-10">{question}</h2>
+        <GoTriangleDown
+          size={20}
+          className={cn("transition-all", {
+            "rotate-180": open,
+          })}
+        />
+      </div>
+      <p
+        className={cn(
+          "pl-4 pr-12 transition-all overflow-hidden max-h-0 my-0",
+          {
+            "max-h-max my-4": open,
+          }
+        )}
+      >
+        {answer}
+      </p>
+    </div>
   )
 }
+
+const faqQAs = [
+  {
+    q: "What is a DAO?",
+    a: "DAO stands for Decentralized Autonomous Organization. DAOs reduce organizational overhead by extending the trust advantages of blockchain to community funding. They're used for everything from community art ownership to running entire stablecoins.",
+  },
+  {
+    q: "Is DAO Up! safe?",
+    a: "nah",
+  },
+  {
+    q: "What happens if a campaign gets funded?",
+    a: "everyone gets refunded",
+  },
+  {
+    q: "What happens if a campaign doesn't reach its goal?",
+    a: "cool stuff",
+  },
+  {
+    q: "What is DAO DAO?",
+    a: "The future.",
+  },
+]
+
+const Home: NextPage = () => (
+  <>
+    <CenteredColumn className="pt-5 text-center">
+      <h1 className={cn("font-semibold", "text-4xl lg:text-5xl xl:text-6xl")}>
+        Trusted Community Fundraising
+        <br />
+        for any Campaign
+      </h1>
+
+      <p
+        className={cn(
+          "my-10 mx-auto",
+          "w-3/4 md:w-1/2 xl:w-2/5",
+          "text-md lg:text-xl xl:text-2xl"
+        )}
+      >
+        Kick start your community with the crowdfunding platform for DAOs.
+      </p>
+
+      <ButtonLink href="/create" label="Create Campaign" />
+    </CenteredColumn>
+
+    <CenteredColumn topSpace>
+      <div className="w-full md:w-3/5">
+        <h2 className={cn("font-semibold", "text-2xl lg:text-3xl xl:text-4xl")}>
+          What makes DAO Up! different?
+        </h2>
+
+        <p className={cn("mt-4 mb-10", "text-md lg:text-xl")}>
+          DAO Up! is a crowdfunding tool for communities. Refunds are guaranteed
+          if a project doesn&apos;t hit its funding goal, and successful
+          campaigns have their treasury transferred to a DAO controlled by the
+          backers.
+        </p>
+
+        <ButtonLink href="/campaigns" label="View All Campaigns" />
+      </div>
+    </CenteredColumn>
+
+    <CenteredColumn topSpace className="pb-16">
+      <h2
+        className={cn(
+          "font-semibold text-center",
+          "mb-10",
+          "text-2xl lg:text-3xl xl:text-4xl"
+        )}
+      >
+        Superior experience for both creators and supporters.
+      </h2>
+
+      <div
+        className={cn(
+          "flex flex-col justify-start items-stretch",
+          "md:flex-row md:justify-between xl:justify-evenly",
+          "mt-4 w-full"
+        )}
+      >
+        <Card
+          title="Creators"
+          subtitle="Show your community you mean business by using a platform that guarantees refundability and democratized control over your funds."
+          listItems={[
+            "Select your funding goal.",
+            "Name your token and configure your DAO.",
+            "Set the token distribution for creators.",
+            "Kick start your community.",
+          ]}
+          button={<ButtonLink href="/create" label="Create Campaign" />}
+          className="mb-5 md:mb-0 md:mr-10"
+        />
+
+        <Card
+          title="Supporters"
+          subtitle="Know that your contribution is safe. DAO Up! smart contracts make funding transparent and guarantee democratized control over all funds raised."
+          listItems={[
+            "Back promising projects.",
+            "Get a refund any time before campaign completion.",
+            "Sleep well knowing you control your funds.",
+            "Join the greatest DAOs in the cosmos.",
+          ]}
+          button={<ButtonLink href="/campaigns" label="View All Campaigns" />}
+        />
+      </div>
+    </CenteredColumn>
+
+    <div className="bg-light py-16 text-dark">
+      <CenteredColumn>
+        <h1 className="text-center font-semibold text-3xl pb-12">FAQs</h1>
+
+        <div className="flex flex-col justify-start items-stretch">
+          {faqQAs.map(({ q, a }) => (
+            <FAQQuestion key={q} question={q} answer={a} />
+          ))}
+        </div>
+      </CenteredColumn>
+    </div>
+  </>
+)
 
 export default Home
