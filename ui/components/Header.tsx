@@ -42,7 +42,7 @@ export const Header: FC = () => (
 
       <div className="flex flex-row items-center">
         <NavItem href="/campaigns" label="Campaigns" />
-        <NavItem href="/faq" label="FAQ" />
+        <NavItem href="/#faq" label="FAQ" />
         <NavItem href="/create" label="Create Campaign" action />
       </div>
     </nav>

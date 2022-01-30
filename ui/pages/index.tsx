@@ -210,9 +210,9 @@ const Home: NextPage = () => (
       </div>
     </CenteredColumn>
 
-    <div className="bg-light py-16 text-dark">
+    <div className="bg-light py-16 text-dark" id="faq">
       <CenteredColumn>
-        <h1 className="text-center font-semibold text-3xl pb-12">FAQs</h1>
+        <h1 className="text-center font-semibold text-3xl pb-12">FAQ</h1>
 
         <div className="flex flex-col justify-start items-stretch">
           {faqQAs.map(({ q, a }) => (
