@@ -68,7 +68,7 @@ export const campaigns: Campaign[] = [
     id: "4",
     name: "GroceryDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
-    open: true,
+    open: false,
 
     asset: "$JUNO",
     goal: 1000000,

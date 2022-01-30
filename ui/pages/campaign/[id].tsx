@@ -168,7 +168,8 @@ const Campaign: NextPage = () => {
             <div
               className={cn(
                 "flex flex-col items-stretch my-8",
-                "sm:flex-row lg:self-stretch lg:my-0"
+                "sm:flex-row lg:self-stretch lg:my-0",
+                { hidden: !open }
               )}
             >
               <Input
@@ -254,19 +255,21 @@ const Campaign: NextPage = () => {
             <span className="text-placeholder">0% of total supply</span>
           </p>
 
-          <h2 className="text-xl text-green mt-8 mb-4">Refunds</h2>
+          <div className={cn({ hidden: !open })}>
+            <h2 className="text-xl text-green mt-8 mb-4">Refunds</h2>
 
-          <Input
-            type="text"
-            placeholder="Refund..."
-            value={refund}
-            onChange={({ target: { value } }) =>
-              setRefund(value.replaceAll(/[^\d.]/g, ""))
-            }
-            className="bg-dark !border-light mb-4 w-full max-w-sm"
-          />
+            <Input
+              type="text"
+              placeholder="Refund..."
+              value={refund}
+              onChange={({ target: { value } }) =>
+                setRefund(value.replaceAll(/[^\d.]/g, ""))
+              }
+              className="bg-dark !border-light mb-4 w-full max-w-sm"
+            />
 
-          <Button onClick={() => alert("refund")}>Refund</Button>
+            <Button onClick={() => alert("refund")}>Refund</Button>
+          </div>
         </div>
 
         <h2 className="text-green text-xl mt-8">Activity</h2>
