@@ -16,7 +16,7 @@ export const Button: FC<ButtonProps> = ({
 }) => (
   <button
     className={classnames(
-      "block",
+      "block text-center",
       "py-2 px-4",
       "rounded-full",
       "transition",
