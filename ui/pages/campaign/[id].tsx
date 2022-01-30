@@ -98,93 +98,99 @@ const Campaign: NextPage = () => {
         />
       </div>
 
-      <CenteredColumn className="pt-5 pb-12">
-        <h1 className="text-4xl">{name}</h1>
-
-        {!!(website || twitter || discord) && (
-          <div
-            className={cn("flex flex-row items-center", "text-green", "mt-4")}
-          >
-            {!!website && (
-              <CampaignLink href={website} label={new URL(website).hostname} />
-            )}
-            {!!twitter && (
-              <CampaignLink
-                href={`https://twitter.com/${twitter}`}
-                label={(twitter.startsWith("@") ? "" : "@") + twitter}
-                Icon={FaTwitter}
-              />
-            )}
-            {!!discord && (
-              <CampaignLink href={discord} label="Discord" Icon={FaDiscord} />
-            )}
-          </div>
-        )}
-
-        <p className="mt-2">{description}</p>
-
-        {overfunded && (
-          <p className="flex flex-row items-center mt-8">
-            This campaign is overfunded.
-            <AiOutlineExclamationCircle className="ml-1" size={18} />
-          </p>
-        )}
-
+      <CenteredColumn className="pt-5 pb-12 2xl:w-2/3">
         <div
           className={cn(
-            "mt-8",
-            "flex flex-col-reverse justify-start items-stretch",
-            "lg:flex-row lg:justify-between"
+            "flex flex-col justify-start items-center",
+            "lg:flex-row lg:justify-between lg:items-stretch"
           )}
         >
-          <div className="flex flex-col lg:mr-8">
-            <div className="flex-1 flex flex-col mt-8 lg:mt-0">
-              <div className="flex flex-col items-stretch md:flex-row md:self-stretch">
-                <Input
-                  type="text"
-                  placeholder="Contribute..."
-                  value={contribution}
-                  onChange={({ target: { value } }) =>
-                    setContribution(value.replaceAll(/[^\d.]/g, ""))
-                  }
-                  className="mb-4 md:mb-0 md:mr-4 md:flex-1"
-                />
+          <div
+            className={cn(
+              "flex flex-col justify-between items-stretch w-full lg:w-3/5"
+            )}
+          >
+            <div className={cn("flex flex-col text-center lg:text-left")}>
+              <div className={cn("flex flex-col items-center", "lg:flex-row")}>
+                <div
+                  className={cn(
+                    "bg-green w-[139px] h-[139px] mb-4",
+                    "lg:mb-0 lg:mr-4"
+                  )}
+                ></div>
 
-                <Button onClick={() => alert("thanks")}>
-                  Support this Campaign
-                </Button>
+                <div className={cn("flex flex-col")}>
+                  <h1 className="text-4xl">{name}</h1>
+
+                  {!!(website || twitter || discord) && (
+                    <div
+                      className={cn(
+                        "flex flex-row items-center",
+                        "text-green",
+                        "mt-4"
+                      )}
+                    >
+                      {!!website && (
+                        <CampaignLink
+                          href={website}
+                          label={new URL(website).hostname}
+                        />
+                      )}
+                      {!!twitter && (
+                        <CampaignLink
+                          href={`https://twitter.com/${twitter}`}
+                          label={(twitter.startsWith("@") ? "" : "@") + twitter}
+                          Icon={FaTwitter}
+                        />
+                      )}
+                      {!!discord && (
+                        <CampaignLink
+                          href={discord}
+                          label="Discord"
+                          Icon={FaDiscord}
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className={cn("bg-card", "mt-8 py-8 px-12", "rounded-3xl")}>
-                <h2 className="text-xl text-green mb-2">Your Balance</h2>
-                <p className="text-light">
-                  0 Tokens{" "}
-                  <span className="text-placeholder">0% of total supply</span>
+              <p className="mt-4">{description}</p>
+
+              {overfunded && (
+                <p className="flex flex-row items-center mt-8">
+                  This campaign is overfunded.
+                  <AiOutlineExclamationCircle className="ml-1" size={18} />
                 </p>
+              )}
+            </div>
 
-                <h2 className="text-xl text-green mt-8 mb-4">Refunds</h2>
+            <div
+              className={cn(
+                "flex flex-col items-stretch my-8",
+                "lg:flex-row lg:self-stretch lg:my-0"
+              )}
+            >
+              <Input
+                type="text"
+                placeholder="Contribute..."
+                value={contribution}
+                onChange={({ target: { value } }) =>
+                  setContribution(value.replaceAll(/[^\d.]/g, ""))
+                }
+                className="!py-3 !px-6 mb-4 lg:mb-0 lg:mr-4 lg:flex-1"
+              />
 
-                <Input
-                  type="text"
-                  placeholder="Refund..."
-                  value={refund}
-                  onChange={({ target: { value } }) =>
-                    setRefund(value.replaceAll(/[^\d.]/g, ""))
-                  }
-                  className="bg-dark !border-light mb-4 w-full max-w-sm"
-                />
-
-                <Button onClick={() => alert("refund")}>Refund</Button>
-              </div>
+              <Button onClick={() => alert("thanks")}>
+                Support this Campaign
+              </Button>
             </div>
           </div>
 
           <div
             className={cn(
-              "bg-card",
-              "p-8",
-              "rounded-3xl",
-              "flex flex-col items-start self-center lg:self-stretch"
+              "bg-card rounded-3xl p-8",
+              "flex flex-col items-start self-stretch"
             )}
           >
             <div className="flex flex-row items-center mb-3">
@@ -204,9 +210,7 @@ const Campaign: NextPage = () => {
               </p>
             </div>
 
-            <div className="bg-green w-[284px] h-[284px]"></div>
-
-            <div className="bg-dark overflow-hidden w-[284px] h-[12px] rounded-full mt-8">
+            <div className="bg-dark overflow-hidden w-full h-[12px] rounded-full mt-2">
               {open ? (
                 <div
                   className="bg-green h-full"
@@ -236,6 +240,33 @@ const Campaign: NextPage = () => {
             </h3>
             <p className="text-light text-sm">Total Supply</p>
           </div>
+        </div>
+
+        <div
+          className={cn(
+            "bg-card rounded-3xl",
+            "mt-8 py-8 px-12 w-full lg:w-3/5"
+          )}
+        >
+          <h2 className="text-xl text-green mb-2">Your Balance</h2>
+          <p className="text-light">
+            0 Tokens{" "}
+            <span className="text-placeholder">0% of total supply</span>
+          </p>
+
+          <h2 className="text-xl text-green mt-8 mb-4">Refunds</h2>
+
+          <Input
+            type="text"
+            placeholder="Refund..."
+            value={refund}
+            onChange={({ target: { value } }) =>
+              setRefund(value.replaceAll(/[^\d.]/g, ""))
+            }
+            className="bg-dark !border-light mb-4 w-full max-w-sm"
+          />
+
+          <Button onClick={() => alert("refund")}>Refund</Button>
         </div>
 
         <h2 className="text-green text-xl mt-8">Activity</h2>
