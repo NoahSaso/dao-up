@@ -10,6 +10,7 @@ import TimeAgo from "react-timeago"
 import {
   Button,
   ButtonLink,
+  CampaignStatus,
   CenteredColumn,
   Input,
   ResponsiveDecoration,
@@ -85,7 +86,6 @@ const Campaign: NextPage = () => {
   } = campaign
 
   const fundedPercent = (100 * pledged) / goal
-  const funded = pledged >= goal
   const overfunded = pledged > goal
 
   const userTokens = 0
@@ -210,22 +210,7 @@ const Campaign: NextPage = () => {
               "flex flex-col items-start self-stretch"
             )}
           >
-            <div className="flex flex-row items-center mb-3">
-              <div
-                className={cn("w-2.5 h-2.5 rounded-full", {
-                  "bg-green": open && !funded,
-                  "bg-orange": open && funded,
-                  "bg-placeholder": !open,
-                })}
-              ></div>
-              <p className="ml-1 text-sm">
-                {open && !funded
-                  ? "Active"
-                  : open && funded
-                  ? "Goal Reached"
-                  : "Closed"}
-              </p>
-            </div>
+            <CampaignStatus campaign={campaign} />
 
             {!!daoUrl && (
               <ButtonLink href={daoUrl} className="self-stretch my-2">

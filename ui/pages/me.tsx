@@ -1,10 +1,7 @@
-import cn from "classnames"
 import type { NextPage } from "next"
-import Image from "next/image"
-import Link from "next/link"
-import { FC } from "react"
 
 import {
+  AllCampaignsCard,
   Button,
   ButtonLink,
   CenteredColumn,
@@ -12,36 +9,6 @@ import {
   TooltipInfo,
 } from "../components"
 import { campaigns } from "../services/campaigns"
-
-interface CampaignProps {
-  campaign: Campaign
-}
-const Campaign: FC<CampaignProps> = ({
-  campaign: { id, name, pledged, asset, goal },
-}) => (
-  <Link href={`/campaign/${id}`}>
-    <a
-      className={cn(
-        "flex flex-row justify-start items-stretch",
-        "bg-card p-10 rounded-3xl",
-        "border border-card hover:border-green",
-        "transition",
-        "cursor-pointer"
-      )}
-    >
-      <div className="bg-green w-[135px] h-[135px]"></div>
-      <div className="ml-5">
-        <h2 className="font-medium text-xl">{name}</h2>
-        <p className="text-lg text-green">
-          {pledged.toLocaleString()} {asset} pledged
-        </p>
-        <p className="text-lg text-white">
-          {((100 * pledged) / goal).toFixed(0)}% funded
-        </p>
-      </div>
-    </a>
-  </Link>
-)
 
 const Me: NextPage = () => {
   const yourCampaigns = campaigns.slice(0, campaigns.length / 2)
@@ -56,7 +23,7 @@ const Me: NextPage = () => {
       {yourCampaigns.length ? (
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 mt-8">
           {yourCampaigns.map((campaign) => (
-            <Campaign key={campaign.id} campaign={campaign} />
+            <AllCampaignsCard key={campaign.id} campaign={campaign} />
           ))}
         </div>
       ) : (
@@ -74,7 +41,7 @@ const Me: NextPage = () => {
       {yourContributions.length ? (
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 mt-8">
           {yourContributions.map((campaign) => (
-            <Campaign key={campaign.id} campaign={campaign} />
+            <AllCampaignsCard key={campaign.id} campaign={campaign} />
           ))}
         </div>
       ) : (
