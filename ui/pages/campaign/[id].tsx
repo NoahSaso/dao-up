@@ -76,11 +76,7 @@ const Campaign: NextPage = () => {
 
         {!!(website || twitter || discord) && (
           <div
-            className={cn(
-              "flex flex-row items-center",
-              "text-green",
-              "mt-4 mb-2"
-            )}
+            className={cn("flex flex-row items-center", "text-green", "mt-4")}
           >
             {!!website && (
               <CampaignLink href={website} label={new URL(website).hostname} />
@@ -98,7 +94,7 @@ const Campaign: NextPage = () => {
           </div>
         )}
 
-        <p>{description}</p>
+        <p className="mt-2">{description}</p>
 
         {pledged > goal && (
           <p className="flex flex-row items-center mt-8">

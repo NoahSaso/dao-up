@@ -10,9 +10,9 @@ export const campaigns: Campaign[] = [
     supporters: 10,
     supply: 100000,
 
-    website: 'https://noahsaso.com',
-    twitter: 'NoahSaso',
-    discord: 'test',
+    website: "https://noahsaso.com",
+    twitter: "NoahSaso",
+    discord: "test",
 
     activity: [],
   },

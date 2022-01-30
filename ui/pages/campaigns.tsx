@@ -2,6 +2,7 @@ import cn from "classnames"
 import fuzzysort from "fuzzysort"
 import type { NextPage } from "next"
 import Image from "next/image"
+import Link from "next/link"
 import { FC, useEffect, useState } from "react"
 
 import { CenteredColumn } from "../components"
@@ -11,29 +12,31 @@ interface CampaignProps {
   campaign: Campaign
 }
 const Campaign: FC<CampaignProps> = ({
-  campaign: { name, pledged, asset, goal, description },
+  campaign: { id, name, pledged, asset, goal, description },
 }) => (
-  <div
-    className={cn(
-      "flex flex-row justify-start items-stretch",
-      "bg-card p-10 rounded-3xl",
-      "border border-card hover:border-green",
-      "transition",
-      "cursor-pointer"
-    )}
-  >
-    <div className="bg-green w-[135px] h-[135px]"></div>
-    <div className="ml-5">
-      <h2 className="font-medium text-xl">{name}</h2>
-      <p className="text-lg text-green">
-        {pledged.toLocaleString()} {asset} pledged
-      </p>
-      <p className="text-lg text-white">
-        {((100 * pledged) / goal).toFixed(0)}% funded
-      </p>
-      <p className="mt-5">{description}</p>
-    </div>
-  </div>
+  <Link href={`/campaign/${id}`}>
+    <a
+      className={cn(
+        "flex flex-row justify-start items-stretch",
+        "bg-card p-10 rounded-3xl",
+        "border border-card hover:border-green",
+        "transition",
+        "cursor-pointer"
+      )}
+    >
+      <div className="bg-green w-[135px] h-[135px]"></div>
+      <div className="ml-5">
+        <h2 className="font-medium text-xl">{name}</h2>
+        <p className="text-lg text-green">
+          {pledged.toLocaleString()} {asset} pledged
+        </p>
+        <p className="text-lg text-white">
+          {((100 * pledged) / goal).toFixed(0)}% funded
+        </p>
+        <p className="mt-5">{description}</p>
+      </div>
+    </a>
+  </Link>
 )
 
 let latestFilter = 0
