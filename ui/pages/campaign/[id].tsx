@@ -7,7 +7,13 @@ import { IconType } from "react-icons"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
 import TimeAgo from "react-timeago"
 
-import { Button, CenteredColumn, Input, TooltipInfo } from "../../components"
+import {
+  Button,
+  ButtonLink,
+  CenteredColumn,
+  Input,
+  TooltipInfo,
+} from "../../components"
 import { toMaxDecimals } from "../../helpers/number"
 import { campaigns } from "../../services/campaigns"
 
@@ -62,6 +68,7 @@ const Campaign: NextPage = () => {
     description,
     imageUrl,
     open,
+    daoUrl,
 
     website,
     twitter,
@@ -86,7 +93,7 @@ const Campaign: NextPage = () => {
     <>
       <div
         className={cn(
-          "absolute top-0 left-0",
+          "absolute top-0 left-0 pointer-events-none",
           "opacity-70",
           "w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3"
         )}
@@ -100,7 +107,22 @@ const Campaign: NextPage = () => {
         />
       </div>
 
-      <CenteredColumn className="pt-5 pb-12 2xl:w-2/3">
+      {!!daoUrl && (
+        <p className="bg-green text-dark text-center w-full px-12 py-2">
+          {name} has been successfully funded and the{" "}
+          <a
+            href={daoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:no-underline"
+          >
+            DAO
+          </a>{" "}
+          has been created.
+        </p>
+      )}
+
+      <CenteredColumn className="pt-10 pb-12 sm:pt-20 2xl:w-2/3">
         <div
           className={cn(
             "flex flex-col justify-start items-center",
@@ -122,7 +144,7 @@ const Campaign: NextPage = () => {
                 ></div>
 
                 <div className={cn("flex flex-col")}>
-                  <h1 className="text-4xl">{name}</h1>
+                  <h1 className="font-medium text-5xl">{name}</h1>
 
                   {!!(website || twitter || discord) && (
                     <div
@@ -212,6 +234,12 @@ const Campaign: NextPage = () => {
                   : "Closed"}
               </p>
             </div>
+
+            {!!daoUrl && (
+              <ButtonLink href={daoUrl} className="self-stretch my-2">
+                Visit the DAO
+              </ButtonLink>
+            )}
 
             <div className="bg-dark overflow-hidden w-full h-[12px] rounded-full mt-2">
               {open ? (

@@ -11,6 +11,7 @@ interface Campaign {
   description: string
   imageUrl?: string
   open: boolean
+  daoUrl?: string
 
   website?: string
   twitter?: string

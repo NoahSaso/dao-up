@@ -13,8 +13,13 @@ export const ButtonLink: FC<ButtonLinkProps> = ({
   children,
   outline,
   className,
-}) => (
-  <Link href={href}>
+}) => {
+  const internal = href.startsWith("/")
+  const aProps = internal
+    ? {}
+    : { href, target: "_blank", rel: "noopener noreferrer" }
+
+  const aTag = (
     <a
       className={classnames(
         "py-2 px-4 rounded-full",
@@ -28,8 +33,11 @@ export const ButtonLink: FC<ButtonLinkProps> = ({
         },
         className
       )}
+      {...aProps}
     >
       {children}
     </a>
-  </Link>
-)
+  )
+
+  return internal ? <Link href={href}>{aTag}</Link> : aTag
+}

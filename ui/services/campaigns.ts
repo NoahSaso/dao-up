@@ -4,6 +4,7 @@ export const campaigns: Campaign[] = [
     name: "BongDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
     open: true,
+    daoUrl: 'https://noahsaso.com',
 
     asset: "$JUNO",
     goal: 100000,
