@@ -5,7 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { FC, useEffect, useState } from "react"
 
-import { CenteredColumn } from "../components"
+import { CenteredColumn, Input } from "../components"
 import { campaigns } from "../services/campaigns"
 
 interface CampaignProps {
@@ -83,14 +83,8 @@ const Campaigns: NextPage = () => {
       <CenteredColumn className="pt-5">
         <h1 className="font-semibold text-4xl">All Campaigns</h1>
 
-        <input
-          className={cn(
-            "bg-card placeholder:text-placeholder",
-            "mt-4 mb-6",
-            "py-4 px-8",
-            "w-full rounded-full",
-            "border border-card focus:outline-none focus:border-green"
-          )}
+        <Input
+          className="mt-4 mb-6"
           type="text"
           placeholder="Search all campaigns..."
           value={search}

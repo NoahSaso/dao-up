@@ -2,12 +2,12 @@ import cn from "classnames"
 import type { NextPage } from "next"
 import Image from "next/image"
 import { useRouter } from "next/router"
-import { FC } from "react"
+import { FC, useState } from "react"
 import { IconType } from "react-icons"
 import { AiOutlineExclamationCircle } from "react-icons/ai"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
 
-import { CenteredColumn } from "../../components"
+import { Button, ButtonLink, CenteredColumn, Input } from "../../components"
 import { campaigns } from "../../services/campaigns"
 
 interface CampaignLinkProps {
@@ -31,8 +31,27 @@ const CampaignLink: FC<CampaignLinkProps> = ({ href, label, Icon }) => (
   </a>
 )
 
+interface ActivityItemProps {
+  item: ActivityItem
+}
+const ActivityItem: FC<ActivityItemProps> = ({
+  item: { when, address, amount, asset },
+}) => (
+  <div className={cn("py-5", "border-b border-light")}>
+    <div className="flex flex-row justify-between items-center">
+      <p className="font-semibold">
+        {amount} {asset}
+      </p>
+      <p>{when.toLocaleString()}</p>
+    </div>
+    <p>{address}</p>
+  </div>
+)
+
 const Campaign: NextPage = () => {
   const { query, isReady } = useRouter()
+  const [contribution, setContribution] = useState("0")
+  const [refund, setRefund] = useState("0")
 
   const campaign = isReady ? campaigns.find((c) => c.id === query.id) : null
   if (!isReady || !campaign) return null
@@ -51,6 +70,8 @@ const Campaign: NextPage = () => {
     pledged,
     supporters,
     supply,
+
+    activity,
   } = campaign
 
   return (
@@ -71,7 +92,7 @@ const Campaign: NextPage = () => {
         />
       </div>
 
-      <CenteredColumn className="pt-5">
+      <CenteredColumn className="pt-5 pb-12">
         <h1 className="text-4xl">{name}</h1>
 
         {!!(website || twitter || discord) && (
@@ -101,6 +122,62 @@ const Campaign: NextPage = () => {
             This campaign is overfunded.
             <AiOutlineExclamationCircle className="ml-1" size={18} />
           </p>
+        )}
+
+        <div className="mt-8">
+          <div className="flex flex-row items-stretch">
+            <Input
+              type="text"
+              placeholder="Contribute..."
+              value={contribution}
+              onChange={({ target: { value } }) =>
+                setContribution(value.replaceAll(/[^\d.]/g, ""))
+              }
+              className="mr-4"
+            />
+
+            <Button onClick={() => alert("thanks")}>
+              Support this Campaign
+            </Button>
+          </div>
+
+          <div
+            className={cn(
+              "bg-card",
+              "mt-8 py-8 px-12",
+              "rounded-3xl",
+              "w-full"
+            )}
+          >
+            <h2 className="text-xl text-green mb-2">Your Balance</h2>
+            <p className="text-light">
+              0 Tokens{" "}
+              <span className="text-placeholder">0% of total supply</span>
+            </p>
+
+            <h2 className="text-xl text-green mt-8 mb-4">Refunds</h2>
+
+            <Input
+              type="text"
+              placeholder="Refund..."
+              value={refund}
+              onChange={({ target: { value } }) =>
+                setRefund(value.replaceAll(/[^\d.]/g, ""))
+              }
+              className="bg-dark !border-light mb-4"
+            />
+
+            <Button onClick={() => alert("refund")}>Refund</Button>
+          </div>
+        </div>
+
+        <h2 className="text-green text-xl mt-8">Activity</h2>
+        {activity.length ? (
+          activity.map((item) => (
+            <ActivityItem key={item.when.toString()} item={item} />
+          ))
+        ) : (
+          <p>None yet.</p>
         )}
       </CenteredColumn>
     </>

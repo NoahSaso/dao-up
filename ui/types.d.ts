@@ -1,7 +1,7 @@
 interface ActivityItem {
   when: Date
   address: string
-  amount: string
+  amount: number
   asset: string
 }
 

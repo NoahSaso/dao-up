@@ -14,7 +14,26 @@ export const campaigns: Campaign[] = [
     twitter: "NoahSaso",
     discord: "test",
 
-    activity: [],
+    activity: [
+      {
+        when: new Date(),
+        address: "123",
+        amount: 2,
+        asset: "$JUNO",
+      },
+      {
+        when: new Date(),
+        address: "123456",
+        amount: 1,
+        asset: "$JUNO",
+      },
+      {
+        when: new Date(),
+        address: "3",
+        amount: 1,
+        asset: "$JUNO",
+      },
+    ],
   },
   {
     id: "2",

@@ -1,3 +1,5 @@
+export * from "./Button"
 export * from "./ButtonLink"
 export * from "./CenteredColumn"
 export * from "./Header"
+export * from "./Input"
