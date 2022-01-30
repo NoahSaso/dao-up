@@ -84,7 +84,7 @@ const Campaigns: NextPage = () => {
         <h1 className="font-semibold text-4xl">All Campaigns</h1>
 
         <Input
-          className="mt-4 mb-6"
+          className="mt-4 mb-6 w-full"
           type="text"
           placeholder="Search all campaigns..."
           value={search}
