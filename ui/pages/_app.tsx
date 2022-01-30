@@ -21,7 +21,7 @@ const DAOUp: FC<AppProps> = ({ Component, pageProps }) => (
         name="viewport"
         content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
       />
-      <link rel="icon" href="/logo.svg" />
+      <link rel="icon" href="/images/logo.svg" />
 
       {/* SEO */}
       <meta name="description" content={Description} />

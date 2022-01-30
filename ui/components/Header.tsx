@@ -35,7 +35,7 @@ export const Header: FC = () => (
     <nav className="flex flex-row justify-between items-center">
       <Link href="/">
         <a className="flex flex-row items-center">
-          <Image src="/logo.svg" alt="logo" width={52} height={30} />
+          <Image src="/images/logo.svg" alt="logo" width={52} height={30} />
           <h1 className="text-2xl ml-4">DAO Up!</h1>
         </a>
       </Link>

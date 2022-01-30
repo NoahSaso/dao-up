@@ -18,6 +18,7 @@ const CenteredColumn: FC<CenteredColumnProps> = ({
 }) => (
   <div
     className={cn(
+      "relative",
       `w-5/6 my-0 mx-auto`,
       {
         "mt-32 lg:mt-40": topSpace,
@@ -128,6 +129,37 @@ const faqQAs = [
 
 const Home: NextPage = () => (
   <>
+    <div
+      className={cn(
+        "absolute top-0 left-0",
+        "opacity-70",
+        "w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3"
+      )}
+    >
+      <Image
+        src="/images/orange_blur.png"
+        alt=""
+        width={393}
+        height={653}
+        layout="responsive"
+      />
+    </div>
+    <div
+      className={cn(
+        "absolute top-40 right-0",
+        "opacity-80",
+        "w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3"
+      )}
+    >
+      <Image
+        src="/images/green_blur.png"
+        alt=""
+        width={322}
+        height={640}
+        layout="responsive"
+      />
+    </div>
+
     <CenteredColumn className="pt-5 text-center">
       <h1 className={cn("font-semibold", "text-4xl lg:text-5xl xl:text-6xl")}>
         Trusted Community Fundraising
@@ -211,7 +243,7 @@ const Home: NextPage = () => (
     </CenteredColumn>
 
     <div className="bg-light py-16 text-dark" id="faq">
-      <CenteredColumn>
+      <CenteredColumn className="max-w-4xl">
         <h1 className="text-center font-semibold text-3xl pb-12">FAQ</h1>
 
         <div className="flex flex-col justify-start items-stretch">
