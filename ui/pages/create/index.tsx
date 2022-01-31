@@ -1,12 +1,5 @@
 import type { NextPage } from "next"
-import { useRouter } from "next/router"
-import {
-  Controller,
-  FieldValues,
-  SubmitHandler,
-  useForm,
-} from "react-hook-form"
-import { useRecoilState } from "recoil"
+import { Controller } from "react-hook-form"
 
 import {
   Button,
@@ -16,36 +9,10 @@ import {
   FormTextArea,
   ResponsiveDecoration,
 } from "../../components"
-import { newCampaignState } from "../../services/state"
-
-let id = 1
+import { useNewCampaignForm } from "../../helpers/form"
 
 const Create: NextPage = () => {
-  const router = useRouter()
-  const [newCampaign, setNewCampaign] = useRecoilState(newCampaignState)
-
-  const {
-    control,
-    handleSubmit,
-    register,
-    formState: { errors },
-  } = useForm({ defaultValues: newCampaign })
-
-  const onSubmit: SubmitHandler<FieldValues> = (values, event) => {
-    const nativeEvent = event?.nativeEvent as SubmitEvent
-    const submitterValue = (nativeEvent?.submitter as HTMLInputElement)?.value
-
-    const url =
-      submitterValue === "Back"
-        ? `/create/${id > 2 ? id - 1 : ""}`
-        : `/create/${id + 1}`
-
-    setNewCampaign({
-      ...newCampaign,
-      ...values,
-    })
-    router.push(url)
-  }
+  const { formOnSubmit, register, errors, control } = useNewCampaignForm(1)
 
   return (
     <>
@@ -57,7 +24,7 @@ const Create: NextPage = () => {
       />
 
       <CenteredColumn className="py-10 max-w-4xl">
-        <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
+        <form className="flex flex-col" onSubmit={formOnSubmit}>
           <h1 className="font-semibold text-4xl">Create a new campaign</h1>
           <p className="mt-4 mb-10">Description...</p>
 

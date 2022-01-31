@@ -1,16 +1,8 @@
 import cn from "classnames"
 import type { NextPage } from "next"
-import { useRouter } from "next/router"
 import { useState } from "react"
-import {
-  Controller,
-  FieldValues,
-  SubmitErrorHandler,
-  SubmitHandler,
-  useForm,
-} from "react-hook-form"
+import { Controller } from "react-hook-form"
 import { GoTriangleDown } from "react-icons/go"
-import { useRecoilState } from "recoil"
 
 import {
   Button,
@@ -19,47 +11,13 @@ import {
   FormSwitch,
   ResponsiveDecoration,
 } from "../../components"
+import { useNewCampaignForm } from "../../helpers/form"
 import { prettyPrintDecimal } from "../../helpers/number"
-import { newCampaignState } from "../../services/state"
-
-let id = 4
 
 const Create4: NextPage = () => {
-  const router = useRouter()
-  const [newCampaign, setNewCampaign] = useRecoilState(newCampaignState)
+  const { formOnSubmit, register, errors, getValues, watch, control } =
+    useNewCampaignForm(4)
   const [showingAdvanced, setShowingAdvanced] = useState(false)
-
-  const {
-    handleSubmit,
-    register,
-    formState: { errors },
-    getValues,
-    control,
-    watch,
-  } = useForm({ defaultValues: newCampaign })
-
-  const onSubmit: SubmitHandler<FieldValues> = (values, event) => {
-    const nativeEvent = event?.nativeEvent as SubmitEvent
-    const submitterValue = (nativeEvent?.submitter as HTMLInputElement)?.value
-
-    const url =
-      submitterValue === "Back"
-        ? `/create/${id > 2 ? id - 1 : ""}`
-        : `/create/${id + 1}`
-
-    setNewCampaign({
-      ...newCampaign,
-      ...values,
-    })
-    router.push(url)
-  }
-
-  // Allow back press without required fields
-  const onError: SubmitErrorHandler<FieldValues> = (_, event) => {
-    const nativeEvent = event?.nativeEvent as SubmitEvent
-    const submitterValue = (nativeEvent?.submitter as HTMLInputElement)?.value
-    if (submitterValue === "Back") return onSubmit(getValues(), event)
-  }
 
   const goal = getValues("goal")
   const watchTokenSymbol = watch("tokenSymbol")?.trim() || "tokens"
@@ -79,10 +37,7 @@ const Create4: NextPage = () => {
       />
 
       <CenteredColumn className="py-10 max-w-4xl">
-        <form
-          className="flex flex-col"
-          onSubmit={handleSubmit(onSubmit, onError)}
-        >
+        <form className="flex flex-col" onSubmit={formOnSubmit}>
           <h1 className="font-semibold text-4xl mb-10">Token Configuration</h1>
 
           <div className="flex flex-col sm:flex-row sm:justify-between">
