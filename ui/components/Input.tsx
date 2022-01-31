@@ -78,13 +78,6 @@ export const TextArea = forwardRef<
 ))
 TextArea.displayName = "TextArea"
 
-interface FormItemProps {
-  label?: string
-  description?: string
-  error?: string
-  wrapperClassName?: string
-}
-
 // Switch
 
 interface SwitchProps {
@@ -117,16 +110,25 @@ export const Switch: FC<SwitchProps> = ({ on, onClick, className }) => (
 
 // Form-wrapped components
 
+interface FormItemProps {
+  label?: string
+  description?: string
+  accent?: string
+  error?: string
+  wrapperClassName?: string
+}
+
 type FormWrapperProps = PropsWithChildren<FormItemProps>
 
 const FormWrapper: FC<FormWrapperProps> = ({
   children,
   label,
   description,
+  accent,
   error,
   wrapperClassName,
 }) => (
-  <div className={cn("flex flex-col items-stretch", wrapperClassName)}>
+  <div className={cn("flex flex-col items-stretch mb-10", wrapperClassName)}>
     {!!label && (
       <label
         className={cn("block pl-5", {
@@ -141,7 +143,12 @@ const FormWrapper: FC<FormWrapperProps> = ({
       <p className="block text-sm font-extralight pl-5 mb-3">{description}</p>
     )}
     {children}
-    {!!error && <p className="pl-5 -mt-8 mb-10 text-orange">{error}</p>}
+    {!!accent && (
+      <p className="block text-sm font-extralight pl-5 mt-3 text-green">
+        {accent}
+      </p>
+    )}
+    {!!error && <p className="pl-5 mt-2 text-orange">{error}</p>}
   </div>
 )
 
@@ -155,6 +162,7 @@ export const FormInput = forwardRef<
     {
       label,
       description,
+      accent,
       error,
       wrapperClassName,
       containerClassName,
@@ -167,11 +175,12 @@ export const FormInput = forwardRef<
     <FormWrapper
       label={label}
       description={description}
+      accent={accent}
       error={error}
       wrapperClassName={wrapperClassName}
     >
       <Input
-        containerClassName={cn("mb-10", containerClassName)}
+        containerClassName={containerClassName}
         className={cn("!bg-dark !border-light", className)}
         tailContainerClassName={cn(
           // TODO: remove once tails have buttons
@@ -193,17 +202,26 @@ export const FormTextArea = forwardRef<
   UnforwardedFormTextAreaProps
 >(
   (
-    { label, description, error, wrapperClassName, className, ...props },
+    {
+      label,
+      description,
+      accent,
+      error,
+      wrapperClassName,
+      className,
+      ...props
+    },
     ref
   ) => (
     <FormWrapper
       label={label}
       description={description}
+      accent={accent}
       error={error}
       wrapperClassName={wrapperClassName}
     >
       <TextArea
-        className={cn("mb-10 !bg-dark !border-light", className)}
+        className={cn("!bg-dark !border-light", className)}
         {...props}
         ref={ref}
       />
@@ -217,6 +235,7 @@ type FormSwitchProps = SwitchProps & FormItemProps
 export const FormSwitch: FC<FormSwitchProps> = ({
   label,
   description,
+  accent,
   error,
   wrapperClassName,
   className,
@@ -225,9 +244,10 @@ export const FormSwitch: FC<FormSwitchProps> = ({
   <FormWrapper
     label={label}
     description={description}
+    accent={accent}
     error={error}
     wrapperClassName={wrapperClassName}
   >
-    <Switch className={cn("mb-10", className)} {...props} />
+    <Switch className={className} {...props} />
   </FormWrapper>
 )

@@ -19,6 +19,7 @@ import {
   FormSwitch,
   ResponsiveDecoration,
 } from "../../components"
+import { toMaxDecimals } from "../../helpers/number"
 import { newCampaignState } from "../../services/state"
 
 let id = 4
@@ -34,6 +35,7 @@ const Create4: NextPage = () => {
     formState: { errors },
     getValues,
     control,
+    watch,
   } = useForm({ defaultValues: newCampaign })
 
   const onSubmit: SubmitHandler<FieldValues> = (values, event) => {
@@ -60,6 +62,12 @@ const Create4: NextPage = () => {
   }
 
   const goal = getValues("goal")
+  const watchTokenSymbol = watch("tokenSymbol")?.trim() || "tokens"
+  const watchInitialSupply = watch("initialSupply", 0)
+  const tokenPrice =
+    !isNaN(goal) && !isNaN(watchInitialSupply) && goal > 0
+      ? watchInitialSupply / goal
+      : undefined
 
   return (
     <>
@@ -146,10 +154,21 @@ const Create4: NextPage = () => {
               label="Initial Token Supply"
               description={`The amount of tokens to create initially. Divide this value by your funding target${
                 typeof goal !== "undefined" ? ` (${goal.toLocaleString()})` : ""
-              } to get the value of 1 token. Default is 10 million.`}
+              } to get the value of each token. Default is 10 million.`}
+              accent={
+                tokenPrice
+                  ? `1 token = ${toMaxDecimals(tokenPrice, 6)} USD`
+                  : undefined
+              }
               placeholder="10,000,000"
               type="number"
               inputMode="numeric"
+              className="!pr-40"
+              tail={
+                <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
+                  {watchTokenSymbol}
+                </div>
+              }
               error={errors.initialSupply?.message}
               {...register("initialSupply", {
                 required: true,
@@ -164,6 +183,12 @@ const Create4: NextPage = () => {
               placeholder="9,000,000"
               type="number"
               inputMode="numeric"
+              className="!pr-40"
+              tail={
+                <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
+                  {watchTokenSymbol}
+                </div>
+              }
               error={errors.daoInitialAmount?.message}
               {...register("daoInitialAmount", {
                 required: true,
@@ -173,11 +198,17 @@ const Create4: NextPage = () => {
             />
 
             <FormInput
-              label="Voting Duration (seconds)"
+              label="Voting Duration"
               description="The duration which a proposal awaits voting before it is automatically closed and either passes or fails. Default is 1 week (604,800 seconds)."
               placeholder="604,800"
               type="number"
               inputMode="numeric"
+              className="!pr-40"
+              tail={
+                <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
+                  seconds
+                </div>
+              }
               error={errors.votingDuration?.message}
               {...register("votingDuration", {
                 required: true,
@@ -187,11 +218,17 @@ const Create4: NextPage = () => {
             />
 
             <FormInput
-              label="Unstaking Duration (seconds)"
+              label="Unstaking Duration"
               description="The duration..."
               placeholder="0"
               type="number"
               inputMode="numeric"
+              className="!pr-40"
+              tail={
+                <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
+                  seconds
+                </div>
+              }
               error={errors.unstakingDuration?.message}
               {...register("unstakingDuration", {
                 required: true,
@@ -206,6 +243,12 @@ const Create4: NextPage = () => {
               placeholder="0"
               type="number"
               inputMode="numeric"
+              className="!pr-40"
+              tail={
+                <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
+                  {watchTokenSymbol}
+                </div>
+              }
               error={errors.proposalDeposit?.message}
               {...register("proposalDeposit", {
                 required: true,
