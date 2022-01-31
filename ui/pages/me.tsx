@@ -1,4 +1,5 @@
 import type { NextPage } from "next"
+import { useRecoilState } from "recoil"
 
 import {
   Button,
@@ -10,9 +11,13 @@ import {
   TooltipInfo,
 } from "../components"
 import { campaigns } from "../services/campaigns"
-import * as Web3Client from "../services/web3"
+import { walletState } from "../services/state"
+import * as Web3Service from "../services/web3"
 
 const Me: NextPage = () => {
+  const [wallet, setWallet] = useRecoilState(walletState)
+  const connect = () => Web3Service.getClient(setWallet)
+
   const yourCampaigns = campaigns.slice(0, campaigns.length / 2)
   const yourContributions = campaigns.slice(
     campaigns.length / 2,
@@ -69,17 +74,25 @@ const Me: NextPage = () => {
       <CenteredColumn className="pt-5">
         <h1 className="font-semibold text-4xl">Your Wallet</h1>
 
-        <p className="my-2">
-          You haven&apos;t connected any wallets. Connect a wallet to start
-          making contributions.
-        </p>
-        <p className="flex flex-row items-center">
-          What&apos;s a wallet?
-          <TooltipInfo text="" />
-        </p>
-        <Button className="mt-8" onClick={Web3Client.connect}>
-          Connect a wallet
-        </Button>
+        {wallet.connected ? (
+          <>
+            <p className="my-2">{wallet.address}</p>
+          </>
+        ) : (
+          <>
+            <p className="my-2">
+              You haven&apos;t connected any wallets. Connect a wallet to start
+              making contributions.
+            </p>
+            <p className="flex flex-row items-center">
+              What&apos;s a wallet?
+              <TooltipInfo text="" />
+            </p>
+            <Button className="mt-8" onClick={connect}>
+              Connect a wallet
+            </Button>
+          </>
+        )}
 
         {/* If no user campaigns but user has contributed, show contributions first. Otherwise, default to campaigns on top. */}
         {yourContributions.length && !yourCampaigns.length ? (

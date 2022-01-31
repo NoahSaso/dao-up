@@ -13,3 +13,11 @@ export const newCampaignState = atom({
     refundProposalDeposits: true,
   } as NewCampaign,
 })
+
+export const walletState = atom({
+  key: "walletState",
+  default: {
+    connected: false,
+    address: "",
+  },
+})
