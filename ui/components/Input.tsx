@@ -252,7 +252,11 @@ export const FormTextArea = forwardRef<
       surroundingClassName={surroundingClassName}
     >
       <TextArea
-        className={cn("!bg-dark !border-light", className)}
+        className={cn(
+          "!bg-dark !border-light",
+          { "!border-orange": !!error },
+          className
+        )}
         {...props}
         ref={ref}
       />
