@@ -36,7 +36,7 @@ const Create5: NextPage = () => {
 
         {JSON.stringify(newCampaign, null, 2)}
 
-        <div className="flex flex-row justify-between align-center">
+        <div className="flex flex-row justify-between align-center mt-10">
           <ButtonLink href="/create/4">Back</ButtonLink>
           <Button onClick={create}>Create Campaign</Button>
         </div>
