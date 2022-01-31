@@ -19,7 +19,7 @@ import {
   FormSwitch,
   ResponsiveDecoration,
 } from "../../components"
-import { toMaxDecimals } from "../../helpers/number"
+import { prettyPrintDecimal } from "../../helpers/number"
 import { newCampaignState } from "../../services/state"
 
 let id = 4
@@ -157,7 +157,7 @@ const Create4: NextPage = () => {
               } to get the value of each token. Default is 10 million.`}
               accent={
                 tokenPrice
-                  ? `1 token = ${toMaxDecimals(tokenPrice, 6)} USD`
+                  ? `1 token = ${prettyPrintDecimal(tokenPrice, 2, 2)} USD`
                   : undefined
               }
               placeholder="10,000,000"

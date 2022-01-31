@@ -17,7 +17,7 @@ import {
   ResponsiveDecoration,
   TooltipInfo,
 } from "../../components"
-import { toMaxDecimals } from "../../helpers/number"
+import { prettyPrintDecimal } from "../../helpers/number"
 import { campaigns } from "../../services/campaigns"
 
 interface CampaignLinkProps {
@@ -261,7 +261,8 @@ const Campaign: NextPage = () => {
           <p className="text-light">
             {userTokens} Tokens{" "}
             <span className="text-placeholder ml-2">
-              {toMaxDecimals((100 * userTokens) / supply, 2)}% of total supply
+              {prettyPrintDecimal((100 * userTokens) / supply, 2)}% of total
+              supply
             </span>
           </p>
 

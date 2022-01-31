@@ -2,7 +2,7 @@ import cn from "classnames"
 import Link from "next/link"
 import { FC } from "react"
 
-import { toMaxDecimals } from "../helpers/number"
+import { prettyPrintDecimal } from "../helpers/number"
 
 interface CampaignProps {
   campaign: Campaign
@@ -84,7 +84,7 @@ export const AllCampaignsCard: FC<CampaignProps> = ({
           {pledged.toLocaleString()} {asset} pledged
         </p>
         <p className="text-lg text-white">
-          {toMaxDecimals((100 * pledged) / goal, 0)}% funded
+          {prettyPrintDecimal((100 * pledged) / goal, 0)}% funded
         </p>
         <p className="mt-5">{description}</p>
       </div>
@@ -116,7 +116,7 @@ export const CreatorCampaignCard: FC<CampaignProps> = ({
           <CampaignStatus campaign={campaign} className="" />
 
           <p className="text-xl text-green font-medium mt-8">
-            {toMaxDecimals((100 * pledged) / goal, 0)}%{" "}
+            {prettyPrintDecimal((100 * pledged) / goal, 0)}%{" "}
             <span className="text-base font-light">Funded</span>
           </p>
           <p className="text-placeholder">
@@ -160,7 +160,7 @@ export const ContributorCampaignCard: FC<CampaignProps> = ({
             )}
           >
             <p className="sm:mr-3">
-              {toMaxDecimals((100 * pledged) / goal, 0)}% funded
+              {prettyPrintDecimal((100 * pledged) / goal, 0)}% funded
             </p>
             <CampaignStatus campaign={campaign} className="shrink-0" />
           </div>
@@ -170,7 +170,7 @@ export const ContributorCampaignCard: FC<CampaignProps> = ({
             <p className="text-base font-light ml-1">Tokens</p>
           </div>
           <p className="text-placeholder">
-            {toMaxDecimals((100 * userTokens) / supply, 2)}% of total supply
+            {prettyPrintDecimal((100 * userTokens) / supply, 2)}% of total supply
           </p>
         </div>
       </a>
