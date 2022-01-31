@@ -181,7 +181,11 @@ export const FormInput = forwardRef<
     >
       <Input
         containerClassName={containerClassName}
-        className={cn("!bg-dark !border-light", className)}
+        className={cn(
+          "!bg-dark !border-light",
+          { "!border-orange": !!error },
+          className
+        )}
         tailContainerClassName={cn(
           // TODO: remove once tails have buttons
           // "bg-card rounded-full",

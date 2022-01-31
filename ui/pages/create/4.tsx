@@ -93,7 +93,7 @@ const Create4: NextPage = () => {
               wrapperClassName="w-full sm:w-2/3"
               error={errors.tokenName?.message}
               {...register("tokenName", {
-                required: true,
+                required: "Required",
                 pattern: /\S/,
               })}
             />
@@ -105,7 +105,7 @@ const Create4: NextPage = () => {
               wrapperClassName="w-full sm:w-1/4"
               error={errors.tokenSymbol?.message}
               {...register("tokenSymbol", {
-                required: true,
+                required: "Required",
                 pattern: /\S/,
               })}
             />
@@ -125,9 +125,17 @@ const Create4: NextPage = () => {
             }
             error={errors.passingThreshold?.message}
             {...register("passingThreshold", {
-              required: true,
+              required: "Required",
               valueAsNumber: true,
               pattern: /^\s*\d+\s*$/,
+              min: {
+                value: 0,
+                message: "Must be greater than 0.",
+              },
+              max: {
+                value: 100,
+                message: "Must be less than or equal to 100.",
+              },
             })}
           />
 
@@ -171,9 +179,13 @@ const Create4: NextPage = () => {
               }
               error={errors.initialSupply?.message}
               {...register("initialSupply", {
-                required: true,
+                required: "Required",
                 valueAsNumber: true,
                 pattern: /^\s*\d+\s*$/,
+                min: {
+                  value: 0,
+                  message: "Must be greater than 0.",
+                },
               })}
             />
 
@@ -191,9 +203,13 @@ const Create4: NextPage = () => {
               }
               error={errors.daoInitialAmount?.message}
               {...register("daoInitialAmount", {
-                required: true,
+                required: "Required",
                 valueAsNumber: true,
                 pattern: /^\s*\d+\s*$/,
+                min: {
+                  value: 0,
+                  message: "Must be at least 0.",
+                },
               })}
             />
 
@@ -211,9 +227,13 @@ const Create4: NextPage = () => {
               }
               error={errors.votingDuration?.message}
               {...register("votingDuration", {
-                required: true,
+                required: "Required",
                 valueAsNumber: true,
                 pattern: /^\s*\d+\s*$/,
+                min: {
+                  value: 1,
+                  message: "Must be at least 1.",
+                },
               })}
             />
 
@@ -231,9 +251,13 @@ const Create4: NextPage = () => {
               }
               error={errors.unstakingDuration?.message}
               {...register("unstakingDuration", {
-                required: true,
+                required: "Required",
                 valueAsNumber: true,
                 pattern: /^\s*\d+\s*$/,
+                min: {
+                  value: 0,
+                  message: "Must be at least 0.",
+                },
               })}
             />
 
@@ -251,15 +275,19 @@ const Create4: NextPage = () => {
               }
               error={errors.proposalDeposit?.message}
               {...register("proposalDeposit", {
-                required: true,
+                required: "Required",
                 valueAsNumber: true,
                 pattern: /^\s*\d+\s*$/,
+                min: {
+                  value: 0,
+                  message: "Must be at least 0.",
+                },
               })}
             />
 
             <Controller
               control={control}
-              rules={{ required: true }}
+              rules={{ required: "Required" }}
               name="refundProposalDeposits"
               render={({
                 field: { onChange, value },

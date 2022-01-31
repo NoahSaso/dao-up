@@ -60,7 +60,7 @@ const Create: NextPage = () => {
             type="text"
             error={errors.name?.message}
             {...register("name", {
-              required: true,
+              required: "Required",
               pattern: /\S/,
             })}
           />
@@ -78,9 +78,13 @@ const Create: NextPage = () => {
             }
             error={errors.goal?.message}
             {...register("goal", {
-              required: true,
+              required: "Required",
               valueAsNumber: true,
               pattern: /^\s*\d+\s*$/,
+              min: {
+                value: 0.01,
+                message: "Must be at least 0.01.",
+              },
             })}
           />
 
@@ -90,7 +94,7 @@ const Create: NextPage = () => {
             rows={8}
             error={errors.description?.message}
             {...register("description", {
-              required: true,
+              required: "Required",
               pattern: /\S/,
             })}
           />

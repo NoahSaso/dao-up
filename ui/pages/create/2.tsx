@@ -81,7 +81,7 @@ const Create2: NextPage = () => {
             type="text"
             error={errors.daoName?.message}
             {...register("daoName", {
-              required: true,
+              required: "Required",
               pattern: /\S/,
             })}
           />
@@ -92,7 +92,7 @@ const Create2: NextPage = () => {
             rows={8}
             error={errors.daoDescription?.message}
             {...register("daoDescription", {
-              required: true,
+              required: "Required",
               pattern: /\S/,
             })}
           />
