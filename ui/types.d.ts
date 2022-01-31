@@ -25,3 +25,31 @@ interface Campaign {
 
   activity: ActivityItem[]
 }
+
+interface NewCampaign {
+  name: string
+  goal: number
+  description: string
+
+  daoName: string
+  daoDescription: string
+
+  website?: string
+  twitter?: string
+  discord?: string
+  imageUrl?: string
+
+  tokenName: string
+  tokenSymbol: string
+  initialSupply: number
+  daoInitialAmount: number
+
+  creatorAddress: string
+  creatorInitialAmount: number
+
+  passingThreshold: number
+  votingDuration: number
+  proposalDeposit: number
+  unstakingDuration: number
+  refundProposalDeposits: boolean
+}

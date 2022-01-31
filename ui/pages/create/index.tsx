@@ -1,6 +1,7 @@
-import cn from "classnames"
 import type { NextPage } from "next"
+import { useRouter } from "next/router"
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form"
+import { useRecoilState } from "recoil"
 
 import {
   Button,
@@ -8,15 +9,28 @@ import {
   FormInput,
   FormTextArea,
   ResponsiveDecoration,
-} from "../components"
+} from "../../components"
+import { newCampaignState } from "../../services/state"
+
+let id = 1
 
 const Create: NextPage = () => {
+  const router = useRouter()
+  const [newCampaign, setNewCampaign] = useRecoilState(newCampaignState)
+
   const {
     handleSubmit,
     register,
     formState: { errors },
-  } = useForm()
-  const onSubmit: SubmitHandler<FieldValues> = (values) => console.log(values)
+  } = useForm({ defaultValues: newCampaign })
+
+  const onSubmit: SubmitHandler<FieldValues> = (values) => {
+    setNewCampaign({
+      ...newCampaign,
+      ...values,
+    })
+    router.push(`/create/${id + 1}`)
+  }
 
   return (
     <>
@@ -34,45 +48,45 @@ const Create: NextPage = () => {
 
           <FormInput
             label="Campaign Name"
-            error={errors.name?.message}
-            type="text"
             placeholder="Name"
+            type="text"
+            error={errors.name?.message}
             {...register("name", {
               required: true,
-              pattern: /^.*\w.*$/,
+              pattern: /\S/,
             })}
           />
 
           <FormInput
             label="Funding Target"
-            error={errors.goal?.message}
+            placeholder="10,000"
             type="number"
             inputMode="decimal"
-            placeholder="10,000"
             className="!pr-28"
             tail={
               <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
                 USD
               </div>
             }
+            error={errors.goal?.message}
             {...register("goal", {
               required: true,
-              pattern: /^.*\d.*$/,
+              pattern: /^\D*\d+\D*$/,
             })}
           />
 
           <FormTextArea
             label="Campaign Description"
             placeholder="Describe what your campaign is about..."
-            error={errors.description?.message}
             rows={8}
+            error={errors.description?.message}
             {...register("description", {
               required: true,
-              pattern: /^.*\w.*$/,
+              pattern: /\S/,
             })}
           />
 
-          <Button submitLabel="Create" className="self-end" />
+          <Button submitLabel="Next" className="self-end" />
         </form>
       </CenteredColumn>
     </>

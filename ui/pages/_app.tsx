@@ -3,6 +3,7 @@ import "../styles/globals.scss"
 import type { AppProps } from "next/app"
 import Head from "next/head"
 import { FC } from "react"
+import { RecoilRoot } from "recoil"
 
 import { Header } from "../components"
 
@@ -47,7 +48,9 @@ const DAOUp: FC<AppProps> = ({ Component, pageProps }) => (
 
     <Header />
     <main>
-      <Component {...pageProps} />
+      <RecoilRoot>
+        <Component {...pageProps} />
+      </RecoilRoot>
     </main>
   </>
 )
