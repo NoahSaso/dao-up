@@ -24,12 +24,20 @@ const Create: NextPage = () => {
     formState: { errors },
   } = useForm({ defaultValues: newCampaign })
 
-  const onSubmit: SubmitHandler<FieldValues> = (values) => {
+  const onSubmit: SubmitHandler<FieldValues> = (values, event) => {
+    const nativeEvent = event?.nativeEvent as SubmitEvent
+    const submitterValue = (nativeEvent?.submitter as HTMLInputElement)?.value
+
+    const url =
+      submitterValue === "Next"
+        ? `/create/${id + 1}`
+        : `/create/${id > 2 ? id - 1 : ""}`
+
     setNewCampaign({
       ...newCampaign,
       ...values,
     })
-    router.push(`/create/${id + 1}`)
+    router.push(url)
   }
 
   return (
@@ -41,7 +49,7 @@ const Create: NextPage = () => {
         className="top-0 right-0 opacity-70"
       />
 
-      <CenteredColumn className="pt-10 max-w-4xl">
+      <CenteredColumn className="py-10 max-w-4xl">
         <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
           <h1 className="font-semibold text-4xl">Create a new campaign</h1>
           <p className="mt-4 mb-10">Description...</p>
@@ -71,7 +79,8 @@ const Create: NextPage = () => {
             error={errors.goal?.message}
             {...register("goal", {
               required: true,
-              pattern: /^\D*\d+\D*$/,
+              valueAsNumber: true,
+              pattern: /^\s*\d+\s*$/,
             })}
           />
 

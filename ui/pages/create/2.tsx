@@ -1,11 +1,15 @@
 import type { NextPage } from "next"
 import { useRouter } from "next/router"
-import { FieldValues, SubmitHandler, useForm } from "react-hook-form"
+import {
+  FieldValues,
+  SubmitErrorHandler,
+  SubmitHandler,
+  useForm,
+} from "react-hook-form"
 import { useRecoilState } from "recoil"
 
 import {
   Button,
-  ButtonLink,
   CenteredColumn,
   FormInput,
   FormTextArea,
@@ -23,14 +27,30 @@ const Create2: NextPage = () => {
     handleSubmit,
     register,
     formState: { errors },
+    getValues,
   } = useForm({ defaultValues: newCampaign })
 
-  const onSubmit: SubmitHandler<FieldValues> = (values) => {
+  const onSubmit: SubmitHandler<FieldValues> = (values, event) => {
+    const nativeEvent = event?.nativeEvent as SubmitEvent
+    const submitterValue = (nativeEvent?.submitter as HTMLInputElement)?.value
+
+    const url =
+      submitterValue === "Next"
+        ? `/create/${id + 1}`
+        : `/create/${id > 2 ? id - 1 : ""}`
+
     setNewCampaign({
       ...newCampaign,
       ...values,
     })
-    router.push(`/create/${id + 1}`)
+    router.push(url)
+  }
+
+  // Allow back press without required fields
+  const onError: SubmitErrorHandler<FieldValues> = (_, event) => {
+    const nativeEvent = event?.nativeEvent as SubmitEvent
+    const submitterValue = (nativeEvent?.submitter as HTMLInputElement)?.value
+    if (submitterValue === "Back") return onSubmit(getValues(), event)
   }
 
   return (
@@ -42,8 +62,11 @@ const Create2: NextPage = () => {
         className="top-0 right-0 opacity-70"
       />
 
-      <CenteredColumn className="pt-10 max-w-4xl">
-        <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
+      <CenteredColumn className="py-10 max-w-4xl">
+        <form
+          className="flex flex-col"
+          onSubmit={handleSubmit(onSubmit, onError)}
+        >
           <h1 className="font-semibold text-4xl">
             Give your DAO a name and description.
           </h1>
@@ -75,7 +98,7 @@ const Create2: NextPage = () => {
           />
 
           <div className="flex flex-row justify-between align-center">
-            <ButtonLink href="/create">Back</ButtonLink>
+            <Button submitLabel="Back" />
             <Button submitLabel="Next" />
           </div>
         </form>

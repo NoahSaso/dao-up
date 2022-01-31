@@ -1,0 +1,246 @@
+import cn from "classnames"
+import type { NextPage } from "next"
+import { useRouter } from "next/router"
+import { useState } from "react"
+import {
+  Controller,
+  FieldValues,
+  SubmitErrorHandler,
+  SubmitHandler,
+  useForm,
+} from "react-hook-form"
+import { GoTriangleDown } from "react-icons/go"
+import { useRecoilState } from "recoil"
+
+import {
+  Button,
+  CenteredColumn,
+  FormInput,
+  FormSwitch,
+  ResponsiveDecoration,
+} from "../../components"
+import { newCampaignState } from "../../services/state"
+
+let id = 4
+
+const Create4: NextPage = () => {
+  const router = useRouter()
+  const [newCampaign, setNewCampaign] = useRecoilState(newCampaignState)
+  const [showingAdvanced, setShowingAdvanced] = useState(false)
+
+  const {
+    handleSubmit,
+    register,
+    formState: { errors },
+    getValues,
+    control,
+  } = useForm({ defaultValues: newCampaign })
+
+  const onSubmit: SubmitHandler<FieldValues> = (values, event) => {
+    const nativeEvent = event?.nativeEvent as SubmitEvent
+    const submitterValue = (nativeEvent?.submitter as HTMLInputElement)?.value
+
+    const url =
+      submitterValue === "Next"
+        ? `/create/${id + 1}`
+        : `/create/${id > 2 ? id - 1 : ""}`
+
+    setNewCampaign({
+      ...newCampaign,
+      ...values,
+    })
+    router.push(url)
+  }
+
+  // Allow back press without required fields
+  const onError: SubmitErrorHandler<FieldValues> = (_, event) => {
+    const nativeEvent = event?.nativeEvent as SubmitEvent
+    const submitterValue = (nativeEvent?.submitter as HTMLInputElement)?.value
+    if (submitterValue === "Back") return onSubmit(getValues(), event)
+  }
+
+  const goal = getValues("goal")
+
+  return (
+    <>
+      <ResponsiveDecoration
+        name="campaigns_orange_blur.png"
+        width={406}
+        height={626}
+        className="top-0 right-0 opacity-70"
+      />
+
+      <CenteredColumn className="py-10 max-w-4xl">
+        <form
+          className="flex flex-col"
+          onSubmit={handleSubmit(onSubmit, onError)}
+        >
+          <h1 className="font-semibold text-4xl mb-10">Token Configuration</h1>
+
+          <div className="flex flex-col sm:flex-row sm:justify-between">
+            <FormInput
+              label="Token Name"
+              placeholder="Name"
+              type="text"
+              wrapperClassName="w-full sm:w-2/3"
+              error={errors.tokenName?.message}
+              {...register("tokenName", {
+                required: true,
+                pattern: /\S/,
+              })}
+            />
+
+            <FormInput
+              label="Token Symbol"
+              placeholder="ABC"
+              type="text"
+              wrapperClassName="w-full sm:w-1/4"
+              error={errors.tokenSymbol?.message}
+              {...register("tokenSymbol", {
+                required: true,
+                pattern: /\S/,
+              })}
+            />
+          </div>
+
+          <FormInput
+            label="DAO Proposal Passing Threshold"
+            description="The proportion of votes needed for a proposal to pass."
+            placeholder="75"
+            type="number"
+            inputMode="decimal"
+            className="!pr-28"
+            tail={
+              <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
+                %
+              </div>
+            }
+            error={errors.passingThreshold?.message}
+            {...register("passingThreshold", {
+              required: true,
+              valueAsNumber: true,
+              pattern: /^\s*\d+\s*$/,
+            })}
+          />
+
+          <Button
+            onClick={() => setShowingAdvanced((a) => !a)}
+            className={cn(
+              "flex flex-row justify-between items-center",
+              "mb-10 w-full sm:w-80"
+            )}
+            color="placeholder"
+            outline
+          >
+            {showingAdvanced ? "Hide" : "Show"} Advanced Settings
+            <GoTriangleDown
+              size={20}
+              className={cn("transition-all", {
+                "rotate-180": showingAdvanced,
+              })}
+            />
+          </Button>
+
+          <div className={cn("flex flex-col", { hidden: !showingAdvanced })}>
+            <FormInput
+              label="Initial Token Supply"
+              description={`The amount of tokens to create initially. Divide this value by your funding target${
+                typeof goal !== "undefined" ? ` (${goal.toLocaleString()})` : ""
+              } to get the value of 1 token. Default is 10 million.`}
+              placeholder="10,000,000"
+              type="number"
+              inputMode="numeric"
+              error={errors.initialSupply?.message}
+              {...register("initialSupply", {
+                required: true,
+                valueAsNumber: true,
+                pattern: /^\s*\d+\s*$/,
+              })}
+            />
+
+            <FormInput
+              label="DAO Initial Amount"
+              description="The amount of tokens to be reserved in the DAO for future distribution. Only the distributed tokens count when voting on proposals, so it is good practice to reserve most tokens for the DAO at the beginning. Default is 9 million."
+              placeholder="9,000,000"
+              type="number"
+              inputMode="numeric"
+              error={errors.daoInitialAmount?.message}
+              {...register("daoInitialAmount", {
+                required: true,
+                valueAsNumber: true,
+                pattern: /^\s*\d+\s*$/,
+              })}
+            />
+
+            <FormInput
+              label="Voting Duration (seconds)"
+              description="The duration which a proposal awaits voting before it is automatically closed and either passes or fails. Default is 1 week (604,800 seconds)."
+              placeholder="604,800"
+              type="number"
+              inputMode="numeric"
+              error={errors.votingDuration?.message}
+              {...register("votingDuration", {
+                required: true,
+                valueAsNumber: true,
+                pattern: /^\s*\d+\s*$/,
+              })}
+            />
+
+            <FormInput
+              label="Unstaking Duration (seconds)"
+              description="The duration..."
+              placeholder="0"
+              type="number"
+              inputMode="numeric"
+              error={errors.unstakingDuration?.message}
+              {...register("unstakingDuration", {
+                required: true,
+                valueAsNumber: true,
+                pattern: /^\s*\d+\s*$/,
+              })}
+            />
+
+            <FormInput
+              label="Proposal Deposit"
+              description="The number of tokens that must be deposited when creating a proposal. Default is 0."
+              placeholder="0"
+              type="number"
+              inputMode="numeric"
+              error={errors.proposalDeposit?.message}
+              {...register("proposalDeposit", {
+                required: true,
+                valueAsNumber: true,
+                pattern: /^\s*\d+\s*$/,
+              })}
+            />
+
+            <Controller
+              control={control}
+              rules={{ required: true }}
+              name="refundProposalDeposits"
+              render={({
+                field: { onChange, value },
+                fieldState: { error },
+              }) => (
+                <FormSwitch
+                  label="Refund Proposal Deposits"
+                  description="Whether or not to refund the tokens deposited when submitting a proposal back to the proposer after the proposal is voted on. Default is yes."
+                  error={error?.message}
+                  onClick={() => onChange(!value)}
+                  on={!!value}
+                />
+              )}
+            />
+          </div>
+
+          <div className="flex flex-row justify-between align-center">
+            <Button submitLabel="Back" />
+            <Button submitLabel="Next" />
+          </div>
+        </form>
+      </CenteredColumn>
+    </>
+  )
+}
+
+export default Create4
