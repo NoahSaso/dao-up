@@ -12,6 +12,7 @@ interface CardProps {
   listItems: string[]
   button: ReactNode
   className?: string
+  borderAccent?: boolean
 }
 const Card: FC<CardProps> = ({
   className,
@@ -19,25 +20,36 @@ const Card: FC<CardProps> = ({
   subtitle,
   listItems,
   button,
+  borderAccent,
 }) => (
   <div
     className={cn(
-      "flex flex-col justify-between items-center",
-      "bg-card",
-      "py-8 px-12",
+      "p-[1px]",
       "rounded-3xl",
       "max-w-lg",
+      {
+        "bg-card": !borderAccent,
+        "bg-gradient-to-b from-green": borderAccent,
+      },
       className
     )}
   >
-    <h3 className="font-semibold text-xl">{title}</h3>
-    <p className="my-4">{subtitle}</p>
-    <ul className="green-list w-full pl-2 mb-10">
-      {listItems.map((item) => (
-        <li key={item}>{item}</li>
-      ))}
-    </ul>
-    {button}
+    <div
+      className={cn(
+        "bg-card rounded-3xl",
+        "flex flex-col justify-between items-center",
+        "py-8 px-12"
+      )}
+    >
+      <h3 className="font-semibold text-xl">{title}</h3>
+      <p className="my-4">{subtitle}</p>
+      <ul className="green-list w-full pl-2 mb-10">
+        {listItems.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+      {button}
+    </div>
   </div>
 )
 
@@ -196,6 +208,7 @@ const Home: NextPage = () => (
           ]}
           button={<ButtonLink href="/create">Create Campaign</ButtonLink>}
           className="mb-5 md:mb-0 md:mr-10"
+          borderAccent
         />
 
         <Card
