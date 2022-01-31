@@ -1,18 +1,43 @@
 import cn from "classnames"
-import { DetailedHTMLProps, FC, InputHTMLAttributes } from "react"
+import { DetailedHTMLProps, FC, InputHTMLAttributes, ReactNode } from "react"
 
-export const Input: FC<
-  DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>
-> = ({ className, ...props }) => (
-  <input
-    className={cn(
-      "bg-card placeholder:text-placeholder",
-      "py-4 px-8",
-      "rounded-full",
-      "border border-card focus:outline-none focus:border-green",
-      "transition",
-      className
+export interface InputProps
+  extends DetailedHTMLProps<
+    InputHTMLAttributes<HTMLInputElement>,
+    HTMLInputElement
+  > {
+  containerClassName?: string
+  tail?: ReactNode
+  tailContainerClassName?: string
+}
+export const Input: FC<InputProps> = ({
+  containerClassName,
+  className,
+  tail,
+  tailContainerClassName,
+  ...props
+}) => (
+  <div className={cn("relative", containerClassName)}>
+    <input
+      className={cn(
+        "bg-card placeholder:text-placeholder",
+        "py-3 px-7 w-full",
+        "rounded-full",
+        "border border-card focus:outline-none focus:border-green",
+        "transition",
+        className
+      )}
+      {...props}
+    />
+    {!!tail && (
+      <div
+        className={cn(
+          "absolute top-0 right-0 bottom-0",
+          tailContainerClassName
+        )}
+      >
+        {tail}
+      </div>
     )}
-    {...props}
-  />
+  </div>
 )

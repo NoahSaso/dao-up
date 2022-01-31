@@ -189,13 +189,25 @@ const Campaign: NextPage = () => {
               )}
             >
               <Input
-                type="text"
+                type="number"
+                inputMode="decimal"
                 placeholder="Contribute..."
                 value={contribution}
                 onChange={({ target: { value } }) =>
                   setContribution(value.replaceAll(/[^\d.]/g, ""))
                 }
-                className="!py-3 !px-6 mb-4 sm:mb-0 sm:mr-4 sm:flex-1"
+                containerClassName="mb-4 sm:mb-0 sm:mr-4 sm:flex-1"
+                className="!py-3 !px-6 !pr-28"
+                // TODO: remove once switching to button
+                // tailContainerClassName="bg-card rounded-full"
+                tail={
+                  // <Button className="h-full px-6" light>
+                  //   USD
+                  // </Button>
+                  <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
+                    USD
+                  </div>
+                }
               />
 
               <Button onClick={() => alert("thanks")}>
@@ -257,13 +269,25 @@ const Campaign: NextPage = () => {
             <h2 className="text-xl text-green mt-8 mb-4">Refunds</h2>
 
             <Input
-              type="text"
-              placeholder="Refund..."
+              type="number"
+              inputMode="decimal"
+              placeholder="500"
               value={refund}
               onChange={({ target: { value } }) =>
                 setRefund(value.replaceAll(/[^\d.]/g, ""))
               }
-              className="bg-dark !border-light mb-4 w-full max-w-sm"
+              containerClassName="mb-4 max-w-sm"
+              className="bg-dark !border-light !pr-28"
+              // TODO: remove once switching to button
+              // tailContainerClassName="bg-card rounded-full"
+              tail={
+                // <Button className="h-full px-6" light>
+                //   USD
+                // </Button>
+                <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
+                  USD
+                </div>
+              }
             />
 
             <Button onClick={() => alert("refund")}>Refund</Button>
