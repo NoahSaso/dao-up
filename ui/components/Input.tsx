@@ -116,6 +116,7 @@ interface FormItemProps {
   accent?: string
   error?: string
   wrapperClassName?: string
+  surroundingClassName?: string
 }
 
 type FormWrapperProps = PropsWithChildren<FormItemProps>
@@ -127,28 +128,50 @@ const FormWrapper: FC<FormWrapperProps> = ({
   accent,
   error,
   wrapperClassName,
+  surroundingClassName,
 }) => (
   <div className={cn("flex flex-col items-stretch mb-10", wrapperClassName)}>
     {!!label && (
       <label
-        className={cn("block pl-5", {
-          "mb-1": description,
-          "mb-2": !description,
-        })}
+        className={cn(
+          "font pl-5",
+          "text-medium",
+          {
+            "mb-1": description,
+            "mb-2": !description,
+          },
+          surroundingClassName
+        )}
       >
         {label}
       </label>
     )}
     {!!description && (
-      <p className="block text-sm font-extralight pl-5 mb-3">{description}</p>
+      <p
+        className={cn(
+          "block text-sm font-extralight pl-5 mb-3",
+          surroundingClassName
+        )}
+      >
+        {description}
+      </p>
     )}
     {children}
     {!!accent && (
-      <p className="block text-sm font-extralight pl-5 mt-3 text-green">
+      <p
+        className={cn(
+          "block text-sm font-extralight pl-5 mt-3 text-green",
+          surroundingClassName
+        )}
+      >
         {accent}
       </p>
     )}
-    {!!error && <p className="pl-5 mt-2 text-orange">{error}</p>}
+    {!!error && (
+      <p className={cn("pl-5 mt-2 text-orange", surroundingClassName)}>
+        {error}
+      </p>
+    )}
   </div>
 )
 
@@ -165,6 +188,7 @@ export const FormInput = forwardRef<
       accent,
       error,
       wrapperClassName,
+      surroundingClassName,
       containerClassName,
       className,
       tailContainerClassName,
@@ -178,6 +202,7 @@ export const FormInput = forwardRef<
       accent={accent}
       error={error}
       wrapperClassName={wrapperClassName}
+      surroundingClassName={surroundingClassName}
     >
       <Input
         containerClassName={containerClassName}
@@ -212,6 +237,7 @@ export const FormTextArea = forwardRef<
       accent,
       error,
       wrapperClassName,
+      surroundingClassName,
       className,
       ...props
     },
@@ -223,6 +249,7 @@ export const FormTextArea = forwardRef<
       accent={accent}
       error={error}
       wrapperClassName={wrapperClassName}
+      surroundingClassName={surroundingClassName}
     >
       <TextArea
         className={cn("!bg-dark !border-light", className)}
@@ -242,6 +269,7 @@ export const FormSwitch: FC<FormSwitchProps> = ({
   accent,
   error,
   wrapperClassName,
+  surroundingClassName,
   className,
   ...props
 }) => (
@@ -251,7 +279,8 @@ export const FormSwitch: FC<FormSwitchProps> = ({
     accent={accent}
     error={error}
     wrapperClassName={wrapperClassName}
+    surroundingClassName={surroundingClassName}
   >
-    <Switch className={className} {...props} />
+    <Switch className={cn("!ml-5 mt-2", className)} {...props} />
   </FormWrapper>
 )

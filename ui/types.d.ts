@@ -30,6 +30,7 @@ interface NewCampaign {
   name: string
   goal: number
   description: string
+  displayPublicly: boolean
 
   daoName: string
   daoDescription: string

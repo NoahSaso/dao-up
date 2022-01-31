@@ -3,6 +3,7 @@ import { atom } from "recoil"
 export const newCampaignState = atom({
   key: "newCampaignState",
   default: {
+    displayPublicly: true,
     initialSupply: 10000000,
     daoInitialAmount: 9000000,
     passingThreshold: 75,

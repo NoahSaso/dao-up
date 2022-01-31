@@ -1,12 +1,18 @@
 import type { NextPage } from "next"
 import { useRouter } from "next/router"
-import { FieldValues, SubmitHandler, useForm } from "react-hook-form"
+import {
+  Controller,
+  FieldValues,
+  SubmitHandler,
+  useForm,
+} from "react-hook-form"
 import { useRecoilState } from "recoil"
 
 import {
   Button,
   CenteredColumn,
   FormInput,
+  FormSwitch,
   FormTextArea,
   ResponsiveDecoration,
 } from "../../components"
@@ -19,6 +25,7 @@ const Create: NextPage = () => {
   const [newCampaign, setNewCampaign] = useRecoilState(newCampaignState)
 
   const {
+    control,
     handleSubmit,
     register,
     formState: { errors },
@@ -97,6 +104,20 @@ const Create: NextPage = () => {
               required: "Required",
               pattern: /\S/,
             })}
+          />
+
+          <Controller
+            control={control}
+            name="displayPublicly"
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+              <FormSwitch
+                label="Show on public campaigns list"
+                description="Whether or not to display this campaign in the public directory of active campaigns. You may want to turn this off if you plan to send a direct link to your community. Default is yes."
+                error={error?.message}
+                onClick={() => onChange(!value)}
+                on={!!value}
+              />
+            )}
           />
 
           <Button submitLabel="Next" className="self-end" />

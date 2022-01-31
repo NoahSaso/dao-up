@@ -139,23 +139,22 @@ const Create4: NextPage = () => {
             })}
           />
 
-          <Button
+          <p
             onClick={() => setShowingAdvanced((a) => !a)}
             className={cn(
-              "flex flex-row justify-between items-center",
-              "mb-10 w-full sm:w-80"
+              "flex flex-row items-center",
+              "mb-10",
+              "text-placeholder cursor-pointer transition hover:opacity-70"
             )}
-            color="placeholder"
-            outline
           >
             {showingAdvanced ? "Hide" : "Show"} Advanced Settings
             <GoTriangleDown
               size={20}
-              className={cn("transition-all", {
+              className={cn("transition-all ml-5", {
                 "rotate-180": showingAdvanced,
               })}
             />
-          </Button>
+          </p>
 
           <div className={cn("flex flex-col", { hidden: !showingAdvanced })}>
             <FormInput
@@ -287,7 +286,6 @@ const Create4: NextPage = () => {
 
             <Controller
               control={control}
-              rules={{ required: "Required" }}
               name="refundProposalDeposits"
               render={({
                 field: { onChange, value },
