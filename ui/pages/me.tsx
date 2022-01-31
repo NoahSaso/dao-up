@@ -10,6 +10,7 @@ import {
   TooltipInfo,
 } from "../components"
 import { campaigns } from "../services/campaigns"
+import * as Web3Client from "../services/web3"
 
 const Me: NextPage = () => {
   const yourCampaigns = campaigns.slice(0, campaigns.length / 2)
@@ -76,7 +77,9 @@ const Me: NextPage = () => {
           What&apos;s a wallet?
           <TooltipInfo text="" />
         </p>
-        <Button className="mt-8">Connect a wallet</Button>
+        <Button className="mt-8" onClick={Web3Client.connect}>
+          Connect a wallet
+        </Button>
 
         {/* If no user campaigns but user has contributed, show contributions first. Otherwise, default to campaigns on top. */}
         {yourContributions.length && !yourCampaigns.length ? (
