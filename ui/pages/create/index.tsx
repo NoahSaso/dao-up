@@ -29,9 +29,9 @@ const Create: NextPage = () => {
     const submitterValue = (nativeEvent?.submitter as HTMLInputElement)?.value
 
     const url =
-      submitterValue === "Next"
-        ? `/create/${id + 1}`
-        : `/create/${id > 2 ? id - 1 : ""}`
+      submitterValue === "Back"
+        ? `/create/${id > 2 ? id - 1 : ""}`
+        : `/create/${id + 1}`
 
     setNewCampaign({
       ...newCampaign,
