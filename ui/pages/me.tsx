@@ -9,6 +9,7 @@ import {
   ContributorCampaignCard,
   CreatorCampaignCard,
   ResponsiveDecoration,
+  StatusIndicator,
   TooltipInfo,
 } from "../components"
 import { campaigns } from "../services/campaigns"
@@ -82,6 +83,11 @@ const Me: NextPage = () => {
 
         {wallet.connected ? (
           <>
+            <StatusIndicator
+              color="green"
+              label="Wallet connected."
+              containerClassName="mt-5"
+            />
             <p className="my-2">{wallet.address}</p>
           </>
         ) : (

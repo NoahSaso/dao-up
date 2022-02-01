@@ -1,28 +1,26 @@
 import classnames from "classnames"
 import { ButtonHTMLAttributes, DetailedHTMLProps, FC } from "react"
 
-enum Color {
-  Green = "green",
-  Light = "light",
-  Placeholder = "placeholder",
-}
-type ColorType = `${Color}`
+import { Color, ColorType } from "../types"
 
 type BoolString = "true" | "false"
 
 const buttonBorderClasses: Record<ColorType, Record<BoolString, string>> = {
   [Color.Green]: {
-    true: "bg-dark text-green hover:bg-green hover:text-dark",
-    false: "bg-green text-dark hover:bg-[transparent] hover:text-green",
+    true: "text-green hover:bg-green",
+    false: "bg-green hover:text-green",
+  },
+  [Color.Orange]: {
+    true: "text-orange hover:bg-orange",
+    false: "bg-orange hover:text-orange",
   },
   [Color.Light]: {
-    true: "bg-dark text-light hover:bg-light hover:text-dark",
-    false: "bg-light text-dark hover:bg-[transparent] hover:text-light",
+    true: "text-light hover:bg-light",
+    false: "bg-light hover:text-light",
   },
   [Color.Placeholder]: {
-    true: "bg-dark text-placeholder hover:bg-placeholder hover:text-dark",
-    false:
-      "bg-placeholder text-dark hover:bg-[transparent] hover:text-placeholder",
+    true: "text-placeholder hover:bg-placeholder",
+    false: "bg-placeholder hover:text-placeholder",
   },
 }
 
@@ -50,6 +48,10 @@ export const Button: FC<ButtonProps> = ({
     "transition",
     "border",
     buttonBorderClasses[color][(outline ?? false).toString() as BoolString],
+    {
+      "bg-dark hover:text-dark": outline,
+      "text-dark hover:bg-[transparent]": !outline,
+    },
     className
   )
 

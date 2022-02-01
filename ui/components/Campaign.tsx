@@ -3,6 +3,8 @@ import Link from "next/link"
 import { FC } from "react"
 
 import { prettyPrintDecimal } from "../helpers/number"
+import { Color } from "../types"
+import { StatusIndicator } from "."
 
 interface CampaignProps {
   campaign: Campaign
@@ -15,23 +17,22 @@ export const CampaignStatus: FC<CampaignProps> = ({
 }) => {
   const funded = pledged >= goal
 
+  const color =
+    open && !funded
+      ? Color.Green
+      : open && funded
+      ? Color.Orange
+      : // default, and !open
+        Color.Placeholder
+  const label =
+    open && !funded ? "Active" : open && funded ? "Goal Reached" : "Closed"
+
   return (
-    <div className={cn("flex flex-row items-center", className)}>
-      <div
-        className={cn("w-2.5 h-2.5 rounded-full", {
-          "bg-green": open && !funded,
-          "bg-orange": open && funded,
-          "bg-placeholder": !open,
-        })}
-      ></div>
-      <p className="ml-1 text-sm">
-        {open && !funded
-          ? "Active"
-          : open && funded
-          ? "Goal Reached"
-          : "Closed"}
-      </p>
-    </div>
+    <StatusIndicator
+      color={color}
+      label={label}
+      containerClassName={className}
+    />
   )
 }
 
@@ -170,7 +171,8 @@ export const ContributorCampaignCard: FC<CampaignProps> = ({
             <p className="text-base font-light ml-1">Tokens</p>
           </div>
           <p className="text-placeholder">
-            {prettyPrintDecimal((100 * userTokens) / supply, 2)}% of total supply
+            {prettyPrintDecimal((100 * userTokens) / supply, 2)}% of total
+            supply
           </p>
         </div>
       </a>

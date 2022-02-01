@@ -65,3 +65,12 @@ declare global {
     address: string
   }
 }
+
+export enum Color {
+  Green = "green",
+  Orange = "orange",
+  Light = "light",
+  Placeholder = "placeholder",
+}
+
+export type ColorType = `${Color}`
