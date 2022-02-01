@@ -8,6 +8,9 @@ import {
   ReactNode,
   TextareaHTMLAttributes,
 } from "react"
+import { Control, Controller, FieldValues } from "react-hook-form"
+
+import { prettyPrintDecimal } from "../helpers/number"
 
 // Input
 
@@ -309,4 +312,181 @@ export const FormSwitch: FC<FormSwitchProps> = ({
   >
     <Switch className={cn("shrink-0", className)} {...props} />
   </FormWrapper>
+)
+
+type UnforwardedDoubleFormInputProps = {
+  shared: UnforwardedInputProps
+  first: UnforwardedInputProps
+  second: UnforwardedInputProps
+} & FormItemProps
+
+export const DoubleFormInput = forwardRef<
+  HTMLInputElement,
+  UnforwardedDoubleFormInputProps
+>(
+  (
+    {
+      label,
+      description,
+      accent,
+      error,
+      wrapperClassName,
+      surroundingClassName,
+      shared: {
+        containerClassName: sharedContainerClassName,
+        className: sharedClassName,
+        ...sharedProps
+      },
+      first: {
+        containerClassName: firstContainerClassName,
+        className: firstClassName,
+        ...firstProps
+      },
+      second: {
+        containerClassName: secondContainerClassName,
+        className: secondClassName,
+        ...secondProps
+      },
+    },
+    ref
+  ) => (
+    <FormWrapper
+      label={label}
+      description={description}
+      accent={accent}
+      error={error}
+      wrapperClassName={wrapperClassName}
+      surroundingClassName={surroundingClassName}
+    >
+      <div className="flex flex-col items-stretch sm:flex-row">
+        <Input
+          containerClassName={cn(
+            "flex-1",
+            sharedContainerClassName,
+            firstContainerClassName
+          )}
+          className={cn(
+            "!bg-dark !border-light",
+            { "!border-orange": !!error },
+            sharedClassName,
+            firstClassName
+          )}
+          {...sharedProps}
+          {...firstProps}
+          ref={ref}
+        />
+
+        <Input
+          containerClassName={cn(
+            "flex-1 mt-5",
+            "sm:mt-0 sm:ml-5",
+            sharedContainerClassName,
+            secondContainerClassName
+          )}
+          className={cn(
+            "!bg-dark !border-light",
+            { "!border-orange": !!error },
+            sharedClassName,
+            secondClassName
+          )}
+          {...sharedProps}
+          {...secondProps}
+          ref={undefined}
+        />
+      </div>
+    </FormWrapper>
+  )
+)
+DoubleFormInput.displayName = "DoubleFormInput"
+
+interface PercentTokenDoubleInputProps {
+  control: Control<FieldValues, object>
+  name: string
+  label: string
+  description: string
+  placeholder: string
+  initialSupply: number
+  tokenSymbol: string
+}
+export const PercentTokenDoubleInput: FC<PercentTokenDoubleInputProps> = ({
+  control,
+  name,
+  label,
+  description,
+  placeholder,
+  initialSupply,
+  tokenSymbol,
+}) => (
+  <Controller
+    control={control}
+    name={name}
+    rules={{
+      required: "Required",
+      pattern: /^\s*\d+\s*$/,
+      min: {
+        value: 0,
+        message: "Must be at least 0.",
+      },
+      max: {
+        value: initialSupply,
+        message: `Must be less than or equal to the initial supply: ${prettyPrintDecimal(
+          initialSupply
+        )} ${tokenSymbol} (100%).`,
+      },
+    }}
+    render={({
+      field: { onChange, onBlur, value, ref, ...field },
+      fieldState: { error },
+    }) => (
+      <DoubleFormInput
+        label={label}
+        description={description}
+        error={error?.message}
+        shared={{
+          onBlur,
+          placeholder,
+          type: "number",
+          inputMode: "numeric",
+          className: "!pr-40",
+        }}
+        first={{
+          onChange: (e) => {
+            // If empty string, just pass along so the input can clear.
+            if (!e.target.value.trim()) return onChange(e)
+
+            // Convert from percent to tokens
+            const newValue = Number(e.target.value) || 0
+            const tokens = Math.round(initialSupply * (newValue / 100))
+            onChange(tokens)
+          },
+          tail: (
+            <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
+              %
+            </div>
+          ),
+          // Convert from tokens to percent
+          value:
+            initialSupply > 0 && !!value
+              ? (100 * value) / initialSupply
+              : value,
+        }}
+        second={{
+          onChange: (e) => {
+            // If empty string, just pass along so the input can clear.
+            if (!e.target.value.trim()) return onChange(e)
+
+            onChange(Number(e.target.value))
+          },
+          value,
+          tail: (
+            <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
+              {tokenSymbol}
+            </div>
+          ),
+          ...field,
+        }}
+        ref={ref}
+      />
+    )}
+  />
 )

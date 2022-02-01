@@ -1,13 +1,12 @@
-import cn from "classnames"
 import type { NextPage } from "next"
 import { useState } from "react"
 import { Controller } from "react-hook-form"
 
 import {
-  Button,
   CenteredColumn,
   FormInput,
   FormSwitch,
+  PercentTokenDoubleInput,
   ResponsiveDecoration,
   VisibilityToggle,
 } from "../../components"
@@ -140,28 +139,14 @@ const Create4: NextPage = () => {
               })}
             />
 
-            <FormInput
+            <PercentTokenDoubleInput
+              control={control}
+              name="initialDAOAmount"
               label={newCampaignFields.initialDAOAmount.label}
               description="The amount of tokens to be reserved in the DAO for future distribution. Only the distributed tokens count when voting on proposals, so it is good practice to reserve most tokens for the DAO at the beginning. Default is 9 million."
               placeholder="9,000,000"
-              type="number"
-              inputMode="numeric"
-              className="!pr-40"
-              tail={
-                <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
-                  {watchTokenSymbol}
-                </div>
-              }
-              error={errors.initialDAOAmount?.message}
-              {...register("initialDAOAmount", {
-                required: "Required",
-                valueAsNumber: true,
-                pattern: /^\s*\d+\s*$/,
-                min: {
-                  value: 0,
-                  message: "Must be at least 0.",
-                },
-              })}
+              initialSupply={watchInitialSupply}
+              tokenSymbol={watchTokenSymbol}
             />
 
             <FormInput
@@ -176,23 +161,14 @@ const Create4: NextPage = () => {
               })}
             />
 
-            <FormInput
+            <PercentTokenDoubleInput
+              control={control}
+              name="initialDistributionAmount"
               label={newCampaignFields.initialDistributionAmount.label}
               description="The amount of tokens to be sent to the initial distribution address. The initial distribution address will receive DAO tokens without contributing any money to the DAO. Default is 0."
               placeholder="0"
-              type="number"
-              inputMode="numeric"
-              className="!pr-40"
-              error={errors.initialDistributionAmount?.message}
-              {...register("initialDistributionAmount", {
-                required: "Required",
-                valueAsNumber: true,
-                pattern: /^\s*\d+\s*$/,
-                min: {
-                  value: 0,
-                  message: "Must be at least 0.",
-                },
-              })}
+              initialSupply={watchInitialSupply}
+              tokenSymbol={watchTokenSymbol}
             />
 
             <FormInput
