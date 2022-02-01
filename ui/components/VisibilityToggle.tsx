@@ -7,6 +7,7 @@ interface VisibilityToggleProps {
   showLabel: string
   hideLabel: string
   onClick: () => void
+  toggleClassName?: string
   containerClassName?: string
   children: ReactNode | ReactNode[]
 }
@@ -16,6 +17,7 @@ export const VisibilityToggle: FC<VisibilityToggleProps> = ({
   showLabel,
   hideLabel,
   onClick,
+  toggleClassName,
   containerClassName,
   children,
 }) => (
@@ -24,8 +26,8 @@ export const VisibilityToggle: FC<VisibilityToggleProps> = ({
       onClick={onClick}
       className={cn(
         "flex flex-row items-center",
-        "mb-10",
-        "text-placeholder cursor-pointer transition hover:opacity-70"
+        "text-placeholder cursor-pointer transition hover:opacity-70",
+        toggleClassName
       )}
     >
       {visible ? hideLabel : showLabel}

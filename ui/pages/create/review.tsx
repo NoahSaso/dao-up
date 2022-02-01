@@ -30,7 +30,7 @@ const FieldDisplay: FC<FieldDisplayProps> = ({
   pageId,
 }) => (
   <Link href={`/create${`/${pageId > 1 ? pageId : ""}`}`}>
-    <a className="flex flex-col mb-6">
+    <a className="flex flex-col mt-6">
       <div className="flex flex-row items-center">
         <p className="text-green mr-2">{label}</p>
         <Image src="/images/pencil.svg" alt="edit" width={18} height={18} />
@@ -98,9 +98,10 @@ const Create5: NextPage = () => {
           showLabel="Show Advanced Settings"
           hideLabel="Hide Advanced Settings"
           onClick={() => setShowingAdvanced((a) => !a)}
+          toggleClassName="mt-10 mb-4"
         >
           {newCampaignFieldEntries
-            .filter(([_, { advanced }]) => !advanced)
+            .filter(([_, { advanced }]) => advanced)
             .map((entry) => renderFieldDisplay(newCampaign, entry))}
         </VisibilityToggle>
 

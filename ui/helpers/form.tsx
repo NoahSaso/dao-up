@@ -69,7 +69,7 @@ export const useNewCampaignForm = (id: number) => {
       submitterValue === "Back"
         ? `/create/${id > 2 ? id - 1 : ""}`
         : submitterValue === "Review"
-        ? `/create/${numPagesBeforeReview + 1}`
+        ? "/create/review"
         : `/create/${id + 1}`
 
     setNewCampaign({

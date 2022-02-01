@@ -107,6 +107,7 @@ const Create4: NextPage = () => {
             showLabel="Show Advanced Settings"
             hideLabel="Hide Advanced Settings"
             onClick={() => setShowingAdvanced((a) => !a)}
+            toggleClassName="mb-10"
           >
             <FormInput
               label={newCampaignFields.initialSupply.label}
