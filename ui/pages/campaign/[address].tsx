@@ -86,7 +86,9 @@ const Campaign: NextPage = () => {
   })
 
   // If page not ready or can't find campaign, don't render.
-  const campaign = isReady ? campaigns.find((c) => c.id === query.id) : null
+  const campaign = isReady
+    ? campaigns.find((c) => c.id === query.address)
+    : null
   if (!isReady || !campaign) return null
 
   // Contribution Form
