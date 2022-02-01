@@ -58,14 +58,8 @@ export const newCampaignFields: Record<keyof NewCampaign, NewCampaignField> = {
     required: true,
     advanced: true,
   },
-  initialDistributionAddress: {
-    label: "Initial Distribution Address",
-    pageId: 4,
-    required: false,
-    advanced: true,
-  },
-  initialDistributionAmount: {
-    label: "Initial Distribution Amount",
+  initialDistributions: {
+    label: "Initial Distributions",
     pageId: 4,
     required: true,
     advanced: true,

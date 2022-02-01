@@ -1,11 +1,14 @@
+import cn from "classnames"
 import type { NextPage } from "next"
 import { useState } from "react"
-import { Controller } from "react-hook-form"
+import { Controller, useFieldArray } from "react-hook-form"
 
 import {
+  Button,
   CenteredColumn,
   FormInput,
   FormSwitch,
+  FormWrapper,
   PercentTokenDoubleInput,
   ResponsiveDecoration,
   VisibilityToggle,
@@ -24,6 +27,15 @@ const Create4: NextPage = () => {
     control,
     Navigation,
   } = useNewCampaignForm(4)
+  const {
+    fields: initialDistributionsFields,
+    append: initialDistributionsAppend,
+    remove: initialDistributionsRemove,
+  } = useFieldArray({
+    control,
+    name: "initialDistributions",
+  })
+
   const [showingAdvanced, setShowingAdvanced] = useState(false)
 
   const goal = getValues("goal") ?? 0
@@ -149,27 +161,62 @@ const Create4: NextPage = () => {
               tokenSymbol={watchTokenSymbol}
             />
 
-            <FormInput
-              label={newCampaignFields.initialDistributionAddress.label}
-              description="An address to send tokens to upon creation of the campaign. This address will receive DAO tokens without contributing any money to the DAO."
-              placeholder="juno..."
-              type="text"
-              error={errors.initialDistributionAddress?.message}
-              {...register("initialDistributionAddress", {
-                // TODO: address format
-                pattern: /^\s*juno.+\s*$/,
-              })}
-            />
+            <FormWrapper
+              label={newCampaignFields.initialDistributions.label}
+              description="Addresses to distribute tokens to upon creation of the campaign. These addresses will receive DAO tokens without contributing any money to the DAO."
+            >
+              {initialDistributionsFields.map(({ id }, index) => (
+                <div
+                  key={id}
+                  className={cn(
+                    "flex flex-col items-stretch",
+                    "border border-orange rounded-3xl",
+                    "p-5 mt-5 first:mt-0"
+                  )}
+                >
+                  <FormInput
+                    label={`Initial Distribution Address #${index + 1}`}
+                    placeholder="juno..."
+                    type="text"
+                    error={
+                      errors.initialDistributions?.[index]?.address?.message
+                    }
+                    wrapperClassName="!mb-4"
+                    {...register(`initialDistributions.${index}.address`, {
+                      required: "Required",
+                      // TODO: address format
+                      pattern: /^\s*juno.+\s*$/,
+                    })}
+                  />
 
-            <PercentTokenDoubleInput
-              control={control}
-              name="initialDistributionAmount"
-              label={newCampaignFields.initialDistributionAmount.label}
-              description="The amount of tokens to be sent to the initial distribution address. The initial distribution address will receive DAO tokens without contributing any money to the DAO. Default is 0."
-              placeholder="0"
-              initialSupply={watchInitialSupply}
-              tokenSymbol={watchTokenSymbol}
-            />
+                  <PercentTokenDoubleInput
+                    control={control}
+                    label={`Initial Distribution Amount #${index + 1}`}
+                    name={`initialDistributions.${index}.amount`}
+                    placeholder="0"
+                    initialSupply={watchInitialSupply}
+                    tokenSymbol={watchTokenSymbol}
+                  />
+
+                  <Button
+                    className="self-end"
+                    color="orange"
+                    onClick={() => initialDistributionsRemove(index)}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ))}
+              <Button
+                className="mt-5 self-end"
+                color="light"
+                onClick={() =>
+                  initialDistributionsAppend({ address: undefined, amount: 0 })
+                }
+              >
+                Add Initial Distribution
+              </Button>
+            </FormWrapper>
 
             <FormInput
               label={newCampaignFields.votingDuration.label}

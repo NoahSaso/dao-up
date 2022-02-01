@@ -32,7 +32,7 @@ const FieldDisplay: FC<FieldDisplayProps> = ({
   <Link href={`/create${`/${pageId > 1 ? pageId : ""}`}`}>
     <a className="flex flex-col mt-6">
       <div className="flex flex-row items-center">
-        <p className="text-green mr-2">{label}</p>
+        <p className="text-green mr-2 whitespace-pre-wrap">{label}</p>
         <Image src="/images/pencil.svg" alt="edit" width={18} height={18} />
       </div>
       <p className="text-light mr-5">{value}</p>
@@ -45,24 +45,51 @@ const FieldDisplay: FC<FieldDisplayProps> = ({
   </Link>
 )
 
+const valueToString = (
+  value:
+    | string
+    | number
+    | boolean
+    | InitialDistribution[]
+    | InitialDistribution
+    | undefined
+): string => {
+  if (typeof value === "number") return prettyPrintDecimal(value)
+
+  if (typeof value === "string" || typeof value === "boolean")
+    return value.toString()
+
+  // InitialDistribution[]
+  if (Array.isArray(value))
+    return value
+      .map((v, idx) => `#${idx + 1}\n${valueToString(v)}`)
+      .join("\n\n")
+
+  if (typeof value === "object")
+    return Object.entries(value)
+      .map(
+        ([k, v]) =>
+          `${
+            k.charAt(0).toUpperCase() + k.substring(1).toLowerCase()
+          }: ${valueToString(v as string | number)}`
+      )
+      .join("\n")
+
+  return ""
+}
+
 const renderFieldDisplay = (
   newCampaign: Partial<NewCampaign>,
   [field, { label, pageId }]: typeof newCampaignFieldEntries[number]
-) => {
-  const value = newCampaign[field]
-  const valueStr =
-    typeof value === "number" ? prettyPrintDecimal(value) : value?.toString()
-
-  return (
-    <FieldDisplay
-      key={field}
-      field={field}
-      label={label}
-      pageId={pageId}
-      value={valueStr}
-    />
-  )
-}
+) => (
+  <FieldDisplay
+    key={field}
+    field={field}
+    label={label}
+    pageId={pageId}
+    value={valueToString(newCampaign[field])}
+  />
+)
 
 const Create5: NextPage = () => {
   useNewCampaignForm(5)

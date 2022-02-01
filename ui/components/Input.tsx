@@ -125,7 +125,7 @@ interface FormItemProps {
 
 type FormWrapperProps = PropsWithChildren<FormItemProps>
 
-const FormWrapper: FC<FormWrapperProps> = ({
+export const FormWrapper: FC<FormWrapperProps> = ({
   children,
   label,
   description,
@@ -402,11 +402,12 @@ DoubleFormInput.displayName = "DoubleFormInput"
 interface PercentTokenDoubleInputProps {
   control: Control<FieldValues, object>
   name: string
-  label: string
-  description: string
-  placeholder: string
+  label?: string
+  description?: string
+  placeholder?: string
   initialSupply: number
   tokenSymbol: string
+  wrapperClassName?: string
 }
 export const PercentTokenDoubleInput: FC<PercentTokenDoubleInputProps> = ({
   control,
@@ -416,6 +417,7 @@ export const PercentTokenDoubleInput: FC<PercentTokenDoubleInputProps> = ({
   placeholder,
   initialSupply,
   tokenSymbol,
+  wrapperClassName,
 }) => (
   <Controller
     control={control}
@@ -441,6 +443,7 @@ export const PercentTokenDoubleInput: FC<PercentTokenDoubleInputProps> = ({
       <DoubleFormInput
         label={label}
         description={description}
+        wrapperClassName={wrapperClassName}
         error={error?.message}
         shared={{
           onBlur,

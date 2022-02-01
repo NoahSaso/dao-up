@@ -51,12 +51,16 @@ declare global {
     // advanced
     initialSupply: number
     initialDAOAmount: number
-    initialDistributionAddress?: string
-    initialDistributionAmount: number
+    initialDistributions: InitialDistribution[]
     votingDuration: number
     unstakingDuration: number
     proposalDeposit: number
     refundProposalDeposits: boolean
+  }
+
+  interface InitialDistribution {
+    address: string
+    amount: number
   }
 
   interface NewCampaignField {
