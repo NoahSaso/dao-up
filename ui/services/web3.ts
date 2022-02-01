@@ -13,13 +13,16 @@ const endpoint = "https://rpc.uni.junomint.com:443"
 
 let client: CosmWasmClient | undefined
 let keplr: Keplr | undefined
+let keplrListener: (() => void) | undefined
+
 export const getClient = async (
   setWallet: SetterOrUpdater<{
     connected: boolean
     address: string
-  }>
+  }>,
+  reset = false
 ): Promise<CosmWasmClient> => {
-  if (client) return client
+  if (client && !reset) return client
 
   keplr = await getKeplr()
   if (!keplr) throw new Error("Keplr is not available")
@@ -34,6 +37,17 @@ export const getClient = async (
     connected: true,
     address: accounts[0].address,
   })
+
+  // Listen for keplr keystore change
+  if (keplrListener)
+    window.removeEventListener("keplr_keystorechange", keplrListener)
+
+  keplrListener = () => {
+    console.log("Keplr keystore changed, reloading client.")
+    client = undefined
+    getClient(setWallet)
+  }
+  window.addEventListener("keplr_keystorechange", keplrListener)
 
   return client
 }
