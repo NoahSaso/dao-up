@@ -1,4 +1,5 @@
 import { useRouter } from "next/router"
+import { useEffect } from "react"
 import {
   FieldValues,
   SubmitErrorHandler,
@@ -8,6 +9,24 @@ import {
 import { useRecoilState } from "recoil"
 
 import { newCampaignState } from "../services/state"
+
+const requiredPageFields: (keyof NewCampaign)[][] = [
+  ["name", "description", "goal"],
+  ["daoName", "daoDescription"],
+  // no required fields on third page
+  [],
+  [
+    "tokenName",
+    "tokenSymbol",
+    "passingThreshold",
+    "initialSupply",
+    "daoInitialAmount",
+    "votingDuration",
+    "unstakingDuration",
+    "proposalDeposit",
+    "refundProposalDeposits",
+  ],
+]
 
 export const useNewCampaignForm = (id: number) => {
   const router = useRouter()
@@ -21,6 +40,27 @@ export const useNewCampaignForm = (id: number) => {
     watch,
     control,
   } = useForm({ defaultValues: newCampaign })
+
+  // Ensure all previous fields are valid.
+  useEffect(() => {
+    const validatePastFields = async () => {
+      // Route to the first page with an invalid field.
+      for (let page = 1; page < id; page++) {
+        const invalid = requiredPageFields[page - 1].some((field) => {
+          const value = newCampaign[field]
+          return (
+            (typeof value === "string" && !value.trim()) ||
+            (typeof value === "number" && value < 0) ||
+            value === undefined
+          )
+        })
+
+        if (invalid) return router.push(`/create/${page === 1 ? "" : page}`)
+      }
+    }
+
+    validatePastFields()
+  }, [id, router, newCampaign])
 
   const onSubmit: SubmitHandler<FieldValues> = (values, event) => {
     const nativeEvent = event?.nativeEvent as SubmitEvent

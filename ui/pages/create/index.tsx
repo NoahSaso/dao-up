@@ -39,6 +39,17 @@ const Create: NextPage = () => {
             })}
           />
 
+          <FormTextArea
+            label="Campaign Description"
+            placeholder="Describe what your campaign is about..."
+            rows={8}
+            error={errors.description?.message}
+            {...register("description", {
+              required: "Required",
+              pattern: /\S/,
+            })}
+          />
+
           <FormInput
             label="Funding Target"
             placeholder="10,000"
@@ -59,17 +70,6 @@ const Create: NextPage = () => {
                 value: 0.01,
                 message: "Must be at least 0.01.",
               },
-            })}
-          />
-
-          <FormTextArea
-            label="Campaign Description"
-            placeholder="Describe what your campaign is about..."
-            rows={8}
-            error={errors.description?.message}
-            {...register("description", {
-              required: "Required",
-              pattern: /\S/,
             })}
           />
 
