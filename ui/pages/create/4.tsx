@@ -157,8 +157,8 @@ const Create4: NextPage = () => {
               label={newCampaignFields.initialDAOAmount.label}
               description="The amount of tokens to be reserved in the DAO for future distribution. Only the distributed tokens count when voting on proposals, so it is good practice to reserve most tokens for the DAO at the beginning. Default is 9 million."
               placeholder="9,000,000"
-              initialSupply={watchInitialSupply}
-              tokenSymbol={watchTokenSymbol}
+              maxValue={watchInitialSupply}
+              currency={watchTokenSymbol}
             />
 
             <FormWrapper
@@ -194,8 +194,8 @@ const Create4: NextPage = () => {
                     label={`Initial Distribution Amount #${index + 1}`}
                     name={`initialDistributions.${index}.amount`}
                     placeholder="0"
-                    initialSupply={watchInitialSupply}
-                    tokenSymbol={watchTokenSymbol}
+                    maxValue={watchInitialSupply}
+                    currency={watchTokenSymbol}
                   />
 
                   <Button

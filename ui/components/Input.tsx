@@ -135,8 +135,8 @@ interface UnforwardedPercentTokenDoubleInputProps
   extends UnforwardedDoubleInputProps {
   value: number | undefined
   onChangeAmount: (amount: any) => void
-  initialSupply: number
-  tokenSymbol: string
+  maxValue: number
+  currency: string
 }
 export const PercentTokenDoubleInput: FC<UnforwardedPercentTokenDoubleInputProps> =
   forwardRef<HTMLInputElement, UnforwardedPercentTokenDoubleInputProps>(
@@ -147,8 +147,8 @@ export const PercentTokenDoubleInput: FC<UnforwardedPercentTokenDoubleInputProps
         second,
         value,
         onChangeAmount,
-        initialSupply,
-        tokenSymbol,
+        maxValue,
+        currency,
         ...props
       },
       ref
@@ -168,7 +168,7 @@ export const PercentTokenDoubleInput: FC<UnforwardedPercentTokenDoubleInputProps
 
             // Convert from percent to tokens
             const newValue = Number(e.target.value) || 0
-            const tokens = initialSupply * (newValue / 100)
+            const tokens = maxValue * (newValue / 100)
             onChangeAmount(tokens)
           },
           tail: (
@@ -178,8 +178,8 @@ export const PercentTokenDoubleInput: FC<UnforwardedPercentTokenDoubleInputProps
           ),
           // Convert from tokens to percent
           value:
-            initialSupply > 0 && !!value
-              ? Number(((100 * value) / initialSupply).toFixed(6))
+            maxValue > 0 && !!value
+              ? Number(((100 * value) / maxValue).toFixed(6))
               : value,
         }}
         second={{
@@ -193,7 +193,7 @@ export const PercentTokenDoubleInput: FC<UnforwardedPercentTokenDoubleInputProps
           value: value,
           tail: (
             <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
-              {tokenSymbol}
+              {currency}
             </div>
           ),
         }}
@@ -509,8 +509,8 @@ interface FormPercentTokenDoubleInputProps {
   label?: string
   description?: string
   placeholder?: string
-  initialSupply: number
-  tokenSymbol: string
+  maxValue: number
+  currency: string
   wrapperClassName?: string
   extraProps?: Partial<UnforwardedPercentTokenDoubleInputProps>
 }
@@ -522,8 +522,8 @@ export const FormPercentTokenDoubleInput: FC<
   label,
   description,
   placeholder,
-  initialSupply,
-  tokenSymbol,
+  maxValue,
+  currency,
   wrapperClassName,
   extraProps: { shared, second, ...extraProps } = {},
 }) => (
@@ -538,10 +538,10 @@ export const FormPercentTokenDoubleInput: FC<
         message: "Must be at least 0.",
       },
       max: {
-        value: initialSupply,
-        message: `Must be less than or equal to the initial supply: ${prettyPrintDecimal(
-          initialSupply
-        )} ${tokenSymbol} (100%).`,
+        value: maxValue,
+        message: `Must be less than or equal to the max value: ${prettyPrintDecimal(
+          maxValue
+        )} ${currency} (100%).`,
       },
     }}
     render={({
@@ -556,8 +556,8 @@ export const FormPercentTokenDoubleInput: FC<
       >
         <PercentTokenDoubleInput
           {...extraProps}
-          initialSupply={initialSupply}
-          tokenSymbol={tokenSymbol}
+          maxValue={maxValue}
+          currency={currency}
           value={value}
           onChangeAmount={onChange}
           shared={{

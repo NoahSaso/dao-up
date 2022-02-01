@@ -314,8 +314,8 @@ const Campaign: NextPage = () => {
               <FormPercentTokenDoubleInput
                 name="refund"
                 control={refundControl}
-                initialSupply={userTokens}
-                tokenSymbol={asset}
+                maxValue={userTokens}
+                currency={asset}
                 extraProps={{
                   first: { placeholder: "20" },
                   second: {
