@@ -14,4 +14,7 @@ pub enum ContractError {
 
     #[error("Got a submessage reply with unknown id: {id}")]
     UnknownReplyId { id: u64 },
+
+    #[error("Campaign can not be closed until funding goal is met")]
+    Close {},
 }

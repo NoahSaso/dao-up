@@ -1,4 +1,4 @@
-use cosmwasm_std::{Coin, Decimal, Uint128};
+use cosmwasm_std::Coin;
 use cw20::Cw20ReceiveMsg;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -16,6 +16,11 @@ pub struct InstantiateMsg {
     pub token_price: Coin,
     /// The code ID of the governance token.
     pub gov_token_code_id: u64,
+    /// The code ID of the DAO contract.
+    pub dao_contract_code_id: u64,
+    /// The code ID of the staking contract to use with instantiated
+    /// DAOs.
+    pub staking_contract_code_id: u64,
     /// Information about the campaign.
     pub campaign_info: Campaign,
 }
@@ -41,12 +46,6 @@ pub enum ExecuteMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    /// Gets the funding goal in uJuno. Returns Uint128.
-    FundingGoal {},
-    /// Gets the token price in tokens / uJuno. Returns Decimal.
-    TokenPrice {},
-    /// Gets the total funds raised so far in uJuno. Returns Uint128.
-    TotalRaised {},
     /// Gets the creator of the campaign. Returns Uint128.
     Creator {},
     /// Gets the status of the campaign. Returns StatusResponse.
@@ -59,10 +58,8 @@ pub enum QueryMsg {
 #[serde(rename_all = "snake_case")]
 pub struct StatusResponse {
     pub status: Status,
-    pub funds_raised: Uint128,
-    pub funding_goal: Uint128,
-    /// What percentage of the funds have been raised.
-    pub progress: Decimal,
+    pub funds_raised: Coin,
+    pub funding_goal: Coin,
 }
 
 impl InstantiateMsg {
@@ -84,6 +81,7 @@ impl InstantiateMsg {
                 self.funding_goal.denom, self.token_price.denom
             )));
         }
+
         return Ok(());
     }
 }
