@@ -101,7 +101,7 @@ export const Switch: FC<SwitchProps> = ({ on, onClick, className }) => (
         "left-[4.5px] top-[3.5px] w-[32px] h-[32px] rounded-full",
         "bg-light transition-all",
         {
-          "!left-[40.5px]": on,
+          "!left-[41.5px]": on,
         }
       )}
     ></div>
@@ -117,6 +117,7 @@ interface FormItemProps {
   error?: string
   wrapperClassName?: string
   surroundingClassName?: string
+  horizontal?: boolean
 }
 
 type FormWrapperProps = PropsWithChildren<FormItemProps>
@@ -129,49 +130,69 @@ const FormWrapper: FC<FormWrapperProps> = ({
   error,
   wrapperClassName,
   surroundingClassName,
+  horizontal,
 }) => (
-  <div className={cn("flex flex-col items-stretch mb-10", wrapperClassName)}>
-    {!!label && (
-      <label
-        className={cn(
-          "font pl-5",
-          "text-medium",
-          {
-            "mb-1": description,
-            "mb-2": !description,
-          },
-          surroundingClassName
-        )}
-      >
-        {label}
-      </label>
+  <div
+    className={cn(
+      "mb-10",
+      {
+        "flex flex-row items-center": horizontal,
+      },
+      wrapperClassName
     )}
-    {!!description && (
-      <p
-        className={cn(
-          "block text-sm font-extralight pl-5 mb-3",
-          surroundingClassName
-        )}
-      >
-        {description}
-      </p>
-    )}
-    {children}
-    {!!accent && (
-      <p
-        className={cn(
-          "block text-sm font-extralight pl-5 mt-3 text-green",
-          surroundingClassName
-        )}
-      >
-        {accent}
-      </p>
-    )}
-    {!!error && (
-      <p className={cn("pl-5 mt-2 text-orange", surroundingClassName)}>
-        {error}
-      </p>
-    )}
+  >
+    {horizontal && children}
+    <div className={cn("flex flex-col items-stretch")}>
+      {!!label && (
+        <label
+          className={cn(
+            "font pl-5",
+            "text-medium",
+            {
+              "mb-1": description,
+              "mb-2": !description && !horizontal,
+            },
+            surroundingClassName
+          )}
+        >
+          {label}
+        </label>
+      )}
+      {!!description && (
+        <p
+          className={cn(
+            "block text-sm font-extralight pl-5",
+            { "mb-3": !horizontal },
+            surroundingClassName
+          )}
+        >
+          {description}
+        </p>
+      )}
+      {!horizontal && children}
+      {!!accent && (
+        <p
+          className={cn(
+            "block text-sm font-extralight pl-5 text-green",
+            { "mt-1": horizontal, "mt-3": !horizontal },
+            surroundingClassName
+          )}
+        >
+          {accent}
+        </p>
+      )}
+      {!!error && (
+        <p
+          className={cn(
+            "pl-5 text-orange",
+            { "mt-1": horizontal, "mt-2": !horizontal },
+            surroundingClassName
+          )}
+        >
+          {error}
+        </p>
+      )}
+    </div>
   </div>
 )
 
@@ -284,7 +305,8 @@ export const FormSwitch: FC<FormSwitchProps> = ({
     error={error}
     wrapperClassName={wrapperClassName}
     surroundingClassName={surroundingClassName}
+    horizontal
   >
-    <Switch className={cn("!ml-5 mt-2", className)} {...props} />
+    <Switch className={cn("shrink-0", className)} {...props} />
   </FormWrapper>
 )
