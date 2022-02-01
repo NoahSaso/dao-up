@@ -11,7 +11,7 @@ import { useNewCampaignForm } from "../../helpers/form"
 import { newCampaignFields } from "../../services/campaigns"
 
 const Create2: NextPage = () => {
-  const { formOnSubmit, register, errors } = useNewCampaignForm(2)
+  const { formOnSubmit, register, errors, Navigation } = useNewCampaignForm(2)
 
   return (
     <>
@@ -54,10 +54,7 @@ const Create2: NextPage = () => {
             })}
           />
 
-          <div className="flex flex-row justify-between align-center">
-            <Button submitLabel="Back" />
-            <Button submitLabel="Next" />
-          </div>
+          {Navigation}
         </form>
       </CenteredColumn>
     </>

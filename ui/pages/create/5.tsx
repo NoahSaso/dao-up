@@ -104,7 +104,7 @@ const Create5: NextPage = () => {
             .map((entry) => renderFieldDisplay(newCampaign, entry))}
         </VisibilityToggle>
 
-        <div className="flex flex-row justify-between align-center mt-10">
+        <div className="flex flex-row justify-between items-center mt-10">
           <ButtonLink href="/create/4">Back</ButtonLink>
           <Button onClick={create}>Create Campaign</Button>
         </div>

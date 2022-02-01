@@ -13,7 +13,8 @@ import { useNewCampaignForm } from "../../helpers/form"
 import { newCampaignFields } from "../../services/campaigns"
 
 const Create: NextPage = () => {
-  const { formOnSubmit, register, errors, control } = useNewCampaignForm(1)
+  const { formOnSubmit, register, errors, control, Navigation } =
+    useNewCampaignForm(1)
 
   return (
     <>
@@ -88,7 +89,7 @@ const Create: NextPage = () => {
             )}
           />
 
-          <Button submitLabel="Next" className="self-end" />
+          {Navigation}
         </form>
       </CenteredColumn>
     </>

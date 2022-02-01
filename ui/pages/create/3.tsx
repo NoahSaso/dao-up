@@ -10,7 +10,7 @@ import { useNewCampaignForm } from "../../helpers/form"
 import { newCampaignFields } from "../../services/campaigns"
 
 const Create3: NextPage = () => {
-  const { formOnSubmit, register, errors } = useNewCampaignForm(3)
+  const { formOnSubmit, register, errors, Navigation } = useNewCampaignForm(3)
 
   return (
     <>
@@ -69,10 +69,7 @@ const Create3: NextPage = () => {
             })}
           />
 
-          <div className="flex flex-row justify-between align-center">
-            <Button submitLabel="Back" />
-            <Button submitLabel="Next" />
-          </div>
+          {Navigation}
         </form>
       </CenteredColumn>
     </>

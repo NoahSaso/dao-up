@@ -16,8 +16,15 @@ import { prettyPrintDecimal } from "../../helpers/number"
 import { newCampaignFields } from "../../services/campaigns"
 
 const Create4: NextPage = () => {
-  const { formOnSubmit, register, errors, getValues, watch, control } =
-    useNewCampaignForm(4)
+  const {
+    formOnSubmit,
+    register,
+    errors,
+    getValues,
+    watch,
+    control,
+    Navigation,
+  } = useNewCampaignForm(4)
   const [showingAdvanced, setShowingAdvanced] = useState(false)
 
   const goal = getValues("goal") ?? 0
@@ -277,10 +284,7 @@ const Create4: NextPage = () => {
             />
           </VisibilityToggle>
 
-          <div className="flex flex-row justify-between align-center">
-            <Button submitLabel="Back" />
-            <Button submitLabel="Review" />
-          </div>
+          {Navigation}
         </form>
       </CenteredColumn>
     </>
