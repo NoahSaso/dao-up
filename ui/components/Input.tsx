@@ -89,7 +89,7 @@ export const Switch: FC<SwitchProps> = ({ on, onClick, className }) => (
   <div
     className={cn(
       "relative cursor-pointer hover:opacity-70",
-      "w-[98px] h-[50px] rounded-full",
+      "w-[80px] h-[42px] rounded-full",
       "bg-dark border border-light",
       className
     )}
@@ -98,10 +98,10 @@ export const Switch: FC<SwitchProps> = ({ on, onClick, className }) => (
     <div
       className={cn(
         "absolute",
-        "left-[7.5px] top-[7.5px] w-[32px] h-[32px] rounded-full",
+        "left-[4.5px] top-[3.5px] w-[32px] h-[32px] rounded-full",
         "bg-light transition-all",
         {
-          "!left-[56.5px]": on,
+          "!left-[40.5px]": on,
         }
       )}
     ></div>
