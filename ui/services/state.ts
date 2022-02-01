@@ -5,13 +5,14 @@ export const newCampaignState = atom({
   default: {
     displayPublicly: true,
     initialSupply: 10000000,
-    daoInitialAmount: 9000000,
+    initialDAOAmount: 9000000,
+    initialDistributionAmount: 0,
     passingThreshold: 75,
     votingDuration: 604800,
-    proposalDeposit: 0,
     unstakingDuration: 0,
+    proposalDeposit: 0,
     refundProposalDeposits: true,
-  } as NewCampaign,
+  } as Partial<NewCampaign>,
 })
 
 export const walletState = atom({

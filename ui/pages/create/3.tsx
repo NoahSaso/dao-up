@@ -7,6 +7,7 @@ import {
   ResponsiveDecoration,
 } from "../../components"
 import { useNewCampaignForm } from "../../helpers/form"
+import { newCampaignFields } from "../../services/campaigns"
 
 const Create3: NextPage = () => {
   const { formOnSubmit, register, errors } = useNewCampaignForm(3)
@@ -25,7 +26,7 @@ const Create3: NextPage = () => {
           <h1 className="font-semibold text-4xl mb-10">Campaign Details</h1>
 
           <FormInput
-            label="Website"
+            label={newCampaignFields.website.label}
             placeholder="https://your.campaign"
             type="text"
             error={errors.website?.message}
@@ -36,7 +37,7 @@ const Create3: NextPage = () => {
           />
 
           <FormInput
-            label="Twitter"
+            label={newCampaignFields.twitter.label}
             placeholder="@CampaignDAO"
             type="text"
             error={errors.twitter?.message}
@@ -47,7 +48,7 @@ const Create3: NextPage = () => {
           />
 
           <FormInput
-            label="Discord"
+            label={newCampaignFields.discord.label}
             placeholder="https://discord.gg/campaign"
             type="text"
             error={errors.discord?.message}
@@ -58,7 +59,7 @@ const Create3: NextPage = () => {
           />
 
           <FormInput
-            label="Image URL"
+            label={newCampaignFields.imageUrl.label}
             placeholder="https://your.campaign/logo.svg"
             type="text"
             error={errors.imageUrl?.message}

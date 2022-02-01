@@ -2,7 +2,6 @@ import cn from "classnames"
 import type { NextPage } from "next"
 import { useState } from "react"
 import { Controller } from "react-hook-form"
-import { GoTriangleDown } from "react-icons/go"
 
 import {
   Button,
@@ -10,18 +9,20 @@ import {
   FormInput,
   FormSwitch,
   ResponsiveDecoration,
+  VisibilityToggle,
 } from "../../components"
 import { useNewCampaignForm } from "../../helpers/form"
 import { prettyPrintDecimal } from "../../helpers/number"
+import { newCampaignFields } from "../../services/campaigns"
 
 const Create4: NextPage = () => {
   const { formOnSubmit, register, errors, getValues, watch, control } =
     useNewCampaignForm(4)
   const [showingAdvanced, setShowingAdvanced] = useState(false)
 
-  const goal = getValues("goal")
+  const goal = getValues("goal") ?? 0
   const watchTokenSymbol = watch("tokenSymbol")?.trim() || "tokens"
-  const watchInitialSupply = watch("initialSupply", 0)
+  const watchInitialSupply = watch("initialSupply") ?? 0
   const tokenPrice =
     !isNaN(goal) && !isNaN(watchInitialSupply) && goal > 0
       ? watchInitialSupply / goal
@@ -42,7 +43,7 @@ const Create4: NextPage = () => {
 
           <div className="flex flex-col sm:flex-row sm:justify-between">
             <FormInput
-              label="Token Name"
+              label={newCampaignFields.tokenName.label}
               placeholder="Name"
               type="text"
               wrapperClassName="w-full sm:w-2/3"
@@ -54,7 +55,7 @@ const Create4: NextPage = () => {
             />
 
             <FormInput
-              label="Token Symbol"
+              label={newCampaignFields.tokenSymbol.label}
               placeholder="ABC"
               type="text"
               wrapperClassName="w-full sm:w-1/4"
@@ -67,7 +68,7 @@ const Create4: NextPage = () => {
           </div>
 
           <FormInput
-            label="DAO Proposal Passing Threshold"
+            label={newCampaignFields.passingThreshold.label}
             description="The proportion of votes needed for a proposal to pass."
             placeholder="75"
             type="number"
@@ -94,26 +95,14 @@ const Create4: NextPage = () => {
             })}
           />
 
-          <p
+          <VisibilityToggle
+            visible={showingAdvanced}
+            showLabel="Show Advanced Settings"
+            hideLabel="Hide Advanced Settings"
             onClick={() => setShowingAdvanced((a) => !a)}
-            className={cn(
-              "flex flex-row items-center",
-              "mb-10",
-              "text-placeholder cursor-pointer transition hover:opacity-70"
-            )}
           >
-            {showingAdvanced ? "Hide" : "Show"} Advanced Settings
-            <GoTriangleDown
-              size={20}
-              className={cn("transition-all ml-5", {
-                "rotate-180": showingAdvanced,
-              })}
-            />
-          </p>
-
-          <div className={cn("flex flex-col", { hidden: !showingAdvanced })}>
             <FormInput
-              label="Initial Token Supply"
+              label={newCampaignFields.initialSupply.label}
               description={`The amount of tokens to create initially. Divide this value by your funding target${
                 typeof goal !== "undefined" ? ` (${goal.toLocaleString()})` : ""
               } to get the value of each token. Default is 10 million.`}
@@ -144,7 +133,7 @@ const Create4: NextPage = () => {
             />
 
             <FormInput
-              label="DAO Initial Amount"
+              label={newCampaignFields.initialDAOAmount.label}
               description="The amount of tokens to be reserved in the DAO for future distribution. Only the distributed tokens count when voting on proposals, so it is good practice to reserve most tokens for the DAO at the beginning. Default is 9 million."
               placeholder="9,000,000"
               type="number"
@@ -155,8 +144,8 @@ const Create4: NextPage = () => {
                   {watchTokenSymbol}
                 </div>
               }
-              error={errors.daoInitialAmount?.message}
-              {...register("daoInitialAmount", {
+              error={errors.initialDAOAmount?.message}
+              {...register("initialDAOAmount", {
                 required: "Required",
                 valueAsNumber: true,
                 pattern: /^\s*\d+\s*$/,
@@ -168,7 +157,38 @@ const Create4: NextPage = () => {
             />
 
             <FormInput
-              label="Voting Duration"
+              label={newCampaignFields.initialDistributionAddress.label}
+              description="An address to send tokens to upon creation of the campaign. This address will receive DAO tokens without contributing any money to the DAO."
+              placeholder="juno..."
+              type="text"
+              error={errors.initialDistributionAddress?.message}
+              {...register("initialDistributionAddress", {
+                // TODO: address format
+                pattern: /^\s*juno.+\s*$/,
+              })}
+            />
+
+            <FormInput
+              label={newCampaignFields.initialDistributionAmount.label}
+              description="The amount of tokens to be sent to the initial distribution address. The initial distribution address will receive DAO tokens without contributing any money to the DAO. Default is 0."
+              placeholder="0"
+              type="number"
+              inputMode="numeric"
+              className="!pr-40"
+              error={errors.initialDistributionAmount?.message}
+              {...register("initialDistributionAmount", {
+                required: "Required",
+                valueAsNumber: true,
+                pattern: /^\s*\d+\s*$/,
+                min: {
+                  value: 0,
+                  message: "Must be at least 0.",
+                },
+              })}
+            />
+
+            <FormInput
+              label={newCampaignFields.votingDuration.label}
               description="The duration which a proposal awaits voting before it is automatically closed and either passes or fails. Default is 1 week (604,800 seconds)."
               placeholder="604,800"
               type="number"
@@ -192,7 +212,7 @@ const Create4: NextPage = () => {
             />
 
             <FormInput
-              label="Unstaking Duration"
+              label={newCampaignFields.unstakingDuration.label}
               description="The duration..."
               placeholder="0"
               type="number"
@@ -216,7 +236,7 @@ const Create4: NextPage = () => {
             />
 
             <FormInput
-              label="Proposal Deposit"
+              label={newCampaignFields.proposalDeposit.label}
               description="The number of tokens that must be deposited when creating a proposal. Default is 0."
               placeholder="0"
               type="number"
@@ -247,7 +267,7 @@ const Create4: NextPage = () => {
                 fieldState: { error },
               }) => (
                 <FormSwitch
-                  label="Refund Proposal Deposits"
+                  label={newCampaignFields.refundProposalDeposits.label}
                   description="Whether or not to refund the tokens deposited when submitting a proposal back to the proposer after the proposal is voted on. Default is yes."
                   error={error?.message}
                   onClick={() => onChange(!value)}
@@ -255,7 +275,7 @@ const Create4: NextPage = () => {
                 />
               )}
             />
-          </div>
+          </VisibilityToggle>
 
           <div className="flex flex-row justify-between align-center">
             <Button submitLabel="Back" />

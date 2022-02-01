@@ -8,6 +8,7 @@ import {
   ResponsiveDecoration,
 } from "../../components"
 import { useNewCampaignForm } from "../../helpers/form"
+import { newCampaignFields } from "../../services/campaigns"
 
 const Create2: NextPage = () => {
   const { formOnSubmit, register, errors } = useNewCampaignForm(2)
@@ -32,7 +33,7 @@ const Create2: NextPage = () => {
           </p>
 
           <FormInput
-            label="DAO Name"
+            label={newCampaignFields.daoName.label}
             placeholder="Name"
             type="text"
             error={errors.daoName?.message}
@@ -43,7 +44,7 @@ const Create2: NextPage = () => {
           />
 
           <FormTextArea
-            label="DAO Description"
+            label={newCampaignFields.daoDescription.label}
             placeholder="Describe what your DAO is about..."
             rows={8}
             error={errors.daoDescription?.message}

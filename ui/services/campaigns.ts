@@ -1,3 +1,105 @@
+export const newCampaignFields: Record<keyof NewCampaign, NewCampaignField> = {
+  name: { label: "Campaign Name", pageId: 1, required: true, advanced: false },
+  description: {
+    label: "Campaign Description",
+    pageId: 1,
+    required: true,
+    advanced: false,
+  },
+  goal: { label: "Funding Target", pageId: 1, required: true, advanced: false },
+  displayPublicly: {
+    label: "Show on public campaigns list",
+    pageId: 1,
+    required: false,
+    advanced: false,
+  },
+
+  daoName: { label: "DAO Name", pageId: 2, required: true, advanced: false },
+  daoDescription: {
+    label: "DAO Description",
+    pageId: 2,
+    required: true,
+    advanced: false,
+  },
+
+  website: { label: "Website", pageId: 3, required: false, advanced: false },
+  twitter: { label: "Twitter", pageId: 3, required: false, advanced: false },
+  discord: { label: "Discord", pageId: 3, required: false, advanced: false },
+  imageUrl: { label: "Image URL", pageId: 3, required: false, advanced: false },
+
+  tokenName: {
+    label: "Token Name",
+    pageId: 4,
+    required: true,
+    advanced: false,
+  },
+  tokenSymbol: {
+    label: "Token Symbol",
+    pageId: 4,
+    required: true,
+    advanced: false,
+  },
+  passingThreshold: {
+    label: "DAO Proposal Passing Threshold",
+    pageId: 4,
+    required: true,
+    advanced: false,
+  },
+  // advanced
+  initialSupply: {
+    label: "Initial Token Supply",
+    pageId: 4,
+    required: true,
+    advanced: true,
+  },
+  initialDAOAmount: {
+    label: "DAO Initial Amount",
+    pageId: 4,
+    required: true,
+    advanced: true,
+  },
+  initialDistributionAddress: {
+    label: "Initial Distribution Address",
+    pageId: 4,
+    required: false,
+    advanced: true,
+  },
+  initialDistributionAmount: {
+    label: "Initial Distribution Amount",
+    pageId: 4,
+    required: true,
+    advanced: true,
+  },
+  votingDuration: {
+    label: "Voting Duration",
+    pageId: 4,
+    required: true,
+    advanced: true,
+  },
+  unstakingDuration: {
+    label: "Unstaking Duration",
+    pageId: 4,
+    required: true,
+    advanced: true,
+  },
+  proposalDeposit: {
+    label: "Proposal Deposit",
+    pageId: 4,
+    required: true,
+    advanced: true,
+  },
+  refundProposalDeposits: {
+    label: "Refund Proposal Deposits",
+    pageId: 4,
+    required: true,
+    advanced: true,
+  },
+}
+export const newCampaignFieldEntries = Object.entries(newCampaignFields) as [
+  keyof NewCampaign,
+  NewCampaignField
+][]
+
 export const campaigns: Campaign[] = [
   {
     id: "1",

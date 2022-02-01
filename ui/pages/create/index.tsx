@@ -10,6 +10,7 @@ import {
   ResponsiveDecoration,
 } from "../../components"
 import { useNewCampaignForm } from "../../helpers/form"
+import { newCampaignFields } from "../../services/campaigns"
 
 const Create: NextPage = () => {
   const { formOnSubmit, register, errors, control } = useNewCampaignForm(1)
@@ -29,7 +30,7 @@ const Create: NextPage = () => {
           <p className="mt-4 mb-10">Description...</p>
 
           <FormInput
-            label="Campaign Name"
+            label={newCampaignFields.name.label}
             placeholder="Name"
             type="text"
             error={errors.name?.message}
@@ -40,7 +41,7 @@ const Create: NextPage = () => {
           />
 
           <FormTextArea
-            label="Campaign Description"
+            label={newCampaignFields.description.label}
             placeholder="Describe what your campaign is about..."
             rows={8}
             error={errors.description?.message}
@@ -51,7 +52,7 @@ const Create: NextPage = () => {
           />
 
           <FormInput
-            label="Funding Target"
+            label={newCampaignFields.goal.label}
             placeholder="10,000"
             type="number"
             inputMode="decimal"
@@ -78,7 +79,7 @@ const Create: NextPage = () => {
             name="displayPublicly"
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <FormSwitch
-                label="Show on public campaigns list"
+                label={newCampaignFields.displayPublicly.label}
                 description="Whether or not to display this campaign in the public directory of active campaigns. You may want to turn this off if you plan to send a direct link to your community. Default is yes."
                 error={error?.message}
                 onClick={() => onChange(!value)}

@@ -1,8 +1,7 @@
-import cn from "classnames"
 import type { NextPage } from "next"
 import Image from "next/image"
 import Link from "next/link"
-import { FC } from "react"
+import { FC, useState } from "react"
 import { FieldValues, SubmitHandler } from "react-hook-form"
 import { useRecoilState } from "recoil"
 
@@ -11,31 +10,65 @@ import {
   ButtonLink,
   CenteredColumn,
   ResponsiveDecoration,
+  VisibilityToggle,
 } from "../../components"
 import { useNewCampaignForm } from "../../helpers/form"
 import { prettyPrintDecimal } from "../../helpers/number"
+import { newCampaignFieldEntries } from "../../services/campaigns"
 import { newCampaignState } from "../../services/state"
 
-interface PropertyDisplayProps {
+interface FieldDisplayProps {
+  field: string
   label: string
-  value: string
-  page: string
+  pageId: number
+  value?: string
 }
-const PropertyDisplay: FC<PropertyDisplayProps> = ({ label, value, page }) => (
-  <Link href={`/create${page}`}>
-    <a className="flex flex-col mb-10">
+const FieldDisplay: FC<FieldDisplayProps> = ({
+  field,
+  label,
+  value,
+  pageId,
+}) => (
+  <Link href={`/create${`/${pageId > 1 ? pageId : ""}`}`}>
+    <a className="flex flex-col mb-6">
       <div className="flex flex-row items-center">
         <p className="text-green mr-2">{label}</p>
         <Image src="/images/pencil.svg" alt="edit" width={18} height={18} />
       </div>
       <p className="text-light mr-5">{value}</p>
+      {field === "imageUrl" && !!value && (
+        // image is being loaded from anywhere, so can't use next image component
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={value} alt="" className="max-w-[14rem]" />
+      )}
     </a>
   </Link>
 )
 
+const renderFieldDisplay = (
+  newCampaign: Partial<NewCampaign>,
+  [field, { label, pageId }]: typeof newCampaignFieldEntries[number]
+) => {
+  const value = newCampaign[field]
+  const valueStr =
+    typeof value === "number" ? prettyPrintDecimal(value) : value?.toString()
+
+  return (
+    <FieldDisplay
+      key={field}
+      field={field}
+      label={label}
+      pageId={pageId}
+      value={valueStr}
+    />
+  )
+}
+
 const Create5: NextPage = () => {
   useNewCampaignForm(5)
   const [newCampaign, _] = useRecoilState(newCampaignState)
+
+  const [showingAdvanced, setShowingAdvanced] = useState(false)
 
   const create: SubmitHandler<FieldValues> = () => {
     alert("WOO\n" + JSON.stringify(newCampaign, null, 2))
@@ -56,23 +89,20 @@ const Create5: NextPage = () => {
           Review Campaign Settings
         </h1>
 
-        <PropertyDisplay
-          label="Campaign Name"
-          value={newCampaign.name}
-          page="/"
-        />
+        {newCampaignFieldEntries
+          .filter(([_, { advanced }]) => !advanced)
+          .map((entry) => renderFieldDisplay(newCampaign, entry))}
 
-        <PropertyDisplay
-          label="Campaign Description"
-          value={newCampaign.description}
-          page="/"
-        />
-
-        <PropertyDisplay
-          label="Funding Target"
-          value={prettyPrintDecimal(newCampaign.goal, 2)}
-          page="/"
-        />
+        <VisibilityToggle
+          visible={showingAdvanced}
+          showLabel="Show Advanced Settings"
+          hideLabel="Hide Advanced Settings"
+          onClick={() => setShowingAdvanced((a) => !a)}
+        >
+          {newCampaignFieldEntries
+            .filter(([_, { advanced }]) => !advanced)
+            .map((entry) => renderFieldDisplay(newCampaign, entry))}
+        </VisibilityToggle>
 
         <div className="flex flex-row justify-between align-center mt-10">
           <ButtonLink href="/create/4">Back</ButtonLink>

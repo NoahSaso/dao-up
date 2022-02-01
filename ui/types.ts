@@ -33,8 +33,8 @@ declare global {
 
   interface NewCampaign {
     name: string
-    goal: number
     description: string
+    goal: number
     displayPublicly: boolean
 
     daoName: string
@@ -47,17 +47,23 @@ declare global {
 
     tokenName: string
     tokenSymbol: string
-    initialSupply: number
-    daoInitialAmount: number
-
-    creatorAddress: string
-    creatorInitialAmount: number
-
     passingThreshold: number
+    // advanced
+    initialSupply: number
+    initialDAOAmount: number
+    initialDistributionAddress?: string
+    initialDistributionAmount: number
     votingDuration: number
-    proposalDeposit: number
     unstakingDuration: number
+    proposalDeposit: number
     refundProposalDeposits: boolean
+  }
+
+  interface NewCampaignField {
+    label: string
+    pageId: number
+    required: boolean
+    advanced: boolean
   }
 
   interface WalletState {
