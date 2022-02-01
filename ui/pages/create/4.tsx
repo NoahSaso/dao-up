@@ -7,9 +7,9 @@ import {
   Button,
   CenteredColumn,
   FormInput,
+  FormPercentTokenDoubleInput,
   FormSwitch,
   FormWrapper,
-  PercentTokenDoubleInput,
   ResponsiveDecoration,
   VisibilityToggle,
 } from "../../components"
@@ -151,7 +151,7 @@ const Create4: NextPage = () => {
               })}
             />
 
-            <PercentTokenDoubleInput
+            <FormPercentTokenDoubleInput
               control={control}
               name="initialDAOAmount"
               label={newCampaignFields.initialDAOAmount.label}
@@ -189,7 +189,7 @@ const Create4: NextPage = () => {
                     })}
                   />
 
-                  <PercentTokenDoubleInput
+                  <FormPercentTokenDoubleInput
                     control={control}
                     label={`Initial Distribution Amount #${index + 1}`}
                     name={`initialDistributions.${index}.amount`}
