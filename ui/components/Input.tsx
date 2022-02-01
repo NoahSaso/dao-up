@@ -57,6 +57,7 @@ export const Input = forwardRef<HTMLInputElement, UnforwardedInputProps>(
 Input.displayName = "Input"
 
 type UnforwardedDoubleInputProps = {
+  containerClassName?: string
   shared?: UnforwardedInputProps
   first?: UnforwardedInputProps
   second?: UnforwardedInputProps
@@ -68,6 +69,7 @@ export const DoubleInput = forwardRef<
 >(
   (
     {
+      containerClassName,
       shared: {
         containerClassName: sharedContainerClassName,
         className: sharedClassName,
@@ -86,7 +88,12 @@ export const DoubleInput = forwardRef<
     },
     ref
   ) => (
-    <div className="flex flex-col items-stretch sm:flex-row">
+    <div
+      className={cn(
+        "flex flex-col items-stretch sm:flex-row",
+        containerClassName
+      )}
+    >
       <Input
         containerClassName={cn(
           "flex-1",
@@ -105,7 +112,7 @@ export const DoubleInput = forwardRef<
 
       <Input
         containerClassName={cn(
-          "flex-1 mt-5",
+          "flex-1 mt-2",
           "sm:mt-0 sm:ml-5",
           sharedContainerClassName,
           secondContainerClassName
@@ -161,7 +168,7 @@ export const PercentTokenDoubleInput: FC<UnforwardedPercentTokenDoubleInputProps
 
             // Convert from percent to tokens
             const newValue = Number(e.target.value) || 0
-            const tokens = Math.round(initialSupply * (newValue / 100))
+            const tokens = initialSupply * (newValue / 100)
             onChangeAmount(tokens)
           },
           tail: (
@@ -172,7 +179,7 @@ export const PercentTokenDoubleInput: FC<UnforwardedPercentTokenDoubleInputProps
           // Convert from tokens to percent
           value:
             initialSupply > 0 && !!value
-              ? (100 * value) / initialSupply
+              ? Number(((100 * value) / initialSupply).toFixed(6))
               : value,
         }}
         second={{
@@ -505,6 +512,7 @@ interface FormPercentTokenDoubleInputProps {
   initialSupply: number
   tokenSymbol: string
   wrapperClassName?: string
+  extraProps?: Partial<UnforwardedPercentTokenDoubleInputProps>
 }
 export const FormPercentTokenDoubleInput: FC<
   FormPercentTokenDoubleInputProps
@@ -517,6 +525,7 @@ export const FormPercentTokenDoubleInput: FC<
   initialSupply,
   tokenSymbol,
   wrapperClassName,
+  extraProps: { shared, second, ...extraProps } = {},
 }) => (
   <Controller
     control={control}
@@ -546,6 +555,7 @@ export const FormPercentTokenDoubleInput: FC<
         error={error?.message}
       >
         <PercentTokenDoubleInput
+          {...extraProps}
           initialSupply={initialSupply}
           tokenSymbol={tokenSymbol}
           value={value}
@@ -556,8 +566,12 @@ export const FormPercentTokenDoubleInput: FC<
             type: "number",
             inputMode: "numeric",
             className: cn("!pr-40", { "!border-orange": !!error }),
+            ...shared,
           }}
-          second={field}
+          second={{
+            ...second,
+            ...field,
+          }}
         />
       </FormWrapper>
     )}

@@ -3,6 +3,7 @@ import type { NextPage } from "next"
 import Image from "next/image"
 import { useRouter } from "next/router"
 import { FC, useState } from "react"
+import { useForm } from "react-hook-form"
 import { IconType } from "react-icons"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
 import TimeAgo from "react-timeago"
@@ -13,7 +14,8 @@ import {
   CampaignProgress,
   CampaignStatus,
   CenteredColumn,
-  Input,
+  FormInput,
+  FormPercentTokenDoubleInput,
   ResponsiveDecoration,
   TooltipInfo,
 } from "../../components"
@@ -58,13 +60,44 @@ const ActivityItem: FC<ActivityItemProps> = ({
   </div>
 )
 
+interface ContributionForm {
+  contribution?: number
+}
+
+interface RefundForm {
+  refund?: number
+}
+
 const Campaign: NextPage = () => {
   const { query, isReady } = useRouter()
-  const [contribution, setContribution] = useState("0")
-  const [refund, setRefund] = useState("0")
 
+  // Contribution Form
+  const {
+    handleSubmit: contributionHandleSubmit,
+    register: contributionRegister,
+    formState: { errors: contributionErrors },
+  } = useForm({
+    defaultValues: {} as ContributionForm,
+  })
+
+  // Refund Form
+  const { handleSubmit: refundHandleSubmit, control: refundControl } = useForm({
+    defaultValues: {} as RefundForm,
+  })
+
+  // If page not ready or can't find campaign, don't render.
   const campaign = isReady ? campaigns.find((c) => c.id === query.id) : null
   if (!isReady || !campaign) return null
+
+  // Contribution Form
+  const doContribution = ({ contribution }: ContributionForm) => {
+    console.log(contribution)
+  }
+
+  // Refund Form
+  const doRefund = ({ refund }: RefundForm) => {
+    console.log(refund)
+  }
 
   const {
     name,
@@ -88,7 +121,7 @@ const Campaign: NextPage = () => {
 
   const overfunded = pledged > goal
 
-  const userTokens = 0
+  const userTokens = 1
 
   return (
     <>
@@ -181,22 +214,19 @@ const Campaign: NextPage = () => {
               )}
             </div>
 
-            <div
+            <form
+              onSubmit={contributionHandleSubmit(doContribution)}
               className={cn(
                 "flex flex-col items-stretch mt-8",
-                "sm:flex-row lg:self-stretch lg:my-0",
+                "sm:flex-row sm:items-start lg:self-stretch lg:my-0",
                 { hidden: !open }
               )}
             >
-              <Input
+              <FormInput
                 type="number"
                 inputMode="decimal"
                 placeholder="Contribute..."
-                value={contribution}
-                onChange={({ target: { value } }) =>
-                  setContribution(value.replaceAll(/[^\d.]/g, ""))
-                }
-                containerClassName="mb-4 sm:mb-0 sm:mr-4 sm:flex-1"
+                wrapperClassName="!mb-4 sm:!mb-0 sm:mr-4 sm:flex-1"
                 className="!py-3 !px-6 !pr-28"
                 // TODO: remove once switching to button
                 // tailContainerClassName="bg-card rounded-full"
@@ -208,12 +238,23 @@ const Campaign: NextPage = () => {
                     USD
                   </div>
                 }
+                error={contributionErrors?.contribution?.message}
+                {...contributionRegister("contribution", {
+                  required: "Required",
+                  valueAsNumber: true,
+                  pattern: /^\s*\d+\s*$/,
+                  min: {
+                    value: 0,
+                    message: "Must be greater than 0.",
+                  },
+                })}
               />
 
-              <Button onClick={() => alert("thanks")}>
-                Support this Campaign
-              </Button>
-            </div>
+              <Button
+                className="sm:h-[50px]"
+                submitLabel="Support this Campaign"
+              />
+            </form>
           </div>
 
           <div
@@ -259,39 +300,32 @@ const Campaign: NextPage = () => {
         >
           <h2 className="text-xl text-green mb-2">Your Balance</h2>
           <p className="text-light">
-            {userTokens} Tokens{" "}
+            {userTokens} Token{userTokens === 1 ? "" : "s"}{" "}
             <span className="text-placeholder ml-2">
               {prettyPrintDecimal((100 * userTokens) / supply, 2)}% of total
               supply
             </span>
           </p>
 
-          <div className={cn({ hidden: !open })}>
+          <div className={cn({ hidden: !open || userTokens === 0 })}>
             <h2 className="text-xl text-green mt-8 mb-4">Refunds</h2>
 
-            <Input
-              type="number"
-              inputMode="decimal"
-              placeholder="500"
-              value={refund}
-              onChange={({ target: { value } }) =>
-                setRefund(value.replaceAll(/[^\d.]/g, ""))
-              }
-              containerClassName="mb-4 max-w-sm"
-              className="bg-dark !border-light !pr-28"
-              // TODO: remove once switching to button
-              // tailContainerClassName="bg-card rounded-full"
-              tail={
-                // <Button className="h-full px-6" light>
-                //   USD
-                // </Button>
-                <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
-                  USD
-                </div>
-              }
-            />
+            <form onSubmit={refundHandleSubmit(doRefund)}>
+              <FormPercentTokenDoubleInput
+                name="refund"
+                control={refundControl}
+                initialSupply={userTokens}
+                tokenSymbol={asset}
+                extraProps={{
+                  first: { placeholder: "20" },
+                  second: {
+                    placeholder: prettyPrintDecimal(userTokens * 0.2, 6),
+                  },
+                }}
+              />
 
-            <Button onClick={() => alert("refund")}>Refund</Button>
+              <Button submitLabel="Refund" className="mt-4" />
+            </form>
           </div>
         </div>
 
