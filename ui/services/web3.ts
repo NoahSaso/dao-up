@@ -5,6 +5,8 @@ import {
 import { Keplr } from "@keplr-wallet/types"
 import { SetterOrUpdater } from "recoil"
 
+type SetWalletFunction = SetterOrUpdater<WalletState>
+
 const mainChainId = "juno-1"
 const testChainId = "uni-1"
 // const chainId = process.env.NODE_ENV === "development" ? testChainId : mainChainId
@@ -15,18 +17,16 @@ let client: CosmWasmClient | undefined
 let keplr: Keplr | undefined
 let keplrListener: (() => void) | undefined
 
-export const getClient = async (
-  setWallet: SetterOrUpdater<{
-    connected: boolean
-    address: string
-  }>,
-  reset = false
+export const loadClient = async (
+  setWallet: SetWalletFunction,
+  reset = false,
+  silent = false
 ): Promise<CosmWasmClient> => {
   if (client && !reset) return client
 
-  keplr = await getKeplr()
+  await loadKeplr()
   if (!keplr) throw new Error("Keplr is not available")
-  await keplr.enable(chainId)
+  if (!silent) await keplr.enable(chainId)
 
   const signer = await keplr.getOfflineSignerAuto(chainId)
 
@@ -45,15 +45,21 @@ export const getClient = async (
   keplrListener = () => {
     console.log("Keplr keystore changed, reloading client.")
     client = undefined
-    getClient(setWallet)
+    loadClient(setWallet)
   }
   window.addEventListener("keplr_keystorechange", keplrListener)
 
   return client
 }
 
-const getKeplr = async (): Promise<Keplr | undefined> => {
-  if (window.keplr || document.readyState === "complete") return window.keplr
+const loadKeplr = async (): Promise<Keplr | undefined> => {
+  const saveAndReturnKeplr = (newKeplr: Keplr | undefined) => {
+    keplr = newKeplr
+    return keplr
+  }
+
+  if (window.keplr || document.readyState === "complete")
+    return saveAndReturnKeplr(window.keplr)
 
   return new Promise((resolve) => {
     const documentStateChange = (event: Event) => {
@@ -61,7 +67,7 @@ const getKeplr = async (): Promise<Keplr | undefined> => {
         event.target &&
         (event.target as Document).readyState === "complete"
       ) {
-        resolve(window.keplr)
+        resolve(saveAndReturnKeplr(window.keplr))
         document.removeEventListener("readystatechange", documentStateChange)
       }
     }

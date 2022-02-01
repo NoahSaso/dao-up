@@ -19,5 +19,5 @@ export const walletState = atom({
   default: {
     connected: false,
     address: "",
-  },
+  } as WalletState,
 })

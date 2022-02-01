@@ -59,4 +59,9 @@ declare global {
     unstakingDuration: number
     refundProposalDeposits: boolean
   }
+
+  interface WalletState {
+    connected: boolean
+    address: string
+  }
 }

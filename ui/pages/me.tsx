@@ -1,4 +1,5 @@
 import type { NextPage } from "next"
+import { useEffect } from "react"
 import { useRecoilState } from "recoil"
 
 import {
@@ -16,7 +17,12 @@ import * as Web3Service from "../services/web3"
 
 const Me: NextPage = () => {
   const [wallet, setWallet] = useRecoilState(walletState)
-  const connect = () => Web3Service.getClient(setWallet)
+  const connect = () => Web3Service.loadClient(setWallet)
+
+  // Silently attempt to connect to wallet in case browser has authorized previously.
+  useEffect(() => {
+    Web3Service.loadClient(setWallet, false, true)
+  }, [setWallet])
 
   const yourCampaigns = campaigns.slice(0, campaigns.length / 2)
   const yourContributions = campaigns.slice(
