@@ -37,7 +37,7 @@ const Me: NextPage = () => {
       {yourCampaigns.length ? (
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 mt-8">
           {yourCampaigns.map((campaign) => (
-            <CreatorCampaignCard key={campaign.id} campaign={campaign} />
+            <CreatorCampaignCard key={campaign.address} campaign={campaign} />
           ))}
         </div>
       ) : (
@@ -55,7 +55,10 @@ const Me: NextPage = () => {
       {yourContributions.length ? (
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 mt-8">
           {yourContributions.map((campaign) => (
-            <ContributorCampaignCard key={campaign.id} campaign={campaign} />
+            <ContributorCampaignCard
+              key={campaign.address}
+              campaign={campaign}
+            />
           ))}
         </div>
       ) : (

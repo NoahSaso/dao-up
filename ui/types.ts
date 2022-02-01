@@ -11,7 +11,7 @@ declare global {
   }
 
   interface Campaign {
-    id: string
+    address: string
     name: string
     description: string
     imageUrl?: string

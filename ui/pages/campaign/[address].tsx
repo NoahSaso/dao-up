@@ -87,7 +87,7 @@ const Campaign: NextPage = () => {
 
   // If page not ready or can't find campaign, don't render.
   const campaign = isReady
-    ? campaigns.find((c) => c.id === query.address)
+    ? campaigns.find((c) => c.address === query.address)
     : null
   if (!isReady || !campaign) return null
 

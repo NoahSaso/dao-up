@@ -96,7 +96,7 @@ export const newCampaignFieldEntries = Object.entries(newCampaignFields) as [
 
 export const campaigns: Campaign[] = [
   {
-    id: "1",
+    address: "0xjunocontract1",
     name: "BongDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
     open: true,
@@ -134,7 +134,7 @@ export const campaigns: Campaign[] = [
     ],
   },
   {
-    id: "2",
+    address: "0xjunocontract2",
     name: "HouseDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
     open: true,
@@ -148,7 +148,7 @@ export const campaigns: Campaign[] = [
     activity: [],
   },
   {
-    id: "3",
+    address: "0xjunocontract3",
     name: "RentDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
     open: true,
@@ -162,7 +162,7 @@ export const campaigns: Campaign[] = [
     activity: [],
   },
   {
-    id: "4",
+    address: "0xjunocontract4",
     name: "GroceryDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
     open: false,
@@ -176,7 +176,7 @@ export const campaigns: Campaign[] = [
     activity: [],
   },
   {
-    id: "5",
+    address: "0xjunocontract5",
     name: "MicroGridDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
     open: true,

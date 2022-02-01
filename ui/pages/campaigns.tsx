@@ -57,7 +57,7 @@ const Campaigns: NextPage = () => {
 
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
           {filteredCampaigns.map((campaign) => (
-            <AllCampaignsCard key={campaign.id} campaign={campaign} />
+            <AllCampaignsCard key={campaign.address} campaign={campaign} />
           ))}
         </div>
       </CenteredColumn>

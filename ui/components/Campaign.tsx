@@ -64,10 +64,10 @@ export const CampaignProgress: FC<CampaignProps> = ({
 }
 
 export const AllCampaignsCard: FC<CampaignProps> = ({
-  campaign: { id, name, pledged, asset, goal, description },
+  campaign: { address, name, pledged, asset, goal, description },
   className,
 }) => (
-  <Link href={`/campaign/${id}`}>
+  <Link href={`/campaign/${address}`}>
     <a
       className={cn(
         "flex flex-row justify-start items-stretch",
@@ -97,10 +97,10 @@ export const CreatorCampaignCard: FC<CampaignProps> = ({
   campaign,
   className,
 }) => {
-  const { id, name, pledged, asset, goal } = campaign
+  const { address, name, pledged, asset, goal } = campaign
 
   return (
-    <Link href={`/campaign/${id}`}>
+    <Link href={`/campaign/${address}`}>
       <a
         className={cn(
           "flex flex-row justify-start items-stretch",
@@ -133,13 +133,13 @@ export const ContributorCampaignCard: FC<CampaignProps> = ({
   campaign,
   className,
 }) => {
-  const { id, name, pledged, goal, supply } = campaign
+  const { address, name, pledged, goal, supply } = campaign
   const funded = pledged >= goal
 
   const userTokens = 200
 
   return (
-    <Link href={`/campaign/${id}`}>
+    <Link href={`/campaign/${address}`}>
       <a
         className={cn(
           "flex flex-row justify-start items-center",
