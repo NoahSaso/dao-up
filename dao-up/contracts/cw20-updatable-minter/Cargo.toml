@@ -1,5 +1,5 @@
 [package]
-name = "cw20-base"
+name = "cw20-updatable-minter"
 version = "0.11.1"
 authors = ["Ethan Frey <ethanfrey@users.noreply.github.com>", "Zeke Medley <zekemedley@gmail.com>"]
 edition = "2018"
