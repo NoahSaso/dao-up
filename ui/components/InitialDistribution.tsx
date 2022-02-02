@@ -85,32 +85,37 @@ export const InitialDistributionCreator: FC<
   const [amountError, setAmountError] = useState("")
   const amountRef = useRef<HTMLInputElement>(null)
 
+  // Validate address and amount on the fly.
+  const [cleanedAddress, addressValidationError] =
+    validateAndCleanJunoAddress(address)
+
+  // Find existing field.
+  const existingIndex = fields?.findIndex(
+    ({ address }) => address === cleanedAddress
+  )
+  const existingField =
+    typeof existingIndex === "number" && existingIndex > -1
+      ? fields[existingIndex]
+      : undefined
+
+  // If address already exists, ignore its set amount in the remaining supply since we're going to update it.
+  const remainingSupplyExceptSelf =
+    remainingSupply + (existingField?.amount ?? 0)
+  const anyRemainingSupply = remainingSupplyExceptSelf > 0
+
   const addRecipient = () => {
     setAddressError("")
     setAmountError("")
 
     let valid = true
 
-    const [cleanedAddress, addressValidationError] =
-      validateAndCleanJunoAddress(address)
     if (addressValidationError) {
       addressRef?.current?.focus()
       valid = false
       setAddressError(addressValidationError)
     }
 
-    // Find existing field.
-    const existingIndex = fields?.findIndex(
-      ({ address }) => address === cleanedAddress
-    )
-    const existingField =
-      typeof existingIndex === "number" && existingIndex > -1
-        ? fields[existingIndex]
-        : undefined
-
     // If address already exists, ignore the amount in the remaining supply since we're going to update it.
-    const remainingSupplyExceptSelf =
-      remainingSupply + (existingField?.amount ?? 0)
     if (!validateInitialDistributionAmount(amount, remainingSupplyExceptSelf)) {
       // If not yet invalid (thus hasn't focused address field due to error), focus this field.
       if (valid) amountRef?.current?.focus()
@@ -121,11 +126,15 @@ export const InitialDistributionCreator: FC<
         6
       )
       setAmountError(
-        `Must be greater than 0% (0 ${tokenSymbol}) and less than or equal to the remaining ${percentRemaining}% (${prettyPrintDecimal(
-          remainingSupplyExceptSelf
-        )} ${tokenSymbol})${
-          !!existingField ? " since you're updating an existing address" : ""
-        }.`
+        anyRemainingSupply
+          ? `Must be greater than 0% (0 ${tokenSymbol}) and less than or equal to the remaining ${percentRemaining}% (${prettyPrintDecimal(
+              remainingSupplyExceptSelf
+            )} ${tokenSymbol})${
+              !!existingField
+                ? " since you're updating an existing address"
+                : ""
+            }.`
+          : "All tokens have been allotted to the DAO or other Initial Distribution Addresses. Increase the Initial Token Supply, or decrease the DAO Initial Amount or Initial Distribution Amounts above before adding another address."
       )
     }
 
@@ -172,9 +181,22 @@ export const InitialDistributionCreator: FC<
         ref={amountRef}
       />
 
-      <Button onClick={addRecipient} className="self-start">
-        Add Recipient
+      <Button
+        onClick={addRecipient}
+        className="self-start"
+        disabled={!anyRemainingSupply}
+      >
+        {existingField ? "Update" : "Add"} Recipient
       </Button>
+
+      {!anyRemainingSupply && (
+        <p className="text-green mt-4">
+          All tokens have been allotted to the DAO or other Initial Distribution
+          Addresses. Increase the Initial Token Supply, or decrease the DAO
+          Initial Amount or Initial Distribution Amounts above before adding
+          another address.
+        </p>
+      )}
     </div>
   )
 }

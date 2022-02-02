@@ -44,6 +44,7 @@ export const Button: FC<ButtonProps> = ({
   submitLabel,
   simple,
   onClick,
+  disabled,
   ...props
 }) => {
   const classNames = classnames(
@@ -60,6 +61,7 @@ export const Button: FC<ButtonProps> = ({
       "text-dark hover:bg-[transparent]": !simple && !outline,
     },
     { "hover:opacity-50": simple },
+    { "opacity-50 pointer-events-none cursor-not-allowed": disabled },
     className
   )
 
@@ -69,9 +71,16 @@ export const Button: FC<ButtonProps> = ({
       className={classNames}
       value={submitLabel}
       onClick={onClick}
+      disabled={disabled}
     />
   ) : (
-    <button type="button" className={classNames} onClick={onClick} {...props}>
+    <button
+      type="button"
+      className={classNames}
+      onClick={onClick}
+      disabled={disabled}
+      {...props}
+    >
       {children}
     </button>
   )
