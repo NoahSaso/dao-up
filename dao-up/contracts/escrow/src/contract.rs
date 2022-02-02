@@ -34,6 +34,7 @@ pub fn instantiate(
         creator: info.sender,
         funding_goal: msg.funding_goal,
         token_price: msg.token_price,
+        dao_initial_balance: msg.dao_initial_balance,
         status: Active,
         campaign: msg.campaign_info,
     };
@@ -51,7 +52,7 @@ pub fn instantiate(
             name: state.campaign.dao_config.token_name,
             symbol: state.campaign.dao_config.token_symbol,
             decimals: 6,
-            initial_balances: vec![],
+            initial_balances: msg.initial_balances,
             mint: Some(cw20::MinterResponse {
                 minter: env.contract.address.to_string(),
                 cap: None,
@@ -75,18 +76,23 @@ pub fn execute(
     match msg {
         ExecuteMsg::Fund {} => execute_fund(deps.as_ref(), &info.funds, info.sender),
         ExecuteMsg::Close {} => execute_close(deps.as_ref(), env, info.sender),
-        ExecuteMsg::Transfer {} => todo!(),
+        ExecuteMsg::Transfer {} => execute_transfer(deps, env, info.sender),
         ExecuteMsg::Receive(msg) => execute_receive(deps.as_ref(), msg, info.sender),
     }
 }
 
 pub fn execute_fund(deps: Deps, funds: &[Coin], sender: Addr) -> Result<Response, ContractError> {
     let config = STATE.load(deps.storage)?;
+    // Check that the status is active.
+    if config.status != Status::Active {
+        return Err(ContractError::Innactive {});
+    }
+
     let payment = funds
         .iter()
         .filter(|coin| coin.denom == config.token_price.denom)
         .fold(Uint128::zero(), |accum, coin| coin.amount + accum);
-    let coins_owned = payment / config.token_price.amount;
+    let coins_owned = payment * config.token_price.amount;
 
     let gov_address = GOV_TOKEN_ADDR.load(deps.storage)?;
 
@@ -117,8 +123,13 @@ pub fn execute_receive(
     }
 
     let config = STATE.load(deps.storage)?;
+    // Check that the status is active.
+    if config.status != Status::Active {
+        return Err(ContractError::Innactive {});
+    }
+
     let sender = deps.api.addr_validate(&msg.sender)?;
-    let native_owed = msg.amount * config.token_price.amount;
+    let native_owed = msg.amount / config.token_price.amount;
 
     let bank_msg = BankMsg::Send {
         to_address: sender.to_string(),
@@ -128,12 +139,20 @@ pub fn execute_receive(
         }],
     };
 
+    // Burn the returned tokens.
+    let burn_msg = WasmMsg::Execute {
+        contract_addr: gov_token.to_string(),
+        msg: to_binary(&cw20::Cw20ExecuteMsg::Burn { amount: msg.amount })?,
+        funds: vec![],
+    };
+
     Ok(Response::default()
         .add_attribute("action", "refund")
         .add_attribute("sender", sender)
         .add_attribute("tokens_returned", msg.amount)
         .add_attribute("native_refunded", native_owed)
-        .add_message(bank_msg))
+        .add_message(bank_msg)
+        .add_message(burn_msg))
 }
 
 pub fn execute_close(deps: Deps, env: Env, sender: Addr) -> Result<Response, ContractError> {
@@ -141,6 +160,11 @@ pub fn execute_close(deps: Deps, env: Env, sender: Addr) -> Result<Response, Con
     // Only the campaign creator can call this method.
     if sender != config.creator {
         return Err(ContractError::Unauthorized {});
+    }
+
+    // Check that the status is active.
+    if config.status != Status::Active {
+        return Err(ContractError::Close {});
     }
 
     let funds_raised = deps
@@ -188,6 +212,70 @@ pub fn execute_close(deps: Deps, env: Env, sender: Addr) -> Result<Response, Con
         .add_submessage(submsg))
 }
 
+pub fn execute_transfer(deps: DepsMut, env: Env, sender: Addr) -> Result<Response, ContractError> {
+    let config = STATE.load(deps.storage)?;
+
+    // NOTE: anyone can call this method. This is to prevent a
+    // malicious creator from closing the contract but not transfering
+    // the money to the DAO causing backers to loose all of their
+    // funds.
+
+    let dao_addr = match config.status {
+        Status::ClosedButNotTransferred { dao_address } => dao_address,
+        _ => return Err(ContractError::Transfer {}),
+    };
+    let gov_addr = GOV_TOKEN_ADDR.load(deps.storage)?;
+
+    // Transfer everything we have.
+    let funds_to_move = deps.querier.query_all_balances(env.contract.address)?;
+
+    let mut wasm_msgs = vec![];
+
+    if !config.dao_initial_balance.is_zero() {
+        // Mint the DAO its initial token balance.
+        let mint_initial_dao_balance = WasmMsg::Execute {
+            contract_addr: gov_addr.to_string(),
+            msg: to_binary(&cw20_updatable_minter::msg::ExecuteMsg::Mint {
+                recipient: dao_addr.to_string(),
+                amount: config.dao_initial_balance,
+            })?,
+            funds: vec![],
+        };
+        wasm_msgs.push(mint_initial_dao_balance)
+    }
+
+    // Send our minting rights to the DAO.
+    let transfer_mint = WasmMsg::Execute {
+        contract_addr: gov_addr.to_string(),
+        msg: to_binary(&cw20_updatable_minter::msg::ExecuteMsg::UpdateMinter {
+            minter: dao_addr.to_string(),
+        })?,
+        funds: vec![],
+    };
+    wasm_msgs.push(transfer_mint);
+
+    // Send our funds to the DAO.
+    let transfer_funds_msg = BankMsg::Send {
+        to_address: dao_addr.to_string(),
+        amount: funds_to_move,
+    };
+
+    // Update the state. The transfer message failing will roll this
+    // back.
+    STATE.update(deps.storage, |mut state| -> StdResult<State> {
+        state.status = Status::Closed {
+            dao_address: dao_addr,
+        };
+        Ok(state)
+    })?;
+
+    Ok(Response::default()
+        .add_attribute("action", "transfer")
+        .add_attribute("sender", sender)
+        .add_messages(wasm_msgs)
+        .add_message(transfer_funds_msg))
+}
+
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
@@ -228,7 +316,7 @@ pub fn reply(deps: DepsMut, _env: Env, msg: Reply) -> Result<Response, ContractE
                 ContractError::Instantiation(format!("failed to instantiate gov token: ({})", e))
             })?;
             let cw20_addr = deps.api.addr_validate(&res.contract_address)?;
-            GOV_TOKEN_ADDR.save(deps.storage, &&cw20_addr)?;
+            GOV_TOKEN_ADDR.save(deps.storage, &cw20_addr)?;
             Ok(Response::default())
         }
         INSTANTIATE_DAO_REPLY_ID => {
@@ -237,7 +325,7 @@ pub fn reply(deps: DepsMut, _env: Env, msg: Reply) -> Result<Response, ContractE
             })?;
             let dao_addr = deps.api.addr_validate(&res.contract_address)?;
             STATE.update(deps.storage, |mut state| -> StdResult<State> {
-                state.status = Status::ClosedButNotTransfered {
+                state.status = Status::ClosedButNotTransferred {
                     dao_address: dao_addr,
                 };
                 Ok(state)

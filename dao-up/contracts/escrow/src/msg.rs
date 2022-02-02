@@ -1,5 +1,5 @@
-use cosmwasm_std::Coin;
-use cw20::Cw20ReceiveMsg;
+use cosmwasm_std::{Coin, Uint128};
+use cw20::{Cw20Coin, Cw20ReceiveMsg};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -12,8 +12,14 @@ use crate::{
 pub struct InstantiateMsg {
     /// The funding goal.
     pub funding_goal: Coin,
-    /// The price of one token.
+    /// The token price in tokens / denom.
     pub token_price: Coin,
+    /// The initial token balances. Used to give tokens to the
+    /// creators of the campaign.
+    pub initial_balances: Vec<Cw20Coin>,
+    /// The amount of tokens to allocate to the DAO when funds are
+    /// transfered.
+    pub dao_initial_balance: Uint128,
     /// The code ID of the governance token.
     pub gov_token_code_id: u64,
     /// The code ID of the DAO contract.
@@ -82,6 +88,6 @@ impl InstantiateMsg {
             )));
         }
 
-        return Ok(());
+        Ok(())
     }
 }
