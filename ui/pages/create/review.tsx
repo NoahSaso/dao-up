@@ -1,7 +1,8 @@
+import cn from "classnames"
 import type { NextPage } from "next"
 import Image from "next/image"
 import Link from "next/link"
-import { FC, useState } from "react"
+import { FC, PropsWithChildren, useState } from "react"
 import { FieldValues, SubmitHandler } from "react-hook-form"
 import { useRecoilState } from "recoil"
 
@@ -18,77 +19,65 @@ import { newCampaignFieldEntries } from "../../services/campaigns"
 import { newCampaignState } from "../../services/state"
 
 interface FieldDisplayProps {
-  field: string
-  label: string
-  pageId: number
-  value?: string
+  newCampaign: Partial<NewCampaign>
+  fieldKey: keyof NewCampaign
+  field: NewCampaignField
 }
 const FieldDisplay: FC<FieldDisplayProps> = ({
-  field,
-  label,
-  value,
-  pageId,
+  newCampaign,
+  fieldKey,
+  field: { label, unitBefore, unitAfter, render },
 }) => (
-  <Link href={`/create${`/${pageId > 1 ? pageId : ""}`}`}>
-    <a className="flex flex-col mt-6">
-      <div className="flex flex-row items-center">
-        <p className="text-green mr-2 whitespace-pre-wrap">{label}</p>
-        <Image src="/images/pencil.svg" alt="edit" width={18} height={18} />
-      </div>
-      <p className="text-light mr-5">{value}</p>
-      {field === "imageUrl" && !!value && (
-        // image is being loaded from anywhere, so can't use next image component
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={value} alt="" className="max-w-[14rem]" />
-      )}
-    </a>
-  </Link>
+  <div className="flex flex-col mt-6">
+    <p className="text-green mr-4">{label}</p>
+    <p className="text-light whitespace-pre-wrap mr-5">
+      {unitBefore?.(newCampaign) ?? ""}
+      {render(newCampaign[fieldKey])}
+      {unitAfter?.(newCampaign) ?? ""}
+    </p>
+    {fieldKey === "imageUrl" && !!newCampaign[fieldKey] && (
+      // image is being loaded from anywhere, so can't use next image component
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={newCampaign[fieldKey]} alt="" className="max-w-[14rem]" />
+    )}
+  </div>
 )
-
-const valueToString = (
-  value:
-    | string
-    | number
-    | boolean
-    | InitialDistribution[]
-    | InitialDistribution
-    | undefined
-): string => {
-  if (typeof value === "number") return prettyPrintDecimal(value)
-
-  if (typeof value === "string" || typeof value === "boolean")
-    return value.toString()
-
-  // InitialDistribution[]
-  if (Array.isArray(value))
-    return value
-      .map((v, idx) => `#${idx + 1}\n${valueToString(v)}`)
-      .join("\n\n")
-
-  if (typeof value === "object")
-    return Object.entries(value)
-      .map(
-        ([k, v]) =>
-          `${
-            k.charAt(0).toUpperCase() + k.substring(1).toLowerCase()
-          }: ${valueToString(v as string | number)}`
-      )
-      .join("\n")
-
-  return ""
-}
 
 const renderFieldDisplay = (
   newCampaign: Partial<NewCampaign>,
-  [field, { label, pageId }]: typeof newCampaignFieldEntries[number]
+  [key, field]: [keyof NewCampaign, NewCampaignField]
 ) => (
   <FieldDisplay
-    key={field}
+    newCampaign={newCampaign}
+    key={key}
+    fieldKey={key}
     field={field}
-    label={label}
-    pageId={pageId}
-    value={valueToString(newCampaign[field])}
   />
+)
+
+interface CardProps {
+  label: string
+  pageId: number
+  flat?: boolean
+}
+const Card: FC<PropsWithChildren<CardProps>> = ({
+  label,
+  pageId,
+  flat,
+  children,
+}) => (
+  <Link href={`/create${`/${pageId > 1 ? pageId : ""}`}`}>
+    <a
+      className={cn("flex flex-col mt-6", { "bg-card rounded-3xl p-8": !flat })}
+    >
+      <div className="flex flex-row items-center mb-2">
+        <h2 className="text-2xl mr-3">{label}</h2>
+        <Image src="/images/pencil.svg" alt="edit" width={18} height={18} />
+      </div>
+
+      {children}
+    </a>
+  </Link>
 )
 
 const Create5: NextPage = () => {
@@ -116,9 +105,36 @@ const Create5: NextPage = () => {
           Review Campaign Settings
         </h1>
 
-        {newCampaignFieldEntries
-          .filter(([_, { advanced }]) => !advanced)
-          .map((entry) => renderFieldDisplay(newCampaign, entry))}
+        <Card label="Campaign Overview" pageId={1}>
+          {newCampaignFieldEntries
+            .filter(([_, { pageId }]) => pageId === 1)
+            .map(([key, field]) => (
+              <FieldDisplay
+                newCampaign={newCampaign}
+                key={key}
+                fieldKey={key}
+                field={field}
+              />
+            ))}
+        </Card>
+
+        <Card label="DAO Overview" pageId={2}>
+          {newCampaignFieldEntries
+            .filter(([_, { pageId }]) => pageId === 2)
+            .map((entry) => renderFieldDisplay(newCampaign, entry))}
+        </Card>
+
+        <Card label="Campaign Details" pageId={3}>
+          {newCampaignFieldEntries
+            .filter(([_, { pageId }]) => pageId === 3)
+            .map((entry) => renderFieldDisplay(newCampaign, entry))}
+        </Card>
+
+        <Card label="Token Configuration" pageId={4}>
+          {newCampaignFieldEntries
+            .filter(([_, { pageId, advanced }]) => pageId === 4 && !advanced)
+            .map((entry) => renderFieldDisplay(newCampaign, entry))}
+        </Card>
 
         <VisibilityToggle
           visible={showingAdvanced}
@@ -127,9 +143,11 @@ const Create5: NextPage = () => {
           onClick={() => setShowingAdvanced((a) => !a)}
           toggleClassName="mt-10 mb-4"
         >
-          {newCampaignFieldEntries
-            .filter(([_, { advanced }]) => advanced)
-            .map((entry) => renderFieldDisplay(newCampaign, entry))}
+          <Card label="Advanced Configuration" pageId={4} flat>
+            {newCampaignFieldEntries
+              .filter(([_, { pageId, advanced }]) => pageId === 4 && advanced)
+              .map((entry) => renderFieldDisplay(newCampaign, entry))}
+          </Card>
         </VisibilityToggle>
 
         <div className="flex flex-row justify-between items-center mt-10">

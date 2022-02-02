@@ -1,4 +1,5 @@
 import { Window as KeplrWindow } from "@keplr-wallet/types"
+import { ReactNode } from "react"
 
 declare global {
   interface Window extends KeplrWindow {}
@@ -58,6 +59,9 @@ declare global {
     pageId: number
     required: boolean
     advanced: boolean
+    render: (v: any) => ReactNode
+    unitBefore?: (c: Partial<NewCampaign>) => string
+    unitAfter?: (c: Partial<NewCampaign>) => string
   }
 
   interface WalletState {

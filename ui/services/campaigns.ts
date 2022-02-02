@@ -1,51 +1,109 @@
+import { prettyPrintDecimal } from "../helpers/number"
 import { Status } from "../types"
 
+const renderString = (v: string) => v
+const renderBoolean = (v: boolean) => (v ? "Yes" : "No")
+const makeRenderNumber =
+  (maxDecimals?: number, minDecimals?: number) => (v: number) =>
+    prettyPrintDecimal(v, maxDecimals, minDecimals)
+// TODO: add image and initial distribution renderer here
+
 export const newCampaignFields: Record<keyof NewCampaign, NewCampaignField> = {
-  name: { label: "Campaign Name", pageId: 1, required: true, advanced: false },
+  name: {
+    label: "Campaign Name",
+    pageId: 1,
+    required: true,
+    advanced: false,
+    render: renderString,
+  },
   description: {
     label: "Campaign Description",
     pageId: 1,
     required: true,
     advanced: false,
+    render: renderString,
   },
-  goal: { label: "Funding Target", pageId: 1, required: true, advanced: false },
+  goal: {
+    label: "Funding Target",
+    pageId: 1,
+    required: true,
+    advanced: false,
+    unitBefore: (_) => "$",
+    render: makeRenderNumber(2, 2),
+  },
   displayPublicly: {
     label: "Show on public campaigns list",
     pageId: 1,
     required: false,
     advanced: false,
+    render: renderBoolean,
   },
 
-  daoName: { label: "DAO Name", pageId: 2, required: true, advanced: false },
+  daoName: {
+    label: "DAO Name",
+    pageId: 2,
+    required: true,
+    advanced: false,
+    render: renderString,
+  },
   daoDescription: {
     label: "DAO Description",
     pageId: 2,
     required: true,
     advanced: false,
+    render: renderString,
   },
 
-  website: { label: "Website", pageId: 3, required: false, advanced: false },
-  twitter: { label: "Twitter", pageId: 3, required: false, advanced: false },
-  discord: { label: "Discord", pageId: 3, required: false, advanced: false },
-  imageUrl: { label: "Image URL", pageId: 3, required: false, advanced: false },
+  website: {
+    label: "Website",
+    pageId: 3,
+    required: false,
+    advanced: false,
+    render: renderString,
+  },
+  twitter: {
+    label: "Twitter",
+    pageId: 3,
+    required: false,
+    advanced: false,
+    render: renderString,
+  },
+  discord: {
+    label: "Discord",
+    pageId: 3,
+    required: false,
+    advanced: false,
+    render: renderString,
+  },
+  imageUrl: {
+    label: "Image URL",
+    pageId: 3,
+    required: false,
+    advanced: false,
+    render: renderString,
+  },
 
   tokenName: {
     label: "Token Name",
     pageId: 4,
     required: true,
     advanced: false,
+    render: renderString,
   },
   tokenSymbol: {
     label: "Token Symbol",
     pageId: 4,
     required: true,
     advanced: false,
+    render: renderString,
   },
   passingThreshold: {
     label: "DAO Proposal Passing Threshold",
     pageId: 4,
     required: true,
     advanced: false,
+    unitAfter: (_) => "%",
+    render: makeRenderNumber(),
   },
   // advanced
   initialSupply: {
@@ -53,42 +111,54 @@ export const newCampaignFields: Record<keyof NewCampaign, NewCampaignField> = {
     pageId: 4,
     required: true,
     advanced: true,
+    unitAfter: (c) => ` ${c.tokenSymbol ?? "tokens"}`,
+    render: makeRenderNumber(),
   },
   initialDAOAmount: {
     label: "DAO Initial Amount",
     pageId: 4,
     required: true,
     advanced: true,
+    unitAfter: (c) => ` ${c.tokenSymbol ?? "tokens"}`,
+    render: makeRenderNumber(),
   },
   initialDistributions: {
     label: "Initial Distributions",
     pageId: 4,
     required: true,
     advanced: true,
+    render: renderString,
   },
   votingDuration: {
     label: "Voting Duration",
     pageId: 4,
     required: true,
     advanced: true,
+    unitAfter: (_) => " seconds",
+    render: makeRenderNumber(),
   },
   unstakingDuration: {
     label: "Unstaking Duration",
     pageId: 4,
     required: true,
     advanced: true,
+    unitAfter: (_) => " seconds",
+    render: makeRenderNumber(),
   },
   proposalDeposit: {
     label: "Proposal Deposit",
     pageId: 4,
     required: true,
     advanced: true,
+    unitAfter: (c) => ` ${c.tokenSymbol ?? "tokens"}`,
+    render: makeRenderNumber(),
   },
   refundProposalDeposits: {
     label: "Refund Proposal Deposits",
     pageId: 4,
     required: true,
     advanced: true,
+    render: renderBoolean,
   },
 }
 export const newCampaignFieldEntries = Object.entries(newCampaignFields) as [
