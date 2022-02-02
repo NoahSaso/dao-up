@@ -1,15 +1,14 @@
-import cn from "classnames"
 import type { NextPage } from "next"
 import { useState } from "react"
 import { Controller, useFieldArray } from "react-hook-form"
 
 import {
-  Button,
   CenteredColumn,
+  ControlledFormPercentTokenDoubleInput,
   FormInput,
-  FormPercentTokenDoubleInput,
   FormSwitch,
   FormWrapper,
+  InitialDistributionFieldEditor,
   ResponsiveDecoration,
   VisibilityToggle,
 } from "../../components"
@@ -123,7 +122,11 @@ const Create4: NextPage = () => {
               } to get the value of each token. Default is 10 million.`}
               accent={
                 tokenPrice
-                  ? `1 token = ${prettyPrintDecimal(tokenPrice, 2, 2)} USD`
+                  ? `1 ${watchTokenSymbol} = ${prettyPrintDecimal(
+                      tokenPrice,
+                      2,
+                      2
+                    )} USD`
                   : undefined
               }
               placeholder="10,000,000"
@@ -144,7 +147,7 @@ const Create4: NextPage = () => {
             />
 
             {/* TODO: Update this value when initialSupply changes? */}
-            <FormPercentTokenDoubleInput
+            <ControlledFormPercentTokenDoubleInput
               control={control}
               name="initialDAOAmount"
               label={newCampaignFields.initialDAOAmount.label}
@@ -161,57 +164,25 @@ const Create4: NextPage = () => {
               label={newCampaignFields.initialDistributions.label}
               description="Addresses to distribute tokens to upon creation of the campaign. These addresses will receive DAO tokens without contributing any money to the DAO."
             >
-              {initialDistributionsFields.map(({ id }, index) => (
-                <div
-                  key={id}
-                  className={cn(
-                    "flex flex-col items-stretch",
-                    "border border-orange rounded-3xl",
-                    "p-5 mt-5 first:mt-0"
-                  )}
-                >
-                  <FormInput
-                    label={`Initial Distribution Address #${index + 1}`}
-                    placeholder="juno..."
-                    type="text"
-                    error={
-                      errors.initialDistributions?.[index]?.address?.message
-                    }
-                    wrapperClassName="!mb-4"
-                    {...register(`initialDistributions.${index}.address`, {
-                      required: "Required",
-                      // TODO: address format
-                      pattern: /^\s*juno.+\s*$/,
-                    })}
+              {initialDistributionsFields.map(
+                ({ id, ...initialDistribution }, index) => (
+                  <InitialDistributionFieldEditor
+                    key={id}
+                    creating={false}
+                    initialSupply={watchInitialSupply}
+                    tokenSymbol={watchTokenSymbol}
+                    initialDistribution={initialDistribution}
+                    onRemove={() => initialDistributionsRemove(index)}
                   />
+                )
+              )}
 
-                  <FormPercentTokenDoubleInput
-                    control={control}
-                    label={`Initial Distribution Amount #${index + 1}`}
-                    name={`initialDistributions.${index}.amount`}
-                    maxValue={watchInitialSupply}
-                    currency={watchTokenSymbol}
-                    shared={{ placeholder: "0" }}
-                  />
-
-                  <Button
-                    className="self-end"
-                    color="orange"
-                    onClick={() => initialDistributionsRemove(index)}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              ))}
-              <Button
-                className="mt-5 self-end"
-                color="light"
-                onClick={() =>
-                  initialDistributionsAppend({ address: undefined, amount: 0 })
-                }
-              >
-                Add Initial Distribution
-              </Button>
+              <InitialDistributionFieldEditor
+                creating
+                initialSupply={watchInitialSupply}
+                tokenSymbol={watchTokenSymbol}
+                append={initialDistributionsAppend}
+              />
             </FormWrapper>
 
             <FormInput

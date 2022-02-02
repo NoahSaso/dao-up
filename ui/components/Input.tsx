@@ -9,8 +9,13 @@ import {
   TextareaHTMLAttributes,
   useState,
 } from "react"
-import { Control, Controller, FieldValues } from "react-hook-form"
-import { IoCaretDownSharp } from "react-icons/io5"
+import {
+  Control,
+  Controller,
+  FieldArrayMethodProps,
+  FieldValues,
+} from "react-hook-form"
+import { IoCaretDownSharp, IoCloseSharp } from "react-icons/io5"
 
 import { prettyPrintDecimal } from "../helpers/number"
 import { Button } from "."
@@ -197,67 +202,69 @@ DoubleInput.displayName = "DoubleInput"
 
 interface UnforwardedPercentTokenDoubleInputProps
   extends UnforwardedDoubleInputProps {
-  value: number | undefined
+  value?: number | undefined
   onChangeAmount: (amount: any) => void
   maxValue: number
   currency: string
 }
-export const PercentTokenDoubleInput: FC<UnforwardedPercentTokenDoubleInputProps> =
-  forwardRef<HTMLInputElement, UnforwardedPercentTokenDoubleInputProps>(
-    (
-      {
-        shared: { className: sharedClassName, ...shared } = {},
-        first,
-        second,
-        value,
-        onChangeAmount,
-        maxValue,
-        currency,
-        ...props
-      },
-      ref
-    ) => (
-      <DoubleInput
-        shared={{
-          ...shared,
-          type: "number",
-          inputMode: "numeric",
-          className: cn("!pr-40", sharedClassName),
-        }}
-        first={{
-          ...first,
-          onChange: (e) => {
-            // If empty string, just pass along so the input can clear.
-            if (!e.target.value.trim()) return onChangeAmount("")
+export const PercentTokenDoubleInput = forwardRef<
+  HTMLInputElement,
+  UnforwardedPercentTokenDoubleInputProps
+>(
+  (
+    {
+      shared: { className: sharedClassName, ...shared } = {},
+      first,
+      second,
+      value,
+      onChangeAmount,
+      maxValue,
+      currency,
+      ...props
+    },
+    ref
+  ) => (
+    <DoubleInput
+      shared={{
+        ...shared,
+        type: "number",
+        inputMode: "numeric",
+        className: cn("!pr-40", sharedClassName),
+      }}
+      first={{
+        ...first,
+        onChange: (e) => {
+          // If empty string, just pass along so the input can clear.
+          if (!e.target.value.trim()) return onChangeAmount("")
 
-            // Convert from percent to tokens
-            const newValue = Number(e.target.value) || 0
-            const tokens = maxValue * (newValue / 100)
-            onChangeAmount(tokens)
-          },
-          tail: "%",
-          // Convert from tokens to percent
-          value:
-            maxValue > 0 && !!value
-              ? Number(((100 * value) / maxValue).toFixed(6))
-              : value,
-        }}
-        second={{
-          ...second,
-          onChange: (e) => {
-            // If empty string, just pass along so the input can clear.
-            if (!e.target.value.trim()) return onChangeAmount("")
+          // Convert from percent to tokens
+          const newValue = Number(e.target.value) || 0
+          const tokens = maxValue * (newValue / 100)
+          onChangeAmount(tokens)
+        },
+        tail: "%",
+        // Convert from tokens to percent
+        value:
+          maxValue > 0 && !!value
+            ? Number(((100 * value) / maxValue).toFixed(6))
+            : value,
+      }}
+      second={{
+        ...second,
+        onChange: (e) => {
+          // If empty string, just pass along so the input can clear.
+          if (!e.target.value.trim()) return onChangeAmount("")
 
-            onChangeAmount(Number(e.target.value))
-          },
-          value: value,
-          tail: currency,
-        }}
-        {...props}
-        ref={ref}
-      />
-    )
+          onChangeAmount(Number(e.target.value))
+        },
+        value: value,
+        tail: currency,
+      }}
+      {...props}
+      ref={ref}
+    />
   )
+)
 PercentTokenDoubleInput.displayName = "PercentTokenDoubleInput"
 
 // TextArea
@@ -553,30 +560,48 @@ export const FormDoubleInput = forwardRef<
 )
 FormDoubleInput.displayName = "FormDoubleInput"
 
-type FormPercentTokenDoubleInputProps = Omit<
-  UnforwardedPercentTokenDoubleInputProps,
-  "value" | "onChangeAmount"
-> &
-  Omit<FormItemProps, "accent" | "error" | "horizontal"> & {
-    control: Control<FieldValues, object>
-    name: string
-  }
+type UnforwardedFormPercentTokenDoubleInputProps =
+  UnforwardedPercentTokenDoubleInputProps & Omit<FormItemProps, "horizontal">
 
-export const FormPercentTokenDoubleInput: FC<
-  FormPercentTokenDoubleInputProps
-> = ({
-  control,
-  name,
-  label,
-  description,
-  wrapperClassName,
-  surroundingClassName,
-  maxValue,
-  currency,
-  shared,
-  second,
-  ...props
-}) => (
+export const FormPercentTokenDoubleInput = forwardRef<
+  HTMLInputElement,
+  UnforwardedFormPercentTokenDoubleInputProps
+>(
+  (
+    {
+      label,
+      description,
+      accent,
+      error,
+      wrapperClassName,
+      surroundingClassName,
+      ...props
+    },
+    ref
+  ) => (
+    <FormWrapper
+      label={label}
+      description={description}
+      accent={accent}
+      error={error}
+      wrapperClassName={wrapperClassName}
+      surroundingClassName={surroundingClassName}
+    >
+      <PercentTokenDoubleInput {...props} ref={ref} />
+    </FormWrapper>
+  )
+)
+FormPercentTokenDoubleInput.displayName = "FormPercentTokenDoubleInput"
+
+interface ControlledFormPercentTokenDoubleInputProps
+  extends Omit<UnforwardedFormPercentTokenDoubleInputProps, "onChangeAmount"> {
+  control?: Control<FieldValues, object>
+  name: string
+}
+
+export const ControlledFormPercentTokenDoubleInput: FC<
+  ControlledFormPercentTokenDoubleInputProps
+> = ({ control, name, maxValue, currency, shared, second, ...props }) => (
   <Controller
     control={control}
     name={name}
@@ -598,32 +623,134 @@ export const FormPercentTokenDoubleInput: FC<
       field: { onChange, onBlur, value, ref, ...field },
       fieldState: { error },
     }) => (
-      <FormWrapper
-        label={label}
-        description={description}
-        wrapperClassName={wrapperClassName}
-        surroundingClassName={surroundingClassName}
+      <FormPercentTokenDoubleInput
         error={error?.message}
-      >
-        <PercentTokenDoubleInput
-          maxValue={maxValue}
-          currency={currency}
-          value={value}
-          onChangeAmount={onChange}
-          shared={{
-            onBlur,
-            type: "number",
-            inputMode: "numeric",
-            className: cn("!pr-40", { "!border-orange": !!error }),
-            ...shared,
-          }}
-          second={{
-            ...second,
-            ...field,
-          }}
-          {...props}
-        />
-      </FormWrapper>
+        maxValue={maxValue}
+        currency={currency}
+        value={value}
+        onChangeAmount={onChange}
+        shared={{
+          onBlur,
+          className: cn({ "!border-orange": !!error }),
+          ...shared,
+        }}
+        second={{
+          ...second,
+          ...field,
+        }}
+        {...props}
+      />
     )}
   />
 )
+
+type InitialDistributionsFieldEditorProps = {
+  initialSupply: number
+  tokenSymbol: string
+} & (
+  | {
+      creating: false
+      initialDistribution: InitialDistribution
+      onRemove: () => void
+      append?: never
+    }
+  | {
+      creating: true
+      initialDistribution?: never
+      onRemove?: never
+      append: (
+        value: Partial<InitialDistribution> | Partial<InitialDistribution>[],
+        options?: FieldArrayMethodProps | undefined
+      ) => void
+    }
+)
+
+export const InitialDistributionFieldEditor: FC<
+  InitialDistributionsFieldEditorProps
+> = ({
+  initialSupply,
+  tokenSymbol,
+  creating,
+  initialDistribution,
+  onRemove,
+  append,
+}) => {
+  const [address, setAddress] = useState(undefined as string | undefined)
+  const [amount, setAmount] = useState(0)
+
+  return (
+    <div
+      className={cn(
+        "flex",
+        {
+          "flex-row justify-between items-start": !creating,
+          "flex-col justify-start items-stretch": creating,
+        },
+        "border-b border-light last:border-none",
+        "p-5 pr-0 first:pt-0"
+      )}
+    >
+      <div>
+        {creating ? (
+          <>
+            <FormInput
+              label="Initial Distribution Address"
+              placeholder="juno..."
+              type="text"
+              wrapperClassName="!mb-6"
+              value={address}
+              onInput={(e) => setAddress(e.currentTarget.value)}
+            />
+
+            <FormPercentTokenDoubleInput
+              label="Initial Distribution Amount"
+              maxValue={initialSupply}
+              currency={tokenSymbol}
+              shared={{ placeholder: "0" }}
+              value={amount}
+              onChangeAmount={(value) => setAmount(value)}
+              wrapperClassName="mb-6"
+            />
+
+            <Button
+              onClick={() => {
+                append?.({ address, amount })
+
+                // Clear inputs on add.
+                setAddress("")
+                setAmount(0)
+              }}
+            >
+              Add Recipient
+            </Button>
+          </>
+        ) : (
+          <>
+            <h3 className="text-green text-lg">
+              {initialDistribution!.address}
+            </h3>
+            <p className="text-light text-base">
+              {`${
+                initialSupply > 0
+                  ? Number(
+                      (
+                        (100 * initialDistribution!.amount) /
+                        initialSupply
+                      ).toFixed(6)
+                    )
+                  : "0"
+              }% of total tokens / `}
+              {prettyPrintDecimal(initialDistribution!.amount)} {tokenSymbol}
+            </p>
+          </>
+        )}
+      </div>
+
+      {!creating && (
+        <Button color="orange" onClick={onRemove} simple>
+          <IoCloseSharp size={24} />
+        </Button>
+      )}
+    </div>
+  )
+}

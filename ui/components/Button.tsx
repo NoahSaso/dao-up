@@ -32,6 +32,7 @@ interface ButtonProps
   color?: ColorType
   outline?: boolean
   submitLabel?: string
+  simple?: boolean
 }
 export const Button: FC<ButtonProps> = ({
   children,
@@ -39,19 +40,23 @@ export const Button: FC<ButtonProps> = ({
   outline,
   className,
   submitLabel,
+  simple,
   ...props
 }) => {
   const classNames = classnames(
     "block text-center cursor-pointer",
-    "py-2 px-4",
-    "rounded-full",
     "transition",
-    "border",
-    buttonBorderClasses[color][(outline ?? false).toString() as BoolString],
+    { "py-2 px-4 rounded-full": !simple },
+    { border: !simple },
     {
-      "bg-dark hover:text-dark": outline,
-      "text-dark hover:bg-[transparent]": !outline,
+      [buttonBorderClasses[color][(outline ?? false).toString() as BoolString]]:
+        !simple,
     },
+    {
+      "bg-dark hover:text-dark": !simple && outline,
+      "text-dark hover:bg-[transparent]": !simple && !outline,
+    },
+    { "hover:opacity-50": simple },
     className
   )
 

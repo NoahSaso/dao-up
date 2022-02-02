@@ -17,6 +17,24 @@ const renderImageUrl = (imageUrl?: string) => (
     )}
   </>
 )
+
+const renderInitialDAOAmount = (
+  initialDAOAmount: number | undefined,
+  newCampaign: Partial<NewCampaign>
+) =>
+  `${
+    typeof newCampaign.initialSupply === "number" &&
+    newCampaign.initialSupply > 0
+      ? Number(
+          ((100 * (initialDAOAmount ?? 0)) / newCampaign.initialSupply).toFixed(
+            6
+          )
+        )
+      : "0"
+  }% of total tokens / ${prettyPrintDecimal(initialDAOAmount ?? 0)} ${
+    newCampaign.tokenSymbol ?? "tokens"
+  }`
+
 const renderInitialDistributions = (
   initialDistributions: InitialDistribution[] | undefined,
   newCampaign: Partial<NewCampaign>
@@ -27,6 +45,14 @@ const renderInitialDistributions = (
         <div key={idx + address} className="flex flex-col mt-4">
           <p className="">{address}:</p>
           <p className="">
+            {`${
+              typeof newCampaign.initialSupply === "number" &&
+              newCampaign.initialSupply > 0
+                ? Number(
+                    ((100 * amount) / newCampaign.initialSupply).toFixed(6)
+                  )
+                : "0"
+            }% of total tokens / `}
             {prettyPrintDecimal(amount)} {newCampaign.tokenSymbol ?? "tokens"}
           </p>
         </div>
@@ -147,8 +173,7 @@ export const newCampaignFields: Record<keyof NewCampaign, NewCampaignField> = {
     pageId: 4,
     required: true,
     advanced: true,
-    unitAfter: (c) => ` ${c.tokenSymbol ?? "tokens"}`,
-    render: makeRenderNumber(),
+    render: renderInitialDAOAmount,
   },
   initialDistributions: {
     label: "Initial Distributions",
