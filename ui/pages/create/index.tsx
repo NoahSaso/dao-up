@@ -58,11 +58,7 @@ const Create: NextPage = () => {
             type="number"
             inputMode="decimal"
             className="!pr-28"
-            tail={
-              <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
-                USD
-              </div>
-            }
+            tail="USD"
             error={errors.goal?.message}
             {...register("goal", {
               required: "Required",

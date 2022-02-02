@@ -92,11 +92,7 @@ const Create4: NextPage = () => {
             type="number"
             inputMode="decimal"
             className="!pr-28"
-            tail={
-              <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
-                %
-              </div>
-            }
+            tail="%"
             error={errors.passingThreshold?.message}
             {...register("passingThreshold", {
               required: "Required",
@@ -134,11 +130,7 @@ const Create4: NextPage = () => {
               type="number"
               inputMode="numeric"
               className="!pr-40"
-              tail={
-                <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
-                  {watchTokenSymbol}
-                </div>
-              }
+              tail={watchTokenSymbol}
               error={errors.initialSupply?.message}
               {...register("initialSupply", {
                 required: "Required",
@@ -151,14 +143,20 @@ const Create4: NextPage = () => {
               })}
             />
 
+            {/* TODO: Update this value when initialSupply changes? */}
             <FormPercentTokenDoubleInput
               control={control}
               name="initialDAOAmount"
               label={newCampaignFields.initialDAOAmount.label}
               description="The amount of tokens to be reserved in the DAO for future distribution. Only the distributed tokens count when voting on proposals, so it is good practice to reserve most tokens for the DAO at the beginning. Default is 9 million."
-              placeholder="9,000,000"
               maxValue={watchInitialSupply}
               currency={watchTokenSymbol}
+              extraProps={{
+                first: { placeholder: "90" },
+                second: {
+                  placeholder: prettyPrintDecimal(watchInitialSupply * 0.9, 6),
+                },
+              }}
             />
 
             <FormWrapper
@@ -193,9 +191,9 @@ const Create4: NextPage = () => {
                     control={control}
                     label={`Initial Distribution Amount #${index + 1}`}
                     name={`initialDistributions.${index}.amount`}
-                    placeholder="0"
                     maxValue={watchInitialSupply}
                     currency={watchTokenSymbol}
+                    extraProps={{ shared: { placeholder: "0" } }}
                   />
 
                   <Button
@@ -225,11 +223,7 @@ const Create4: NextPage = () => {
               type="number"
               inputMode="numeric"
               className="!pr-40"
-              tail={
-                <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
-                  seconds
-                </div>
-              }
+              tail="seconds"
               error={errors.votingDuration?.message}
               {...register("votingDuration", {
                 required: "Required",
@@ -249,11 +243,7 @@ const Create4: NextPage = () => {
               type="number"
               inputMode="numeric"
               className="!pr-40"
-              tail={
-                <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
-                  seconds
-                </div>
-              }
+              tail="seconds"
               error={errors.unstakingDuration?.message}
               {...register("unstakingDuration", {
                 required: "Required",
@@ -273,11 +263,7 @@ const Create4: NextPage = () => {
               type="number"
               inputMode="numeric"
               className="!pr-40"
-              tail={
-                <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
-                  {watchTokenSymbol}
-                </div>
-              }
+              tail={watchTokenSymbol}
               error={errors.proposalDeposit?.message}
               {...register("proposalDeposit", {
                 required: "Required",

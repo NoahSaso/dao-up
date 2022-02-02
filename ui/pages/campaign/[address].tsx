@@ -239,16 +239,7 @@ const Campaign: NextPage = () => {
                 placeholder="Contribute..."
                 wrapperClassName="!mb-4 sm:!mb-0 sm:mr-4 sm:flex-1"
                 className="!py-3 !px-6 !pr-28"
-                // TODO: remove once switching to button
-                // tailContainerClassName="bg-card rounded-full"
-                tail={
-                  // <Button className="h-full px-6" light>
-                  //   USD
-                  // </Button>
-                  <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
-                    USD
-                  </div>
-                }
+                tail="USD"
                 error={contributionErrors?.contribution?.message}
                 {...contributionRegister("contribution", {
                   required: "Required",
@@ -334,11 +325,7 @@ const Campaign: NextPage = () => {
                       )}%`
                     : "USD conversions will appear as you type."
                 }
-                tail={
-                  <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
-                    {tokenSymbol}
-                  </div>
-                }
+                tail={tokenSymbol}
                 error={refundErrors?.refund?.message}
                 {...refundRegister("refund", {
                   required: "Required",

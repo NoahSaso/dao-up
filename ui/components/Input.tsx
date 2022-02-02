@@ -7,10 +7,13 @@ import {
   PropsWithChildren,
   ReactNode,
   TextareaHTMLAttributes,
+  useState,
 } from "react"
 import { Control, Controller, FieldValues } from "react-hook-form"
+import { IoCaretDownSharp } from "react-icons/io5"
 
 import { prettyPrintDecimal } from "../helpers/number"
+import { Button } from "."
 
 // Input
 
@@ -22,10 +25,18 @@ interface UnforwardedInputProps
   containerClassName?: string
   tail?: ReactNode
   tailContainerClassName?: string
+  tailClassName?: string
 }
 export const Input = forwardRef<HTMLInputElement, UnforwardedInputProps>(
   (
-    { containerClassName, className, tail, tailContainerClassName, ...props },
+    {
+      containerClassName,
+      className,
+      tail,
+      tailContainerClassName,
+      tailClassName,
+      ...props
+    },
     ref
   ) => (
     <div className={cn("relative", containerClassName)}>
@@ -44,11 +55,18 @@ export const Input = forwardRef<HTMLInputElement, UnforwardedInputProps>(
       {!!tail && (
         <div
           className={cn(
-            "absolute top-0 right-0 bottom-0",
+            "absolute top-0 right-0 bottom-0 bg-card rounded-full",
             tailContainerClassName
           )}
         >
-          {tail}
+          <div
+            className={cn(
+              "h-full px-6 rounded-full bg-light flex items-center text-center text-dark",
+              tailClassName
+            )}
+          >
+            {tail}
+          </div>
         </div>
       )}
     </div>
@@ -61,6 +79,7 @@ type UnforwardedDoubleInputProps = {
   shared?: UnforwardedInputProps
   first?: UnforwardedInputProps
   second?: UnforwardedInputProps
+  swap?: boolean
 }
 
 export const DoubleInput = forwardRef<
@@ -85,49 +104,92 @@ export const DoubleInput = forwardRef<
         className: secondClassName,
         ...second
       } = {},
+      swap,
     },
     ref
-  ) => (
-    <div
-      className={cn(
-        "flex flex-col items-stretch sm:flex-row",
-        containerClassName
-      )}
-    >
-      <Input
-        containerClassName={cn(
-          "flex-1",
-          sharedContainerClassName,
-          firstContainerClassName
-        )}
-        className={cn(
-          "!bg-dark !border-light",
-          sharedClassName,
-          firstClassName
-        )}
-        {...shared}
-        {...first}
-        ref={ref}
-      />
+  ) => {
+    // Which input to show when swapping.
+    // Initially show the first input if swapping.
+    const [show, setShow] = useState(
+      (swap ? 1 : undefined) as 1 | 2 | undefined
+    )
 
-      <Input
-        containerClassName={cn(
-          "flex-1 mt-2",
-          "sm:mt-0 sm:ml-5",
-          sharedContainerClassName,
-          secondContainerClassName
-        )}
+    return (
+      <div
         className={cn(
-          "!bg-dark !border-light",
-          sharedClassName,
-          secondClassName
+          "flex flex-col items-stretch sm:flex-row",
+          containerClassName
         )}
-        {...shared}
-        {...second}
-        ref={undefined}
-      />
-    </div>
-  )
+      >
+        <Input
+          containerClassName={cn(
+            "flex-1",
+            { hidden: show === 2 },
+            sharedContainerClassName,
+            firstContainerClassName
+          )}
+          className={cn(
+            "!bg-dark !border-light",
+            sharedClassName,
+            firstClassName
+          )}
+          {...shared}
+          {...first}
+          {...(swap
+            ? {
+                tailClassName: "!p-0 bg-light/70",
+                tailContainerClassName: "!bg-dark",
+                tail: (
+                  <Button
+                    onClick={() => setShow(2)}
+                    color="light"
+                    className="h-full !border-none px-6 !text-dark flex flex-row items-center"
+                  >
+                    {shared.tail ?? first.tail}
+                    <IoCaretDownSharp size={18} className="ml-2" />
+                  </Button>
+                ),
+              }
+            : {})}
+          ref={ref}
+        />
+
+        <Input
+          containerClassName={cn(
+            "flex-1 mt-2",
+            "sm:mt-0 sm:ml-5",
+            { hidden: show === 1, "!mt-0 !ml-0": swap },
+            sharedContainerClassName,
+            secondContainerClassName
+          )}
+          className={cn(
+            "!bg-dark !border-light",
+            sharedClassName,
+            secondClassName
+          )}
+          {...shared}
+          {...second}
+          {...(swap
+            ? {
+                tailClassName: "!p-0 bg-light/70",
+                tailContainerClassName: "!bg-dark",
+                tail: (
+                  <Button
+                    onClick={() => setShow(1)}
+                    color="light"
+                    className="h-full !border-none px-6 !text-dark flex flex-row items-center"
+                  >
+                    {shared.tail ?? second.tail}
+                    <IoCaretDownSharp size={18} className="ml-2" />
+                  </Button>
+                ),
+              }
+            : {})}
+          ref={undefined}
+        />
+      </div>
+    )
+  }
 )
 DoubleInput.displayName = "DoubleInput"
 
@@ -171,11 +233,7 @@ export const PercentTokenDoubleInput: FC<UnforwardedPercentTokenDoubleInputProps
             const tokens = maxValue * (newValue / 100)
             onChangeAmount(tokens)
           },
-          tail: (
-            <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
-              %
-            </div>
-          ),
+          tail: "%",
           // Convert from tokens to percent
           value:
             maxValue > 0 && !!value
@@ -191,11 +249,7 @@ export const PercentTokenDoubleInput: FC<UnforwardedPercentTokenDoubleInputProps
             onChangeAmount(Number(e.target.value))
           },
           value: value,
-          tail: (
-            <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
-              {currency}
-            </div>
-          ),
+          tail: currency,
         }}
         {...props}
         ref={ref}
@@ -502,7 +556,6 @@ interface FormPercentTokenDoubleInputProps {
   name: string
   label?: string
   description?: string
-  placeholder?: string
   maxValue: number
   currency: string
   wrapperClassName?: string
@@ -515,7 +568,6 @@ export const FormPercentTokenDoubleInput: FC<
   name,
   label,
   description,
-  placeholder,
   maxValue,
   currency,
   wrapperClassName,
@@ -556,7 +608,6 @@ export const FormPercentTokenDoubleInput: FC<
           onChangeAmount={onChange}
           shared={{
             onBlur,
-            placeholder,
             type: "number",
             inputMode: "numeric",
             className: cn("!pr-40", { "!border-orange": !!error }),

@@ -5,8 +5,8 @@ export const newCampaignState = atom({
   default: {
     displayPublicly: true,
     initialSupply: 10000000,
-    initialDAOAmount: 9000000,
-    initialDistributionAmount: 0,
+    initialDAOAmount: 0,
+    initialDistributions: [],
     passingThreshold: 75,
     votingDuration: 604800,
     unstakingDuration: 0,
