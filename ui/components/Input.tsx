@@ -589,9 +589,9 @@ export const FormPercentTokenDoubleInput: FC<
       },
       max: {
         value: maxValue,
-        message: `Must be less than or equal to the max value: ${prettyPrintDecimal(
+        message: `Must be less than or equal to the max value: 100% / ${prettyPrintDecimal(
           maxValue
-        )} ${currency} (100%).`,
+        )} ${currency}.`,
       },
     }}
     render={({
