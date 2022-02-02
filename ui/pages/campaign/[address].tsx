@@ -2,7 +2,7 @@ import cn from "classnames"
 import type { NextPage } from "next"
 import Image from "next/image"
 import { useRouter } from "next/router"
-import { FC, useState } from "react"
+import { FC, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { IconType } from "react-icons"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
@@ -70,7 +70,7 @@ interface RefundForm {
 }
 
 const Campaign: NextPage = () => {
-  const { query, isReady } = useRouter()
+  const { query, isReady, push: routerPush } = useRouter()
 
   // Contribution Form
   const {
@@ -91,10 +91,13 @@ const Campaign: NextPage = () => {
     defaultValues: {} as RefundForm,
   })
 
-  // If page not ready or can't find campaign, don't render.
-  const campaign = isReady
-    ? campaigns.find((c) => c.address === query.address)
-    : null
+  const campaign = campaigns.find((c) => c.address === query.address)
+  // If no campaign found, redirect to campaigns page.
+  useEffect(() => {
+    if (!campaign) routerPush("/campaigns")
+  }, [campaign, routerPush])
+
+  // If page not ready or no campaign found, don't render.
   if (!isReady || !campaign) return null
 
   // Contribution Form
