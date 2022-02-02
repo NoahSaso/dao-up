@@ -251,7 +251,7 @@ export const PercentTokenDoubleInput = forwardRef<
         // Convert from tokens to percent
         value:
           maxValue > 0 && !!value
-            ? prettyPrintDecimal((100 * value) / maxValue, 6)
+            ? Number(((100 * value) / maxValue).toFixed(6))
             : value,
       }}
       second={{
