@@ -7,6 +7,13 @@ interface TooltipInfoProps {
   size?: number
   className?: string
 }
-export const TooltipInfo: FC<TooltipInfoProps> = ({ text, size, className }) => (
-  <AiOutlineExclamationCircle className={cn("ml-1", className)} size={size ?? 18} />
+export const TooltipInfo: FC<TooltipInfoProps> = ({
+  text,
+  size,
+  className,
+}) => (
+  <AiOutlineExclamationCircle
+    className={cn("ml-1", className)}
+    size={size ?? 18}
+  />
 )
