@@ -12,7 +12,10 @@ import {
 import { useRecoilState } from "recoil"
 
 import { Button } from "../components"
-import { newCampaignFieldEntries } from "../services/campaigns"
+import {
+  globalErrorNewCampaignFieldKeys,
+  newCampaignFieldEntries,
+} from "../services/campaigns"
 import { newCampaignState } from "../services/state"
 import { prettyPrintDecimal } from "./number"
 
@@ -93,11 +96,21 @@ export const useNewCampaignForm = (id: number) => {
     router.push(url)
   }
 
-  // Allow back press without required fields
-  const onError: SubmitErrorHandler<FieldValues> = (_, event) => {
+  const onError: SubmitErrorHandler<FieldValues> = (errors, event) => {
     const nativeEvent = event?.nativeEvent as SubmitEvent
     const submitterValue = (nativeEvent?.submitter as HTMLInputElement)?.value
+
+    // Allow Back press without required fields.
     if (submitterValue === "Back") return onSubmit(getValues(), event)
+
+    // Allow Next press without global validation errors since Review will prevent progress at the end.
+    const errorKeys = Object.keys(errors)
+    if (
+      submitterValue === "Next" &&
+      errorKeys.length === globalErrorNewCampaignFieldKeys.length &&
+      globalErrorNewCampaignFieldKeys.every((key) => errorKeys.includes(key))
+    )
+      return onSubmit(getValues(), event)
   }
 
   const showBack = id > 1
@@ -121,7 +134,7 @@ export const useNewCampaignForm = (id: number) => {
           {showNext && <Button submitLabel="Next" />}
           {showReview && (
             <Button
-              // Clear errors on pressing review so that global validations can run again.
+              // Clear errors so that global validations run again.
               onClick={() => clearErrors()}
               submitLabel="Review"
               className={cn({ "ml-2": showNext })}
@@ -158,13 +171,16 @@ const globalValidations = (
   const initialDistributions = newCampaign.initialDistributions ?? []
   const tokenSymbol = newCampaign.tokenSymbol ?? "tokens"
 
+  // Sum up amounts.
   const initialDistributionsAmount = initialDistributions.reduce(
     (acc, { amount }) => acc + amount,
     0
   )
   const totalDistributionAmount = initialDAOAmount + initialDistributionsAmount
 
+  // If sum is greater than initial supply, we have a problem.
   if (totalDistributionAmount > initialSupply) {
+    // Calculate percentages of each allocation.
     const daoPercent = prettyPrintDecimal(
       (initialDAOAmount / initialSupply) * 100,
       6
@@ -190,10 +206,11 @@ const globalValidations = (
         initialSupply
       )} ${tokenSymbol}) or reduce the number of tokens allocated to the DAO or other addresses.`,
     })
+
     return false
-  } else {
-    clearErrors("totalDistributionAmountError")
   }
+
+  clearErrors(globalErrorNewCampaignFieldKeys)
 
   return true
 }

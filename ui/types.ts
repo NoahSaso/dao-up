@@ -67,9 +67,10 @@ declare global {
     unitAfter?: (c: Partial<NewCampaign>) => string
   }
 
+  type GlobalErrorNewCampaignFieldKey = "totalDistributionAmountError"
   type NonErrorNewCampaignFieldKey = Exclude<
     keyof NewCampaign,
-    "totalDistributionAmountError"
+    GlobalErrorNewCampaignFieldKey
   >
 
   interface WalletState {

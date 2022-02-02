@@ -221,6 +221,8 @@ export const newCampaignFieldEntries = Object.entries(newCampaignFields) as [
   NonErrorNewCampaignFieldKey,
   NewCampaignField
 ][]
+export const globalErrorNewCampaignFieldKeys: GlobalErrorNewCampaignFieldKey[] =
+  ["totalDistributionAmountError"]
 
 const placeholderCampaignFields = {
   status: Status.Active,
