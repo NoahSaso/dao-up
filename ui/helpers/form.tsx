@@ -228,4 +228,4 @@ export const validateAndCleanJunoAddress = (address: string) => {
 export const validateInitialDistributionAmount = (
   amount: number,
   max: number
-) => amount >= 0 && amount <= max
+) => amount > 0 && amount <= max

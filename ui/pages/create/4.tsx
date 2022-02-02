@@ -43,17 +43,18 @@ const Create4: NextPage = () => {
 
   const watchInitialSupply = watch("initialSupply") ?? 0
 
-  // Validate that token amounts are all valid.
+  // Validate token amounts.
   const watchInitialDAOAmount = watch("initialDAOAmount") ?? 0
   const watchInitialDistributions = watch("initialDistributions") ?? []
 
-  // Sum up amounts.
+  // Sum up amounts and calculate remaining supply.
   const initialDistributionsAmount = watchInitialDistributions.reduce(
     (acc, { amount }) => acc + amount,
     0
   )
   const totalDistributionAmount =
     watchInitialDAOAmount + initialDistributionsAmount
+  const remainingSupply = watchInitialSupply - totalDistributionAmount
 
   const goal = getValues("goal") ?? 0
   const tokenPrice =
@@ -155,10 +156,18 @@ const Create4: NextPage = () => {
                 required: "Required",
                 valueAsNumber: true,
                 pattern: /^\s*\d+\s*$/,
-                min: {
-                  value: 0,
-                  message: "Must be greater than 0.",
-                },
+                min:
+                  initialDistributionsAmount > 0 && watchInitialSupply > 0
+                    ? {
+                        value: initialDistributionsAmount,
+                        message: `Must be greater than currently allocated amounts: ${prettyPrintDecimal(
+                          totalDistributionAmount
+                        )} ${watchTokenSymbol}. Decrease the DAO Initial Amount or Initial Distribution Amounts below first.`,
+                      }
+                    : {
+                        value: 0,
+                        message: "Must be greater than 0.",
+                      },
               })}
             />
 
@@ -167,7 +176,7 @@ const Create4: NextPage = () => {
               control={control}
               name="initialDAOAmount"
               label={newCampaignFields.initialDAOAmount.label}
-              description="The amount of tokens to be reserved in the DAO for future distribution. Only the distributed tokens count when voting on proposals, so it is good practice to reserve most tokens for the DAO at the beginning. Default is 9 million."
+              description="The amount of tokens to be reserved in the DAO for future distribution. Only the distributed tokens count when voting on proposals, so it is good practice to reserve most tokens for the DAO at the beginning. Default is 0."
               maxValue={watchInitialSupply}
               currency={watchTokenSymbol}
               first={{ placeholder: "90" }}
@@ -194,6 +203,7 @@ const Create4: NextPage = () => {
 
               <InitialDistributionCreator
                 initialSupply={watchInitialSupply}
+                remainingSupply={remainingSupply}
                 tokenSymbol={watchTokenSymbol}
                 fields={initialDistributionsFields}
                 append={initialDistributionsAppend}

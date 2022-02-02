@@ -55,6 +55,7 @@ export const InitialDistributionDisplay: FC<
 
 type InitialDistributionCreatorProps = {
   initialSupply: number
+  remainingSupply: number
   tokenSymbol: string
   fields: FieldArrayWithId<Partial<NewCampaign>, "initialDistributions", "id">[]
   append: (
@@ -68,7 +69,14 @@ type InitialDistributionCreatorProps = {
 
 export const InitialDistributionCreator: FC<
   InitialDistributionCreatorProps
-> = ({ initialSupply, tokenSymbol, fields, append, update }) => {
+> = ({
+  initialSupply,
+  remainingSupply,
+  tokenSymbol,
+  fields,
+  append,
+  update,
+}) => {
   const [address, setAddress] = useState("")
   const [addressError, setAddressError] = useState("")
   const addressRef = useRef<HTMLInputElement>(null)
@@ -91,14 +99,33 @@ export const InitialDistributionCreator: FC<
       setAddressError(addressValidationError)
     }
 
-    if (!validateInitialDistributionAmount(amount, initialSupply)) {
+    // Find existing field.
+    const existingIndex = fields?.findIndex(
+      ({ address }) => address === cleanedAddress
+    )
+    const existingField =
+      typeof existingIndex === "number" && existingIndex > -1
+        ? fields[existingIndex]
+        : undefined
+
+    // If address already exists, ignore the amount in the remaining supply since we're going to update it.
+    const remainingSupplyExceptSelf =
+      remainingSupply + (existingField?.amount ?? 0)
+    if (!validateInitialDistributionAmount(amount, remainingSupplyExceptSelf)) {
       // If not yet invalid (thus hasn't focused address field due to error), focus this field.
       if (valid) amountRef?.current?.focus()
       valid = false
+
+      const percentRemaining = prettyPrintDecimal(
+        (100 * remainingSupplyExceptSelf) / initialSupply,
+        6
+      )
       setAmountError(
-        `Must be between 0% (0 ${tokenSymbol}) and 100% (${prettyPrintDecimal(
-          initialSupply
-        )} ${tokenSymbol}).`
+        `Must be greater than 0% (0 ${tokenSymbol}) and less than or equal to the remaining ${percentRemaining}% (${prettyPrintDecimal(
+          remainingSupplyExceptSelf
+        )} ${tokenSymbol})${
+          !!existingField ? " since you're updating an existing address" : ""
+        }.`
       )
     }
 
@@ -107,11 +134,7 @@ export const InitialDistributionCreator: FC<
     const newInitialDistribution = { address: cleanedAddress, amount }
 
     // If duplicate address, update instead of append.
-    const existingIndex = fields?.findIndex(
-      ({ address }) => address === cleanedAddress
-    )
-    if (typeof existingIndex === "number" && existingIndex > -1)
-      update?.(existingIndex, newInitialDistribution)
+    if (existingField) update?.(existingIndex, newInitialDistribution)
     else append?.(newInitialDistribution)
 
     // Clear state on add.
@@ -149,7 +172,9 @@ export const InitialDistributionCreator: FC<
         ref={amountRef}
       />
 
-      <Button onClick={addRecipient}>Add Recipient</Button>
+      <Button onClick={addRecipient} className="self-start">
+        Add Recipient
+      </Button>
     </div>
   )
 }
