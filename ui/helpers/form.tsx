@@ -158,7 +158,7 @@ export const useNewCampaignForm = (id: number) => {
 
 // VALIDATIONS
 
-// Sets errors accordingly and returns boolean whether or not validations passed.
+// Sets errors accordingly and returns whether or not validations passed.
 const globalValidations = (
   newCampaign: Partial<NewCampaign>,
   setError: UseFormSetError<Partial<NewCampaign>>,
