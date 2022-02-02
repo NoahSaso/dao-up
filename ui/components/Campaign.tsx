@@ -73,7 +73,7 @@ export const AllCampaignsCard: FC<CampaignProps> = ({
     <a
       className={cn(
         "flex flex-row justify-start items-stretch",
-        "bg-card p-10 rounded-3xl",
+        "bg-card rounded-3xl p-6 sm:p-10",
         "border border-card hover:border-green",
         "transition",
         "cursor-pointer",
@@ -81,7 +81,7 @@ export const AllCampaignsCard: FC<CampaignProps> = ({
       )}
     >
       {/* TODO: Change to image */}
-      <div className="bg-green w-[135px] h-[135px]"></div>
+      <div className="bg-green w-[80px] h-[80px] sm:w-[135px] sm:h-[135px] shrink-0"></div>
       <div className="ml-5">
         <h2 className="font-medium text-xl">{name}</h2>
         <p className="text-lg text-green">
@@ -107,7 +107,7 @@ export const CreatorCampaignCard: FC<CampaignProps> = ({
       <a
         className={cn(
           "flex flex-row justify-start items-stretch",
-          "bg-card p-10 rounded-3xl",
+          "bg-card rounded-3xl p-6 sm:p-10",
           "border border-card hover:border-green",
           "transition",
           "cursor-pointer",
@@ -115,7 +115,7 @@ export const CreatorCampaignCard: FC<CampaignProps> = ({
         )}
       >
         {/* TODO: Change to image */}
-        <div className="bg-green w-[135px] h-[135px]"></div>
+        <div className="bg-green w-[80px] h-[80px] sm:w-[135px] sm:h-[135px] shrink-0"></div>
         <div className="ml-5">
           <h2 className="font-medium text-xl">{name}</h2>
           <CampaignStatus campaign={campaign} className="" />
@@ -146,8 +146,8 @@ export const ContributorCampaignCard: FC<CampaignProps> = ({
     <Link href={`/campaign/${address}`}>
       <a
         className={cn(
-          "flex flex-row justify-start items-center",
-          "bg-card p-10 rounded-3xl",
+          "flex flex-row justify-start items-stretch",
+          "bg-card rounded-3xl p-6 sm:p-10",
           "border border-card hover:border-green",
           "transition",
           "cursor-pointer",
@@ -155,7 +155,7 @@ export const ContributorCampaignCard: FC<CampaignProps> = ({
         )}
       >
         {/* TODO: Change to image */}
-        <div className="bg-green w-[135px] h-[135px] shrink-0"></div>
+        <div className="bg-green w-[80px] h-[80px] sm:w-[135px] sm:h-[135px] shrink-0"></div>
         <div className="ml-5">
           <h2 className="font-medium text-xl">{name}</h2>
           <div
