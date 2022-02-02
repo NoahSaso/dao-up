@@ -62,167 +62,163 @@ const renderInitialDistributions = (
     "None"
   )
 
-export const newCampaignFields: Record<
-  NonErrorNewCampaignFieldKey,
-  NewCampaignField
-> = {
-  name: {
-    label: "Campaign Name",
-    pageId: 1,
-    required: true,
-    advanced: false,
-    render: renderString,
-  },
-  description: {
-    label: "Campaign Description",
-    pageId: 1,
-    required: true,
-    advanced: false,
-    render: renderString,
-  },
-  goal: {
-    label: "Funding Target",
-    pageId: 1,
-    required: true,
-    advanced: false,
-    unitBefore: (_) => "$",
-    render: makeRenderNumber(2, 2),
-  },
-  displayPublicly: {
-    label: "Show on public campaigns list",
-    pageId: 1,
-    required: false,
-    advanced: false,
-    render: renderBoolean,
-  },
+export const newCampaignFields: Record<NewCampaignFieldKey, NewCampaignField> =
+  {
+    name: {
+      label: "Campaign Name",
+      pageId: 1,
+      required: true,
+      advanced: false,
+      render: renderString,
+    },
+    description: {
+      label: "Campaign Description",
+      pageId: 1,
+      required: true,
+      advanced: false,
+      render: renderString,
+    },
+    goal: {
+      label: "Funding Target",
+      pageId: 1,
+      required: true,
+      advanced: false,
+      unitBefore: (_) => "$",
+      render: makeRenderNumber(2, 2),
+    },
+    displayPublicly: {
+      label: "Show on public campaigns list",
+      pageId: 1,
+      required: false,
+      advanced: false,
+      render: renderBoolean,
+    },
 
-  daoName: {
-    label: "DAO Name",
-    pageId: 2,
-    required: true,
-    advanced: false,
-    render: renderString,
-  },
-  daoDescription: {
-    label: "DAO Description",
-    pageId: 2,
-    required: true,
-    advanced: false,
-    render: renderString,
-  },
+    daoName: {
+      label: "DAO Name",
+      pageId: 2,
+      required: true,
+      advanced: false,
+      render: renderString,
+    },
+    daoDescription: {
+      label: "DAO Description",
+      pageId: 2,
+      required: true,
+      advanced: false,
+      render: renderString,
+    },
 
-  website: {
-    label: "Website",
-    pageId: 3,
-    required: false,
-    advanced: false,
-    render: renderString,
-  },
-  twitter: {
-    label: "Twitter",
-    pageId: 3,
-    required: false,
-    advanced: false,
-    render: renderString,
-  },
-  discord: {
-    label: "Discord",
-    pageId: 3,
-    required: false,
-    advanced: false,
-    render: renderString,
-  },
-  imageUrl: {
-    label: "Image URL",
-    pageId: 3,
-    required: false,
-    advanced: false,
-    render: renderImageUrl,
-  },
+    website: {
+      label: "Website",
+      pageId: 3,
+      required: false,
+      advanced: false,
+      render: renderString,
+    },
+    twitter: {
+      label: "Twitter",
+      pageId: 3,
+      required: false,
+      advanced: false,
+      render: renderString,
+    },
+    discord: {
+      label: "Discord",
+      pageId: 3,
+      required: false,
+      advanced: false,
+      render: renderString,
+    },
+    imageUrl: {
+      label: "Image URL",
+      pageId: 3,
+      required: false,
+      advanced: false,
+      render: renderImageUrl,
+    },
 
-  tokenName: {
-    label: "Token Name",
-    pageId: 4,
-    required: true,
-    advanced: false,
-    render: renderString,
-  },
-  tokenSymbol: {
-    label: "Token Symbol",
-    pageId: 4,
-    required: true,
-    advanced: false,
-    render: renderString,
-  },
-  passingThreshold: {
-    label: "DAO Proposal Passing Threshold",
-    pageId: 4,
-    required: true,
-    advanced: false,
-    unitAfter: (_) => "%",
-    render: makeRenderNumber(),
-  },
-  // advanced
-  initialSupply: {
-    label: "Initial Token Supply",
-    pageId: 4,
-    required: true,
-    advanced: true,
-    unitAfter: (c) => ` ${c.tokenSymbol ?? "tokens"}`,
-    render: makeRenderNumber(),
-  },
-  initialDAOAmount: {
-    label: "DAO Initial Amount",
-    pageId: 4,
-    required: true,
-    advanced: true,
-    render: renderInitialDAOAmount,
-  },
-  initialDistributions: {
-    label: "Initial Distributions",
-    pageId: 4,
-    required: true,
-    advanced: true,
-    render: renderInitialDistributions,
-  },
-  votingDuration: {
-    label: "Voting Duration",
-    pageId: 4,
-    required: true,
-    advanced: true,
-    unitAfter: (_) => " seconds",
-    render: makeRenderNumber(),
-  },
-  unstakingDuration: {
-    label: "Unstaking Duration",
-    pageId: 4,
-    required: true,
-    advanced: true,
-    unitAfter: (_) => " seconds",
-    render: makeRenderNumber(),
-  },
-  proposalDeposit: {
-    label: "Proposal Deposit",
-    pageId: 4,
-    required: true,
-    advanced: true,
-    unitAfter: (c) => ` ${c.tokenSymbol ?? "tokens"}`,
-    render: makeRenderNumber(),
-  },
-  refundProposalDeposits: {
-    label: "Refund Proposal Deposits",
-    pageId: 4,
-    required: true,
-    advanced: true,
-    render: renderBoolean,
-  },
-}
+    tokenName: {
+      label: "Token Name",
+      pageId: 4,
+      required: true,
+      advanced: false,
+      render: renderString,
+    },
+    tokenSymbol: {
+      label: "Token Symbol",
+      pageId: 4,
+      required: true,
+      advanced: false,
+      render: renderString,
+    },
+    passingThreshold: {
+      label: "DAO Proposal Passing Threshold",
+      pageId: 4,
+      required: true,
+      advanced: false,
+      unitAfter: (_) => "%",
+      render: makeRenderNumber(),
+    },
+    // advanced
+    initialSupply: {
+      label: "Initial Token Supply",
+      pageId: 4,
+      required: true,
+      advanced: true,
+      unitAfter: (c) => ` ${c.tokenSymbol ?? "tokens"}`,
+      render: makeRenderNumber(),
+    },
+    initialDAOAmount: {
+      label: "DAO Initial Amount",
+      pageId: 4,
+      required: true,
+      advanced: true,
+      render: renderInitialDAOAmount,
+    },
+    initialDistributions: {
+      label: "Initial Distributions",
+      pageId: 4,
+      required: true,
+      advanced: true,
+      render: renderInitialDistributions,
+    },
+    votingDuration: {
+      label: "Voting Duration",
+      pageId: 4,
+      required: true,
+      advanced: true,
+      unitAfter: (_) => " seconds",
+      render: makeRenderNumber(),
+    },
+    unstakingDuration: {
+      label: "Unstaking Duration",
+      pageId: 4,
+      required: true,
+      advanced: true,
+      unitAfter: (_) => " seconds",
+      render: makeRenderNumber(),
+    },
+    proposalDeposit: {
+      label: "Proposal Deposit",
+      pageId: 4,
+      required: true,
+      advanced: true,
+      unitAfter: (c) => ` ${c.tokenSymbol ?? "tokens"}`,
+      render: makeRenderNumber(),
+    },
+    refundProposalDeposits: {
+      label: "Refund Proposal Deposits",
+      pageId: 4,
+      required: true,
+      advanced: true,
+      render: renderBoolean,
+    },
+  }
 export const newCampaignFieldEntries = Object.entries(newCampaignFields) as [
-  NonErrorNewCampaignFieldKey,
+  NewCampaignFieldKey,
   NewCampaignField
 ][]
-export const globalErrorNewCampaignFieldKeys: GlobalErrorNewCampaignFieldKey[] =
-  ["totalDistributionAmountError"]
 
 const placeholderCampaignFields = {
   status: Status.Active,
