@@ -80,6 +80,7 @@ export const AllCampaignsCard: FC<CampaignProps> = ({
         className
       )}
     >
+      {/* TODO: Change to image */}
       <div className="bg-green w-[135px] h-[135px]"></div>
       <div className="ml-5">
         <h2 className="font-medium text-xl">{name}</h2>
@@ -113,6 +114,7 @@ export const CreatorCampaignCard: FC<CampaignProps> = ({
           className
         )}
       >
+        {/* TODO: Change to image */}
         <div className="bg-green w-[135px] h-[135px]"></div>
         <div className="ml-5">
           <h2 className="font-medium text-xl">{name}</h2>
@@ -152,6 +154,7 @@ export const ContributorCampaignCard: FC<CampaignProps> = ({
           className
         )}
       >
+        {/* TODO: Change to image */}
         <div className="bg-green w-[135px] h-[135px] shrink-0"></div>
         <div className="ml-5">
           <h2 className="font-medium text-xl">{name}</h2>

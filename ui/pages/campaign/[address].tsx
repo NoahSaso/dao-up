@@ -172,6 +172,7 @@ const Campaign: NextPage = () => {
           >
             <div className={cn("flex flex-col text-center lg:text-left")}>
               <div className={cn("flex flex-col items-center", "lg:flex-row")}>
+                {/* TODO: Change to image */}
                 <div
                   className={cn(
                     "bg-green w-[139px] h-[139px] mb-4",
