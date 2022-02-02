@@ -363,7 +363,6 @@ export const FormInput = forwardRef<
       surroundingClassName,
       containerClassName,
       className,
-      tailContainerClassName,
       ...props
     },
     ref
@@ -382,11 +381,6 @@ export const FormInput = forwardRef<
           "!bg-dark !border-light",
           { "!border-orange": !!error },
           className
-        )}
-        tailContainerClassName={cn(
-          // TODO: remove once tails have buttons
-          // "bg-card rounded-full",
-          tailContainerClassName
         )}
         {...props}
         ref={ref}

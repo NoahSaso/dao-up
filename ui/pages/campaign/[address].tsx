@@ -15,7 +15,6 @@ import {
   CampaignStatus,
   CenteredColumn,
   FormInput,
-  FormPercentTokenDoubleInput,
   ResponsiveDecoration,
   TooltipInfo,
 } from "../../components"
@@ -44,15 +43,17 @@ const CampaignLink: FC<CampaignLinkProps> = ({ href, label, Icon }) => (
 )
 
 interface ActivityItemProps {
+  campaign: Campaign
   item: ActivityItem
 }
 const ActivityItem: FC<ActivityItemProps> = ({
-  item: { when, address, amount, asset },
+  campaign: { tokenSymbol },
+  item: { when, address, amount },
 }) => (
   <div className={cn("py-5", "border-b border-light")}>
     <div className="flex flex-row justify-between items-center">
       <p className="font-semibold">
-        {amount} {asset}
+        {amount} {tokenSymbol}
       </p>
       <TimeAgo date={when} />
     </div>
@@ -81,7 +82,12 @@ const Campaign: NextPage = () => {
   })
 
   // Refund Form
-  const { handleSubmit: refundHandleSubmit, control: refundControl } = useForm({
+  const {
+    handleSubmit: refundHandleSubmit,
+    register: refundRegister,
+    formState: { errors: refundErrors },
+    watch: refundWatch,
+  } = useForm({
     defaultValues: {} as RefundForm,
   })
 
@@ -97,6 +103,7 @@ const Campaign: NextPage = () => {
   }
 
   // Refund Form
+  const watchRefund = refundWatch("refund")
   const doRefund = ({ refund }: RefundForm) => {
     console.log(refund)
   }
@@ -105,14 +112,13 @@ const Campaign: NextPage = () => {
     name,
     description,
     imageUrl,
-    open,
     daoUrl,
 
     website,
     twitter,
     discord,
 
-    asset,
+    tokenSymbol,
     goal,
     pledged,
     supporters,
@@ -276,10 +282,10 @@ const Campaign: NextPage = () => {
             <CampaignProgress campaign={campaign} className="mt-2" />
 
             <h3 className="mt-2 text-green text-3xl">
-              {pledged.toLocaleString()} {asset}
+              {pledged.toLocaleString()} {tokenSymbol}
             </h3>
             <p className="text-light text-sm">
-              pledged out of {goal.toLocaleString()} {asset} goal.
+              pledged out of {goal.toLocaleString()} {tokenSymbol} goal.
             </p>
 
             <h3 className="mt-6 text-green text-3xl">
@@ -313,17 +319,37 @@ const Campaign: NextPage = () => {
             <h2 className="text-xl text-green mt-8 mb-4">Refunds</h2>
 
             <form onSubmit={refundHandleSubmit(doRefund)}>
-              <FormPercentTokenDoubleInput
-                name="refund"
-                control={refundControl}
-                maxValue={userTokens}
-                currency={asset}
-                extraProps={{
-                  first: { placeholder: "20" },
-                  second: {
-                    placeholder: prettyPrintDecimal(userTokens * 0.2, 6),
+              <FormInput
+                type="number"
+                inputMode="decimal"
+                placeholder={prettyPrintDecimal(userTokens * 0.5, 6)}
+                accent={
+                  typeof watchRefund === "number" && !isNaN(watchRefund)
+                    ? `${prettyPrintDecimal(
+                        (100 * watchRefund) / userTokens,
+                        2
+                      )}%`
+                    : "USD conversions will appear as you type."
+                }
+                tail={
+                  <div className="h-full px-6 rounded-full bg-light flex items-center text-center text-dark">
+                    {tokenSymbol}
+                  </div>
+                }
+                error={refundErrors?.refund?.message}
+                {...refundRegister("refund", {
+                  required: "Required",
+                  valueAsNumber: true,
+                  pattern: /^\s*\d+\s*$/,
+                  min: {
+                    value: 0,
+                    message: "Must be greater than 0.",
                   },
-                }}
+                  max: {
+                    value: userTokens,
+                    message: `Must be less than your token balance: ${userTokens} ${tokenSymbol}.`,
+                  },
+                })}
               />
 
               <Button submitLabel="Refund" className="mt-4" />
@@ -335,7 +361,11 @@ const Campaign: NextPage = () => {
         <div className=" w-full lg:w-3/5">
           {activity.length ? (
             activity.map((item) => (
-              <ActivityItem key={item.when.toString()} item={item} />
+              <ActivityItem
+                key={item.when.toString()}
+                campaign={campaign}
+                item={item}
+              />
             ))
           ) : (
             <p>None yet.</p>

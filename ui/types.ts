@@ -7,27 +7,17 @@ declare global {
     when: Date
     address: string
     amount: number
-    asset: string
   }
 
-  interface Campaign {
+  interface Campaign extends NewCampaign {
     address: string
-    name: string
-    description: string
-    imageUrl?: string
-    open: boolean
+    status: Status
+    creator: string
     daoUrl?: string
-
-    website?: string
-    twitter?: string
-    discord?: string
-
-    asset: string
-    goal: number
-    pledged: number
+    tokenPrice: number
     supporters: number
+    pledged: number
     supply: number
-
     activity: ActivityItem[]
   }
 
@@ -51,7 +41,7 @@ declare global {
     // advanced
     initialSupply: number
     initialDAOAmount: number
-    initialDistributions: InitialDistribution[]
+    initialDistributions?: InitialDistribution[]
     votingDuration: number
     unstakingDuration: number
     proposalDeposit: number
@@ -74,6 +64,12 @@ declare global {
     connected: boolean
     address: string
   }
+}
+
+export enum Status {
+  Active,
+  ClosedButNotTransferred,
+  Closed,
 }
 
 export enum Color {

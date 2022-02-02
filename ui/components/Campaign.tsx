@@ -3,7 +3,7 @@ import Link from "next/link"
 import { FC } from "react"
 
 import { prettyPrintDecimal } from "../helpers/number"
-import { Color } from "../types"
+import { Color, Status } from "../types"
 import { StatusIndicator } from "."
 
 interface CampaignProps {
@@ -12,10 +12,11 @@ interface CampaignProps {
 }
 
 export const CampaignStatus: FC<CampaignProps> = ({
-  campaign: { open, pledged, goal },
+  campaign: { status, pledged, goal },
   className,
 }) => {
   const funded = pledged >= goal
+  const open = status === Status.Active
 
   const color =
     open && !funded
@@ -37,10 +38,11 @@ export const CampaignStatus: FC<CampaignProps> = ({
 }
 
 export const CampaignProgress: FC<CampaignProps> = ({
-  campaign: { open, pledged, goal },
+  campaign: { status, pledged, goal },
   className,
 }) => {
   const fundedPercent = (100 * pledged) / goal
+  const open = status === Status.Active
 
   return (
     <div
@@ -64,7 +66,7 @@ export const CampaignProgress: FC<CampaignProps> = ({
 }
 
 export const AllCampaignsCard: FC<CampaignProps> = ({
-  campaign: { address, name, pledged, asset, goal, description },
+  campaign: { address, name, pledged, tokenSymbol, goal, description },
   className,
 }) => (
   <Link href={`/campaign/${address}`}>
@@ -82,7 +84,7 @@ export const AllCampaignsCard: FC<CampaignProps> = ({
       <div className="ml-5">
         <h2 className="font-medium text-xl">{name}</h2>
         <p className="text-lg text-green">
-          {pledged.toLocaleString()} {asset} pledged
+          {pledged.toLocaleString()} {tokenSymbol} pledged
         </p>
         <p className="text-lg text-white">
           {prettyPrintDecimal((100 * pledged) / goal, 0)}% funded
@@ -97,7 +99,7 @@ export const CreatorCampaignCard: FC<CampaignProps> = ({
   campaign,
   className,
 }) => {
-  const { address, name, pledged, asset, goal } = campaign
+  const { address, name, pledged, tokenSymbol, goal } = campaign
 
   return (
     <Link href={`/campaign/${address}`}>
@@ -121,7 +123,7 @@ export const CreatorCampaignCard: FC<CampaignProps> = ({
             <span className="text-base font-light">Funded</span>
           </p>
           <p className="text-placeholder">
-            {pledged.toLocaleString()} {asset} pledged
+            {pledged.toLocaleString()} {tokenSymbol} pledged
           </p>
         </div>
       </a>

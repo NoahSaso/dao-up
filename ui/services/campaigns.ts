@@ -1,3 +1,5 @@
+import { Status } from "../types"
+
 export const newCampaignFields: Record<keyof NewCampaign, NewCampaignField> = {
   name: { label: "Campaign Name", pageId: 1, required: true, advanced: false },
   description: {
@@ -94,15 +96,36 @@ export const newCampaignFieldEntries = Object.entries(newCampaignFields) as [
   NewCampaignField
 ][]
 
+const placeholderCampaignFields = {
+  status: Status.Active,
+  creator: "0xa",
+
+  daoName: "DAO",
+  daoDescription: "Desc",
+  daoUrl: "https://noahsaso.com",
+  displayPublicly: true,
+
+  tokenName: "Token",
+  tokenSymbol: "TOK",
+  tokenPrice: 1,
+
+  passingThreshold: 50,
+  initialSupply: 10000000,
+  initialDAOAmount: 9000000,
+  votingDuration: 60,
+  unstakingDuration: 60,
+  proposalDeposit: 100,
+  refundProposalDeposits: true,
+}
+
 export const campaigns: Campaign[] = [
   {
+    ...placeholderCampaignFields,
+
     address: "0xjunocontract1",
     name: "BongDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
-    open: true,
-    daoUrl: "https://noahsaso.com",
 
-    asset: "$JUNO",
     goal: 100000,
     pledged: 10000,
     supporters: 10,
@@ -117,29 +140,26 @@ export const campaigns: Campaign[] = [
         when: new Date(new Date().getTime() - 1 * 60 * 60 * 24 * 7),
         address: "123",
         amount: 2,
-        asset: "$JUNO",
       },
       {
         when: new Date(new Date().getTime() - 5000 * 60 * 60 * 24 * 7),
         address: "123456",
         amount: 1,
-        asset: "$JUNO",
       },
       {
         when: new Date(new Date().getTime() - 10000 * 60 * 60 * 24 * 7),
         address: "3",
         amount: 1,
-        asset: "$JUNO",
       },
     ],
   },
   {
+    ...placeholderCampaignFields,
+
     address: "0xjunocontract2",
     name: "HouseDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
-    open: true,
 
-    asset: "$JUNO",
     goal: 1000000,
     pledged: 700000,
     supporters: 7,
@@ -148,12 +168,12 @@ export const campaigns: Campaign[] = [
     activity: [],
   },
   {
+    ...placeholderCampaignFields,
+
     address: "0xjunocontract3",
     name: "RentDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
-    open: true,
 
-    asset: "$JUNO",
     goal: 500000,
     pledged: 200000,
     supporters: 200,
@@ -162,12 +182,12 @@ export const campaigns: Campaign[] = [
     activity: [],
   },
   {
+    ...placeholderCampaignFields,
+
     address: "0xjunocontract4",
     name: "GroceryDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
-    open: false,
 
-    asset: "$JUNO",
     goal: 1000000,
     pledged: 900000,
     supporters: 45,
@@ -176,12 +196,12 @@ export const campaigns: Campaign[] = [
     activity: [],
   },
   {
+    ...placeholderCampaignFields,
+
     address: "0xjunocontract5",
     name: "MicroGridDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
-    open: true,
 
-    asset: "$JUNO",
     goal: 1000000,
     pledged: 120000000000,
     supporters: 8,
