@@ -17,14 +17,14 @@ const NavItem: FC<NavItemProps> = ({ href, children, action, className }) => {
   const { pathname } = useRouter()
 
   return action ? (
-    <ButtonLink href={href} outline className={cn("ml-8", className)}>
+    <ButtonLink href={href} outline className={cn("ml-6 sm:ml-8", className)}>
       {children}
     </ButtonLink>
   ) : (
     <Link href={href}>
       <a
         className={cn(
-          "ml-8",
+          "ml-6 sm:ml-8",
           "hover:text-green",
           "transition",
           {
@@ -41,12 +41,12 @@ const NavItem: FC<NavItemProps> = ({ href, children, action, className }) => {
 }
 
 export const Header: FC = () => (
-  <header className="p-10">
+  <header className="p-8 sm:p-10">
     <nav className="flex flex-row justify-between items-center">
       <Link href="/">
         <a className="flex flex-row items-center">
           <Image src="/images/logo.svg" alt="logo" width={52} height={30} />
-          <h1 className={cn("text-2xl ml-4", "hidden sm:inline-block")}>
+          <h1 className={cn("text-2xl ml-4", "hidden md:inline-block")}>
             DAO Up!
           </h1>
         </a>
@@ -55,7 +55,7 @@ export const Header: FC = () => (
       <div className="flex flex-row items-center">
         <NavItem href="/campaigns">Campaigns</NavItem>
 
-        <NavItem href="/#faq" className="hidden sm:inline-block">
+        <NavItem href="/#faq" className="hidden md:inline-block">
           FAQ
         </NavItem>
 
@@ -63,10 +63,10 @@ export const Header: FC = () => (
           <RiAccountCircleLine size={24} />
         </NavItem>
 
-        <NavItem href="/create" action className="hidden sm:inline-block">
+        <NavItem href="/create" action className="hidden md:inline-block">
           Create Campaign
         </NavItem>
-        <NavItem href="/create" action className="sm:hidden">
+        <NavItem href="/create" action className="md:hidden">
           Create
         </NavItem>
       </div>
