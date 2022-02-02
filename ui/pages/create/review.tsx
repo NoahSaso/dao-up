@@ -65,7 +65,7 @@ const Card: FC<PropsWithChildren<CardProps>> = ({
       className={cn("flex flex-col mt-6", { "bg-card rounded-3xl p-8": !flat })}
     >
       <div className="flex flex-row items-center mb-2">
-        <h2 className="text-2xl mr-3">{label}</h2>
+        <h2 className="text-3xl mr-3">{label}</h2>
         <Image src="/images/pencil.svg" alt="edit" width={18} height={18} />
       </div>
 
