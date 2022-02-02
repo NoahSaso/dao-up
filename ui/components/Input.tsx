@@ -7,18 +7,22 @@ import {
   PropsWithChildren,
   ReactNode,
   TextareaHTMLAttributes,
+  useRef,
   useState,
 } from "react"
 import {
   Control,
   Controller,
   FieldArrayMethodProps,
-  FieldErrors,
+  FieldArrayWithId,
   FieldValues,
-  UseFormRegister,
 } from "react-hook-form"
 import { IoCaretDownSharp, IoCloseSharp } from "react-icons/io5"
 
+import {
+  validateAndCleanJunoAddress,
+  validateInitialDistributionAmount,
+} from "../helpers/form"
 import { prettyPrintDecimal } from "../helpers/number"
 import { Button } from "."
 
@@ -172,7 +176,12 @@ export const DoubleInput = forwardRef<
           {...shared}
           {...first}
           {...(swap ? getSwapProps(first.tail, SwapDoubleInputId.First) : {})}
-          ref={ref}
+          ref={
+            // If not swapping, use first input for ref. Otherwise, set ref to currently visible.
+            !swap || swapInputShowing === SwapDoubleInputId.First
+              ? ref
+              : undefined
+          }
         />
 
         <Input
@@ -194,7 +203,12 @@ export const DoubleInput = forwardRef<
           {...shared}
           {...second}
           {...(swap ? getSwapProps(second.tail, SwapDoubleInputId.Second) : {})}
-          ref={undefined}
+          ref={
+            // If not swapping, use first input for ref. Otherwise, set ref to currently visible.
+            swap && swapInputShowing === SwapDoubleInputId.Second
+              ? ref
+              : undefined
+          }
         />
       </div>
     )
@@ -577,6 +591,7 @@ export const FormPercentTokenDoubleInput = forwardRef<
       error,
       wrapperClassName,
       surroundingClassName,
+      shared: { className: sharedClassName, ...shared } = {},
       ...props
     },
     ref
@@ -589,7 +604,14 @@ export const FormPercentTokenDoubleInput = forwardRef<
       wrapperClassName={wrapperClassName}
       surroundingClassName={surroundingClassName}
     >
-      <PercentTokenDoubleInput {...props} ref={ref} />
+      <PercentTokenDoubleInput
+        shared={{
+          className: cn({ "!border-orange": !!error }, sharedClassName),
+          ...shared,
+        }}
+        {...props}
+        ref={ref}
+      />
     </FormWrapper>
   )
 )
@@ -654,24 +676,24 @@ type InitialDistributionsFieldEditorProps = {
       creating: false
       initialDistribution: InitialDistribution
       onRemove: () => void
+      fields?: never
       append?: never
-      index: number
-      register: UseFormRegister<Partial<NewCampaign>>
-      errors: FieldErrors<Partial<NewCampaign>>
-      control: Control<Partial<NewCampaign>, object>
+      update?: never
     }
   | {
       creating: true
       initialDistribution?: never
       onRemove?: never
+      fields: FieldArrayWithId<
+        Partial<NewCampaign>,
+        "initialDistributions",
+        "id"
+      >[]
       append: (
         value: Partial<InitialDistribution> | Partial<InitialDistribution>[],
         options?: FieldArrayMethodProps | undefined
       ) => void
-      index?: never
-      register?: never
-      errors?: never
-      control?: never
+      update: (index: number, value: Partial<InitialDistribution>) => void
     }
 )
 
@@ -683,21 +705,59 @@ export const InitialDistributionFieldEditor: FC<
   creating,
   initialDistribution,
   onRemove,
+  fields,
   append,
-  index,
-  register,
-  errors,
-  control,
+  update,
 }) => {
-  const [address, setAddress] = useState(undefined as string | undefined)
-  const [amount, setAmount] = useState(0)
+  const [address, setAddress] = useState("")
+  const [addressError, setAddressError] = useState("")
+  const addressRef = useRef<HTMLInputElement>(null)
 
-  const inputErrors = creating
-    ? []
-    : [
-        errors!.initialDistributions?.[index!]?.address?.message,
-        errors!.initialDistributions?.[index!]?.amount?.message,
-      ]
+  const [amount, setAmount] = useState(0)
+  const [amountError, setAmountError] = useState("")
+  const amountRef = useRef<HTMLInputElement>(null)
+
+  const addRecipient = () => {
+    setAddressError("")
+    setAmountError("")
+
+    let valid = true
+
+    const [cleanedAddress, addressValidationError] =
+      validateAndCleanJunoAddress(address)
+    if (addressValidationError) {
+      addressRef?.current?.focus()
+      valid = false
+      setAddressError(addressValidationError)
+    }
+
+    if (!validateInitialDistributionAmount(amount, initialSupply)) {
+      // If not yet invalid (thus hasn't focused address field due to error), focus this field.
+      if (valid) amountRef?.current?.focus()
+      valid = false
+      setAmountError(
+        `Must be between 0% (0 ${tokenSymbol}) and 100% (${prettyPrintDecimal(
+          initialSupply
+        )} ${tokenSymbol}).`
+      )
+    }
+
+    if (!valid) return
+
+    const newInitialDistribution = { address: cleanedAddress, amount }
+
+    // If duplicate address, update instead of append.
+    const existingIndex = fields?.findIndex(
+      ({ address }) => address === cleanedAddress
+    )
+    if (typeof existingIndex === "number" && existingIndex > -1)
+      update?.(existingIndex, newInitialDistribution)
+    else append?.(newInitialDistribution)
+
+    // Clear state on add.
+    setAddress("")
+    setAmount(0)
+  }
 
   return (
     <div
@@ -721,6 +781,8 @@ export const InitialDistributionFieldEditor: FC<
               wrapperClassName="!mb-6"
               value={address}
               onInput={(e) => setAddress(e.currentTarget.value)}
+              error={addressError}
+              ref={addressRef}
             />
 
             <FormPercentTokenDoubleInput
@@ -731,38 +793,17 @@ export const InitialDistributionFieldEditor: FC<
               value={amount}
               onChangeAmount={(value) => setAmount(value)}
               wrapperClassName="mb-6"
+              error={amountError}
+              ref={amountRef}
             />
 
-            <Button
-              onClick={() => {
-                append?.({ address, amount })
-
-                // Clear inputs on add.
-                setAddress("")
-                setAmount(0)
-              }}
-            >
-              Add Recipient
-            </Button>
+            <Button onClick={addRecipient}>Add Recipient</Button>
           </>
         ) : (
           <>
             <h3 className={cn("text-green text-lg")}>
               {initialDistribution!.address}
             </h3>
-            {/* Register so we get errors, hide input */}
-            <FormInput
-              wrapperClassName="hidden"
-              value={initialDistribution!.address}
-              {...register?.(`initialDistributions.${index!}.address`, {
-                required: "Address is required.",
-                // TODO: address format
-                pattern: {
-                  value: /^\s*juno.+\s*$/,
-                  message: "Invalid address.",
-                },
-              })}
-            />
 
             <p className={cn("text-light text-base")}>
               {`${
@@ -777,27 +818,6 @@ export const InitialDistributionFieldEditor: FC<
               }% of total tokens / `}
               {prettyPrintDecimal(initialDistribution!.amount)} {tokenSymbol}
             </p>
-            {/* Register so we get errors, hide input */}
-            <ControlledFormPercentTokenDoubleInput
-              control={control}
-              name={`initialDistributions.${index}.amount`}
-              maxValue={initialSupply}
-              currency={tokenSymbol}
-              value={initialDistribution!.amount}
-              wrapperClassName="hidden"
-            />
-
-            {inputErrors.some(Boolean) && (
-              <p className="mt-5 text-orange">
-                Please delete this recipient and add it again with valid fields.
-                {inputErrors.map((error) => (
-                  <>
-                    <br />
-                    {error}
-                  </>
-                ))}
-              </p>
-            )}
           </>
         )}
       </div>

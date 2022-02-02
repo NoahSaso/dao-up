@@ -30,6 +30,7 @@ const Create4: NextPage = () => {
     fields: initialDistributionsFields,
     append: initialDistributionsAppend,
     remove: initialDistributionsRemove,
+    update: initialDistributionsUpdate,
   } = useFieldArray({
     control,
     name: "initialDistributions",
@@ -37,9 +38,11 @@ const Create4: NextPage = () => {
 
   const [showingAdvanced, setShowingAdvanced] = useState(false)
 
-  const goal = getValues("goal") ?? 0
   const watchTokenSymbol = watch("tokenSymbol")?.trim() || "tokens"
   const watchInitialSupply = watch("initialSupply") ?? 0
+  const watchInitialDistributions = watch("initialDistributions") ?? []
+
+  const goal = getValues("goal") ?? 0
   const tokenPrice =
     !isNaN(goal) && !isNaN(watchInitialSupply) && goal > 0
       ? watchInitialSupply / goal
@@ -160,6 +163,7 @@ const Create4: NextPage = () => {
               }}
             />
 
+            {/* TODO: Validate initialDAOAmount + sum(initialDistributions->amount) < initialSupply */}
             <FormWrapper
               label={newCampaignFields.initialDistributions.label}
               description="Addresses to distribute tokens to upon creation of the campaign. These addresses will receive DAO tokens without contributing any money to the DAO."
@@ -173,10 +177,6 @@ const Create4: NextPage = () => {
                     tokenSymbol={watchTokenSymbol}
                     initialDistribution={initialDistribution}
                     onRemove={() => initialDistributionsRemove(index)}
-                    index={index}
-                    register={register}
-                    errors={errors}
-                    control={control}
                   />
                 )
               )}
@@ -185,7 +185,9 @@ const Create4: NextPage = () => {
                 creating
                 initialSupply={watchInitialSupply}
                 tokenSymbol={watchTokenSymbol}
+                fields={initialDistributionsFields}
                 append={initialDistributionsAppend}
+                update={initialDistributionsUpdate}
               />
             </FormWrapper>
 

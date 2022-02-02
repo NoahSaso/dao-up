@@ -115,3 +115,18 @@ export const useNewCampaignForm = (id: number) => {
     Navigation,
   }
 }
+
+// TODO: write real validation regex
+// If this returns false, the address is invalid.
+export const validateAndCleanJunoAddress = (address: string) => {
+  const cleanedAddress = address.trim().toLowerCase()
+
+  if (!/^juno.+$/.test(cleanedAddress)) return [undefined, "Invalid address."]
+
+  return [cleanedAddress, undefined]
+}
+
+export const validateInitialDistributionAmount = (
+  amount: number,
+  max: number
+) => amount >= 0 && amount <= max
