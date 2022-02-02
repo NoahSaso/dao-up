@@ -157,9 +157,9 @@ const Create4: NextPage = () => {
                 valueAsNumber: true,
                 pattern: /^\s*\d+\s*$/,
                 min:
-                  initialDistributionsAmount > 0 && watchInitialSupply > 0
+                  totalDistributionAmount > 0 && watchInitialSupply > 0
                     ? {
-                        value: initialDistributionsAmount,
+                        value: totalDistributionAmount,
                         message: `Must be greater than currently allocated amounts: ${prettyPrintDecimal(
                           totalDistributionAmount
                         )} ${watchTokenSymbol}. Decrease the DAO Initial Amount or Initial Distribution Amounts below first.`,
@@ -171,7 +171,6 @@ const Create4: NextPage = () => {
               })}
             />
 
-            {/* TODO: Update this value when initialSupply changes? */}
             <ControlledFormPercentTokenDoubleInput
               control={control}
               name="initialDAOAmount"
