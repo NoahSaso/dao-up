@@ -186,7 +186,7 @@ export const InitialDistributionCreator: FC<
         className="self-start"
         disabled={!anyRemainingSupply}
       >
-        {existingField ? "Update" : "Add"} Recipient
+        {existingField ? "Update" : "Save"} Initial Distribution
       </Button>
 
       {!anyRemainingSupply && (
