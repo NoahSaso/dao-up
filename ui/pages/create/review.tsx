@@ -80,7 +80,7 @@ const Create5: NextPage = () => {
 
   const [showingAdvanced, setShowingAdvanced] = useState(false)
 
-  const create: SubmitHandler<FieldValues> = () => {
+  const create = () => {
     alert("WOO\n" + JSON.stringify(newCampaign, null, 2))
     console.log(newCampaign)
   }
