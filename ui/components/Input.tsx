@@ -13,7 +13,9 @@ import {
   Control,
   Controller,
   FieldArrayMethodProps,
+  FieldErrors,
   FieldValues,
+  UseFormRegister,
 } from "react-hook-form"
 import { IoCaretDownSharp, IoCloseSharp } from "react-icons/io5"
 
@@ -653,6 +655,10 @@ type InitialDistributionsFieldEditorProps = {
       initialDistribution: InitialDistribution
       onRemove: () => void
       append?: never
+      index: number
+      register: UseFormRegister<Partial<NewCampaign>>
+      errors: FieldErrors<Partial<NewCampaign>>
+      control: Control<Partial<NewCampaign>, object>
     }
   | {
       creating: true
@@ -662,6 +668,10 @@ type InitialDistributionsFieldEditorProps = {
         value: Partial<InitialDistribution> | Partial<InitialDistribution>[],
         options?: FieldArrayMethodProps | undefined
       ) => void
+      index?: never
+      register?: never
+      errors?: never
+      control?: never
     }
 )
 
@@ -674,9 +684,20 @@ export const InitialDistributionFieldEditor: FC<
   initialDistribution,
   onRemove,
   append,
+  index,
+  register,
+  errors,
+  control,
 }) => {
   const [address, setAddress] = useState(undefined as string | undefined)
   const [amount, setAmount] = useState(0)
+
+  const inputErrors = creating
+    ? []
+    : [
+        errors!.initialDistributions?.[index!]?.address?.message,
+        errors!.initialDistributions?.[index!]?.amount?.message,
+      ]
 
   return (
     <div
@@ -726,10 +747,24 @@ export const InitialDistributionFieldEditor: FC<
           </>
         ) : (
           <>
-            <h3 className="text-green text-lg">
+            <h3 className={cn("text-green text-lg")}>
               {initialDistribution!.address}
             </h3>
-            <p className="text-light text-base">
+            {/* Register so we get errors, hide input */}
+            <FormInput
+              wrapperClassName="hidden"
+              value={initialDistribution!.address}
+              {...register?.(`initialDistributions.${index!}.address`, {
+                required: "Address is required.",
+                // TODO: address format
+                pattern: {
+                  value: /^\s*juno.+\s*$/,
+                  message: "Invalid address.",
+                },
+              })}
+            />
+
+            <p className={cn("text-light text-base")}>
               {`${
                 initialSupply > 0
                   ? Number(
@@ -742,6 +777,27 @@ export const InitialDistributionFieldEditor: FC<
               }% of total tokens / `}
               {prettyPrintDecimal(initialDistribution!.amount)} {tokenSymbol}
             </p>
+            {/* Register so we get errors, hide input */}
+            <ControlledFormPercentTokenDoubleInput
+              control={control}
+              name={`initialDistributions.${index}.amount`}
+              maxValue={initialSupply}
+              currency={tokenSymbol}
+              value={initialDistribution!.amount}
+              wrapperClassName="hidden"
+            />
+
+            {inputErrors.some(Boolean) && (
+              <p className="mt-5 text-orange">
+                Please delete this recipient and add it again with valid fields.
+                {inputErrors.map((error) => (
+                  <>
+                    <br />
+                    {error}
+                  </>
+                ))}
+              </p>
+            )}
           </>
         )}
       </div>

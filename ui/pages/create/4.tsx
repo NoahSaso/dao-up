@@ -173,6 +173,10 @@ const Create4: NextPage = () => {
                     tokenSymbol={watchTokenSymbol}
                     initialDistribution={initialDistribution}
                     onRemove={() => initialDistributionsRemove(index)}
+                    index={index}
+                    register={register}
+                    errors={errors}
+                    control={control}
                   />
                 )
               )}
