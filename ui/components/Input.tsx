@@ -55,7 +55,7 @@ export const Input = forwardRef<HTMLInputElement, UnforwardedInputProps>(
       {!!tail && (
         <div
           className={cn(
-            "absolute top-0 right-0 bottom-0 bg-card rounded-full",
+            "absolute top-0 right-0 bottom-0 rounded-full",
             tailContainerClassName
           )}
         >
@@ -82,6 +82,11 @@ type UnforwardedDoubleInputProps = {
   swap?: boolean
 }
 
+enum SwapDoubleInputId {
+  First,
+  Second,
+}
+
 export const DoubleInput = forwardRef<
   HTMLInputElement,
   UnforwardedDoubleInputProps
@@ -104,15 +109,39 @@ export const DoubleInput = forwardRef<
         className: secondClassName,
         ...second
       } = {},
-      swap,
+      swap = true,
     },
     ref
   ) => {
     // Which input to show when swapping.
     // Initially show the first input if swapping.
-    const [show, setShow] = useState(
-      (swap ? 1 : undefined) as 1 | 2 | undefined
+    const [swapInputShowing, showSwapInput] = useState(
+      swap ? SwapDoubleInputId.First : undefined
     )
+
+    const getSwapProps = (
+      tailContent: ReactNode | undefined,
+      currentSwapInputShowing: SwapDoubleInputId
+    ) => ({
+      // Move padding to button so the whole tail is clickable.
+      tailClassName: "!p-0 bg-light/70",
+      tail: (
+        <Button
+          onClick={() =>
+            showSwapInput(
+              currentSwapInputShowing === SwapDoubleInputId.First
+                ? SwapDoubleInputId.Second
+                : SwapDoubleInputId.First
+            )
+          }
+          color="light"
+          className="h-full px-6 !border-none !text-dark flex flex-row items-center"
+        >
+          {tailContent ?? shared.tail}
+          <IoCaretDownSharp size={18} className="ml-2" />
+        </Button>
+      ),
+    })
 
     return (
       <div
@@ -124,7 +153,7 @@ export const DoubleInput = forwardRef<
         <Input
           containerClassName={cn(
             "flex-1",
-            { hidden: show === 2 },
+            { hidden: swapInputShowing === SwapDoubleInputId.Second },
             sharedContainerClassName,
             firstContainerClassName
           )}
@@ -135,22 +164,7 @@ export const DoubleInput = forwardRef<
           )}
           {...shared}
           {...first}
-          {...(swap
-            ? {
-                tailClassName: "!p-0 bg-light/70",
-                tailContainerClassName: "!bg-dark",
-                tail: (
-                  <Button
-                    onClick={() => setShow(2)}
-                    color="light"
-                    className="h-full !border-none px-6 !text-dark flex flex-row items-center"
-                  >
-                    {shared.tail ?? first.tail}
-                    <IoCaretDownSharp size={18} className="ml-2" />
-                  </Button>
-                ),
-              }
-            : {})}
+          {...(swap ? getSwapProps(first.tail, SwapDoubleInputId.First) : {})}
           ref={ref}
         />
 
@@ -158,7 +172,10 @@ export const DoubleInput = forwardRef<
           containerClassName={cn(
             "flex-1 mt-2",
             "sm:mt-0 sm:ml-5",
-            { hidden: show === 1, "!mt-0 !ml-0": swap },
+            {
+              hidden: swapInputShowing === SwapDoubleInputId.First,
+              "!mt-0 !ml-0": swap,
+            },
             sharedContainerClassName,
             secondContainerClassName
           )}
@@ -169,22 +186,7 @@ export const DoubleInput = forwardRef<
           )}
           {...shared}
           {...second}
-          {...(swap
-            ? {
-                tailClassName: "!p-0 bg-light/70",
-                tailContainerClassName: "!bg-dark",
-                tail: (
-                  <Button
-                    onClick={() => setShow(1)}
-                    color="light"
-                    className="h-full !border-none px-6 !text-dark flex flex-row items-center"
-                  >
-                    {shared.tail ?? second.tail}
-                    <IoCaretDownSharp size={18} className="ml-2" />
-                  </Button>
-                ),
-              }
-            : {})}
+          {...(swap ? getSwapProps(second.tail, SwapDoubleInputId.Second) : {})}
           ref={undefined}
         />
       </div>
@@ -551,16 +553,15 @@ export const FormDoubleInput = forwardRef<
 )
 FormDoubleInput.displayName = "FormDoubleInput"
 
-interface FormPercentTokenDoubleInputProps {
-  control: Control<FieldValues, object>
-  name: string
-  label?: string
-  description?: string
-  maxValue: number
-  currency: string
-  wrapperClassName?: string
-  extraProps?: Partial<UnforwardedPercentTokenDoubleInputProps>
-}
+type FormPercentTokenDoubleInputProps = Omit<
+  UnforwardedPercentTokenDoubleInputProps,
+  "value" | "onChangeAmount"
+> &
+  Omit<FormItemProps, "accent" | "error" | "horizontal"> & {
+    control: Control<FieldValues, object>
+    name: string
+  }
+
 export const FormPercentTokenDoubleInput: FC<
   FormPercentTokenDoubleInputProps
 > = ({
@@ -568,10 +569,13 @@ export const FormPercentTokenDoubleInput: FC<
   name,
   label,
   description,
+  wrapperClassName,
+  surroundingClassName,
   maxValue,
   currency,
-  wrapperClassName,
-  extraProps: { shared, second, ...extraProps } = {},
+  shared,
+  second,
+  ...props
 }) => (
   <Controller
     control={control}
@@ -598,10 +602,10 @@ export const FormPercentTokenDoubleInput: FC<
         label={label}
         description={description}
         wrapperClassName={wrapperClassName}
+        surroundingClassName={surroundingClassName}
         error={error?.message}
       >
         <PercentTokenDoubleInput
-          {...extraProps}
           maxValue={maxValue}
           currency={currency}
           value={value}
@@ -617,6 +621,7 @@ export const FormPercentTokenDoubleInput: FC<
             ...second,
             ...field,
           }}
+          {...props}
         />
       </FormWrapper>
     )}

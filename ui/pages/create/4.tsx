@@ -151,11 +151,9 @@ const Create4: NextPage = () => {
               description="The amount of tokens to be reserved in the DAO for future distribution. Only the distributed tokens count when voting on proposals, so it is good practice to reserve most tokens for the DAO at the beginning. Default is 9 million."
               maxValue={watchInitialSupply}
               currency={watchTokenSymbol}
-              extraProps={{
-                first: { placeholder: "90" },
-                second: {
-                  placeholder: prettyPrintDecimal(watchInitialSupply * 0.9, 6),
-                },
+              first={{ placeholder: "90" }}
+              second={{
+                placeholder: prettyPrintDecimal(watchInitialSupply * 0.9, 6),
               }}
             />
 
@@ -193,7 +191,7 @@ const Create4: NextPage = () => {
                     name={`initialDistributions.${index}.amount`}
                     maxValue={watchInitialSupply}
                     currency={watchTokenSymbol}
-                    extraProps={{ shared: { placeholder: "0" } }}
+                    shared={{ placeholder: "0" }}
                   />
 
                   <Button
