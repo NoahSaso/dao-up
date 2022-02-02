@@ -47,6 +47,9 @@ declare global {
     unstakingDuration: number
     proposalDeposit: number
     refundProposalDeposits: boolean
+
+    // custom errors
+    totalDistributionAmountError?: string
   }
 
   interface InitialDistribution {
@@ -63,6 +66,11 @@ declare global {
     unitBefore?: (c: Partial<NewCampaign>) => string
     unitAfter?: (c: Partial<NewCampaign>) => string
   }
+
+  type NonErrorNewCampaignFieldKey = Exclude<
+    keyof NewCampaign,
+    "totalDistributionAmountError"
+  >
 
   interface WalletState {
     connected: boolean

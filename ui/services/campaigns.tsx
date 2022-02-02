@@ -25,10 +25,9 @@ const renderInitialDAOAmount = (
   `${
     typeof newCampaign.initialSupply === "number" &&
     newCampaign.initialSupply > 0
-      ? Number(
-          ((100 * (initialDAOAmount ?? 0)) / newCampaign.initialSupply).toFixed(
-            6
-          )
+      ? prettyPrintDecimal(
+          (100 * (initialDAOAmount ?? 0)) / newCampaign.initialSupply,
+          6
         )
       : "0"
   }% of total tokens / ${prettyPrintDecimal(initialDAOAmount ?? 0)} ${
@@ -48,8 +47,9 @@ const renderInitialDistributions = (
             {`${
               typeof newCampaign.initialSupply === "number" &&
               newCampaign.initialSupply > 0
-                ? Number(
-                    ((100 * amount) / newCampaign.initialSupply).toFixed(6)
+                ? prettyPrintDecimal(
+                    (100 * amount) / newCampaign.initialSupply,
+                    6
                   )
                 : "0"
             }% of total tokens / `}
@@ -62,7 +62,10 @@ const renderInitialDistributions = (
     "None"
   )
 
-export const newCampaignFields: Record<keyof NewCampaign, NewCampaignField> = {
+export const newCampaignFields: Record<
+  NonErrorNewCampaignFieldKey,
+  NewCampaignField
+> = {
   name: {
     label: "Campaign Name",
     pageId: 1,
@@ -215,7 +218,7 @@ export const newCampaignFields: Record<keyof NewCampaign, NewCampaignField> = {
   },
 }
 export const newCampaignFieldEntries = Object.entries(newCampaignFields) as [
-  keyof NewCampaign,
+  NonErrorNewCampaignFieldKey,
   NewCampaignField
 ][]
 

@@ -33,6 +33,8 @@ interface ButtonProps
   outline?: boolean
   submitLabel?: string
   simple?: boolean
+  // Manually add to both types of element (input and button)
+  onClick?: () => void
 }
 export const Button: FC<ButtonProps> = ({
   children,
@@ -41,6 +43,7 @@ export const Button: FC<ButtonProps> = ({
   className,
   submitLabel,
   simple,
+  onClick,
   ...props
 }) => {
   const classNames = classnames(
@@ -61,9 +64,14 @@ export const Button: FC<ButtonProps> = ({
   )
 
   return submitLabel ? (
-    <input type="submit" className={classNames} value={submitLabel} />
+    <input
+      type="submit"
+      className={classNames}
+      value={submitLabel}
+      onClick={onClick}
+    />
   ) : (
-    <button type="button" className={classNames} {...props}>
+    <button type="button" className={classNames} onClick={onClick} {...props}>
       {children}
     </button>
   )

@@ -163,7 +163,6 @@ const Create4: NextPage = () => {
               }}
             />
 
-            {/* TODO: Validate initialDAOAmount + sum(initialDistributions->amount) < initialSupply */}
             <FormWrapper
               label={newCampaignFields.initialDistributions.label}
               description="Addresses to distribute tokens to upon creation of the campaign. These addresses will receive DAO tokens without contributing any money to the DAO."

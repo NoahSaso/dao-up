@@ -262,7 +262,7 @@ export const PercentTokenDoubleInput = forwardRef<
         // Convert from tokens to percent
         value:
           maxValue > 0 && !!value
-            ? Number(((100 * value) / maxValue).toFixed(6))
+            ? prettyPrintDecimal((100 * value) / maxValue, 6)
             : value,
       }}
       second={{
@@ -808,11 +808,9 @@ export const InitialDistributionFieldEditor: FC<
             <p className={cn("text-light text-base")}>
               {`${
                 initialSupply > 0
-                  ? Number(
-                      (
-                        (100 * initialDistribution!.amount) /
-                        initialSupply
-                      ).toFixed(6)
+                  ? prettyPrintDecimal(
+                      (100 * initialDistribution!.amount) / initialSupply,
+                      6
                     )
                   : "0"
               }% of total tokens / `}
