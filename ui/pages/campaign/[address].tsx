@@ -132,7 +132,7 @@ const Campaign: NextPage = () => {
 
   const overfunded = pledged > goal
 
-  const userTokens = 1
+  const userTokens: number = 1
 
   return (
     <>
