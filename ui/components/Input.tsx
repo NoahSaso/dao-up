@@ -312,7 +312,7 @@ TextArea.displayName = "TextArea"
 
 interface SwitchProps {
   on: boolean
-  onClick: () => void
+  onClick?: () => void
   className?: string
 }
 export const Switch: FC<SwitchProps> = ({ on, onClick, className }) => (
@@ -348,6 +348,7 @@ interface FormItemProps {
   wrapperClassName?: string
   surroundingClassName?: string
   horizontal?: boolean
+  onClick?: () => void
 }
 
 type FormWrapperProps = PropsWithChildren<FormItemProps>
@@ -361,6 +362,7 @@ export const FormWrapper: FC<FormWrapperProps> = ({
   wrapperClassName,
   surroundingClassName,
   horizontal,
+  onClick,
 }) => (
   <div
     className={cn(
@@ -370,6 +372,7 @@ export const FormWrapper: FC<FormWrapperProps> = ({
       },
       wrapperClassName
     )}
+    onClick={onClick}
   >
     {horizontal && children}
     <div className={cn("flex flex-col items-stretch")}>
@@ -520,6 +523,7 @@ export const FormSwitch: FC<FormSwitchProps> = ({
   wrapperClassName,
   surroundingClassName,
   className,
+  onClick,
   ...props
 }) => (
   <FormWrapper
@@ -527,9 +531,10 @@ export const FormSwitch: FC<FormSwitchProps> = ({
     description={description}
     accent={accent}
     error={error}
-    wrapperClassName={wrapperClassName}
+    wrapperClassName={cn("cursor-pointer", wrapperClassName)}
     surroundingClassName={surroundingClassName}
     horizontal
+    onClick={onClick}
   >
     <Switch className={cn("shrink-0", className)} {...props} />
   </FormWrapper>

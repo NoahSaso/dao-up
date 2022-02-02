@@ -121,15 +121,15 @@ const Create4: NextPage = () => {
             <FormInput
               label={newCampaignFields.initialSupply.label}
               description={`The amount of tokens to create initially. Divide this value by your funding target${
-                typeof goal !== "undefined" ? ` (${goal.toLocaleString()})` : ""
+                typeof goal !== "undefined"
+                  ? ` ($${prettyPrintDecimal(goal, 2, 2)} USD)`
+                  : ""
               } to get the value of each token. Default is 10 million.`}
               accent={
                 tokenPrice
-                  ? `1 ${watchTokenSymbol} = ${prettyPrintDecimal(
-                      tokenPrice,
-                      2,
-                      2
-                    )} USD`
+                  ? `1 ${
+                      watchTokenSymbol === "tokens" ? "token" : watchTokenSymbol
+                    } = $${prettyPrintDecimal(tokenPrice, 2, 2)} USD`
                   : undefined
               }
               placeholder="10,000,000"
