@@ -8,7 +8,8 @@ import {
   FormInput,
   FormSwitch,
   FormWrapper,
-  InitialDistributionEditor,
+  InitialDistributionCreator,
+  InitialDistributionDisplay,
   ResponsiveDecoration,
   VisibilityToggle,
 } from "../../components"
@@ -41,7 +42,18 @@ const Create4: NextPage = () => {
   const watchTokenSymbol = watch("tokenSymbol")?.trim() || "tokens"
 
   const watchInitialSupply = watch("initialSupply") ?? 0
+
+  // Validate that token amounts are all valid.
+  const watchInitialDAOAmount = watch("initialDAOAmount") ?? 0
   const watchInitialDistributions = watch("initialDistributions") ?? []
+
+  // Sum up amounts.
+  const initialDistributionsAmount = watchInitialDistributions.reduce(
+    (acc, { amount }) => acc + amount,
+    0
+  )
+  const totalDistributionAmount =
+    watchInitialDAOAmount + initialDistributionsAmount
 
   const goal = getValues("goal") ?? 0
   const tokenPrice =
@@ -170,9 +182,8 @@ const Create4: NextPage = () => {
             >
               {initialDistributionsFields.map(
                 ({ id, ...initialDistribution }, index) => (
-                  <InitialDistributionEditor
+                  <InitialDistributionDisplay
                     key={id}
-                    creating={false}
                     initialSupply={watchInitialSupply}
                     tokenSymbol={watchTokenSymbol}
                     initialDistribution={initialDistribution}
@@ -181,8 +192,7 @@ const Create4: NextPage = () => {
                 )
               )}
 
-              <InitialDistributionEditor
-                creating
+              <InitialDistributionCreator
                 initialSupply={watchInitialSupply}
                 tokenSymbol={watchTokenSymbol}
                 fields={initialDistributionsFields}
