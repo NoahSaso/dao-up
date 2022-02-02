@@ -14,7 +14,6 @@ import {
   VisibilityToggle,
 } from "../../components"
 import { useNewCampaignForm } from "../../helpers/form"
-import { prettyPrintDecimal } from "../../helpers/number"
 import { newCampaignFieldEntries } from "../../services/campaigns"
 import { newCampaignState } from "../../services/state"
 
@@ -30,16 +29,11 @@ const FieldDisplay: FC<FieldDisplayProps> = ({
 }) => (
   <div className="flex flex-col mt-6">
     <p className="text-green mr-4">{label}</p>
-    <p className="text-light whitespace-pre-wrap mr-5">
+    <p className="text-light mr-5">
       {unitBefore?.(newCampaign) ?? ""}
-      {render(newCampaign[fieldKey])}
+      {render(newCampaign[fieldKey], newCampaign)}
       {unitAfter?.(newCampaign) ?? ""}
     </p>
-    {fieldKey === "imageUrl" && !!newCampaign[fieldKey] && (
-      // image is being loaded from anywhere, so can't use next image component
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={newCampaign[fieldKey]} alt="" className="max-w-[14rem]" />
-    )}
   </div>
 )
 

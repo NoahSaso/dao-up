@@ -59,7 +59,7 @@ declare global {
     pageId: number
     required: boolean
     advanced: boolean
-    render: (v: any) => ReactNode
+    render: (v: any, c: Partial<NewCampaign>) => ReactNode
     unitBefore?: (c: Partial<NewCampaign>) => string
     unitAfter?: (c: Partial<NewCampaign>) => string
   }

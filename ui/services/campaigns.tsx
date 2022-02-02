@@ -6,7 +6,35 @@ const renderBoolean = (v: boolean) => (v ? "Yes" : "No")
 const makeRenderNumber =
   (maxDecimals?: number, minDecimals?: number) => (v: number) =>
     prettyPrintDecimal(v, maxDecimals, minDecimals)
-// TODO: add image and initial distribution renderer here
+
+const renderImageUrl = (imageUrl?: string) => (
+  <>
+    {imageUrl}
+    {!!imageUrl && (
+      // image is being loaded from anywhere, so can't use next image component
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={imageUrl} alt="" className="mr-2 max-w-[14rem]" />
+    )}
+  </>
+)
+const renderInitialDistributions = (
+  initialDistributions: InitialDistribution[] | undefined,
+  newCampaign: Partial<NewCampaign>
+) =>
+  initialDistributions ? (
+    <div className="flex flex-col">
+      {initialDistributions.map(({ address, amount }, idx) => (
+        <div key={idx + address} className="flex flex-col mt-4">
+          <p className="">{address}:</p>
+          <p className="">
+            {prettyPrintDecimal(amount)} {newCampaign.tokenSymbol ?? "tokens"}
+          </p>
+        </div>
+      ))}
+    </div>
+  ) : (
+    "None"
+  )
 
 export const newCampaignFields: Record<keyof NewCampaign, NewCampaignField> = {
   name: {
@@ -80,7 +108,7 @@ export const newCampaignFields: Record<keyof NewCampaign, NewCampaignField> = {
     pageId: 3,
     required: false,
     advanced: false,
-    render: renderString,
+    render: renderImageUrl,
   },
 
   tokenName: {
@@ -127,7 +155,7 @@ export const newCampaignFields: Record<keyof NewCampaign, NewCampaignField> = {
     pageId: 4,
     required: true,
     advanced: true,
-    render: renderString,
+    render: renderInitialDistributions,
   },
   votingDuration: {
     label: "Voting Duration",
