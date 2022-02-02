@@ -13,7 +13,7 @@ const renderImageUrl = (imageUrl?: string) => (
     {!!imageUrl && (
       // image is being loaded from anywhere, so can't use next image component
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={imageUrl} alt="" className="mr-2 max-w-[14rem]" />
+      <img src={imageUrl} alt="" className="mt-2 max-w-[14rem]" />
     )}
   </>
 )
