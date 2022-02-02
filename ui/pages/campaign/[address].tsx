@@ -311,9 +311,9 @@ const Campaign: NextPage = () => {
         >
           <h2 className="text-xl text-green mb-2">Your Balance</h2>
           <p className="text-light">
-            {userTokens} Token{userTokens === 1 ? "" : "s"}{" "}
+            {userTokens} {tokenSymbol}{" "}
             <span className="text-placeholder ml-2">
-              {prettyPrintDecimal((100 * userTokens) / supply, 2)}% of total
+              {prettyPrintDecimal((100 * userTokens) / supply, 6)}% of total
               supply
             </span>
           </p>
