@@ -8,7 +8,7 @@ import {
   FormInput,
   FormSwitch,
   FormWrapper,
-  InitialDistributionFieldEditor,
+  InitialDistributionEditor,
   ResponsiveDecoration,
   VisibilityToggle,
 } from "../../components"
@@ -39,6 +39,7 @@ const Create4: NextPage = () => {
   const [showingAdvanced, setShowingAdvanced] = useState(false)
 
   const watchTokenSymbol = watch("tokenSymbol")?.trim() || "tokens"
+
   const watchInitialSupply = watch("initialSupply") ?? 0
   const watchInitialDistributions = watch("initialDistributions") ?? []
 
@@ -169,7 +170,7 @@ const Create4: NextPage = () => {
             >
               {initialDistributionsFields.map(
                 ({ id, ...initialDistribution }, index) => (
-                  <InitialDistributionFieldEditor
+                  <InitialDistributionEditor
                     key={id}
                     creating={false}
                     initialSupply={watchInitialSupply}
@@ -180,7 +181,7 @@ const Create4: NextPage = () => {
                 )
               )}
 
-              <InitialDistributionFieldEditor
+              <InitialDistributionEditor
                 creating
                 initialSupply={watchInitialSupply}
                 tokenSymbol={watchTokenSymbol}
