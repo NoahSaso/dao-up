@@ -30,7 +30,12 @@ export const loadClient = async (
 
   const signer = await keplr.getOfflineSignerAuto(chainId)
 
-  client = await SigningCosmWasmClient.connectWithSigner(endpoint, signer)
+  try {
+    client = await SigningCosmWasmClient.connectWithSigner(endpoint, signer)
+  } catch (err) {
+    console.error(err)
+    throw new Error("Failed to connect")
+  }
 
   const accounts = await signer.getAccounts()
   setWallet({
