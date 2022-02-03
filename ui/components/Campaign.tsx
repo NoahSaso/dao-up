@@ -15,18 +15,31 @@ export const CampaignStatus: FC<CampaignProps> = ({
   campaign: { status, pledged, goal },
   className,
 }) => {
-  const funded = pledged >= goal
-  const open = status === Status.Active
-
-  const color =
-    open && !funded
-      ? Color.Green
-      : open && funded
-      ? Color.Orange
-      : // default, and !open
-        Color.Placeholder
-  const label =
-    open && !funded ? "Active" : open && funded ? "Goal Reached" : "Closed"
+  let color: Color
+  let label: string
+  switch (status) {
+    case Status.Active:
+      const funded = pledged >= goal
+      color = funded ? Color.Orange : Color.Green
+      label = funded ? "Goal Reached" : "Active"
+      break
+    case Status.Pending:
+      color = Color.Placeholder
+      label = "Pending"
+      break
+    case Status.ClosedButNotTransferred:
+      color = Color.Placeholder
+      label = "Closed But Not Transferred"
+      break
+    case Status.Closed:
+      color = Color.Placeholder
+      label = "Closed"
+      break
+    default:
+      color = Color.Placeholder
+      label = "Unknown"
+      break
+  }
 
   return (
     <StatusIndicator

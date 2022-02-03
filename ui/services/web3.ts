@@ -22,6 +22,10 @@ export const loadClient = async (
   reset = false,
   silent = false
 ): Promise<CosmWasmClient> => {
+  if (process.env.NODE_ENV === "development") {
+    throw new Error("Development.")
+  }
+
   if (client && !reset) return client
 
   await loadKeplr()
@@ -34,7 +38,8 @@ export const loadClient = async (
     client = await SigningCosmWasmClient.connectWithSigner(endpoint, signer)
   } catch (err) {
     console.error(err)
-    throw new Error("Failed to connect")
+    // TODO: Display error message.
+    throw new Error("Failed to connect.")
   }
 
   const accounts = await signer.getAccounts()
@@ -47,6 +52,7 @@ export const loadClient = async (
   if (keplrListener)
     window.removeEventListener("keplr_keystorechange", keplrListener)
 
+  // TODO: setWallet comes from the page that first connected, so can it still be used if this event occurs on another page?
   keplrListener = () => {
     console.log("Keplr keystore changed, reloading client.")
     client = undefined
@@ -72,8 +78,8 @@ const loadKeplr = async (): Promise<Keplr | undefined> => {
         event.target &&
         (event.target as Document).readyState === "complete"
       ) {
-        resolve(saveAndReturnKeplr(window.keplr))
         document.removeEventListener("readystatechange", documentStateChange)
+        resolve(saveAndReturnKeplr(window.keplr))
       }
     }
 

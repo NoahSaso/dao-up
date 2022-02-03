@@ -24,5 +24,10 @@ module.exports = {
       xs: "420px",
       ...screens,
     },
+    extend: {
+      animation: {
+        "pulse-fast": "pulse 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+      },
+    },
   },
 }

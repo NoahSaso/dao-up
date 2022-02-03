@@ -14,51 +14,33 @@ declare global {
     address: string
     status: Status
     creator: string
-    daoUrl?: string
+    daoUrl: string
     tokenPrice: number
     supporters: number
     pledged: number
     supply: number
+    tokenName: string
+    tokenSymbol: string
     activity: ActivityItem[]
   }
 
   interface NewCampaign {
     name: string
     description: string
+    imageUrl?: string
     goal: number
+    daoAddress: string
     displayPublicly: boolean
-
-    daoName: string
-    daoDescription: string
 
     website?: string
     twitter?: string
     discord?: string
-    imageUrl?: string
-
-    tokenName: string
-    tokenSymbol: string
-    passingThreshold: number
-    // advanced
-    initialSupply: number
-    initialDAOAmount: number
-    initialDistributions?: InitialDistribution[]
-    votingDuration: number
-    unstakingDuration: number
-    proposalDeposit: number
-    refundProposalDeposits: boolean
-  }
-
-  interface InitialDistribution {
-    address: string
-    amount: number
   }
 
   interface NewCampaignField {
     label: string
     pageId: number
     required: boolean
-    advanced: boolean
     render: (v: any, c: Partial<NewCampaign>) => ReactNode
     unitBefore?: (c: Partial<NewCampaign>) => string
     unitAfter?: (c: Partial<NewCampaign>) => string
@@ -70,9 +52,14 @@ declare global {
     connected: boolean
     address: string
   }
+
+  interface SetLoadingProps {
+    setLoading: (loading: boolean) => void
+  }
 }
 
 export enum Status {
+  Pending,
   Active,
   ClosedButNotTransferred,
   Closed,
