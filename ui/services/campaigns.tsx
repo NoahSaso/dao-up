@@ -1,3 +1,5 @@
+import { SetterOrUpdater } from "recoil"
+
 import { prettyPrintDecimal } from "../helpers/number"
 import { Status } from "../types"
 
@@ -18,201 +20,62 @@ const renderImageUrl = (imageUrl?: string) => (
   </>
 )
 
-const renderInitialDAOAmount = (
-  initialDAOAmount: number | undefined,
-  newCampaign: Partial<NewCampaign>
-) =>
-  `${
-    typeof newCampaign.initialSupply === "number" &&
-    newCampaign.initialSupply > 0
-      ? prettyPrintDecimal(
-          (100 * (initialDAOAmount ?? 0)) / newCampaign.initialSupply,
-          6
-        )
-      : "0"
-  }% of total tokens / ${prettyPrintDecimal(initialDAOAmount ?? 0)} ${
-    newCampaign.tokenSymbol ?? "tokens"
-  }`
-
-const renderInitialDistributions = (
-  initialDistributions: InitialDistribution[] | undefined,
-  newCampaign: Partial<NewCampaign>
-) =>
-  initialDistributions ? (
-    <div className="flex flex-col">
-      {initialDistributions.map(({ address, amount }, idx) => (
-        <div key={idx + address} className="flex flex-col mt-4">
-          <p className="">{address}:</p>
-          <p className="">
-            {`${
-              typeof newCampaign.initialSupply === "number" &&
-              newCampaign.initialSupply > 0
-                ? prettyPrintDecimal(
-                    (100 * amount) / newCampaign.initialSupply,
-                    6
-                  )
-                : "0"
-            }% of total tokens / `}
-            {prettyPrintDecimal(amount)} {newCampaign.tokenSymbol ?? "tokens"}
-          </p>
-        </div>
-      ))}
-    </div>
-  ) : (
-    "None"
-  )
-
 export const newCampaignFields: Record<NewCampaignFieldKey, NewCampaignField> =
   {
     name: {
-      label: "Campaign Name",
+      label: "Name",
       pageId: 1,
       required: true,
-      advanced: false,
       render: renderString,
     },
     description: {
-      label: "Campaign Description",
+      label: "Description",
       pageId: 1,
       required: true,
-      advanced: false,
       render: renderString,
+    },
+    imageUrl: {
+      label: "Image URL",
+      pageId: 1,
+      required: false,
+      render: renderImageUrl,
     },
     goal: {
       label: "Funding Target",
       pageId: 1,
       required: true,
-      advanced: false,
       unitBefore: (_) => "$",
+      render: makeRenderNumber(2, 2),
+    },
+    daoAddress: {
+      label: "DAO Address",
+      pageId: 1,
+      required: true,
       render: makeRenderNumber(2, 2),
     },
     displayPublicly: {
       label: "Show on public campaigns list",
       pageId: 1,
       required: false,
-      advanced: false,
       render: renderBoolean,
     },
-
-    daoName: {
-      label: "DAO Name",
-      pageId: 2,
-      required: true,
-      advanced: false,
-      render: renderString,
-    },
-    daoDescription: {
-      label: "DAO Description",
-      pageId: 2,
-      required: true,
-      advanced: false,
-      render: renderString,
-    },
-
     website: {
       label: "Website",
-      pageId: 3,
+      pageId: 1,
       required: false,
-      advanced: false,
       render: renderString,
     },
     twitter: {
       label: "Twitter",
-      pageId: 3,
+      pageId: 1,
       required: false,
-      advanced: false,
       render: renderString,
     },
     discord: {
       label: "Discord",
-      pageId: 3,
+      pageId: 1,
       required: false,
-      advanced: false,
       render: renderString,
-    },
-    imageUrl: {
-      label: "Image URL",
-      pageId: 3,
-      required: false,
-      advanced: false,
-      render: renderImageUrl,
-    },
-
-    tokenName: {
-      label: "Token Name",
-      pageId: 4,
-      required: true,
-      advanced: false,
-      render: renderString,
-    },
-    tokenSymbol: {
-      label: "Token Symbol",
-      pageId: 4,
-      required: true,
-      advanced: false,
-      render: renderString,
-    },
-    passingThreshold: {
-      label: "DAO Proposal Passing Threshold",
-      pageId: 4,
-      required: true,
-      advanced: false,
-      unitAfter: (_) => "%",
-      render: makeRenderNumber(),
-    },
-    // advanced
-    initialSupply: {
-      label: "Initial Token Supply",
-      pageId: 4,
-      required: true,
-      advanced: true,
-      unitAfter: (c) => ` ${c.tokenSymbol ?? "tokens"}`,
-      render: makeRenderNumber(),
-    },
-    initialDAOAmount: {
-      label: "DAO Initial Amount",
-      pageId: 4,
-      required: true,
-      advanced: true,
-      render: renderInitialDAOAmount,
-    },
-    initialDistributions: {
-      label: "Initial Distributions",
-      pageId: 4,
-      required: true,
-      advanced: true,
-      render: renderInitialDistributions,
-    },
-    votingDuration: {
-      label: "Voting Duration",
-      pageId: 4,
-      required: true,
-      advanced: true,
-      unitAfter: (_) => " seconds",
-      render: makeRenderNumber(),
-    },
-    unstakingDuration: {
-      label: "Unstaking Duration",
-      pageId: 4,
-      required: true,
-      advanced: true,
-      unitAfter: (_) => " seconds",
-      render: makeRenderNumber(),
-    },
-    proposalDeposit: {
-      label: "Proposal Deposit",
-      pageId: 4,
-      required: true,
-      advanced: true,
-      unitAfter: (c) => ` ${c.tokenSymbol ?? "tokens"}`,
-      render: makeRenderNumber(),
-    },
-    refundProposalDeposits: {
-      label: "Refund Proposal Deposits",
-      pageId: 4,
-      required: true,
-      advanced: true,
-      render: renderBoolean,
     },
   }
 export const newCampaignFieldEntries = Object.entries(newCampaignFields) as [
@@ -220,12 +83,14 @@ export const newCampaignFieldEntries = Object.entries(newCampaignFields) as [
   NewCampaignField
 ][]
 
+export const defaultNewCampaign: Partial<NewCampaign> = {
+  displayPublicly: true,
+}
+
 const placeholderCampaignFields = {
   status: Status.Active,
   creator: "0xa",
 
-  daoName: "DAO",
-  daoDescription: "Desc",
   daoUrl: "https://noahsaso.com",
   displayPublicly: true,
 
@@ -233,20 +98,15 @@ const placeholderCampaignFields = {
   tokenSymbol: "TOK",
   tokenPrice: 1,
 
-  passingThreshold: 50,
   initialSupply: 10000000,
-  initialDAOAmount: 9000000,
-  votingDuration: 60,
-  unstakingDuration: 60,
-  proposalDeposit: 100,
-  refundProposalDeposits: true,
 }
 
 export const campaigns: Campaign[] = [
   {
     ...placeholderCampaignFields,
 
-    address: "0xjunocontract1",
+    address: "0xjunoescrow1",
+    daoAddress: "0xjunodao1",
     name: "BongDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
 
@@ -281,7 +141,8 @@ export const campaigns: Campaign[] = [
   {
     ...placeholderCampaignFields,
 
-    address: "0xjunocontract2",
+    address: "0xjunoescrow2",
+    daoAddress: "0xjunodao2",
     name: "HouseDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
 
@@ -297,7 +158,8 @@ export const campaigns: Campaign[] = [
   {
     ...placeholderCampaignFields,
 
-    address: "0xjunocontract3",
+    address: "0xjunoescrow3",
+    daoAddress: "0xjunodao3",
     name: "RentDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
 
@@ -313,7 +175,8 @@ export const campaigns: Campaign[] = [
   {
     ...placeholderCampaignFields,
 
-    address: "0xjunocontract4",
+    address: "0xjunoescrow4",
+    daoAddress: "0xjunodao4",
     name: "GroceryDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
 
@@ -329,7 +192,8 @@ export const campaigns: Campaign[] = [
   {
     ...placeholderCampaignFields,
 
-    address: "0xjunocontract5",
+    address: "0xjunoescrow5",
+    daoAddress: "0xjunodao5",
     name: "MicroGridDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
 
@@ -343,3 +207,71 @@ export const campaigns: Campaign[] = [
     activity: [],
   },
 ]
+
+// API
+
+type SetWalletFunction = SetterOrUpdater<WalletState>
+
+let lastCampaignId = campaigns.length
+
+// Returns escrow contract address of deployed campaign.
+export const createCampaign = async (
+  setWallet: SetWalletFunction,
+  newCampaign: NewCampaign,
+  wallet: WalletState
+): Promise<string> => {
+  // TODO: Deploy contract.
+  // const client = await Web3Service.loadClient(setWallet)
+
+  const address = `0xjunoescrow${++lastCampaignId}`
+  campaigns.push({
+    ...newCampaign,
+    address,
+    status: Status.Pending,
+    creator: wallet.address,
+    daoUrl: `https://daodao.zone/dao/${newCampaign.daoAddress}`,
+    tokenPrice: 0,
+    supporters: 0,
+    pledged: 0,
+    supply: 0,
+    tokenName: "Token",
+    tokenSymbol: "TOK",
+    activity: [],
+  } as Campaign)
+
+  // simulate loading
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+
+  return address
+}
+
+export const getCampaign = async (
+  setWallet: SetWalletFunction,
+  escrowContractAddress: string
+): Promise<Campaign | undefined> => {
+  // TODO: Transform contract into Campaign type.
+  // const client = await Web3Service.loadClient(setWallet)
+  // const contract = await client.getContract(escrowContractAddress)
+
+  const campaign = campaigns.find((c) => c.address === escrowContractAddress)
+
+  // simulate loading
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+
+  return campaign
+}
+
+// const CODE_ID = 0
+
+export const getCampaigns = async (
+  setWallet: SetWalletFunction
+): Promise<Campaign[]> => {
+  // TODO: Transform contracts into Campaign types.
+  // const client = await Web3Service.loadClient(setWallet)
+  // const contracts = await client.getContracts(CODE_ID)
+
+  // simulate loading
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+
+  return campaigns.filter((c) => c.displayPublicly)
+}

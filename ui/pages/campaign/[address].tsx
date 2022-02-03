@@ -1,8 +1,7 @@
 import cn from "classnames"
 import type { NextPage } from "next"
-import Image from "next/image"
 import { useRouter } from "next/router"
-import { FC, useEffect } from "react"
+import { FC, PropsWithChildren, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { IconType } from "react-icons"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
@@ -16,11 +15,26 @@ import {
   CampaignStatus,
   CenteredColumn,
   FormInput,
+  Loader,
   ResponsiveDecoration,
   TooltipInfo,
 } from "../../components"
 import { prettyPrintDecimal } from "../../helpers/number"
-import { campaigns } from "../../services/campaigns"
+import { useWallet } from "../../helpers/wallet"
+import { getCampaign } from "../../services/campaigns"
+
+const CampaignPageWrapper: FC<PropsWithChildren<{}>> = ({ children }) => (
+  <>
+    <ResponsiveDecoration
+      name="campaign_orange_blur.png"
+      width={341}
+      height={684}
+      className="top-0 left-0 opacity-70"
+    />
+
+    {children}
+  </>
+)
 
 interface CampaignLinkProps {
   href: string
@@ -70,8 +84,10 @@ interface RefundForm {
   refund?: number
 }
 
-const Campaign: NextPage = () => {
+const Campaign: NextPage<SetLoadingProps> = ({ setLoading }) => {
   const { query, isReady, push: routerPush } = useRouter()
+  const { setWallet } = useWallet()
+  const [campaign, setCampaign] = useState<Campaign | null>(null)
 
   // Contribution Form
   const {
@@ -92,14 +108,37 @@ const Campaign: NextPage = () => {
     defaultValues: {} as RefundForm,
   })
 
-  const campaign = campaigns.find((c) => c.address === query.address)
-  // If no campaign found, redirect to campaigns page.
+  // Fetch campaign, and redirect to campaigns page if not found.
   useEffect(() => {
-    if (!campaign) routerPush("/campaigns")
-  }, [campaign, routerPush])
+    if (!isReady) return
 
-  // If page not ready or no campaign found, don't render.
-  if (!isReady || !campaign) return null
+    const fetchCampaign = async () => {
+      setLoading(true)
+      if (typeof query.address !== "string")
+        throw new Error("Invalid campaign address.")
+
+      const campaign = await getCampaign(setWallet, query.address)
+      if (!campaign) throw new Error("Invalid campaign address.")
+
+      setCampaign(campaign)
+      setLoading(false)
+    }
+
+    fetchCampaign().catch((error) => {
+      console.error(error)
+      // TODO: Display error message.
+
+      routerPush("/campaigns")
+    })
+  }, [isReady, query.address, setCampaign, routerPush, setWallet, setLoading])
+
+  // Show loader when not ready.
+  useEffect(() => {
+    setLoading(!isReady)
+  }, [setLoading, isReady])
+
+  // If page not ready or no campaign found, display loader.
+  if (!isReady || !campaign) return <CampaignPageWrapper />
 
   // Contribution Form
   const doContribution = ({ contribution }: ContributionForm) => {
@@ -115,7 +154,6 @@ const Campaign: NextPage = () => {
   const {
     name,
     description,
-    imageUrl,
     daoUrl,
 
     website,
@@ -129,21 +167,14 @@ const Campaign: NextPage = () => {
     supply,
 
     activity,
-  } = campaign
+  } = campaign ?? {}
 
   const overfunded = pledged > goal
 
   const userTokens: number = 1
 
   return (
-    <>
-      <ResponsiveDecoration
-        name="campaign_orange_blur.png"
-        width={341}
-        height={684}
-        className="top-0 left-0 opacity-70"
-      />
-
+    <CampaignPageWrapper>
       {!!daoUrl && (
         <p className="bg-green text-dark text-center w-full px-12 py-2">
           {name} has been successfully funded and the{" "}
@@ -362,7 +393,7 @@ const Campaign: NextPage = () => {
           )}
         </div>
       </CenteredColumn>
-    </>
+    </CampaignPageWrapper>
   )
 }
 
