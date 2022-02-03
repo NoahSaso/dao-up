@@ -108,7 +108,11 @@ const CampaignCardWrapper: FC<CampaignCardWrapperProps> = ({
     >
       <CampaignImage campaign={campaign} />
       <div
-        className={cn("flex flex-col items-stretch flex-1", contentClassName)}
+        className={cn(
+          "flex flex-col items-stretch flex-1",
+          "ml-0 mt-4 xs:ml-5 xs:mt-0",
+          contentClassName
+        )}
       >
         {children}
       </div>
@@ -140,11 +144,7 @@ export const AllCampaignsCard: FC<CampaignProps> = ({
   const { name, description, pledged, tokenSymbol, goal } = campaign
 
   return (
-    <CampaignCardWrapper
-      campaign={campaign}
-      className={className}
-      contentClassName="ml-0 mt-4 xs:ml-5 xs:mt-0"
-    >
+    <CampaignCardWrapper campaign={campaign} className={className}>
       <h2 className="font-medium text-xl">{name}</h2>
       <p className="sm:text-lg text-green">
         {pledged.toLocaleString()} {tokenSymbol} pledged
@@ -165,11 +165,7 @@ export const CreatorCampaignCard: FC<CampaignProps> = ({
   const { name, pledged, tokenSymbol, goal } = campaign
 
   return (
-    <CampaignCardWrapper
-      campaign={campaign}
-      className={className}
-      contentClassName="ml-5"
-    >
+    <CampaignCardWrapper campaign={campaign} className={className}>
       <h2 className="font-medium text-xl">{name}</h2>
       <CampaignStatus campaign={campaign} className="" />
 
@@ -193,11 +189,7 @@ export const ContributorCampaignCard: FC<CampaignProps> = ({
   const userTokens = 200
 
   return (
-    <CampaignCardWrapper
-      campaign={campaign}
-      className={className}
-      contentClassName="ml-5"
-    >
+    <CampaignCardWrapper campaign={campaign} className={className}>
       <h2 className="font-medium text-xl">{name}</h2>
       <div
         className={cn(
