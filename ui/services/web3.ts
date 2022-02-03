@@ -30,7 +30,7 @@ export const loadClient = async (
 
     setWallet({
       connected: true,
-      address: "junowallet",
+      address: "junowallet1",
     })
 
     throw new Error("Development.")

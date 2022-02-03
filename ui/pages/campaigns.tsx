@@ -10,7 +10,7 @@ import {
   ResponsiveDecoration,
 } from "../components"
 import { useWallet } from "../helpers/wallet"
-import { getCampaigns } from "../services/campaigns"
+import { getVisibleCampaigns } from "../services/campaigns"
 
 const CampaignsPageWrapper: FC<PropsWithChildren<{}>> = ({ children }) => (
   <>
@@ -43,7 +43,7 @@ const Campaigns: NextPage = () => {
   // Fetch campaigns.
   useEffect(() => {
     setLoading(true)
-    getCampaigns(setWallet)
+    getVisibleCampaigns(setWallet)
       .then((campaigns) => {
         firstCampaigns = campaigns
         setLoadedCampaigns(campaigns)

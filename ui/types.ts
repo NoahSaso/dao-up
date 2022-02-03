@@ -1,5 +1,6 @@
 import { Window as KeplrWindow } from "@keplr-wallet/types"
 import { ReactNode } from "react"
+import { SetterOrUpdater } from "recoil"
 
 declare global {
   interface Window extends KeplrWindow {}
@@ -48,11 +49,6 @@ declare global {
 
   type NewCampaignFieldKey = keyof NewCampaign
 
-  interface WalletState {
-    connected: boolean
-    address: string
-  }
-
   interface SetLoadingProps {
     setLoading: (loading: boolean) => void
   }
@@ -61,6 +57,14 @@ declare global {
     creatorCampaigns: Campaign[]
     contributorCampaigns: Campaign[]
   }
+
+  // State
+
+  interface WalletState {
+    connected: boolean
+    address: string
+  }
+  type SetWalletFunction = SetterOrUpdater<WalletState>
 }
 
 export enum Status {

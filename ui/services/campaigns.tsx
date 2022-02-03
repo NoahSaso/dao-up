@@ -1,5 +1,3 @@
-import { SetterOrUpdater } from "recoil"
-
 import { prettyPrintDecimal } from "../helpers/number"
 import { Status } from "../types"
 
@@ -89,7 +87,6 @@ export const defaultNewCampaign: Partial<NewCampaign> = {
 
 const placeholderCampaignFields = {
   status: Status.Active,
-  creator: "0xa",
 
   daoUrl: "https://noahsaso.com",
   displayPublicly: true,
@@ -109,6 +106,7 @@ export const campaigns: Campaign[] = [
     daoAddress: "junodao1",
     name: "BongDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
+    creator: "junowallet1",
 
     goal: 100000,
     pledged: 10000,
@@ -145,6 +143,7 @@ export const campaigns: Campaign[] = [
     daoAddress: "junodao2",
     name: "HouseDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
+    creator: "junowallet1",
 
     goal: 1000000,
     pledged: 700000,
@@ -162,6 +161,7 @@ export const campaigns: Campaign[] = [
     daoAddress: "junodao3",
     name: "RentDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
+    creator: "junowallet1",
 
     goal: 500000,
     pledged: 200000,
@@ -179,6 +179,7 @@ export const campaigns: Campaign[] = [
     daoAddress: "junodao4",
     name: "GroceryDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
+    creator: "junowallet2",
 
     goal: 1000000,
     pledged: 900000,
@@ -196,6 +197,7 @@ export const campaigns: Campaign[] = [
     daoAddress: "junodao5",
     name: "MicroGridDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
+    creator: "junowallet2",
 
     goal: 1000000,
     pledged: 120000000000,
@@ -209,8 +211,6 @@ export const campaigns: Campaign[] = [
 ]
 
 // API
-
-type SetWalletFunction = SetterOrUpdater<WalletState>
 
 let lastCampaignId = campaigns.length
 
@@ -273,6 +273,14 @@ export const getCampaigns = async (
   // simulate loading
   await new Promise((resolve) => setTimeout(resolve, 1000))
 
+  return campaigns
+}
+
+export const getVisibleCampaigns = async (
+  setWallet: SetWalletFunction
+): Promise<Campaign[]> => {
+  const campaigns = await getCampaigns(setWallet)
+
   return campaigns.filter((c) => c.displayPublicly)
 }
 
@@ -280,18 +288,18 @@ export const getCampaignsForWallet = async (
   setWallet: SetWalletFunction,
   address: string
 ): Promise<MyCampaigns> => {
-  // TODO: Transform contracts into Campaign types and filter by wallet address.
-  // const client = await Web3Service.loadClient(setWallet)
-  // const contracts = await client.getContracts(CODE_ID)
+  const campaigns = await getCampaigns(setWallet)
 
-  // simulate loading
-  await new Promise((resolve) => setTimeout(resolve, 1000))
+  const creatorCampaigns = campaigns.filter((c) => c.creator === address)
+  // TODO: Somehow figure out if this wallet is a supporter.
+  const contributorCampaigns = campaigns.filter(
+    (c) =>
+      // c.contributors.includes(address)
+      c.creator !== address
+  )
 
   return {
-    creatorCampaigns: campaigns.slice(0, campaigns.length / 2),
-    contributorCampaigns: campaigns.slice(
-      campaigns.length / 2,
-      campaigns.length
-    ),
+    creatorCampaigns,
+    contributorCampaigns,
   }
 }

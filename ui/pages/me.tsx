@@ -32,7 +32,7 @@ const MePageWrapper: FC<PropsWithChildren<MePageWrapperProps>> = ({
       className="top-0 right-0 opacity-70"
     />
 
-    <CenteredColumn className="pt-5">
+    <CenteredColumn className="py-5">
       <h1 className="font-semibold text-4xl">Your Wallet</h1>
 
       {wallet.connected ? (

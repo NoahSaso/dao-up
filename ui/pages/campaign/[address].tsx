@@ -113,7 +113,6 @@ const Campaign: NextPage<SetLoadingProps> = ({ setLoading }) => {
     if (!isReady) return
 
     const fetchCampaign = async () => {
-      setLoading(true)
       if (typeof query.address !== "string")
         throw new Error("Invalid campaign address.")
 
@@ -121,15 +120,17 @@ const Campaign: NextPage<SetLoadingProps> = ({ setLoading }) => {
       if (!campaign) throw new Error("Invalid campaign address.")
 
       setCampaign(campaign)
-      setLoading(false)
     }
 
-    fetchCampaign().catch((error) => {
-      console.error(error)
-      // TODO: Display error message.
+    setLoading(true)
+    fetchCampaign()
+      .catch((error) => {
+        console.error(error)
+        // TODO: Display error message.
 
-      routerPush("/campaigns")
-    })
+        routerPush("/campaigns")
+      })
+      .finally(() => setLoading(false))
   }, [isReady, query.address, setCampaign, routerPush, setWallet, setLoading])
 
   // If page not ready or no campaign found, display loader.
