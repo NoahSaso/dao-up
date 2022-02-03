@@ -105,8 +105,8 @@ export const campaigns: Campaign[] = [
   {
     ...placeholderCampaignFields,
 
-    address: "0xjunoescrow1",
-    daoAddress: "0xjunodao1",
+    address: "junoescrow1",
+    daoAddress: "junodao1",
     name: "BongDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
 
@@ -141,8 +141,8 @@ export const campaigns: Campaign[] = [
   {
     ...placeholderCampaignFields,
 
-    address: "0xjunoescrow2",
-    daoAddress: "0xjunodao2",
+    address: "junoescrow2",
+    daoAddress: "junodao2",
     name: "HouseDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
 
@@ -158,8 +158,8 @@ export const campaigns: Campaign[] = [
   {
     ...placeholderCampaignFields,
 
-    address: "0xjunoescrow3",
-    daoAddress: "0xjunodao3",
+    address: "junoescrow3",
+    daoAddress: "junodao3",
     name: "RentDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
 
@@ -175,8 +175,8 @@ export const campaigns: Campaign[] = [
   {
     ...placeholderCampaignFields,
 
-    address: "0xjunoescrow4",
-    daoAddress: "0xjunodao4",
+    address: "junoescrow4",
+    daoAddress: "junodao4",
     name: "GroceryDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
 
@@ -192,8 +192,8 @@ export const campaigns: Campaign[] = [
   {
     ...placeholderCampaignFields,
 
-    address: "0xjunoescrow5",
-    daoAddress: "0xjunodao5",
+    address: "junoescrow5",
+    daoAddress: "junodao5",
     name: "MicroGridDAO",
     description: "Lorem ipsum dolor sit amet, egestas...",
 
@@ -223,7 +223,7 @@ export const createCampaign = async (
   // TODO: Deploy contract.
   // const client = await Web3Service.loadClient(setWallet)
 
-  const address = `0xjunoescrow${++lastCampaignId}`
+  const address = `junoescrow${++lastCampaignId}`
   campaigns.push({
     ...newCampaign,
     address,
