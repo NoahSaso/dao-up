@@ -1,6 +1,6 @@
 import cn from "classnames"
 import Link from "next/link"
-import { FC } from "react"
+import { FC, PropsWithChildren } from "react"
 
 import { prettyPrintDecimal } from "../helpers/number"
 import { Color, Status } from "../types"
@@ -65,14 +65,15 @@ export const CampaignProgress: FC<CampaignProps> = ({
   )
 }
 
-export const AllCampaignsCard: FC<CampaignProps> = ({
-  campaign: { address, name, pledged, tokenSymbol, goal, description },
+const CampaignCardWrapper: FC<PropsWithChildren<CampaignProps>> = ({
+  campaign: { address },
   className,
+  children,
 }) => (
   <Link href={`/campaign/${address}`}>
     <a
       className={cn(
-        "flex flex-row justify-start items-stretch",
+        "flex flex-col justify-start items-stretch xs:flex-row",
         "bg-card rounded-3xl p-6 sm:p-10",
         "border border-card hover:border-green",
         "transition",
@@ -80,56 +81,73 @@ export const AllCampaignsCard: FC<CampaignProps> = ({
         className
       )}
     >
-      {/* TODO: Change to image */}
-      <div className="bg-green w-[80px] h-[80px] sm:w-[135px] sm:h-[135px] shrink-0"></div>
-      <div className="ml-5">
+      {children}
+    </a>
+  </Link>
+)
+
+interface CampaignImageProps extends CampaignProps {
+  size?: number
+}
+export const CampaignImage: FC<CampaignImageProps> = ({
+  campaign: { imageUrl },
+  className,
+  size = 135,
+}) => (
+  <div
+    className={cn("bg-green shrink-0", className)}
+    style={{ width: size, height: size }}
+  >
+    {/* eslint-disable-next-line @next/next/no-img-element */}
+    {!!imageUrl && <img src={imageUrl} alt="image" className="w-full h-full" />}
+  </div>
+)
+
+export const AllCampaignsCard: FC<CampaignProps> = ({
+  campaign,
+  className,
+}) => {
+  const { name, description, pledged, tokenSymbol, goal } = campaign
+
+  return (
+    <CampaignCardWrapper campaign={campaign} className={className}>
+      <CampaignImage campaign={campaign} />
+      <div className="ml-0 mt-4 xs:ml-5 xs:mt-0">
         <h2 className="font-medium text-xl">{name}</h2>
-        <p className="text-lg text-green">
+        <p className="sm:text-lg text-green">
           {pledged.toLocaleString()} {tokenSymbol} pledged
         </p>
-        <p className="text-lg text-white">
+        <p className="sm:text-lg text-white">
           {prettyPrintDecimal((100 * pledged) / goal, 0)}% funded
         </p>
         <p className="mt-5">{description}</p>
       </div>
-    </a>
-  </Link>
-)
+    </CampaignCardWrapper>
+  )
+}
 
 export const CreatorCampaignCard: FC<CampaignProps> = ({
   campaign,
   className,
 }) => {
-  const { address, name, pledged, tokenSymbol, goal } = campaign
+  const { name, pledged, tokenSymbol, goal } = campaign
 
   return (
-    <Link href={`/campaign/${address}`}>
-      <a
-        className={cn(
-          "flex flex-row justify-start items-stretch",
-          "bg-card rounded-3xl p-6 sm:p-10",
-          "border border-card hover:border-green",
-          "transition",
-          "cursor-pointer",
-          className
-        )}
-      >
-        {/* TODO: Change to image */}
-        <div className="bg-green w-[80px] h-[80px] sm:w-[135px] sm:h-[135px] shrink-0"></div>
-        <div className="ml-5">
-          <h2 className="font-medium text-xl">{name}</h2>
-          <CampaignStatus campaign={campaign} className="" />
+    <CampaignCardWrapper campaign={campaign} className={className}>
+      <CampaignImage campaign={campaign} />
+      <div className="ml-5">
+        <h2 className="font-medium text-xl">{name}</h2>
+        <CampaignStatus campaign={campaign} className="" />
 
-          <p className="text-xl text-green font-medium mt-8">
-            {prettyPrintDecimal((100 * pledged) / goal, 0)}%{" "}
-            <span className="text-base font-light">Funded</span>
-          </p>
-          <p className="text-placeholder">
-            {pledged.toLocaleString()} {tokenSymbol} pledged
-          </p>
-        </div>
-      </a>
-    </Link>
+        <p className="text-xl text-green font-medium mt-8">
+          {prettyPrintDecimal((100 * pledged) / goal, 0)}%{" "}
+          <span className="text-base font-light">Funded</span>
+        </p>
+        <p className="text-placeholder">
+          {pledged.toLocaleString()} {tokenSymbol} pledged
+        </p>
+      </div>
+    </CampaignCardWrapper>
   )
 }
 
@@ -137,50 +155,36 @@ export const ContributorCampaignCard: FC<CampaignProps> = ({
   campaign,
   className,
 }) => {
-  const { address, name, pledged, goal, supply } = campaign
-  const funded = pledged >= goal
+  const { name, pledged, goal, supply } = campaign
 
   const userTokens = 200
 
   return (
-    <Link href={`/campaign/${address}`}>
-      <a
-        className={cn(
-          "flex flex-row justify-start items-stretch",
-          "bg-card rounded-3xl p-6 sm:p-10",
-          "border border-card hover:border-green",
-          "transition",
-          "cursor-pointer",
-          className
-        )}
-      >
-        {/* TODO: Change to image */}
-        <div className="bg-green w-[80px] h-[80px] sm:w-[135px] sm:h-[135px] shrink-0"></div>
-        <div className="ml-5">
-          <h2 className="font-medium text-xl">{name}</h2>
-          <div
-            className={cn(
-              "font-light text-white",
-              "flex flex-col sm:flex-row sm:flex-wrap",
-              "mt-2 sm:mt-0"
-            )}
-          >
-            <p className="sm:mr-3">
-              {prettyPrintDecimal((100 * pledged) / goal, 0)}% funded
-            </p>
-            <CampaignStatus campaign={campaign} className="shrink-0" />
-          </div>
-
-          <div className="flex flex-row items-end text-green mt-8">
-            <p className="text-xl font-medium">{userTokens.toLocaleString()}</p>
-            <p className="text-base font-light ml-1">Tokens</p>
-          </div>
-          <p className="text-placeholder">
-            {prettyPrintDecimal((100 * userTokens) / supply, 2)}% of total
-            supply
+    <CampaignCardWrapper campaign={campaign} className={className}>
+      <CampaignImage campaign={campaign} />
+      <div className="ml-5">
+        <h2 className="font-medium text-xl">{name}</h2>
+        <div
+          className={cn(
+            "font-light text-white",
+            "flex flex-col xs:flex-row xs:flex-wrap",
+            "mt-2 xs:mt-0"
+          )}
+        >
+          <p className="xs:mr-3">
+            {prettyPrintDecimal((100 * pledged) / goal, 0)}% funded
           </p>
+          <CampaignStatus campaign={campaign} className="shrink-0" />
         </div>
-      </a>
-    </Link>
+
+        <div className="flex flex-row items-end text-green mt-8">
+          <p className="text-xl font-medium">{userTokens.toLocaleString()}</p>
+          <p className="text-base font-light ml-1">Tokens</p>
+        </div>
+        <p className="text-placeholder">
+          {prettyPrintDecimal((100 * userTokens) / supply, 2)}% of total supply
+        </p>
+      </div>
+    </CampaignCardWrapper>
   )
 }

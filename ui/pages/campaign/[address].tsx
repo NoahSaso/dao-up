@@ -11,6 +11,7 @@ import TimeAgo from "react-timeago"
 import {
   Button,
   ButtonLink,
+  CampaignImage,
   CampaignProgress,
   CampaignStatus,
   CenteredColumn,
@@ -172,13 +173,11 @@ const Campaign: NextPage = () => {
           >
             <div className={cn("flex flex-col text-center lg:text-left")}>
               <div className={cn("flex flex-col items-center", "lg:flex-row")}>
-                {/* TODO: Change to image */}
-                <div
-                  className={cn(
-                    "bg-green w-[139px] h-[139px] mb-4",
-                    "lg:mb-0 lg:mr-4"
-                  )}
-                ></div>
+                <CampaignImage
+                  campaign={campaign}
+                  className="mb-4 lg:mb-0 lg:mr-4"
+                  size={139}
+                />
 
                 <div className={cn("flex flex-col")}>
                   <h1 className="font-medium text-5xl">{name}</h1>

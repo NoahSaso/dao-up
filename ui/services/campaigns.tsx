@@ -258,6 +258,7 @@ export const campaigns: Campaign[] = [
     website: "https://noahsaso.com",
     twitter: "NoahSaso",
     discord: "test",
+    imageUrl: "https://moonphase.is/image.svg",
 
     activity: [
       {
@@ -289,6 +290,8 @@ export const campaigns: Campaign[] = [
     supporters: 7,
     supply: 1000000,
 
+    imageUrl: "https://moonphase.is/image.svg",
+
     activity: [],
   },
   {
@@ -302,6 +305,8 @@ export const campaigns: Campaign[] = [
     pledged: 200000,
     supporters: 200,
     supply: 1000000,
+
+    imageUrl: "https://moonphase.is/image.svg",
 
     activity: [],
   },
@@ -317,6 +322,8 @@ export const campaigns: Campaign[] = [
     supporters: 45,
     supply: 1000000,
 
+    imageUrl: "https://moonphase.is/image.svg",
+
     activity: [],
   },
   {
@@ -330,6 +337,8 @@ export const campaigns: Campaign[] = [
     pledged: 120000000000,
     supporters: 8,
     supply: 1200000,
+
+    imageUrl: "https://moonphase.is/image.svg",
 
     activity: [],
   },

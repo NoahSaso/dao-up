@@ -1,4 +1,4 @@
-const { fontFamily } = require("tailwindcss/defaultTheme")
+const { fontFamily, screens } = require("tailwindcss/defaultTheme")
 
 module.exports = {
   content: [
@@ -19,6 +19,10 @@ module.exports = {
       orange: "#daa27a",
       card: "#1c1d1a",
       placeholder: "#666666",
+    },
+    screens: {
+      xs: "420px",
+      ...screens,
     },
   },
 }
