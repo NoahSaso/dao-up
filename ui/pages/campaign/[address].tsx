@@ -132,11 +132,6 @@ const Campaign: NextPage<SetLoadingProps> = ({ setLoading }) => {
     })
   }, [isReady, query.address, setCampaign, routerPush, setWallet, setLoading])
 
-  // Show loader when not ready.
-  useEffect(() => {
-    setLoading(!isReady)
-  }, [setLoading, isReady])
-
   // If page not ready or no campaign found, display loader.
   if (!isReady || !campaign) return <CampaignPageWrapper />
 
