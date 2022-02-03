@@ -8,14 +8,18 @@ export const useWallet = () => {
   const [wallet, setWallet] = useRecoilState(walletState)
 
   const connect = useCallback(
-    () => Web3Service.loadClient(setWallet),
+    () =>
+      Web3Service.loadClient(setWallet).catch((err) => {
+        console.error(err)
+        // TODO: Display error message.
+      }),
     [setWallet]
   )
 
   // Attempt to connect to wallet automatically.
   // TODO: Auto popups may be interpreted as spam by some users, maybe worth requiring a button click to connect if can't connect silently.
   useEffect(() => {
-    connect().catch(console.error)
+    connect()
   }, [connect])
 
   return { wallet, setWallet, connect }

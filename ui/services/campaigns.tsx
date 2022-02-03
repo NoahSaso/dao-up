@@ -275,3 +275,23 @@ export const getCampaigns = async (
 
   return campaigns.filter((c) => c.displayPublicly)
 }
+
+export const getCampaignsForWallet = async (
+  setWallet: SetWalletFunction,
+  address: string
+): Promise<MyCampaigns> => {
+  // TODO: Transform contracts into Campaign types and filter by wallet address.
+  // const client = await Web3Service.loadClient(setWallet)
+  // const contracts = await client.getContracts(CODE_ID)
+
+  // simulate loading
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+
+  return {
+    creatorCampaigns: campaigns.slice(0, campaigns.length / 2),
+    contributorCampaigns: campaigns.slice(
+      campaigns.length / 2,
+      campaigns.length
+    ),
+  }
+}

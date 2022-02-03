@@ -23,6 +23,16 @@ export const loadClient = async (
   silent = false
 ): Promise<CosmWasmClient> => {
   if (process.env.NODE_ENV === "development") {
+    if (!silent) {
+      // simulate loading
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+    }
+
+    setWallet({
+      connected: true,
+      address: "0xjunowallet",
+    })
+
     throw new Error("Development.")
   }
 

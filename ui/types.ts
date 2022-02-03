@@ -56,6 +56,11 @@ declare global {
   interface SetLoadingProps {
     setLoading: (loading: boolean) => void
   }
+
+  interface MyCampaigns {
+    creatorCampaigns: Campaign[]
+    contributorCampaigns: Campaign[]
+  }
 }
 
 export enum Status {
