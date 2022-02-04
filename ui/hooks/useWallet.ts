@@ -5,7 +5,6 @@ import { keplrKeystoreId, walletAddress } from "../state/web3"
 
 const useWallet = () => {
   const setKeplrKeystoreId = useSetRecoilState(keplrKeystoreId)
-  const walletAddress = useRecoilValue(walletAddress)
 
   const connect = useCallback(
     () => setKeplrKeystoreId((id) => id + 1),
@@ -30,7 +29,7 @@ const useWallet = () => {
     connect()
   }, [connect])
 
-  return { walletAddress, connect }
+  return { walletAddress: useRecoilValue(walletAddress), connect }
 }
 
 export default useWallet

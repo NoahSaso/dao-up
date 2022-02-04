@@ -30,10 +30,13 @@ export const cosmWasmClient = selector({
 export const signedCosmWasmClient = selector({
   key: "signedCosmWasmClient",
   get: async ({ get }) => {
-    const signer = get(keplrOfflineSigner)
-    if (!signer) return
+    // TODO: remove
+    return true
 
-    return await SigningCosmWasmClient.connectWithSigner(Keplr.endpoint, signer)
+    // const signer = get(keplrOfflineSigner)
+    // if (!signer) return
+
+    // return await SigningCosmWasmClient.connectWithSigner(Keplr.endpoint, signer)
   },
   // DAO DAO:
   // We have to do this because of how SigningCosmWasmClient
@@ -44,10 +47,13 @@ export const signedCosmWasmClient = selector({
 export const walletAddress = selector({
   key: "walletAddress",
   get: async ({ get }) => {
-    const client = get(keplrOfflineSigner)
-    if (!client) return
+    // TODO: remove
+    return "junowallet1"
 
-    const [{ address }] = await client.getAccounts()
-    return address
+    // const client = get(keplrOfflineSigner)
+    // if (!client) return
+
+    // const [{ address }] = await client.getAccounts()
+    // return address
   },
 })

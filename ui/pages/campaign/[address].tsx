@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form"
 import { IconType } from "react-icons"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
 import TimeAgo from "react-timeago"
-import { useRecoilState, useRecoilValue } from "recoil"
+import { useRecoilValue } from "recoil"
 
 import {
   Button,
