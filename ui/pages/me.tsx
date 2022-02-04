@@ -1,5 +1,5 @@
-import { useAtom } from "jotai"
 import type { NextPage } from "next"
+import { useRecoilValue } from "recoil"
 
 import {
   Button,
@@ -17,8 +17,8 @@ import { walletCampaignsAtom } from "../state/campaigns"
 const Me: NextPage = () => {
   const { walletAddress, connect } = useWallet()
 
-  const [{ creatorCampaigns, contributorCampaigns }] =
-    useAtom(walletCampaignsAtom)
+  const { creatorCampaigns, contributorCampaigns } =
+    useRecoilValue(walletCampaignsAtom)
 
   const campaignsBlock = (
     <>

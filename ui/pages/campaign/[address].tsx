@@ -1,5 +1,4 @@
 import cn from "classnames"
-import { useAtom } from "jotai"
 import type { NextPage } from "next"
 import { useRouter } from "next/router"
 import { FC, useEffect } from "react"
@@ -7,6 +6,7 @@ import { useForm } from "react-hook-form"
 import { IconType } from "react-icons"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
 import TimeAgo from "react-timeago"
+import { useRecoilState, useRecoilValue } from "recoil"
 
 import {
   Button,
@@ -74,7 +74,11 @@ interface RefundForm {
 const Campaign: NextPage = () => {
   useWallet()
   const { query, isReady, push: routerPush } = useRouter()
-  const [{ campaign }, fetchCampaign] = useAtom(fetchCampaignAtom)
+  const campaign = useRecoilValue(
+    fetchCampaignAtom(
+      isReady && typeof query.address === "string" ? query.address : ""
+    )
+  )
 
   // Contribution Form
   const {
@@ -95,18 +99,14 @@ const Campaign: NextPage = () => {
     defaultValues: {} as RefundForm,
   })
 
-  // Fetch campaign, and redirect to campaigns page if not found.
+  // Redirect to campaigns page if invalid query string.
   useEffect(() => {
-    if (!isReady) return
-
-    if (typeof query.address !== "string") {
-      console.error("Invalid campaign address.")
+    if (isReady && typeof query.address !== "string") {
+      console.error("Invalid query address.")
       routerPush("/campaigns")
       return
     }
-
-    fetchCampaign(query.address)
-  }, [isReady, query.address, fetchCampaign, routerPush])
+  }, [isReady, query.address, routerPush])
 
   // If page not ready or no campaign found, display nothing (loader overlay).
   if (!isReady || !campaign) return null

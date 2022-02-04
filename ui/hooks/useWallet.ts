@@ -1,11 +1,16 @@
-import { useAtom } from "jotai"
-import { useEffect } from "react"
+import { useCallback, useEffect } from "react"
+import { useRecoilValue, useSetRecoilState } from "recoil"
 
-import { refreshKeplrAtom, walletAddressAtom } from "../state/web3"
+import { keplrKeystoreIdAtom, walletAddressAtom } from "../state/web3"
 
 const useWallet = () => {
-  const [, connect] = useAtom(refreshKeplrAtom)
-  const [walletAddress] = useAtom(walletAddressAtom)
+  const setKeplrKeystoreId = useSetRecoilState(keplrKeystoreIdAtom)
+  const walletAddress = useRecoilValue(walletAddressAtom)
+
+  const connect = useCallback(
+    () => setKeplrKeystoreId((id) => id + 1),
+    [setKeplrKeystoreId]
+  )
 
   // Listen for keplr keystore changes and update as needed.
   useEffect(() => {

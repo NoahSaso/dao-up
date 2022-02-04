@@ -1,5 +1,5 @@
-import { useAtom } from "jotai"
 import type { NextPage } from "next"
+import { useRecoilState, useRecoilValue } from "recoil"
 
 import {
   AllCampaignsCard,
@@ -15,8 +15,8 @@ import {
 
 const Campaigns: NextPage = () => {
   useWallet()
-  const [filter, setFilter] = useAtom(campaignFilterAtom)
-  const [campaigns] = useAtom(filteredVisibleCampaignsAtom)
+  const [filter, setFilter] = useRecoilState(campaignFilterAtom)
+  const campaigns = useRecoilValue(filteredVisibleCampaignsAtom)
 
   return (
     <>

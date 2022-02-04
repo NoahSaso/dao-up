@@ -1,7 +1,5 @@
-import { useAtom } from "jotai"
 import type { NextPage } from "next"
 import { useRouter } from "next/router"
-import { useEffect } from "react"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 
 import {
@@ -12,14 +10,14 @@ import {
   FormTextArea,
   ResponsiveDecoration,
 } from "../components"
+import { useCampaign } from "../hooks/useCampaign"
 import useWallet from "../hooks/useWallet"
 import { defaultNewCampaign, newCampaignFields } from "../services/campaigns"
-import { createCampaignAtom } from "../state/campaigns"
 
 const Create: NextPage = () => {
-  useWallet()
+  const { walletAddress } = useWallet()
   const router = useRouter()
-  const [{ address }, createCampaign] = useAtom(createCampaignAtom)
+  const { createCampaign } = useCampaign(walletAddress)
 
   const {
     handleSubmit,
@@ -28,15 +26,16 @@ const Create: NextPage = () => {
     control,
   } = useForm({ defaultValues: defaultNewCampaign })
 
-  // Navigate to address once it has been made available after successful creation.
-  useEffect(() => {
-    if (address) router.push(`/campaign/${address}`)
-  }, [address, router])
-
   const onSubmit: SubmitHandler<Partial<NewCampaign>> = async (values) => {
     // TODO: Perform final validation here?
+    try {
+      const address = await createCampaign(values as unknown as NewCampaign)
 
-    createCampaign(values as unknown as NewCampaign)
+      router.push(`/campaign/${address}`)
+    } catch (error) {
+      console.error(error)
+      // TODO: Display error.
+    }
   }
 
   return (
