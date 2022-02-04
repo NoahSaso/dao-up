@@ -16,12 +16,11 @@ export const fetchCampaign = selectorFamily({
   get:
     (address: string) =>
     async ({ get }) => {
+      const client = get(cosmWasmClient)
+      if (!client) throw new Error("Failed to get client.")
+      if (!address) throw new Error("Invalid address.")
+
       try {
-        if (!address) throw new Error("Invalid address.")
-
-        const client = get(cosmWasmClient)
-        if (!client) throw new Error("Failed to get client.")
-
         // TODO: Get contract from chain and transform into Campaign type.
         // const contract = await client.getContract(escrowContractAddress)
 
@@ -45,10 +44,10 @@ export const fetchCampaign = selectorFamily({
 export const allCampaigns = selector({
   key: "campaigns",
   get: async ({ get }) => {
-    try {
-      const client = get(cosmWasmClient)
-      if (!client) throw new Error("Failed to get client.")
+    const client = get(cosmWasmClient)
+    if (!client) throw new Error("Failed to get client.")
 
+    try {
       // TODO: Get contracts from chain and transform into Campaign types.
       // const contract = await client.getContracts(CODE_ID)
 
@@ -91,12 +90,12 @@ export const filteredVisibleCampaigns = selector({
 export const walletCampaigns = selector({
   key: "walletCampaigns",
   get: async ({ get }) => {
+    const address = get(walletAddress)
+    if (!address) throw new Error("Wallet not connected.")
+
+    const campaigns = get(allCampaigns)
+
     try {
-      const address = get(walletAddress)
-      if (!address) throw new Error("Wallet not connected.")
-
-      const campaigns = get(allCampaigns)
-
       const creatorCampaigns = campaigns.filter((c) => c.creator === address)
       // TODO: Somehow figure out if this wallet is a supporter.
       const contributorCampaigns = campaigns.filter(
@@ -113,10 +112,6 @@ export const walletCampaigns = selector({
         contributorCampaigns,
       }
     } catch (error) {
-      // await error so we don't render empty data while walletAddress loads
-      // TODO: BIG OOF TO AWAITING ERROR PATTERN
-      await error
-
       console.error(error)
       // TODO: Display error.
 
