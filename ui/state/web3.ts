@@ -24,7 +24,11 @@ export const keplrOfflineSigner = selector({
 
 export const cosmWasmClient = selector({
   key: "cosmWasmClient",
-  get: () => CosmWasmClient.connect(Keplr.endpoint),
+  get: () => {
+    // TODO: remove
+    return true
+    // return CosmWasmClient.connect(Keplr.endpoint)
+  },
 })
 
 export const signedCosmWasmClient = selector({
