@@ -114,6 +114,7 @@ export const walletCampaigns = selector({
       }
     } catch (error) {
       // await error so we don't render empty data while walletAddress loads
+      // TODO: BIG OOF TO AWAITING ERROR PATTERN
       await error
 
       console.error(error)
