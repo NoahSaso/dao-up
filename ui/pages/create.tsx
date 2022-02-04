@@ -1,5 +1,6 @@
 import type { NextPage } from "next"
 import { useRouter } from "next/router"
+import { FC } from "react"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 
 import {
@@ -9,13 +10,29 @@ import {
   FormSwitch,
   FormTextArea,
   ResponsiveDecoration,
+  Suspense,
 } from "../components"
 import { junoAddressPattern, numberPattern, urlPattern } from "../helpers/form"
 import { useCreateCampaign } from "../hooks/useCampaign"
 import useWallet from "../hooks/useWallet"
 import { defaultNewCampaign, newCampaignFields } from "../services/campaigns"
 
-const Create: NextPage = () => {
+const Create: NextPage = () => (
+  <>
+    <ResponsiveDecoration
+      name="campaigns_orange_blur.png"
+      width={406}
+      height={626}
+      className="top-0 right-0 opacity-70"
+    />
+
+    <Suspense>
+      <CreateContent />
+    </Suspense>
+  </>
+)
+
+const CreateContent: FC = () => {
   const { walletAddress } = useWallet()
   const router = useRouter()
   const createCampaign = useCreateCampaign(walletAddress)

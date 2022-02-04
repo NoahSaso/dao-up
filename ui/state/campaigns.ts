@@ -59,8 +59,9 @@ export const allCampaigns = selector({
     } catch (error) {
       console.error(error)
       // TODO: Display error.
+
+      return []
     }
-    return []
   },
 })
 

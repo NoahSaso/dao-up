@@ -1,6 +1,6 @@
 import cn from "classnames"
 import type { NextPage } from "next"
-import { useRouter } from "next/router"
+import { NextRouter, useRouter } from "next/router"
 import { FC, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { IconType } from "react-icons"
@@ -16,7 +16,9 @@ import {
   CampaignStatus,
   CenteredColumn,
   FormInput,
+  Loader,
   ResponsiveDecoration,
+  Suspense,
   TooltipInfo,
 } from "../../components"
 import { numberPattern } from "../../helpers/form"
@@ -72,9 +74,40 @@ interface RefundForm {
   refund?: number
 }
 
-const Campaign: NextPage = () => {
+export const Campaign: NextPage = () => {
+  const router = useRouter()
+  // Redirect to campaigns page if invalid query string.
+  useEffect(() => {
+    if (router.isReady && typeof router.query.address !== "string") {
+      console.error("Invalid query address.")
+      router.push("/campaigns")
+      return
+    }
+  }, [router])
+
+  return (
+    <>
+      <ResponsiveDecoration
+        name="campaign_orange_blur.png"
+        width={341}
+        height={684}
+        className="top-0 left-0 opacity-70"
+      />
+
+      <Suspense>
+        <CampaignContent router={router} />
+      </Suspense>
+    </>
+  )
+}
+
+interface CampaignContentProps {
+  router: NextRouter
+}
+const CampaignContent: FC<CampaignContentProps> = ({
+  router: { isReady, query, push: routerPush },
+}) => {
   useWallet()
-  const { query, isReady, push: routerPush } = useRouter()
   const campaign = useRecoilValue(
     fetchCampaign(
       isReady && typeof query.address === "string" ? query.address : ""
@@ -100,17 +133,15 @@ const Campaign: NextPage = () => {
     defaultValues: {} as RefundForm,
   })
 
-  // Redirect to campaigns page if invalid query string.
+  // If no campaign, navigate to campaigns list.
   useEffect(() => {
-    if (isReady && typeof query.address !== "string") {
-      console.error("Invalid query address.")
-      routerPush("/campaigns")
-      return
-    }
-  }, [isReady, query.address, routerPush])
+    if (isReady && !campaign) routerPush("/campaigns")
+  }, [isReady, campaign, routerPush])
 
-  // If page not ready or no campaign found, display nothing (loader overlay).
-  if (!isReady || !campaign) return null
+  // If page not ready, display loader.
+  if (!isReady) return <Loader overlay />
+  // Display nothing (redirecting to campaigns list, so this is just a type check).
+  if (!campaign) return null
 
   // Contribution Form
   const doContribution = ({ contribution }: ContributionForm) => {
@@ -147,13 +178,6 @@ const Campaign: NextPage = () => {
 
   return (
     <>
-      <ResponsiveDecoration
-        name="campaign_orange_blur.png"
-        width={341}
-        height={684}
-        className="top-0 left-0 opacity-70"
-      />
-
       {!!daoUrl && (
         <p className="bg-green text-dark text-center w-full px-12 py-2">
           {name} has been successfully funded!{" "}
