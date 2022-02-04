@@ -84,7 +84,9 @@ const Create: NextPage = () => {
           <FormInput
             label={newCampaignFields.imageUrl.label}
             placeholder="https://your.campaign/logo.svg"
-            type="text"
+            type="url"
+            spellCheck={false}
+            autoCorrect="off"
             error={errors.imageUrl?.message}
             {...register("imageUrl", {
               required: false,
@@ -141,7 +143,9 @@ const Create: NextPage = () => {
           <FormInput
             label={newCampaignFields.website.label}
             placeholder="https://your.campaign"
-            type="text"
+            type="url"
+            spellCheck={false}
+            autoCorrect="off"
             error={errors.website?.message}
             {...register("website", {
               required: false,
@@ -166,7 +170,9 @@ const Create: NextPage = () => {
           <FormInput
             label={newCampaignFields.discord.label}
             placeholder="https://discord.gg/campaign"
-            type="text"
+            type="url"
+            spellCheck={false}
+            autoCorrect="off"
             error={errors.discord?.message}
             {...register("discord", {
               required: false,
