@@ -5,7 +5,7 @@ import { campaigns } from "../services/campaigns"
 import { Status } from "../types"
 import { signedCosmWasmClientAtom } from "./../state/web3"
 
-let lastCampaignId = campaigns.length - 1
+let lastCampaignId = campaigns.length
 
 export const useCampaign = (walletAddress: string | undefined) => {
   const client = useRecoilValue(signedCosmWasmClientAtom)
