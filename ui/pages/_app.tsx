@@ -1,12 +1,13 @@
 import "../styles/globals.scss"
 
 import cn from "classnames"
+import { useAtom } from "jotai"
 import type { AppProps } from "next/app"
 import Head from "next/head"
-import { FC, useState } from "react"
-import { RecoilRoot } from "recoil"
+import { FC } from "react"
 
-import { Header, Loader } from "../components"
+import { Header, Loader, Suspense } from "../components"
+import { globalLoadingAtom } from "../state/loading"
 
 const Title = "DAO Up!"
 const Description = ""
@@ -14,7 +15,7 @@ const Domain = "https://dao-up.net"
 const ImageUrl = "https://dao-up.net/image.png"
 
 const DAOUp: FC<AppProps> = ({ Component, pageProps }) => {
-  const [loading, setLoading] = useState(false)
+  const [loading] = useAtom(globalLoadingAtom)
 
   return (
     <>
@@ -61,11 +62,11 @@ const DAOUp: FC<AppProps> = ({ Component, pageProps }) => {
         )}
       />
 
-      <main>
-        <RecoilRoot>
-          <Component setLoading={setLoading} {...pageProps} />
-        </RecoilRoot>
-      </main>
+      <Suspense>
+        <main>
+          <Component {...pageProps} />
+        </main>
+      </Suspense>
     </>
   )
 }

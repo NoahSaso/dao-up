@@ -1,7 +1,8 @@
 import cn from "classnames"
+import { useAtom } from "jotai"
 import type { NextPage } from "next"
 import { useRouter } from "next/router"
-import { FC, PropsWithChildren, useEffect, useState } from "react"
+import { FC, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { IconType } from "react-icons"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
@@ -15,26 +16,12 @@ import {
   CampaignStatus,
   CenteredColumn,
   FormInput,
-  Loader,
   ResponsiveDecoration,
   TooltipInfo,
 } from "../../components"
 import { prettyPrintDecimal } from "../../helpers/number"
-import { useWallet } from "../../helpers/wallet"
-import { getCampaign } from "../../services/campaigns"
-
-const CampaignPageWrapper: FC<PropsWithChildren<{}>> = ({ children }) => (
-  <>
-    <ResponsiveDecoration
-      name="campaign_orange_blur.png"
-      width={341}
-      height={684}
-      className="top-0 left-0 opacity-70"
-    />
-
-    {children}
-  </>
-)
+import useWallet from "../../hooks/useWallet"
+import { fetchCampaignAtom } from "../../state/campaigns"
 
 interface CampaignLinkProps {
   href: string
@@ -84,10 +71,10 @@ interface RefundForm {
   refund?: number
 }
 
-const Campaign: NextPage<SetLoadingProps> = ({ setLoading }) => {
+const Campaign: NextPage = () => {
+  useWallet()
   const { query, isReady, push: routerPush } = useRouter()
-  const { setWallet } = useWallet()
-  const [campaign, setCampaign] = useState<Campaign | null>(null)
+  const [{ campaign }, fetchCampaign] = useAtom(fetchCampaignAtom)
 
   // Contribution Form
   const {
@@ -112,29 +99,17 @@ const Campaign: NextPage<SetLoadingProps> = ({ setLoading }) => {
   useEffect(() => {
     if (!isReady) return
 
-    const fetchCampaign = async () => {
-      if (typeof query.address !== "string")
-        throw new Error("Invalid campaign address.")
-
-      const campaign = await getCampaign(setWallet, query.address)
-      if (!campaign) throw new Error("Invalid campaign address.")
-
-      setCampaign(campaign)
+    if (typeof query.address !== "string") {
+      console.error("Invalid campaign address.")
+      routerPush("/campaigns")
+      return
     }
 
-    setLoading(true)
-    fetchCampaign()
-      .catch((error) => {
-        console.error(error)
-        // TODO: Display error message.
+    fetchCampaign(query.address)
+  }, [isReady, query.address, fetchCampaign, routerPush])
 
-        routerPush("/campaigns")
-      })
-      .finally(() => setLoading(false))
-  }, [isReady, query.address, setCampaign, routerPush, setWallet, setLoading])
-
-  // If page not ready or no campaign found, display loader.
-  if (!isReady || !campaign) return <CampaignPageWrapper />
+  // If page not ready or no campaign found, display nothing (loader overlay).
+  if (!isReady || !campaign) return null
 
   // Contribution Form
   const doContribution = ({ contribution }: ContributionForm) => {
@@ -170,7 +145,14 @@ const Campaign: NextPage<SetLoadingProps> = ({ setLoading }) => {
   const userTokens: number = 1
 
   return (
-    <CampaignPageWrapper>
+    <>
+      <ResponsiveDecoration
+        name="campaign_orange_blur.png"
+        width={341}
+        height={684}
+        className="top-0 left-0 opacity-70"
+      />
+
       {!!daoUrl && (
         <p className="bg-green text-dark text-center w-full px-12 py-2">
           {name} has been successfully funded and the{" "}
@@ -389,7 +371,7 @@ const Campaign: NextPage<SetLoadingProps> = ({ setLoading }) => {
           )}
         </div>
       </CenteredColumn>
-    </CampaignPageWrapper>
+    </>
   )
 }
 

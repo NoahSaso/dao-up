@@ -1,7 +1,8 @@
+import { useAtom } from "jotai"
 import type { NextPage } from "next"
 import { useRouter } from "next/router"
+import { useEffect } from "react"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
-import { useRecoilState } from "recoil"
 
 import {
   Button,
@@ -11,16 +12,14 @@ import {
   FormTextArea,
   ResponsiveDecoration,
 } from "../components"
-import {
-  createCampaign,
-  defaultNewCampaign,
-  newCampaignFields,
-} from "../services/campaigns"
-import { walletState } from "../services/state"
+import useWallet from "../hooks/useWallet"
+import { defaultNewCampaign, newCampaignFields } from "../services/campaigns"
+import { createCampaignAtom } from "../state/campaigns"
 
-const Create: NextPage<SetLoadingProps> = ({ setLoading }) => {
+const Create: NextPage = () => {
+  useWallet()
   const router = useRouter()
-  const [wallet, setWallet] = useRecoilState(walletState)
+  const [{ address }, createCampaign] = useAtom(createCampaignAtom)
 
   const {
     handleSubmit,
@@ -29,25 +28,15 @@ const Create: NextPage<SetLoadingProps> = ({ setLoading }) => {
     control,
   } = useForm({ defaultValues: defaultNewCampaign })
 
+  // Navigate to address once it has been made available after successful creation.
+  useEffect(() => {
+    if (address) router.push(`/campaign/${address}`)
+  }, [address, router])
+
   const onSubmit: SubmitHandler<Partial<NewCampaign>> = async (values) => {
-    setLoading(true)
     // TODO: Perform final validation here?
 
-    try {
-      // Deploy escrow contract and get address.
-      const address = await createCampaign(
-        setWallet,
-        values as unknown as NewCampaign,
-        wallet
-      )
-
-      router.push(`/campaign/${address}`)
-    } catch (err) {
-      console.log(err)
-      // TODO: Display error message.
-    } finally {
-      setLoading(false)
-    }
+    createCampaign(values as unknown as NewCampaign)
   }
 
   return (

@@ -1,5 +1,5 @@
+import { useAtom } from "jotai"
 import type { NextPage } from "next"
-import { FC, PropsWithChildren, useEffect, useState } from "react"
 
 import {
   Button,
@@ -7,84 +7,18 @@ import {
   CenteredColumn,
   ContributorCampaignCard,
   CreatorCampaignCard,
-  Loader,
   ResponsiveDecoration,
   StatusIndicator,
   TooltipInfo,
 } from "../components"
-import { useWallet } from "../helpers/wallet"
-import { getCampaignsForWallet } from "../services/campaigns"
-
-interface MePageWrapperProps {
-  wallet: WalletState
-  connect: () => void
-}
-const MePageWrapper: FC<PropsWithChildren<MePageWrapperProps>> = ({
-  wallet,
-  connect,
-  children,
-}) => (
-  <>
-    <ResponsiveDecoration
-      name="me_green_blur.png"
-      width={344}
-      height={661}
-      className="top-0 right-0 opacity-70"
-    />
-
-    <CenteredColumn className="py-5">
-      <h1 className="font-semibold text-4xl">Your Wallet</h1>
-
-      {wallet.connected ? (
-        <>
-          <StatusIndicator
-            color="green"
-            label="Wallet connected."
-            containerClassName="mt-5"
-          />
-          <p className="my-2">{wallet.address}</p>
-        </>
-      ) : (
-        <>
-          <p className="my-2">
-            You haven&apos;t connected any wallets. Connect a wallet to start
-            making contributions.
-          </p>
-          <p className="flex flex-row items-center">
-            What&apos;s a wallet?
-            <TooltipInfo text="" />
-          </p>
-          <Button className="mt-8" onClick={connect}>
-            Connect a wallet
-          </Button>
-        </>
-      )}
-      {children}
-    </CenteredColumn>
-  </>
-)
+import useWallet from "../hooks/useWallet"
+import { walletCampaignsAtom } from "../state/campaigns"
 
 const Me: NextPage = () => {
-  const { wallet, setWallet, connect } = useWallet()
-  const [loading, setLoading] = useState(false)
-  const [{ creatorCampaigns, contributorCampaigns }, setCampaigns] = useState({
-    creatorCampaigns: [],
-    contributorCampaigns: [],
-  } as MyCampaigns)
+  const { walletAddress, connect } = useWallet()
 
-  // Fetch campaigns when wallet is connected.
-  useEffect(() => {
-    if (!wallet.connected) return
-
-    setLoading(true)
-    getCampaignsForWallet(setWallet, wallet.address)
-      .then((campaigns) => setCampaigns(campaigns))
-      .catch((err) => {
-        console.error(err)
-        // TODO: Display error message.
-      })
-      .finally(() => setLoading(false))
-  }, [wallet, setWallet, setLoading, setCampaigns])
+  const [{ creatorCampaigns, contributorCampaigns }] =
+    useAtom(walletCampaignsAtom)
 
   const campaignsBlock = (
     <>
@@ -127,33 +61,58 @@ const Me: NextPage = () => {
     </>
   )
 
-  // If campaigns are loading, display loader.
-  if (loading)
-    return (
-      <MePageWrapper wallet={wallet} connect={connect}>
-        <div className="flex justify-center items-center h-[70vh]">
-          <Loader />
-        </div>
-      </MePageWrapper>
-    )
-
   return (
-    <MePageWrapper wallet={wallet} connect={connect}>
-      {wallet.connected ? (
-        // If no user campaigns but user has contributed, show contributions first. Otherwise, default to campaigns on top.
-        contributorCampaigns.length && !creatorCampaigns.length ? (
+    <>
+      <ResponsiveDecoration
+        name="me_green_blur.png"
+        width={344}
+        height={661}
+        className="top-0 right-0 opacity-70"
+      />
+
+      <CenteredColumn className="py-5">
+        <h1 className="font-semibold text-4xl">Your Wallet</h1>
+
+        {!!walletAddress ? (
           <>
-            {contributionsBlock}
-            {campaignsBlock}
+            <StatusIndicator
+              color="green"
+              label="Wallet connected."
+              containerClassName="mt-5"
+            />
+            <p className="my-2">{walletAddress}</p>
           </>
         ) : (
           <>
-            {campaignsBlock}
-            {contributionsBlock}
+            <p className="my-2">
+              You haven&apos;t connected any wallets. Connect a wallet to start
+              making contributions.
+            </p>
+            <p className="flex flex-row items-center">
+              What&apos;s a wallet?
+              <TooltipInfo text="" />
+            </p>
+            <Button className="mt-8" onClick={connect}>
+              Connect a wallet
+            </Button>
           </>
-        )
-      ) : null}
-    </MePageWrapper>
+        )}
+
+        {!!walletAddress &&
+          // If no user campaigns but user has contributed, show contributions first. Otherwise, default to campaigns on top.
+          (contributorCampaigns.length && !creatorCampaigns.length ? (
+            <>
+              {contributionsBlock}
+              {campaignsBlock}
+            </>
+          ) : (
+            <>
+              {campaignsBlock}
+              {contributionsBlock}
+            </>
+          ))}
+      </CenteredColumn>
+    </>
   )
 }
 
