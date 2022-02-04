@@ -143,11 +143,11 @@ const CreateContent: FC = () => {
 
           <Controller
             control={control}
-            name="displayPublicly"
+            name="hidden"
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <FormSwitch
-                label={newCampaignFields.displayPublicly.label}
-                description="Whether or not to display this campaign in the public directory of active campaigns. You may want to turn this off if you plan to send a direct link to your community. Default is yes."
+                label={newCampaignFields.hidden.label}
+                description="Whether or not to hide this campaign from the public directory of active campaigns. You may want to turn this on if you plan to send a direct link to your community. Default is no."
                 error={error?.message}
                 onClick={() => onChange(!value)}
                 on={!!value}

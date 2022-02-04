@@ -67,7 +67,7 @@ export const allCampaigns = selector({
 
 export const visibleCampaigns = selector({
   key: "visibleCampaigns",
-  get: ({ get }) => get(allCampaigns).filter((c) => c.displayPublicly),
+  get: ({ get }) => get(allCampaigns).filter((c) => !c.hidden),
 })
 
 export const filteredVisibleCampaigns = selector({

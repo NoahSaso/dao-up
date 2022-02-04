@@ -30,7 +30,7 @@ declare global {
     imageUrl?: string
     goal: number
     daoAddress: string
-    displayPublicly: boolean
+    hidden: boolean
 
     website?: string
     twitter?: string

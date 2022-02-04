@@ -51,8 +51,8 @@ export const newCampaignFields: Record<NewCampaignFieldKey, NewCampaignField> =
       required: true,
       render: makeRenderNumber(2, 2),
     },
-    displayPublicly: {
-      label: "Show on public campaigns list",
+    hidden: {
+      label: "Hide from public campaigns list",
       pageId: 1,
       required: false,
       render: renderBoolean,
@@ -82,14 +82,14 @@ export const newCampaignFieldEntries = Object.entries(newCampaignFields) as [
 ][]
 
 export const defaultNewCampaign: Partial<NewCampaign> = {
-  displayPublicly: true,
+  hidden: false,
 }
 
 const placeholderCampaignFields = {
   status: Status.Active,
 
   daoUrl: "https://noahsaso.com",
-  displayPublicly: true,
+  hidden: false,
 
   tokenName: "Token",
   tokenSymbol: "TOK",
