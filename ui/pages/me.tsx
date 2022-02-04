@@ -12,13 +12,13 @@ import {
   TooltipInfo,
 } from "../components"
 import useWallet from "../hooks/useWallet"
-import { walletCampaignsAtom } from "../state/campaigns"
+import { walletCampaigns } from "../state/campaigns"
 
 const Me: NextPage = () => {
   const { walletAddress, connect } = useWallet()
 
   const { creatorCampaigns, contributorCampaigns } =
-    useRecoilValue(walletCampaignsAtom)
+    useRecoilValue(walletCampaigns)
 
   const campaignsBlock = (
     <>

@@ -21,7 +21,7 @@ import {
 } from "../../components"
 import { prettyPrintDecimal } from "../../helpers/number"
 import useWallet from "../../hooks/useWallet"
-import { fetchCampaignAtom } from "../../state/campaigns"
+import { fetchCampaign } from "../../state/campaigns"
 
 interface CampaignLinkProps {
   href: string
@@ -75,7 +75,7 @@ const Campaign: NextPage = () => {
   useWallet()
   const { query, isReady, push: routerPush } = useRouter()
   const campaign = useRecoilValue(
-    fetchCampaignAtom(
+    fetchCampaign(
       isReady && typeof query.address === "string" ? query.address : ""
     )
   )

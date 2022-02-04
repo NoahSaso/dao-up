@@ -7,30 +7,30 @@ import { atom, selector } from "recoil"
 import * as Keplr from "../services/keplr"
 
 // Increment keplrKeystoreId to trigger Keplr refresh/connect.
-export const keplrKeystoreIdAtom = atom({
+export const keplrKeystoreId = atom({
   key: "keplrKeystoreId",
   default: 0,
 })
 
-export const keplrOfflineSignerAtom = selector({
+export const keplrOfflineSigner = selector({
   key: "keplrOfflineSigner",
   get: async ({ get }) => {
     // Subscribe to keystore ID changes so we propagate new wallet selection.
-    get(keplrKeystoreIdAtom)
+    get(keplrKeystoreId)
 
     return await Keplr.getOfflineSigner()
   },
 })
 
-export const cosmWasmClientAtom = selector({
+export const cosmWasmClient = selector({
   key: "cosmWasmClient",
   get: () => CosmWasmClient.connect(Keplr.endpoint),
 })
 
-export const signedCosmWasmClientAtom = selector({
+export const signedCosmWasmClient = selector({
   key: "signedCosmWasmClient",
   get: async ({ get }) => {
-    const signer = get(keplrOfflineSignerAtom)
+    const signer = get(keplrOfflineSigner)
     if (!signer) return
 
     return await SigningCosmWasmClient.connectWithSigner(Keplr.endpoint, signer)
@@ -41,10 +41,10 @@ export const signedCosmWasmClientAtom = selector({
   dangerouslyAllowMutability: true,
 })
 
-export const walletAddressAtom = selector({
+export const walletAddress = selector({
   key: "walletAddress",
   get: async ({ get }) => {
-    const client = get(keplrOfflineSignerAtom)
+    const client = get(keplrOfflineSigner)
     if (!client) return
 
     const [{ address }] = await client.getAccounts()

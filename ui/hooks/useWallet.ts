@@ -1,11 +1,11 @@
 import { useCallback, useEffect } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
-import { keplrKeystoreIdAtom, walletAddressAtom } from "../state/web3"
+import { keplrKeystoreId, walletAddress } from "../state/web3"
 
 const useWallet = () => {
-  const setKeplrKeystoreId = useSetRecoilState(keplrKeystoreIdAtom)
-  const walletAddress = useRecoilValue(walletAddressAtom)
+  const setKeplrKeystoreId = useSetRecoilState(keplrKeystoreId)
+  const walletAddress = useRecoilValue(walletAddress)
 
   const connect = useCallback(
     () => setKeplrKeystoreId((id) => id + 1),

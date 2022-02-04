@@ -3,12 +3,12 @@ import { useRecoilValue } from "recoil"
 
 import { campaigns } from "../services/campaigns"
 import { Status } from "../types"
-import { signedCosmWasmClientAtom } from "./../state/web3"
+import { signedCosmWasmClient } from "./../state/web3"
 
 let lastCampaignId = campaigns.length
 
-export const useCampaign = (walletAddress: string | undefined) => {
-  const client = useRecoilValue(signedCosmWasmClientAtom)
+export const useCreateCampaign = (walletAddress: string | undefined) => {
+  const client = useRecoilValue(signedCosmWasmClient)
 
   const createCampaign = useCallback(
     async (newCampaign: NewCampaign) => {
@@ -45,5 +45,5 @@ export const useCampaign = (walletAddress: string | undefined) => {
     [client, walletAddress]
   )
 
-  return { createCampaign }
+  return createCampaign
 }

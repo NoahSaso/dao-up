@@ -31,11 +31,3 @@ export const getOfflineSigner = async () => {
   await keplr.enable(chainId)
   return await keplr.getOfflineSignerAuto(chainId)
 }
-
-export const fetchWalletAddress = async (
-  signer: Awaited<ReturnType<typeof getOfflineSigner>>
-) => {
-  if (!signer) throw new Error("No signer.")
-  const [{ address }] = await signer.getAccounts()
-  return address
-}

@@ -10,14 +10,14 @@ import {
   FormTextArea,
   ResponsiveDecoration,
 } from "../components"
-import { useCampaign } from "../hooks/useCampaign"
+import { useCreateCampaign } from "../hooks/useCampaign"
 import useWallet from "../hooks/useWallet"
 import { defaultNewCampaign, newCampaignFields } from "../services/campaigns"
 
 const Create: NextPage = () => {
   const { walletAddress } = useWallet()
   const router = useRouter()
-  const { createCampaign } = useCampaign(walletAddress)
+  const createCampaign = useCreateCampaign(walletAddress)
 
   const {
     handleSubmit,

@@ -2,7 +2,7 @@ import fuzzysort from "fuzzysort"
 import { atom, selector, selectorFamily } from "recoil"
 
 import { campaigns } from "../services/campaigns"
-import { cosmWasmClientAtom, walletAddressAtom } from "./web3"
+import { cosmWasmClient, walletAddress } from "./web3"
 
 export const campaignFilterAtom = atom({
   key: "campaignFilter",
@@ -11,7 +11,7 @@ export const campaignFilterAtom = atom({
 
 // GET
 
-export const fetchCampaignAtom = selectorFamily({
+export const fetchCampaign = selectorFamily({
   key: "fetchCampaign",
   get:
     (address: string) =>
@@ -19,7 +19,7 @@ export const fetchCampaignAtom = selectorFamily({
       try {
         if (!address) throw new Error("Invalid address.")
 
-        const client = get(cosmWasmClientAtom)
+        const client = get(cosmWasmClient)
         if (!client) throw new Error("Failed to get client.")
 
         // TODO: Get contract from chain and transform into Campaign type.
@@ -42,11 +42,11 @@ export const fetchCampaignAtom = selectorFamily({
 
 // const CODE_ID = 0
 
-export const campaignsAtom = selector({
+export const allCampaigns = selector({
   key: "campaigns",
   get: async ({ get }) => {
     try {
-      const client = get(cosmWasmClientAtom)
+      const client = get(cosmWasmClient)
       if (!client) throw new Error("Failed to get client.")
 
       // TODO: Get contracts from chain and transform into Campaign types.
@@ -64,16 +64,16 @@ export const campaignsAtom = selector({
   },
 })
 
-export const visibleCampaignsAtom = selector({
+export const visibleCampaigns = selector({
   key: "visibleCampaigns",
-  get: ({ get }) => get(campaignsAtom).filter((c) => c.displayPublicly),
+  get: ({ get }) => get(allCampaigns).filter((c) => c.displayPublicly),
 })
 
-export const filteredVisibleCampaignsAtom = selector({
+export const filteredVisibleCampaigns = selector({
   key: "filteredVisibleCampaigns",
   get: async ({ get }) => {
     const filter = get(campaignFilterAtom)
-    let campaigns = get(visibleCampaignsAtom)
+    let campaigns = get(visibleCampaigns)
 
     if (filter)
       campaigns = fuzzysort
@@ -87,23 +87,21 @@ export const filteredVisibleCampaignsAtom = selector({
   },
 })
 
-export const walletCampaignsAtom = selector({
+export const walletCampaigns = selector({
   key: "walletCampaigns",
   get: async ({ get }) => {
     try {
-      const walletAddress = get(walletAddressAtom)
-      if (!walletAddress) throw new Error("Wallet not connected.")
+      const address = get(walletAddress)
+      if (!address) throw new Error("Wallet not connected.")
 
-      const campaigns = get(campaignsAtom)
+      const campaigns = get(allCampaigns)
 
-      const creatorCampaigns = campaigns.filter(
-        (c) => c.creator === walletAddress
-      )
+      const creatorCampaigns = campaigns.filter((c) => c.creator === address)
       // TODO: Somehow figure out if this wallet is a supporter.
       const contributorCampaigns = campaigns.filter(
         (c) =>
           // c.contributors.includes(address)
-          c.creator !== walletAddress
+          c.creator !== address
       )
 
       return {

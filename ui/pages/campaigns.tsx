@@ -10,13 +10,13 @@ import {
 import useWallet from "../hooks/useWallet"
 import {
   campaignFilterAtom,
-  filteredVisibleCampaignsAtom,
+  filteredVisibleCampaigns,
 } from "../state/campaigns"
 
 const Campaigns: NextPage = () => {
   useWallet()
   const [filter, setFilter] = useRecoilState(campaignFilterAtom)
-  const campaigns = useRecoilValue(filteredVisibleCampaignsAtom)
+  const campaigns = useRecoilValue(filteredVisibleCampaigns)
 
   return (
     <>
