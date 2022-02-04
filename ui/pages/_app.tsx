@@ -4,16 +4,42 @@ import cn from "classnames"
 import type { AppProps } from "next/app"
 import Head from "next/head"
 import { FC } from "react"
-import { RecoilRoot } from "recoil"
+import { RecoilRoot, useRecoilValue } from "recoil"
 
 import { Header, Loader, Suspense } from "../components"
+import { globalLoadingAtom } from "../state/loading"
 
 const Title = "DAO Up!"
 const Description = ""
 const Domain = "https://dao-up.net"
 const ImageUrl = "https://dao-up.net/image.png"
 
-const DAOUp: FC<AppProps> = ({ Component, pageProps }) => (
+const DAOUp: FC<AppProps> = ({ Component, pageProps }) => {
+  const loading = useRecoilValue(globalLoadingAtom)
+
+  return (
+    <>
+      <Header />
+
+      <Loader
+        containerClassName={cn(
+          "fixed z-50 bg-dark/80 top-0 right-0 bottom-0 left-0",
+          {
+            hidden: !loading,
+          }
+        )}
+      />
+
+      <Suspense>
+        <main>
+          <Component {...pageProps} />
+        </main>
+      </Suspense>
+    </>
+  )
+}
+
+const App: FC<AppProps> = (props) => (
   <>
     <Head>
       <title>{Title}</title>
@@ -47,25 +73,10 @@ const DAOUp: FC<AppProps> = ({ Component, pageProps }) => (
       <meta property="og:site_name" content={Title} />
     </Head>
 
-    <Header />
-
-    <Loader
-      containerClassName={cn(
-        "fixed z-50 bg-dark/80 top-0 right-0 bottom-0 left-0",
-        {
-          hidden: true,
-        }
-      )}
-    />
-
     <RecoilRoot>
-      <Suspense>
-        <main>
-          <Component {...pageProps} />
-        </main>
-      </Suspense>
+      <DAOUp {...props} />
     </RecoilRoot>
   </>
 )
 
-export default DAOUp
+export default App
