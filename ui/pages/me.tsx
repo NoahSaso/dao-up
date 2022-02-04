@@ -16,28 +16,58 @@ import {
 import useWallet from "../hooks/useWallet"
 import { walletCampaigns } from "../state/campaigns"
 
-const Me: NextPage = () => (
-  <>
-    <ResponsiveDecoration
-      name="me_green_blur.png"
-      width={344}
-      height={661}
-      className="top-0 right-0 opacity-70"
-    />
-
-    <CenteredColumn className="py-5">
-      <h1 className="font-semibold text-4xl">Your Wallet</h1>
-
-      <Suspense>
-        <MeContent />
-      </Suspense>
-    </CenteredColumn>
-  </>
-)
-
-const MeContent: FC = () => {
+const Me: NextPage = () => {
   const { walletAddress, connect } = useWallet()
 
+  return (
+    <>
+      <ResponsiveDecoration
+        name="me_green_blur.png"
+        width={344}
+        height={661}
+        className="top-0 right-0 opacity-70"
+      />
+
+      <CenteredColumn className="py-5">
+        <h1 className="font-semibold text-4xl">Your Wallet</h1>
+
+        {!!walletAddress ? (
+          <>
+            <StatusIndicator
+              color="green"
+              label="Wallet connected."
+              containerClassName="mt-5"
+            />
+            <p className="my-2">{walletAddress}</p>
+          </>
+        ) : (
+          <>
+            <p className="my-2">
+              You haven&apos;t connected any wallets. Connect a wallet to start
+              making contributions.
+            </p>
+            <p className="flex flex-row items-center">
+              What&apos;s a wallet?
+              <TooltipInfo text="" />
+            </p>
+            <Button className="mt-8" onClick={connect}>
+              Connect a wallet
+            </Button>
+          </>
+        )}
+
+        <Suspense loader={{ containerClassName: "mt-16" }}>
+          <MeContent walletAddress={walletAddress} />
+        </Suspense>
+      </CenteredColumn>
+    </>
+  )
+}
+
+interface MeContentProps {
+  walletAddress: string | undefined
+}
+const MeContent: FC<MeContentProps> = ({ walletAddress }) => {
   const { creatorCampaigns, contributorCampaigns } =
     useRecoilValue(walletCampaigns)
 
@@ -84,31 +114,6 @@ const MeContent: FC = () => {
 
   return (
     <>
-      {!!walletAddress ? (
-        <>
-          <StatusIndicator
-            color="green"
-            label="Wallet connected."
-            containerClassName="mt-5"
-          />
-          <p className="my-2">{walletAddress}</p>
-        </>
-      ) : (
-        <>
-          <p className="my-2">
-            You haven&apos;t connected any wallets. Connect a wallet to start
-            making contributions.
-          </p>
-          <p className="flex flex-row items-center">
-            What&apos;s a wallet?
-            <TooltipInfo text="" />
-          </p>
-          <Button className="mt-8" onClick={connect}>
-            Connect a wallet
-          </Button>
-        </>
-      )}
-
       {!!walletAddress &&
         // If no user campaigns but user has contributed, show contributions first. Otherwise, default to campaigns on top.
         (contributorCampaigns.length && !creatorCampaigns.length ? (

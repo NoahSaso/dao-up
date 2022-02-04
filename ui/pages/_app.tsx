@@ -30,7 +30,7 @@ const DAOUp: FC<AppProps> = ({ Component, pageProps }) => {
         )}
       />
 
-      <Suspense>
+      <Suspense loader={{ overlay: true }}>
         <main>
           <Component {...pageProps} />
         </main>

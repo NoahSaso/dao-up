@@ -6,7 +6,6 @@ import {
   AllCampaignsCard,
   CenteredColumn,
   Input,
-  Loader,
   ResponsiveDecoration,
   Suspense,
 } from "../components"
@@ -39,7 +38,7 @@ const Campaigns: NextPage = () => {
           onChange={({ target: { value } }) => setFilter(value)}
         />
 
-        <Suspense fallback={<Loader />}>
+        <Suspense>
           <CampaignsContent />
         </Suspense>
       </CenteredColumn>

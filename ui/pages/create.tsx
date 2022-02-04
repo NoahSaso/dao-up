@@ -26,7 +26,7 @@ const Create: NextPage = () => (
       className="top-0 right-0 opacity-70"
     />
 
-    <Suspense>
+    <Suspense loader={{ overlay: true }}>
       <CreateContent />
     </Suspense>
   </>

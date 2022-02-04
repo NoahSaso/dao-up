@@ -2,7 +2,7 @@ import cn from "classnames"
 import Image from "next/image"
 import { FC } from "react"
 
-interface LoaderProps {
+export interface LoaderProps {
   size?: number
   containerClassName?: string
   overlay?: boolean

@@ -94,7 +94,7 @@ export const Campaign: NextPage = () => {
         className="top-0 left-0 opacity-70"
       />
 
-      <Suspense>
+      <Suspense loader={{ overlay: true }}>
         <CampaignContent router={router} />
       </Suspense>
     </>

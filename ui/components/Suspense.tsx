@@ -1,13 +1,21 @@
-import { FC, Suspense as OldSuspense, SuspenseProps } from "react"
+import {
+  FC,
+  Suspense as OldSuspense,
+  SuspenseProps as OldSuspenseProps,
+} from "react"
 
-import { Loader } from "."
+import { Loader, LoaderProps } from "."
 
-export const Suspense: FC<Partial<SuspenseProps>> = ({
+interface SuspenseProps extends Partial<OldSuspenseProps> {
+  loader?: LoaderProps
+}
+export const Suspense: FC<SuspenseProps> = ({
   children,
   fallback,
+  loader,
   ...props
 }) => (
-  <OldSuspense fallback={fallback ?? <Loader overlay />} {...props}>
+  <OldSuspense fallback={fallback ?? <Loader {...loader} />} {...props}>
     {children}
   </OldSuspense>
 )

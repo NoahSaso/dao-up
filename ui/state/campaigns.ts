@@ -105,11 +105,17 @@ export const walletCampaigns = selector({
           c.creator !== address
       )
 
+      // simulate loading
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
       return {
         creatorCampaigns,
         contributorCampaigns,
       }
     } catch (error) {
+      // await error so we don't render empty data while walletAddress loads
+      await error
+
       console.error(error)
       // TODO: Display error.
 
