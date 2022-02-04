@@ -10,6 +10,7 @@ import {
   FormTextArea,
   ResponsiveDecoration,
 } from "../components"
+import { junoAddressPattern, numberPattern, urlPattern } from "../helpers/form"
 import { useCreateCampaign } from "../hooks/useCampaign"
 import useWallet from "../hooks/useWallet"
 import { defaultNewCampaign, newCampaignFields } from "../services/campaigns"
@@ -59,7 +60,10 @@ const Create: NextPage = () => {
             error={errors.name?.message}
             {...register("name", {
               required: "Required",
-              pattern: /\S/,
+              pattern: {
+                value: /\S/,
+                message: "Invalid name.",
+              },
             })}
           />
 
@@ -70,7 +74,10 @@ const Create: NextPage = () => {
             error={errors.description?.message}
             {...register("description", {
               required: "Required",
-              pattern: /\S/,
+              pattern: {
+                value: /\S/,
+                message: "Invalid description.",
+              },
             })}
           />
 
@@ -81,7 +88,7 @@ const Create: NextPage = () => {
             error={errors.imageUrl?.message}
             {...register("imageUrl", {
               required: false,
-              pattern: /^https:\/\/.+$/,
+              pattern: urlPattern,
             })}
           />
 
@@ -96,7 +103,7 @@ const Create: NextPage = () => {
             {...register("goal", {
               required: "Required",
               valueAsNumber: true,
-              pattern: /^\s*\d+\s*$/,
+              pattern: numberPattern,
               min: {
                 value: 0.01,
                 message: "Must be at least 0.01.",
@@ -111,8 +118,7 @@ const Create: NextPage = () => {
             error={errors.daoAddress?.message}
             {...register("daoAddress", {
               required: "Required",
-              // TODO: get real juno regex
-              pattern: /^juno.+$/,
+              pattern: junoAddressPattern,
             })}
           />
 
@@ -139,7 +145,7 @@ const Create: NextPage = () => {
             error={errors.website?.message}
             {...register("website", {
               required: false,
-              pattern: /^https:\/\/.+$/,
+              pattern: urlPattern,
             })}
           />
 
@@ -150,7 +156,10 @@ const Create: NextPage = () => {
             error={errors.twitter?.message}
             {...register("twitter", {
               required: false,
-              pattern: /^@.+$/,
+              pattern: {
+                value: /^@.+$/,
+                message: "Invalid Twitter handle. Ensure it starts with '@'.",
+              },
             })}
           />
 
@@ -161,7 +170,11 @@ const Create: NextPage = () => {
             error={errors.discord?.message}
             {...register("discord", {
               required: false,
-              pattern: /^https:\/\/discord\.gg\/.+$/,
+              pattern: {
+                value: /^https:\/\/discord\.gg\/.+$/,
+                message:
+                  "Invalid Discord invite. Ensure it starts with 'https://discord.gg/'",
+              },
             })}
           />
 

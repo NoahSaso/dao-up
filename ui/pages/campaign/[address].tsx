@@ -19,6 +19,7 @@ import {
   ResponsiveDecoration,
   TooltipInfo,
 } from "../../components"
+import { numberPattern } from "../../helpers/form"
 import { prettyPrintDecimal } from "../../helpers/number"
 import useWallet from "../../hooks/useWallet"
 import { fetchCampaign } from "../../state/campaigns"
@@ -155,16 +156,15 @@ const Campaign: NextPage = () => {
 
       {!!daoUrl && (
         <p className="bg-green text-dark text-center w-full px-12 py-2">
-          {name} has been successfully funded and the{" "}
+          {name} has been successfully funded!{" "}
           <a
             href={daoUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="underline hover:no-underline"
           >
-            DAO
-          </a>{" "}
-          has been created.
+            Click here to visit the DAO.
+          </a>
         </p>
       )}
 
@@ -253,7 +253,7 @@ const Campaign: NextPage = () => {
                 {...contributionRegister("contribution", {
                   required: "Required",
                   valueAsNumber: true,
-                  pattern: /^\s*\d+\s*$/,
+                  pattern: numberPattern,
                   min: {
                     value: 0,
                     message: "Must be greater than 0.",
@@ -339,7 +339,7 @@ const Campaign: NextPage = () => {
                 {...refundRegister("refund", {
                   required: "Required",
                   valueAsNumber: true,
-                  pattern: /^\s*\d+\s*$/,
+                  pattern: numberPattern,
                   min: {
                     value: 0,
                     message: "Must be greater than 0.",
