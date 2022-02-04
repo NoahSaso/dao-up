@@ -28,7 +28,7 @@ const Me: NextPage = () => {
         className="top-0 right-0 opacity-70"
       />
 
-      <CenteredColumn className="py-5">
+      <CenteredColumn className="pt-5 pb-10">
         <h1 className="font-semibold text-4xl">Your Wallet</h1>
 
         {!!walletAddress ? (

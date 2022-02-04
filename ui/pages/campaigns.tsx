@@ -27,7 +27,7 @@ const Campaigns: NextPage = () => {
         className="top-0 right-0 opacity-70"
       />
 
-      <CenteredColumn className="pt-5">
+      <CenteredColumn className="pt-5 pb-10">
         <h1 className="font-semibold text-4xl">All Campaigns</h1>
         <Input
           containerClassName="mt-4 mb-6"
