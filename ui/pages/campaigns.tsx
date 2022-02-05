@@ -48,7 +48,7 @@ const Campaigns: NextPage = () => {
 
 const CampaignsContent: FC = () => {
   useWallet()
-  const campaigns = useRecoilValue(filteredVisibleCampaigns)
+  const { campaigns, error } = useRecoilValue(filteredVisibleCampaigns)
 
   return (
     <>

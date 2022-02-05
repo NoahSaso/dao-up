@@ -68,7 +68,7 @@ interface MeContentProps {
   walletAddress: string | undefined
 }
 const MeContent: FC<MeContentProps> = ({ walletAddress }) => {
-  const { creatorCampaigns, contributorCampaigns } =
+  const { creatorCampaigns, contributorCampaigns, error } =
     useRecoilValue(walletCampaigns)
 
   const campaignsBlock = (

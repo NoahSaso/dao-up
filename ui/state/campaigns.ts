@@ -11,10 +11,10 @@ export const campaignFilterAtom = atom({
 
 // GET
 
-export const fetchCampaign = selectorFamily({
+export const fetchCampaign = selectorFamily<CampaignResponse, string>({
   key: "fetchCampaign",
   get:
-    (address: string) =>
+    (address) =>
     async ({ get }) => {
       const client = get(cosmWasmClient)
       if (!client) throw new Error("Failed to get client.")
@@ -29,10 +29,14 @@ export const fetchCampaign = selectorFamily({
         // simulate loading
         await new Promise((resolve) => setTimeout(resolve, 1000))
 
-        return campaign
+        return {
+          campaign,
+          error: null,
+        }
       } catch (error) {
         console.error(error)
-        // TODO: Display error
+        // TODO: Return better error.
+        return { campaign: null, error: `${error}` }
       }
     },
 })
@@ -41,7 +45,7 @@ export const fetchCampaign = selectorFamily({
 
 // const CODE_ID = 0
 
-export const allCampaigns = selector({
+export const allCampaigns = selector<CampaignsResponse>({
   key: "campaigns",
   get: async ({ get }) => {
     const client = get(cosmWasmClient)
@@ -54,27 +58,33 @@ export const allCampaigns = selector({
       // simulate loading
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
-      return campaigns
+      return { campaigns, error: null }
     } catch (error) {
       console.error(error)
-      // TODO: Display error.
-
-      return []
+      // TODO: Return better error.
+      return { campaigns: [], error: `${error}` }
     }
   },
 })
 
-export const visibleCampaigns = selector({
+export const visibleCampaigns = selector<CampaignsResponse>({
   key: "visibleCampaigns",
-  get: ({ get }) => get(allCampaigns).filter((c) => !c.hidden),
+  get: ({ get }) => {
+    const { campaigns, ...response } = get(allCampaigns)
+    return {
+      ...response,
+      campaigns: campaigns.filter((c) => !c.hidden),
+    }
+  },
 })
 
-export const filteredVisibleCampaigns = selector({
+export const filteredVisibleCampaigns = selector<CampaignsResponse>({
   key: "filteredVisibleCampaigns",
   get: async ({ get }) => {
     const filter = get(campaignFilterAtom)
-    let campaigns = get(visibleCampaigns)
+    const response = get(visibleCampaigns)
 
+    let { campaigns } = response
     if (filter)
       campaigns = fuzzysort
         .go(filter, campaigns, {
@@ -83,17 +93,20 @@ export const filteredVisibleCampaigns = selector({
         })
         .map(({ obj }) => obj)
 
-    return campaigns
+    return {
+      ...response,
+      campaigns,
+    }
   },
 })
 
-export const walletCampaigns = selector({
+export const walletCampaigns = selector<WalletCampaignsResponse>({
   key: "walletCampaigns",
   get: async ({ get }) => {
     const address = get(walletAddress)
     if (!address) throw new Error("Wallet not connected.")
 
-    const campaigns = get(allCampaigns)
+    const { campaigns, ...response } = get(allCampaigns)
 
     try {
       const creatorCampaigns = campaigns.filter((c) => c.creator === address)
@@ -108,16 +121,17 @@ export const walletCampaigns = selector({
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
       return {
+        ...response,
         creatorCampaigns,
         contributorCampaigns,
       }
     } catch (error) {
       console.error(error)
-      // TODO: Display error.
-
+      // TODO: Return better error.
       return {
         creatorCampaigns: [],
         contributorCampaigns: [],
+        error: `${error}`,
       }
     }
   },

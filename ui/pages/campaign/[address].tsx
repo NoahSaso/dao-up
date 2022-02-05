@@ -108,7 +108,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
   router: { isReady, query, push: routerPush },
 }) => {
   useWallet()
-  const campaign = useRecoilValue(
+  const { campaign, error } = useRecoilValue(
     fetchCampaign(
       isReady && typeof query.address === "string" ? query.address : ""
     )

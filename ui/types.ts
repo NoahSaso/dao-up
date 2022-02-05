@@ -48,19 +48,20 @@ declare global {
 
   type NewCampaignFieldKey = keyof NewCampaign
 
-  interface CampaignsAtom {
-    campaigns: Campaign[]
+  // Selectors
+
+  type AsyncSelectorResponse<T> = T & {
+    error: string | null
   }
 
-  interface WalletCampaignsAtom {
+  type CampaignResponse = AsyncSelectorResponse<{ campaign: Campaign | null }>
+
+  type CampaignsResponse = AsyncSelectorResponse<{ campaigns: Campaign[] }>
+
+  type WalletCampaignsResponse = AsyncSelectorResponse<{
     creatorCampaigns: Campaign[]
     contributorCampaigns: Campaign[]
-  }
-
-  type AsAsyncAtom<T> = T & {
-    isLoading: boolean
-    error?: string
-  }
+  }>
 }
 
 export enum Status {
