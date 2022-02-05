@@ -1,25 +1,35 @@
-import { useCallback } from "react"
+import { useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
 import { campaigns } from "../services/campaigns"
+import { globalLoadingAtom } from "../state/loading"
+import { signedCosmWasmClient } from "../state/web3"
 import { Status } from "../types"
-import { globalLoadingAtom } from "./../state/loading"
-import { signedCosmWasmClient } from "./../state/web3"
 
 let lastCampaignId = campaigns.length
 
 export const useCreateCampaign = (walletAddress: string | undefined) => {
   const client = useRecoilValue(signedCosmWasmClient)
   const setLoading = useSetRecoilState(globalLoadingAtom)
+  const [createCampaignError, setCreateCampaignError] = useState(
+    null as string | null
+  )
 
+  // hideLoadingAfter determines whether or not to hide the loading screen when the contract creation succeeds.
+  // This may be useful if you want to run some actions before hiding the loader, such as changing screens.
   const createCampaign = useCallback(
-    async (newCampaign: NewCampaign) => {
+    async (newCampaign: NewCampaign, hideLoadingAfter: boolean = true) => {
+      if (!client) {
+        setCreateCampaignError("Failed to get signing client.")
+        return
+      }
+      if (!walletAddress) {
+        setCreateCampaignError("Wallet not connected.")
+        return
+      }
       setLoading(true)
 
       try {
-        if (!client) throw new Error("Failed to get signing client.")
-        if (!walletAddress) throw new Error("Wallet not connected.")
-
         // TODO: Deploy contract.
 
         const address = `junoescrow${++lastCampaignId}`
@@ -42,16 +52,16 @@ export const useCreateCampaign = (walletAddress: string | undefined) => {
         // simulate loading
         await new Promise((resolve) => setTimeout(resolve, 1000))
 
-        // Ensure always called, even on error.
-        // set(createCampaignResultAtom, { isLoading: false, address })
-
         return address
+      } catch (error) {
+        // TODO: Set better error messages.
+        setCreateCampaignError(`${error}`)
       } finally {
-        setLoading(false)
+        if (hideLoadingAfter) setLoading(false)
       }
     },
     [setLoading, client, walletAddress]
   )
 
-  return createCampaign
+  return { createCampaign, createCampaignError, setLoading }
 }

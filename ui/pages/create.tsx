@@ -1,6 +1,6 @@
 import type { NextPage } from "next"
 import { useRouter } from "next/router"
-import { FC } from "react"
+import { FC, useEffect } from "react"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 
 import {
@@ -13,7 +13,7 @@ import {
   Suspense,
 } from "../components"
 import { junoAddressPattern, numberPattern, urlPattern } from "../helpers/form"
-import { useCreateCampaign } from "../hooks/useCampaign"
+import { useCreateCampaign } from "../hooks/useCreateCampaign"
 import useWallet from "../hooks/useWallet"
 import { defaultNewCampaign, newCampaignFields } from "../services/campaigns"
 
@@ -35,7 +35,8 @@ const Create: NextPage = () => (
 const CreateContent: FC = () => {
   const { walletAddress } = useWallet()
   const router = useRouter()
-  const createCampaign = useCreateCampaign(walletAddress)
+  const { createCampaign, createCampaignError, setLoading } =
+    useCreateCampaign(walletAddress)
 
   const {
     handleSubmit,
@@ -44,16 +45,29 @@ const CreateContent: FC = () => {
     control,
   } = useForm({ defaultValues: defaultNewCampaign })
 
+  // Scroll to bottom of page when error is displayed.
+  useEffect(() => {
+    if (createCampaignError)
+      window.scrollTo({
+        left: 0,
+        top: document.body.scrollHeight,
+        behavior: "smooth",
+      })
+  }, [createCampaignError])
+
   const onSubmit: SubmitHandler<Partial<NewCampaign>> = async (values) => {
     // TODO: Perform final validation here?
-    try {
-      const address = await createCampaign(values as unknown as NewCampaign)
+    const address = await createCampaign(
+      values as unknown as NewCampaign,
+      false
+    )
 
-      router.push(`/campaign/${address}`)
-    } catch (error) {
-      console.error(error)
-      // TODO: Display error.
-    }
+    // If the campaign was created successfully, redirect to the campaign page.
+    // If the campaign was not created successfully, createCampaignError will show.
+    if (address) await router.push(`/campaign/${address}`)
+
+    // Hide loading since we told createCampaign not to hide it when done.
+    setLoading(false)
   }
 
   return (
@@ -200,6 +214,12 @@ const CreateContent: FC = () => {
               },
             })}
           />
+
+          {createCampaignError && (
+            <p className="text-orange mb-4 self-end max-w-lg">
+              {createCampaignError}
+            </p>
+          )}
 
           <Button submitLabel="Create Campaign" className="self-end" />
         </form>
