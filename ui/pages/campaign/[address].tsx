@@ -355,7 +355,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
                     ? `${prettyPrintDecimal(
                         (100 * watchRefund) / userTokens,
                         2
-                      )}%`
+                      )}% of your balance`
                     : "USD conversions will appear as you type."
                 }
                 tail={tokenSymbol}
