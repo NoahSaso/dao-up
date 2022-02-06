@@ -1,12 +1,15 @@
+import { coin } from "@cosmjs/stargate"
 import { useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
-import { campaigns } from "../services/campaigns"
+import {
+  cw20CodeId,
+  defaultExecuteFee,
+  escrowContractCodeId,
+  fundingTokenDenom,
+} from "../helpers/config"
 import { globalLoadingAtom } from "../state/loading"
 import { signedCosmWasmClient } from "../state/web3"
-import { Status } from "../types"
-
-let lastCampaignId = campaigns.length
 
 export const useCreateCampaign = (walletAddress: string | undefined) => {
   const client = useRecoilValue(signedCosmWasmClient)
@@ -30,30 +33,39 @@ export const useCreateCampaign = (walletAddress: string | undefined) => {
       setLoading(true)
 
       try {
-        // TODO: Deploy contract.
+        const msg = {
+          dao_address: newCampaign.daoAddress,
+          cw20_code_id: cw20CodeId,
 
-        const address = `junoescrow${++lastCampaignId}`
+          funding_goal: coin(newCampaign.goal * 1e6, fundingTokenDenom),
+          funding_token_name: newCampaign.tokenName,
+          funding_token_symbol: newCampaign.tokenSymbol,
 
-        campaigns.push({
-          ...newCampaign,
-          address,
-          status: Status.Pending,
-          creator: walletAddress,
-          daoUrl: `https://daodao.zone/dao/${newCampaign.daoAddress}`,
-          tokenPrice: 0,
-          supporters: 0,
-          pledged: 0,
-          supply: 0,
-          tokenName: "Token",
-          tokenSymbol: "TOK",
-          activity: [],
-        })
+          campaign_info: {
+            name: newCampaign.name,
+            description: newCampaign.description,
+            hidden: newCampaign.hidden,
 
-        // simulate loading
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+            ...(newCampaign.imageUrl && { image_url: newCampaign.imageUrl }),
+            ...(newCampaign.website && { website: newCampaign.website }),
+            ...(newCampaign.twitter && { twitter: newCampaign.twitter }),
+            ...(newCampaign.discord && { discord: newCampaign.discord }),
+          },
+        }
 
-        return address
+        const { contractAddress } = await client.instantiate(
+          walletAddress,
+          escrowContractCodeId,
+          msg,
+          `[DAO Up!] ${newCampaign.name}`,
+          defaultExecuteFee
+        )
+
+        console.log(contractAddress)
+
+        return contractAddress
       } catch (error) {
+        console.error(error)
         // TODO: Set better error messages.
         setCreateCampaignError(`${error}`)
       } finally {

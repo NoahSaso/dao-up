@@ -4,7 +4,8 @@ import {
 } from "@cosmjs/cosmwasm-stargate"
 import { atom, selector } from "recoil"
 
-import * as Keplr from "../services/keplr"
+import { endpoint } from "../helpers/config"
+import { getOfflineSigner } from "../services/keplr"
 
 // Increment keplrKeystoreId to trigger Keplr refresh/connect.
 export const keplrKeystoreIdAtom = atom({
@@ -18,29 +19,24 @@ export const keplrOfflineSigner = selector({
     // Subscribe to keystore ID changes so we propagate new wallet selection.
     get(keplrKeystoreIdAtom)
 
-    return await Keplr.getOfflineSigner()
+    return await getOfflineSigner()
   },
 })
 
 export const cosmWasmClient = selector({
   key: "cosmWasmClient",
   get: () => {
-    // TODO: remove
-    return true
-    // return CosmWasmClient.connect(Keplr.endpoint)
+    return CosmWasmClient.connect(endpoint)
   },
 })
 
 export const signedCosmWasmClient = selector({
   key: "signedCosmWasmClient",
   get: async ({ get }) => {
-    // TODO: remove
-    return true
+    const signer = get(keplrOfflineSigner)
+    if (!signer) return
 
-    // const signer = get(keplrOfflineSigner)
-    // if (!signer) return
-
-    // return await SigningCosmWasmClient.connectWithSigner(Keplr.endpoint, signer)
+    return await SigningCosmWasmClient.connectWithSigner(endpoint, signer)
   },
   // DAO DAO:
   // We have to do this because of how SigningCosmWasmClient
@@ -51,13 +47,10 @@ export const signedCosmWasmClient = selector({
 export const walletAddress = selector({
   key: "walletAddress",
   get: async ({ get }) => {
-    // TODO: remove
-    return "junowallet1"
+    const client = get(keplrOfflineSigner)
+    if (!client) return
 
-    // const client = get(keplrOfflineSigner)
-    // if (!client) return
-
-    // const [{ address }] = await client.getAccounts()
-    // return address
+    const [{ address }] = await client.getAccounts()
+    return address
   },
 })

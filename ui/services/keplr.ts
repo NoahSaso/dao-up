@@ -1,10 +1,6 @@
 import { Keplr } from "@keplr-wallet/types"
 
-const mainChainId = "juno-1"
-const testChainId = "uni-1"
-// const chainId = process.env.NODE_ENV === "development" ? testChainId : mainChainId
-export const chainId = testChainId
-export const endpoint = "https://rpc.uni.junomint.com:443"
+import { chainId } from "../helpers/config"
 
 const get = async (): Promise<Keplr | undefined> => {
   if (window.keplr || document.readyState === "complete") return window.keplr

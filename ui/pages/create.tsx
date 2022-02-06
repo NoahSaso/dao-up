@@ -155,6 +155,43 @@ const CreateContent: FC = () => {
             })}
           />
 
+          <FormInput
+            label={newCampaignFields.tokenName.label}
+            description="The name of the tokens supporters will receive for their contributions. These become exchangeable for the DAO's governance tokens when funding succeeds."
+            placeholder="Funding Token"
+            type="text"
+            error={errors.tokenName?.message}
+            {...register("tokenName", {
+              required: "Required",
+              pattern: {
+                value: /\S/,
+                message: "Invalid token name.",
+              },
+            })}
+          />
+
+          <FormInput
+            label={newCampaignFields.tokenSymbol.label}
+            placeholder="TOKEN"
+            type="text"
+            error={errors.tokenSymbol?.message}
+            {...register("tokenSymbol", {
+              required: "Required",
+              pattern: {
+                value: /^\s*[a-zA-Z-]{3,12}\s*$/,
+                message: "Must be between 3 and 12 alphabetical characters.",
+              },
+              minLength: {
+                value: 3,
+                message: "Must be at least 3 characters.",
+              },
+              maxLength: {
+                value: 12,
+                message: "Must be 12 or fewer characters.",
+              },
+            })}
+          />
+
           <Controller
             control={control}
             name="hidden"

@@ -10,31 +10,54 @@ declare global {
     amount: number
   }
 
-  interface Campaign extends NewCampaign {
+  interface Campaign {
     address: string
+    name: string
+    description: string
+    imageUrl?: string
+
     status: Status
     creator: string
-    daoUrl: string
-    tokenPrice: number
-    supporters: number
+    hidden: boolean
+
+    goal: number
     pledged: number
-    supply: number
-    tokenName: string
-    tokenSymbol: string
+    // TODO: Figure out how best to retrieve this.
+    // supporters: number
+
+    dao: {
+      address: string
+      url: string
+    }
+
+    fundingToken: {
+      price?: number
+      name: string
+      symbol: string
+      supply: number
+    }
+
+    website?: string
+    twitter?: string
+    discord?: string
+
     activity: ActivityItem[]
   }
 
   interface NewCampaign {
     name: string
     description: string
-    imageUrl?: string
+    hidden: boolean
+
     goal: number
     daoAddress: string
-    hidden: boolean
+    tokenName: string
+    tokenSymbol: string
 
     website?: string
     twitter?: string
     discord?: string
+    imageUrl?: string
   }
 
   interface NewCampaignField {
@@ -54,21 +77,23 @@ declare global {
     error: string | null
   }
 
+  type CampaignStateResponse = AsyncSelectorResponse<{
+    // TODO: Type accurately.
+    state: any | null
+  }>
+
   type CampaignResponse = AsyncSelectorResponse<{ campaign: Campaign | null }>
 
-  type CampaignsResponse = AsyncSelectorResponse<{ campaigns: Campaign[] }>
-
-  type WalletCampaignsResponse = AsyncSelectorResponse<{
-    creatorCampaigns: Campaign[]
-    contributorCampaigns: Campaign[]
+  type EscrowContractAddressesResponse = AsyncSelectorResponse<{
+    addresses: readonly string[]
   }>
 }
 
 export enum Status {
-  Pending,
-  Active,
-  ClosedButNotTransferred,
-  Closed,
+  Pending = "pending",
+  Open = "open",
+  Closed = "closed",
+  Complete = "complete",
 }
 
 export enum Color {

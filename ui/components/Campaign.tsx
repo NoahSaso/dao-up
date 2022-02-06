@@ -18,7 +18,7 @@ export const CampaignStatus: FC<CampaignProps> = ({
   let color: Color
   let label: string
   switch (status) {
-    case Status.Active:
+    case Status.Open:
       const funded = pledged >= goal
       color = funded ? Color.Orange : Color.Green
       label = funded ? "Goal Reached" : "Active"
@@ -27,13 +27,13 @@ export const CampaignStatus: FC<CampaignProps> = ({
       color = Color.Placeholder
       label = "Pending"
       break
-    case Status.ClosedButNotTransferred:
-      color = Color.Placeholder
-      label = "Closed But Not Transferred"
-      break
     case Status.Closed:
       color = Color.Placeholder
       label = "Closed"
+      break
+    case Status.Complete:
+      color = Color.Placeholder
+      label = "Complete"
       break
     default:
       color = Color.Placeholder
@@ -59,7 +59,7 @@ export const CampaignProgress: FC<CampaignProgressProps> = ({
   thin,
 }) => {
   const fundedPercent = (100 * pledged) / goal
-  const open = status === Status.Active
+  const open = status === Status.Open
 
   return (
     <div
@@ -129,7 +129,7 @@ export const CampaignImage: FC<CampaignImageProps> = ({
   size = 135,
 }) => (
   <div
-    className={cn("bg-green shrink-0", className)}
+    className={cn("bg-green shrink-0 overflow-hidden rounded-md", className)}
     style={{ width: size, height: size }}
   >
     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -141,13 +141,19 @@ export const AllCampaignsCard: FC<CampaignProps> = ({
   campaign,
   className,
 }) => {
-  const { name, description, pledged, tokenSymbol, goal } = campaign
+  const {
+    name,
+    description,
+    pledged,
+    fundingToken: { symbol },
+    goal,
+  } = campaign
 
   return (
     <CampaignCardWrapper campaign={campaign} className={className}>
       <h2 className="font-medium text-xl">{name}</h2>
       <p className="sm:text-lg text-green">
-        {pledged.toLocaleString()} {tokenSymbol} pledged
+        {pledged.toLocaleString()} {symbol} pledged
       </p>
       <p className="sm:text-lg text-white">
         {prettyPrintDecimal((100 * pledged) / goal, 0)}% funded
@@ -162,7 +168,12 @@ export const CreatorCampaignCard: FC<CampaignProps> = ({
   campaign,
   className,
 }) => {
-  const { name, pledged, tokenSymbol, goal } = campaign
+  const {
+    name,
+    pledged,
+    fundingToken: { symbol },
+    goal,
+  } = campaign
 
   return (
     <CampaignCardWrapper campaign={campaign} className={className}>
@@ -174,7 +185,7 @@ export const CreatorCampaignCard: FC<CampaignProps> = ({
         <span className="text-base font-light">Funded</span>
       </p>
       <p className="text-placeholder">
-        {pledged.toLocaleString()} {tokenSymbol} pledged
+        {pledged.toLocaleString()} {symbol} pledged
       </p>
     </CampaignCardWrapper>
   )
@@ -184,7 +195,12 @@ export const ContributorCampaignCard: FC<CampaignProps> = ({
   campaign,
   className,
 }) => {
-  const { name, pledged, goal, supply } = campaign
+  const {
+    name,
+    pledged,
+    goal,
+    fundingToken: { supply },
+  } = campaign
 
   const userTokens = 200
 
