@@ -30,6 +30,9 @@ pub enum ContractError {
     #[error("Contribution amount is too small to receive any gov tokens. Gov token price: ({token_price}) tokens/juno")]
     SmallContribution { token_price: Decimal },
 
+    #[error("Refund token amount too small. Would result in a refund of zero. Must refund at least ({token_price}) tokens.")]
+    SmallRefund { token_price: Decimal },
+
     #[error("Only open campaigns can be closed.")]
     InvalidClose {}
 }

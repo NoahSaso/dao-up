@@ -453,6 +453,26 @@ fn do_fund_refund(funding_goal: u64, gov_tokens: u64) {
         let expected_balance = backer_contribution * token_price;
         assert_eq!(balance.balance, expected_balance,);
 
+        if gov_tokens > funding_goal {
+            // Try and refund a number of tokens that would result in zero
+            // ujuno being sent back. This should fail.
+            let err: ContractError = app
+                .execute_contract(
+                    Addr::unchecked(backer),
+                    state.funding_token_addr.clone(),
+                    &cw20::Cw20ExecuteMsg::Send {
+                        contract: escrow_addr.to_string(),
+                        amount: Uint128::from(1 as u64),
+                        msg: to_binary("hello").unwrap(),
+                    },
+                    &[],
+                )
+                .unwrap_err()
+                .downcast()
+                .unwrap();
+            assert_eq!(err, ContractError::SmallRefund { token_price });
+        }
+
         // Return all the backers tokens.
         app.execute_contract(
             Addr::unchecked(backer),
@@ -783,13 +803,17 @@ fn test_campaign_close() {
 
     let dao_config: cw3_dao::query::ConfigResponse = app
         .wrap()
-        .query_wasm_smart(dao_addr.clone(), &cw3_dao::msg::QueryMsg::GetConfig {}).unwrap();
-    let escrow_gov_balance: cw20::BalanceResponse = app.wrap().query_wasm_smart(
-        dao_config.gov_token,
-        &cw20::Cw20QueryMsg::Balance {
-            address: escrow_addr.to_string(),
-        },
-    ).unwrap();
+        .query_wasm_smart(dao_addr.clone(), &cw3_dao::msg::QueryMsg::GetConfig {})
+        .unwrap();
+    let escrow_gov_balance: cw20::BalanceResponse = app
+        .wrap()
+        .query_wasm_smart(
+            dao_config.gov_token,
+            &cw20::Cw20QueryMsg::Balance {
+                address: escrow_addr.to_string(),
+            },
+        )
+        .unwrap();
     assert_eq!(escrow_gov_balance.balance, Uint128::zero());
 
     let state: DumpStateResponse = app

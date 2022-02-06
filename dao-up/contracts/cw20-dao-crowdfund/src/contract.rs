@@ -235,6 +235,10 @@ pub fn execute_receive_funding_tokens(
             // Token price is in tokens / native. `tokens * 1 /
             // (tokens / native)` = native owed.
             let native_owed = msg.amount * token_price.inv().unwrap();
+	    if native_owed.is_zero() {
+		return Err(ContractError::SmallRefund { token_price })
+	    }
+
             let bank_msg = BankMsg::Send {
                 to_address: sender.to_string(),
                 amount: vec![Coin {
