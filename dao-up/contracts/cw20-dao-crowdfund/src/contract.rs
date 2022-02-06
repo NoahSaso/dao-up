@@ -76,18 +76,18 @@ pub fn instantiate(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::Fund {} => execute_fund(deps, &info.funds, info.sender),
         ExecuteMsg::Receive(msg) => execute_receive(deps, msg, info.sender),
-        ExecuteMsg::Close {} => execute_close(deps, info.sender),
+        ExecuteMsg::Close {} => execute_close(deps, env, info.sender),
     }
 }
 
-pub fn execute_close(deps: DepsMut, sender: Addr) -> Result<Response, ContractError> {
+pub fn execute_close(deps: DepsMut, env: Env, sender: Addr) -> Result<Response, ContractError> {
     let mut state = STATE.load(deps.storage)?;
     if sender != state.dao_addr {
         return Err(ContractError::Unauthorized {});
@@ -96,11 +96,36 @@ pub fn execute_close(deps: DepsMut, sender: Addr) -> Result<Response, ContractEr
         Status::Open { token_price } => token_price,
         _ => return Err(ContractError::InvalidClose {}),
     };
+
+    // Return the governance tokens to the DAO.
+    let dao_addr = state.dao_addr.clone();
+    let dao_config: cw3_dao::query::ConfigResponse = deps
+        .querier
+        .query_wasm_smart(dao_addr.clone(), &cw3_dao::msg::QueryMsg::GetConfig {})?;
+    let gov_addr = dao_config.gov_token;
+    let gov_balance: cw20::BalanceResponse = deps.querier.query_wasm_smart(
+        gov_addr.clone(),
+        &cw20::Cw20QueryMsg::Balance {
+            address: env.contract.address.to_string(),
+        },
+    )?;
+
+    let return_msg = WasmMsg::Execute {
+        contract_addr: gov_addr.to_string(),
+        msg: to_binary(&cw20::Cw20ExecuteMsg::Transfer {
+            recipient: dao_addr.to_string(),
+            amount: gov_balance.balance,
+        })?,
+        funds: vec![],
+    };
+
+    // TODO: return tokens to the dao!
     state.status = Status::Closed { token_price };
     STATE.save(deps.storage, &state)?;
     Ok(Response::default()
         .add_attribute("action", "close")
-        .add_attribute("sender", sender))
+        .add_attribute("sender", sender)
+        .add_message(return_msg))
 }
 
 pub fn execute_fund(
@@ -327,9 +352,10 @@ pub fn query_dump_state(deps: Deps) -> StdResult<Binary> {
     let funding_token_addr = FUNDING_TOKEN_ADDR.load(deps.storage)?;
     let gov_token_addr = GOV_TOKEN_ADDR.load(deps.storage)?;
 
-    let funding_token_info: cw20::TokenInfoResponse = deps
-        .querier
-        .query_wasm_smart(funding_token_addr.clone(), &cw20::Cw20QueryMsg::TokenInfo {})?;
+    let funding_token_info: cw20::TokenInfoResponse = deps.querier.query_wasm_smart(
+        funding_token_addr.clone(),
+        &cw20::Cw20QueryMsg::TokenInfo {},
+    )?;
 
     to_binary(&DumpStateResponse {
         status: state.status,
@@ -337,7 +363,7 @@ pub fn query_dump_state(deps: Deps) -> StdResult<Binary> {
         creator: state.creator,
         funding_goal: state.funding_goal,
         funds_raised: state.funds_raised,
-	funding_token_info,
+        funding_token_info,
         campaign_info: state.campaign_info,
         gov_token_addr,
         funding_token_addr,

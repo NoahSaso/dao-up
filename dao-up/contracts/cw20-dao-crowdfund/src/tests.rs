@@ -308,12 +308,15 @@ fn test_campaign_creation() {
     assert_eq!(state.funding_goal.amount, Uint128::from(100_000_000 as u64));
     assert_eq!(state.funds_raised.amount, Uint128::zero());
     assert_eq!(state.creator, Addr::unchecked(CREATOR_ADDR));
-    assert_eq!(state.funding_token_info, cw20::TokenInfoResponse {
-	name: "Bong Launch".to_string(),
-	symbol: "LBONG".to_string(),
-	decimals: 6,
-	total_supply: Uint128::zero(),
-    });
+    assert_eq!(
+        state.funding_token_info,
+        cw20::TokenInfoResponse {
+            name: "Bong Launch".to_string(),
+            symbol: "LBONG".to_string(),
+            decimals: 6,
+            total_supply: Uint128::zero(),
+        }
+    );
 
     let config: cw3_dao::query::ConfigResponse = app
         .wrap()
@@ -778,6 +781,17 @@ fn test_campaign_close() {
 
     close_escrow_from_dao(&mut app, dao_addr.clone(), escrow_addr.clone(), gov_tokens);
 
+    let dao_config: cw3_dao::query::ConfigResponse = app
+        .wrap()
+        .query_wasm_smart(dao_addr.clone(), &cw3_dao::msg::QueryMsg::GetConfig {}).unwrap();
+    let escrow_gov_balance: cw20::BalanceResponse = app.wrap().query_wasm_smart(
+        dao_config.gov_token,
+        &cw20::Cw20QueryMsg::Balance {
+            address: escrow_addr.to_string(),
+        },
+    ).unwrap();
+    assert_eq!(escrow_gov_balance.balance, Uint128::zero());
+
     let state: DumpStateResponse = app
         .wrap()
         .query_wasm_smart(escrow_addr.clone(), &QueryMsg::DumpState {})
@@ -805,15 +819,14 @@ fn test_campaign_close() {
 
     // Refunds should still work.
     app.execute_contract(
-            Addr::unchecked("backer_1"),
-            state.funding_token_addr.clone(),
-            &cw20::Cw20ExecuteMsg::Send {
-                contract: escrow_addr.to_string(),
-                amount: Uint128::from(1 as u64),
-                msg: to_binary("hello").unwrap(),
-            },
-            &[],
-        )
-        .unwrap();
-
+        Addr::unchecked("backer_1"),
+        state.funding_token_addr.clone(),
+        &cw20::Cw20ExecuteMsg::Send {
+            contract: escrow_addr.to_string(),
+            amount: Uint128::from(1 as u64),
+            msg: to_binary("hello").unwrap(),
+        },
+        &[],
+    )
+    .unwrap();
 }
