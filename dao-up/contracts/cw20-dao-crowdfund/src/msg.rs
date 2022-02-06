@@ -58,13 +58,14 @@ pub enum QueryMsg {
     DumpState {},
 }
 
-// We define a custom struct for each query response
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct DumpStateResponse {
     pub status: Status,
     pub dao_addr: Addr,
+    pub creator: Addr,
     pub funding_goal: Coin,
     pub funds_raised: Coin,
+    pub funding_token_info: cw20::TokenInfoResponse,
     pub campaign_info: Campaign,
     pub gov_token_addr: Addr,
     pub funding_token_addr: Addr,

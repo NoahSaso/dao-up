@@ -307,6 +307,13 @@ fn test_campaign_creation() {
     assert_eq!(state.dao_addr, dao_addr);
     assert_eq!(state.funding_goal.amount, Uint128::from(100_000_000 as u64));
     assert_eq!(state.funds_raised.amount, Uint128::zero());
+    assert_eq!(state.creator, Addr::unchecked(CREATOR_ADDR));
+    assert_eq!(state.funding_token_info, cw20::TokenInfoResponse {
+	name: "Bong Launch".to_string(),
+	symbol: "LBONG".to_string(),
+	decimals: 6,
+	total_supply: Uint128::zero(),
+    });
 
     let config: cw3_dao::query::ConfigResponse = app
         .wrap()

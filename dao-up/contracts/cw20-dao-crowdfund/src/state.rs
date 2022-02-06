@@ -43,6 +43,7 @@ pub struct State {
     pub status: Status,
 
     pub dao_addr: Addr,
+    pub creator: Addr,
 
     pub funding_goal: Coin,
     pub funds_raised: Coin,

@@ -22,7 +22,7 @@ const INSTANTIATE_FUNDING_TOKEN_REPLY_ID: u64 = 0;
 pub fn instantiate(
     deps: DepsMut,
     env: Env,
-    _info: MessageInfo,
+    info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
@@ -37,6 +37,7 @@ pub fn instantiate(
     let state = State {
         status: Pending {},
         dao_addr,
+        creator: info.sender,
         funding_goal: msg.funding_goal.clone(),
         funds_raised: Coin {
             denom: msg.funding_goal.denom,
@@ -326,11 +327,17 @@ pub fn query_dump_state(deps: Deps) -> StdResult<Binary> {
     let funding_token_addr = FUNDING_TOKEN_ADDR.load(deps.storage)?;
     let gov_token_addr = GOV_TOKEN_ADDR.load(deps.storage)?;
 
+    let funding_token_info: cw20::TokenInfoResponse = deps
+        .querier
+        .query_wasm_smart(funding_token_addr.clone(), &cw20::Cw20QueryMsg::TokenInfo {})?;
+
     to_binary(&DumpStateResponse {
         status: state.status,
         dao_addr: state.dao_addr,
+        creator: state.creator,
         funding_goal: state.funding_goal,
         funds_raised: state.funds_raised,
+	funding_token_info,
         campaign_info: state.campaign_info,
         gov_token_addr,
         funding_token_addr,
