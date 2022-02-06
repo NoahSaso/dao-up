@@ -1,0 +1,60 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body,
+#__next {
+  min-height: 100%;
+  color: theme("colors.light");
+  background-color: theme("colors.dark");
+}
+
+main {
+  position: relative;
+}
+
+a {
+  display: inline-block;
+  color: inherit;
+  text-decoration: none;
+}
+
+a > svg,
+p > svg {
+  display: inline-block;
+}
+
+.green-list {
+  list-style: none;
+  margin-left: 1.2rem;
+
+  li::before {
+    content: "\2022";
+    color: theme("colors.green");
+    font-weight: bold;
+    display: inline-block;
+
+    font-size: 1.5rem;
+    width: 1.2rem;
+    margin-left: -1.2rem;
+  }
+}
+
+/* Hide incrementer/decrementer buttons on numeric inputs */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
