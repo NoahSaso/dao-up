@@ -1,1 +1,1 @@
-5f6972fd127c5e41fa54ef59f23c6749f1d5d1ea2d9d7b2f843c7d2f0a942415  ./target/wasm32-unknown-unknown/release/cw20_dao_crowdfund.wasm
+a8d94515ca47c0fdb836fc7ad06c5637327aa1911594f76d5dc12333080b64f2  ./target/wasm32-unknown-unknown/release/cw20_dao_crowdfund.wasm
