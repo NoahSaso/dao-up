@@ -132,7 +132,7 @@ const CreateContent: FC = () => {
             type="number"
             inputMode="decimal"
             className="!pr-28"
-            tail="USD"
+            tail="JUNOX"
             error={errors.goal?.message}
             {...register("goal", {
               required: "Required",

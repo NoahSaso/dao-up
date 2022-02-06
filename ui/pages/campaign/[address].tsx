@@ -273,7 +273,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
                 placeholder="Contribute..."
                 wrapperClassName="!mb-4 sm:!mb-0 sm:mr-4 sm:flex-1"
                 className="!py-3 !px-6 !pr-28"
-                tail="USD"
+                tail="JUNOX"
                 error={contributionErrors?.contribution?.message}
                 {...contributionRegister("contribution", {
                   required: "Required",
