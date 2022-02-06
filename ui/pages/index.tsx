@@ -55,7 +55,7 @@ const Card: FC<CardProps> = ({
 
 interface FAQQuestionProps {
   question: string
-  answer: string
+  answer: ReactNode
 }
 const FAQQuestion: FC<FAQQuestionProps> = ({ question, answer }) => {
   const [open, setOpen] = useState(false)
@@ -82,7 +82,7 @@ const FAQQuestion: FC<FAQQuestionProps> = ({ question, answer }) => {
         className={cn(
           "pl-4 pr-12 transition-all overflow-hidden max-h-0 my-0",
           {
-            "max-h-max my-4": open,
+            "max-h-max my-2": open,
           }
         )}
       >
@@ -95,23 +95,97 @@ const FAQQuestion: FC<FAQQuestionProps> = ({ question, answer }) => {
 const faqQAs = [
   {
     q: "What is a DAO?",
-    a: "DAO stands for Decentralized Autonomous Organization. DAOs reduce organizational overhead by extending the trust advantages of blockchain to community funding. They're used for everything from community art ownership to running entire stablecoins.",
+    a: (
+      <p>
+        DAO stands for Decentralized Autonomous Organization. DAOs reduce
+        organizational overhead by extending the trust advantages of blockchain
+        to community funding. They&aposre used for everything from{" "}
+        <a
+          href="https://pleasr.org/"
+          target="_blank"
+          rel="noreferrer"
+          className="underline"
+        >
+          community art ownership
+        </a>{" "}
+        to running{" "}
+        <a
+          href="https://makerdao.com/"
+          target="_blank"
+          rel="noreferrer"
+          className="underline"
+        >
+          entire stablecoins
+        </a>
+        .
+      </p>
+    ),
   },
   {
     q: "Is DAO Up! safe?",
-    a: "nah",
+    a: (
+      <p>
+        DAO Up! is currently in beta and its contracts are not audited. Don’t do
+        anything mission critical with DAO Up!. Be careful. Our smart contracts
+        are open source{" "}
+        <a
+          href="https://github.com/NoahSaso/dao-up"
+          target="_blank"
+          rel="noreferrer"
+          className="underline"
+        >
+          here
+        </a>
+        .
+      </p>
+    ),
   },
   {
     q: "What happens if a campaign gets funded?",
-    a: "everyone gets refunded",
+    a: (
+      <p>
+        Once a campaign is funded backers can claim a number of DAO governance
+        tokens proportional to the amount of funds they backed the campaign
+        with. For example: if a campaign was created to raise 100 Juno and you
+        backed it with 25 Juno you’d be entitled to 25% of the governance tokens
+        allocated to the campaign.
+      </p>
+    ),
   },
   {
     q: "What happens if a campaign doesn't reach its goal?",
-    a: "cool stuff",
+    a: (
+      <p>
+        No funds will be transferred to the fundraising DAO unless the campaign
+        reaches its goal. This ensures that campaigns that are funded on DAO Up!
+        have the resources they need to succeed and protects backers. Refunds
+        are available at any time before the campaign reaches its funding goal.
+      </p>
+    ),
   },
   {
     q: "What is DAO DAO?",
-    a: "The future.",
+    a: (
+      <>
+        <p>
+          DAO DAO is a DAO that builds DAOs. DAO Up! works with all DAO DAO
+          DAOs.
+        </p>
+        <br />
+        <p>
+          {" "}
+          <i>“A DAO building DAO tools? DAOception!”</i> -{" "}
+          <a
+            href="https://twitter.com/DeusNero/status/1486363802618810374"
+            target="_blank"
+            rel="noreferrer"
+            className="underline"
+          >
+            DeusNero
+          </a>
+        </p>
+      </>
+    ),
   },
 ]
 

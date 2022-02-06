@@ -31,6 +31,8 @@ declare global {
     }
 
     fundingToken: {
+      address: string
+      // fundingToken/JUNO
       price?: number
       name: string
       symbol: string

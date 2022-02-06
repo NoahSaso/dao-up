@@ -12,9 +12,9 @@ import {
   ResponsiveDecoration,
   Suspense,
 } from "../components"
+import { payTokenSymbol } from "../helpers/config"
 import { junoAddressPattern, numberPattern, urlPattern } from "../helpers/form"
 import { useCreateCampaign } from "../hooks/useCreateCampaign"
-import useWallet from "../hooks/useWallet"
 import { defaultNewCampaign, newCampaignFields } from "../services/campaigns"
 
 const Create: NextPage = () => (
@@ -33,10 +33,9 @@ const Create: NextPage = () => (
 )
 
 const CreateContent: FC = () => {
-  const { walletAddress } = useWallet()
   const router = useRouter()
   const { createCampaign, createCampaignError, setLoading } =
-    useCreateCampaign(walletAddress)
+    useCreateCampaign()
 
   const {
     handleSubmit,
@@ -132,7 +131,7 @@ const CreateContent: FC = () => {
             type="number"
             inputMode="decimal"
             className="!pr-28"
-            tail="JUNOX"
+            tail={payTokenSymbol}
             error={errors.goal?.message}
             {...register("goal", {
               required: "Required",

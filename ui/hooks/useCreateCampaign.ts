@@ -10,8 +10,10 @@ import {
 } from "../helpers/config"
 import { globalLoadingAtom } from "../state/loading"
 import { signedCosmWasmClient } from "../state/web3"
+import useWallet from "./useWallet"
 
-export const useCreateCampaign = (walletAddress: string | undefined) => {
+export const useCreateCampaign = () => {
+  const { walletAddress } = useWallet()
   const client = useRecoilValue(signedCosmWasmClient)
   const setLoading = useSetRecoilState(globalLoadingAtom)
   const [createCampaignError, setCreateCampaignError] = useState(
