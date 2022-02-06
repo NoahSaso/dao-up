@@ -1,22 +1,21 @@
 import type { NextPage } from "next"
-import { FC } from "react"
-import { useRecoilState, useRecoilValue } from "recoil"
+import { FC, useState } from "react"
 
 import {
   AllCampaignsCard,
   CenteredColumn,
   Input,
+  Loader,
   ResponsiveDecoration,
   Suspense,
 } from "../components"
+import { useGetCampaigns } from "../hooks/useGetCampaigns"
 import useWallet from "../hooks/useWallet"
-import {
-  campaignFilterAtom,
-  filteredVisibleCampaigns,
-} from "../state/campaigns"
+import { visibleCampaignsFromResponses } from "../services/campaigns"
+import { escrowContractAddresses, fetchCampaign } from "../state/campaigns"
 
 const Campaigns: NextPage = () => {
-  const [filter, setFilter] = useRecoilState(campaignFilterAtom)
+  const [filter, setFilter] = useState("")
 
   return (
     <>
@@ -39,16 +38,22 @@ const Campaigns: NextPage = () => {
         />
 
         <Suspense>
-          <CampaignsContent />
+          <CampaignsContent filter={filter.trim()} />
         </Suspense>
       </CenteredColumn>
     </>
   )
 }
 
-const CampaignsContent: FC = () => {
-  useWallet()
-  const { campaigns, error } = useRecoilValue(filteredVisibleCampaigns)
+interface CampaignsContentProps {
+  filter: string
+}
+
+const CampaignsContent: FC<CampaignsContentProps> = ({ filter }) => {
+  const { filtering, campaigns, error } = useGetCampaigns(filter)
+
+  // Show loader if actively filtering data.
+  if (filtering) return <Loader />
 
   return (
     <>

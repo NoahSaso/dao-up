@@ -1,5 +1,4 @@
 import { prettyPrintDecimal } from "../helpers/number"
-import { Status } from "../types"
 
 const renderString = (v: string) => v
 const renderBoolean = (v: boolean) => (v ? "Yes" : "No")
@@ -51,6 +50,18 @@ export const newCampaignFields: Record<NewCampaignFieldKey, NewCampaignField> =
       required: true,
       render: makeRenderNumber(2, 2),
     },
+    tokenName: {
+      label: "Campaign Token Name",
+      pageId: 1,
+      required: true,
+      render: renderString,
+    },
+    tokenSymbol: {
+      label: "Campaign Token Symbol",
+      pageId: 1,
+      required: true,
+      render: renderString,
+    },
     hidden: {
       label: "Hide from public campaigns list",
       pageId: 1,
@@ -85,127 +96,22 @@ export const defaultNewCampaign: Partial<NewCampaign> = {
   hidden: false,
 }
 
-const placeholderCampaignFields = {
-  status: Status.Active,
+export const visibleCampaignsFromResponses = (
+  campaignResponses: CampaignResponse[]
+): Campaign[] =>
+  campaignResponses
+    .filter(({ campaign }) => !campaign?.hidden)
+    .map(({ campaign }) => campaign!)
 
-  daoUrl: "https://noahsaso.com",
-  hidden: false,
-
-  tokenName: "Token",
-  tokenSymbol: "TOK",
-  tokenPrice: 1,
-
-  initialSupply: 10000000,
-}
-
-export const campaigns: Campaign[] = [
-  {
-    ...placeholderCampaignFields,
-
-    address: "junoescrow1",
-    daoAddress: "junodao1",
-    name: "BongDAO",
-    description: "Lorem ipsum dolor sit amet, egestas...",
-    creator: "junowallet1",
-
-    goal: 100000,
-    pledged: 10000,
-    supporters: 10,
-    supply: 100000,
-
-    website: "https://noahsaso.com",
-    twitter: "NoahSaso",
-    discord: "test",
-    imageUrl: "https://moonphase.is/image.svg",
-
-    activity: [
-      {
-        when: new Date(new Date().getTime() - 1 * 60 * 60 * 24 * 7),
-        address: "123",
-        amount: 2,
-      },
-      {
-        when: new Date(new Date().getTime() - 5000 * 60 * 60 * 24 * 7),
-        address: "123456",
-        amount: 1,
-      },
-      {
-        when: new Date(new Date().getTime() - 10000 * 60 * 60 * 24 * 7),
-        address: "3",
-        amount: 1,
-      },
-    ],
-  },
-  {
-    ...placeholderCampaignFields,
-
-    address: "junoescrow2",
-    daoAddress: "junodao2",
-    name: "HouseDAO",
-    description: "Lorem ipsum dolor sit amet, egestas...",
-    creator: "junowallet1",
-
-    goal: 1000000,
-    pledged: 700000,
-    supporters: 7,
-    supply: 1000000,
-
-    imageUrl: "https://moonphase.is/image.svg",
-
-    activity: [],
-  },
-  {
-    ...placeholderCampaignFields,
-
-    address: "junoescrow3",
-    daoAddress: "junodao3",
-    name: "RentDAO",
-    description: "Lorem ipsum dolor sit amet, egestas...",
-    creator: "junowallet1",
-
-    goal: 500000,
-    pledged: 200000,
-    supporters: 200,
-    supply: 1000000,
-
-    imageUrl: "https://moonphase.is/image.svg",
-
-    activity: [],
-  },
-  {
-    ...placeholderCampaignFields,
-
-    address: "junoescrow4",
-    daoAddress: "junodao4",
-    name: "GroceryDAO",
-    description: "Lorem ipsum dolor sit amet, egestas...",
-    creator: "junowallet2",
-
-    goal: 1000000,
-    pledged: 900000,
-    supporters: 45,
-    supply: 1000000,
-
-    imageUrl: "https://moonphase.is/image.svg",
-
-    activity: [],
-  },
-  {
-    ...placeholderCampaignFields,
-
-    address: "junoescrow5",
-    daoAddress: "junodao5",
-    name: "MicroGridDAO",
-    description: "Lorem ipsum dolor sit amet, egestas...",
-    creator: "junowallet2",
-
-    goal: 1000000,
-    pledged: 120000000000,
-    supporters: 8,
-    supply: 1200000,
-
-    imageUrl: "https://moonphase.is/image.svg",
-
-    activity: [],
-  },
-]
+export const categorizedWalletCampaigns = (
+  campaigns: Campaign[],
+  address: string
+) => ({
+  creatorCampaigns: campaigns.filter((c) => c.creator === address),
+  // TODO: Somehow figure out if this wallet is a supporter.
+  contributorCampaigns: campaigns.filter(
+    (c) =>
+      // c.contributors.includes(address)
+      c.creator !== address
+  ),
+})

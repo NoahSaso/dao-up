@@ -1,36 +1,92 @@
-import fuzzysort from "fuzzysort"
-import { atom, selector, selectorFamily } from "recoil"
+import { selector, selectorFamily } from "recoil"
 
-import { campaigns } from "../services/campaigns"
-import { cosmWasmClient, walletAddress } from "./web3"
-
-export const campaignFilterAtom = atom({
-  key: "campaignFilter",
-  default: "",
-})
+import { escrowContractCodeId } from "../helpers/config"
+import { Status } from "../types"
+import { cosmWasmClient } from "./web3"
 
 // GET
+
+export const fetchCampaignState = selectorFamily<CampaignStateResponse, string>(
+  {
+    key: "fetchCampaignState",
+    get:
+      (address) =>
+      async ({ get }) => {
+        const client = get(cosmWasmClient)
+
+        try {
+          if (!client) throw new Error("Failed to get client.")
+          if (!address) throw new Error("Invalid address.")
+
+          return {
+            state: await client.queryContractSmart(address, {
+              dump_state: {},
+            }),
+            error: null,
+          }
+        } catch (error) {
+          console.error(error)
+          // TODO: Return better error.
+          return { state: null, error: `${error}` }
+        }
+      },
+  }
+)
 
 export const fetchCampaign = selectorFamily<CampaignResponse, string>({
   key: "fetchCampaign",
   get:
     (address) =>
     async ({ get }) => {
-      const client = get(cosmWasmClient)
-      if (!client) throw new Error("Failed to get client.")
-      if (!address) throw new Error("Invalid address.")
+      const {
+        state: {
+          campaign_info: campaignInfo,
+          funding_token_info: fundingTokenInfo,
+          ...state
+        },
+        error,
+      } = get(fetchCampaignState(address))
+      if (error) return { campaign: null, error }
 
       try {
-        // TODO: Get contract from chain and transform into Campaign type.
-        // const contract = await client.getContract(escrowContractAddress)
-
-        const campaign = campaigns.find((c) => c.address === address) ?? null
-
-        // simulate loading
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+        // Example: status={ "pending": {} }
+        const status = Object.keys(state.status)[0] as Status
 
         return {
-          campaign,
+          campaign: {
+            address,
+            name: campaignInfo.name,
+            description: campaignInfo.description,
+            imageUrl: campaignInfo.image_url,
+
+            status,
+            creator: state.creator,
+            hidden: campaignInfo.hidden,
+
+            goal: Number(state.funding_goal.amount),
+            pledged: Number(state.funds_raised.amount),
+            // supporters: ,
+
+            dao: {
+              address: state.dao_addr,
+              url: `https://daodao.zone/dao/${state.dao_addr}`,
+            },
+
+            fundingToken: {
+              ...(status === Status.Pending && {
+                price: Number(state.status[status].token_price),
+              }),
+              name: fundingTokenInfo.name,
+              symbol: fundingTokenInfo.symbol,
+              supply: Number(fundingTokenInfo.total_supply),
+            },
+
+            website: campaignInfo.website,
+            twitter: campaignInfo.twitter,
+            discord: campaignInfo.discord,
+
+            activity: [],
+          },
           error: null,
         }
       } catch (error) {
@@ -43,96 +99,23 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
 
 // GET ALL
 
-// const CODE_ID = 0
+export const escrowContractAddresses =
+  selector<EscrowContractAddressesResponse>({
+    key: "escrowContractAddresses",
+    get: async ({ get }) => {
+      const client = get(cosmWasmClient)
 
-export const allCampaigns = selector<CampaignsResponse>({
-  key: "campaigns",
-  get: async ({ get }) => {
-    const client = get(cosmWasmClient)
-    if (!client) throw new Error("Failed to get client.")
+      try {
+        if (!client) throw new Error("Failed to get client.")
 
-    try {
-      // TODO: Get contracts from chain and transform into Campaign types.
-      // const contract = await client.getContracts(CODE_ID)
-
-      // simulate loading
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      return { campaigns, error: null }
-    } catch (error) {
-      console.error(error)
-      // TODO: Return better error.
-      return { campaigns: [], error: `${error}` }
-    }
-  },
-})
-
-export const visibleCampaigns = selector<CampaignsResponse>({
-  key: "visibleCampaigns",
-  get: ({ get }) => {
-    const { campaigns, ...response } = get(allCampaigns)
-    return {
-      ...response,
-      campaigns: campaigns.filter((c) => !c.hidden),
-    }
-  },
-})
-
-export const filteredVisibleCampaigns = selector<CampaignsResponse>({
-  key: "filteredVisibleCampaigns",
-  get: async ({ get }) => {
-    const filter = get(campaignFilterAtom)
-    const response = get(visibleCampaigns)
-
-    let { campaigns } = response
-    if (filter)
-      campaigns = fuzzysort
-        .go(filter, campaigns, {
-          keys: ["name", "description"],
-          allowTypo: true,
-        })
-        .map(({ obj }) => obj)
-
-    return {
-      ...response,
-      campaigns,
-    }
-  },
-})
-
-export const walletCampaigns = selector<WalletCampaignsResponse>({
-  key: "walletCampaigns",
-  get: async ({ get }) => {
-    const address = get(walletAddress)
-    if (!address) throw new Error("Wallet not connected.")
-
-    const { campaigns, ...response } = get(allCampaigns)
-
-    try {
-      const creatorCampaigns = campaigns.filter((c) => c.creator === address)
-      // TODO: Somehow figure out if this wallet is a supporter.
-      const contributorCampaigns = campaigns.filter(
-        (c) =>
-          // c.contributors.includes(address)
-          c.creator !== address
-      )
-
-      // simulate loading
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      return {
-        ...response,
-        creatorCampaigns,
-        contributorCampaigns,
+        return {
+          addresses: await client.getContracts(escrowContractCodeId),
+          error: null,
+        }
+      } catch (error) {
+        console.error(error)
+        // TODO: Return better error.
+        return { addresses: [], error: `${error}` }
       }
-    } catch (error) {
-      console.error(error)
-      // TODO: Return better error.
-      return {
-        creatorCampaigns: [],
-        contributorCampaigns: [],
-        error: `${error}`,
-      }
-    }
-  },
-})
+    },
+  })

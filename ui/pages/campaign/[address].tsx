@@ -52,13 +52,15 @@ interface ActivityItemProps {
   item: ActivityItem
 }
 const ActivityItem: FC<ActivityItemProps> = ({
-  campaign: { tokenSymbol },
+  campaign: {
+    fundingToken: { symbol },
+  },
   item: { when, address, amount },
 }) => (
   <div className={cn("py-5", "border-b border-light")}>
     <div className="flex flex-row justify-between items-center">
       <p className="font-semibold">
-        {amount} {tokenSymbol}
+        {amount} {symbol}
       </p>
       <TimeAgo date={when} />
     </div>
@@ -157,17 +159,16 @@ const CampaignContent: FC<CampaignContentProps> = ({
   const {
     name,
     description,
-    daoUrl,
+
+    goal,
+    pledged,
+    dao: { url: daoUrl },
+
+    fundingToken: { symbol: tokenSymbol, supply },
 
     website,
     twitter,
     discord,
-
-    tokenSymbol,
-    goal,
-    pledged,
-    supporters,
-    supply,
 
     activity,
   } = campaign ?? {}
@@ -201,7 +202,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
         >
           <div
             className={cn(
-              "flex flex-col justify-between items-stretch w-full lg:w-3/5"
+              "flex flex-col justify-between items-stretch w-full lg:w-3/5 lg:shrink-0 lg:mr-10"
             )}
           >
             <div className={cn("flex flex-col text-center lg:text-left")}>
@@ -218,7 +219,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
                   {!!(website || twitter || discord) && (
                     <div
                       className={cn(
-                        "flex flex-row items-center",
+                        "flex flex-rowitems-center justify-center lg:justify-start ",
                         "text-green",
                         "mt-4"
                       )}
@@ -315,10 +316,11 @@ const CampaignContent: FC<CampaignContentProps> = ({
               pledged out of {goal.toLocaleString()} {tokenSymbol} goal.
             </p>
 
-            <h3 className="mt-6 text-green text-3xl">
+            {/* TODO: Display supporters. */}
+            {/* <h3 className="mt-6 text-green text-3xl">
               {supporters.toLocaleString()}
             </h3>
-            <p className="text-light text-sm">Supporters</p>
+            <p className="text-light text-sm">Supporters</p> */}
 
             <h3 className="mt-6 text-green text-3xl">
               {supply.toLocaleString()}
@@ -335,11 +337,13 @@ const CampaignContent: FC<CampaignContentProps> = ({
         >
           <h2 className="text-xl text-green mb-2">Your Balance</h2>
           <p className="text-light">
-            {userTokens} {tokenSymbol}{" "}
-            <span className="text-placeholder ml-2">
-              {prettyPrintDecimal((100 * userTokens) / supply, 6)}% of total
-              supply
-            </span>
+            {userTokens} {tokenSymbol}
+            {supply > 0 && (
+              <span className="text-placeholder ml-2">
+                {prettyPrintDecimal((100 * userTokens) / supply, 6)}% of total
+                supply
+              </span>
+            )}
           </p>
 
           <div className={cn({ hidden: !open || userTokens === 0 })}>
@@ -356,7 +360,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
                         (100 * watchRefund) / userTokens,
                         2
                       )}% of your balance`
-                    : "USD conversions will appear as you type."
+                    : undefined
                 }
                 tail={tokenSymbol}
                 error={refundErrors?.refund?.message}

@@ -1,6 +1,5 @@
 import type { NextPage } from "next"
 import { FC } from "react"
-import { useRecoilValue } from "recoil"
 
 import {
   Button,
@@ -13,8 +12,9 @@ import {
   Suspense,
   TooltipInfo,
 } from "../components"
+import { useGetCampaigns } from "../hooks/useGetCampaigns"
 import useWallet from "../hooks/useWallet"
-import { walletCampaigns } from "../state/campaigns"
+import { categorizedWalletCampaigns } from "../services/campaigns"
 
 const Me: NextPage = () => {
   const { walletAddress, connect } = useWallet()
@@ -68,8 +68,11 @@ interface MeContentProps {
   walletAddress: string | undefined
 }
 const MeContent: FC<MeContentProps> = ({ walletAddress }) => {
-  const { creatorCampaigns, contributorCampaigns, error } =
-    useRecoilValue(walletCampaigns)
+  const { campaigns, error } = useGetCampaigns()
+  const { creatorCampaigns, contributorCampaigns } = categorizedWalletCampaigns(
+    campaigns,
+    walletAddress ?? ""
+  )
 
   const campaignsBlock = (
     <>
