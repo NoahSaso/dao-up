@@ -38,15 +38,14 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
   get:
     (address) =>
     async ({ get }) => {
-      const {
-        state: {
-          campaign_info: campaignInfo,
-          funding_token_info: fundingTokenInfo,
-          ...state
-        },
-        error,
-      } = get(fetchCampaignState(address))
+      const { state: campaignState, error } = get(fetchCampaignState(address))
       if (error) return { campaign: null, error }
+
+      const {
+        campaign_info: campaignInfo,
+        funding_token_info: fundingTokenInfo,
+        ...state
+      } = campaignState
 
       try {
         // Example: status={ "pending": {} }

@@ -4,11 +4,9 @@ import { useRecoilValue, waitForAll } from "recoil"
 
 import { visibleCampaignsFromResponses } from "../services/campaigns"
 import { escrowContractAddresses, fetchCampaign } from "../state/campaigns"
-import useWallet from "./useWallet"
 
 let campaignsFilterId = 0
 export const useGetCampaigns = (filter?: string) => {
-  useWallet()
   const { addresses, error: escrowContractAddressesError } = useRecoilValue(
     escrowContractAddresses
   )
