@@ -21,10 +21,14 @@ import {
   Suspense,
   TooltipInfo,
 } from "../../components"
+import { payTokenSymbol } from "../../helpers/config"
 import { numberPattern } from "../../helpers/form"
 import { prettyPrintDecimal } from "../../helpers/number"
+import { useContributeCampaign } from "../../hooks/useContributeCampaign"
+import { useRefundCampaign } from "../../hooks/useRefundCampaign"
 import useWallet from "../../hooks/useWallet"
 import { fetchCampaign } from "../../state/campaigns"
+import { Status } from "../../types"
 
 interface CampaignLinkProps {
   href: string
@@ -48,19 +52,15 @@ const CampaignLink: FC<CampaignLinkProps> = ({ href, label, Icon }) => (
 )
 
 interface ActivityItemProps {
-  campaign: Campaign
   item: ActivityItem
 }
 const ActivityItem: FC<ActivityItemProps> = ({
-  campaign: {
-    fundingToken: { symbol },
-  },
   item: { when, address, amount },
 }) => (
   <div className={cn("py-5", "border-b border-light")}>
     <div className="flex flex-row justify-between items-center">
       <p className="font-semibold">
-        {amount} {symbol}
+        {amount} {payTokenSymbol}
       </p>
       <TimeAgo date={when} />
     </div>
@@ -121,9 +121,13 @@ const CampaignContent: FC<CampaignContentProps> = ({
     handleSubmit: contributionHandleSubmit,
     register: contributionRegister,
     formState: { errors: contributionErrors },
+    watch: contributionWatch,
   } = useForm({
     defaultValues: {} as ContributionForm,
   })
+
+  const { contributeCampaign, contributeCampaignError } =
+    useContributeCampaign()
 
   // Refund Form
   const {
@@ -134,6 +138,8 @@ const CampaignContent: FC<CampaignContentProps> = ({
   } = useForm({
     defaultValues: {} as RefundForm,
   })
+
+  const { refundCampaign, refundCampaignError } = useRefundCampaign()
 
   // If no campaign, navigate to campaigns list.
   useEffect(() => {
@@ -146,25 +152,30 @@ const CampaignContent: FC<CampaignContentProps> = ({
   if (!campaign) return null
 
   // Contribution Form
-  const doContribution = ({ contribution }: ContributionForm) => {
-    console.log(contribution)
+  const watchContribution = contributionWatch("contribution")
+  const doContribution = async ({ contribution }: ContributionForm) => {
+    if (!contribution) return
+    await contributeCampaign(campaign, contribution)
   }
 
   // Refund Form
   const watchRefund = refundWatch("refund")
-  const doRefund = ({ refund }: RefundForm) => {
-    console.log(refund)
+  const doRefund = async ({ refund }: RefundForm) => {
+    if (!refund) return
+    await refundCampaign(campaign, refund)
   }
 
   const {
     name,
     description,
 
+    status,
+
     goal,
     pledged,
     dao: { url: daoUrl },
 
-    fundingToken: { symbol: tokenSymbol, supply },
+    fundingToken: { symbol: tokenSymbol, supply, price },
 
     website,
     twitter,
@@ -173,9 +184,20 @@ const CampaignContent: FC<CampaignContentProps> = ({
     activity,
   } = campaign ?? {}
 
+  const inactive = status !== Status.Open
   const overfunded = pledged > goal
 
   const userTokens: number = 1
+
+  // Contribution
+  const expectedFundingTokensReceived =
+    watchContribution && watchContribution > 0 && price
+      ? price * watchContribution
+      : 0
+  // Refund
+  const expectedPayTokensReceived =
+    watchRefund && watchRefund > 0 && price ? watchRefund / price : 0
+  const percentTotalSupply = watchRefund ? (100 * watchRefund) / userTokens : 0
 
   return (
     <>
@@ -219,7 +241,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
                   {!!(website || twitter || discord) && (
                     <div
                       className={cn(
-                        "flex flex-rowitems-center justify-center lg:justify-start ",
+                        "flex flex-row items-center justify-center lg:justify-start ",
                         "text-green",
                         "mt-4"
                       )}
@@ -269,12 +291,26 @@ const CampaignContent: FC<CampaignContentProps> = ({
             >
               <FormInput
                 type="number"
+                step={0.000001}
                 inputMode="decimal"
                 placeholder="Contribute..."
+                accent={
+                  expectedFundingTokensReceived
+                    ? `You will receive about ${prettyPrintDecimal(
+                        expectedFundingTokensReceived,
+                        6
+                      )} ${tokenSymbol}`
+                    : undefined
+                }
                 wrapperClassName="!mb-4 sm:!mb-0 sm:mr-4 sm:flex-1"
                 className="!py-3 !px-6 !pr-28"
-                tail="JUNOX"
-                error={contributionErrors?.contribution?.message}
+                tail={payTokenSymbol}
+                error={
+                  contributionErrors?.contribution?.message ??
+                  contributeCampaignError ??
+                  undefined
+                }
+                disabled={inactive}
                 {...contributionRegister("contribution", {
                   required: "Required",
                   valueAsNumber: true,
@@ -289,6 +325,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
               <Button
                 className="sm:h-[50px]"
                 submitLabel="Support this Campaign"
+                disabled={inactive}
               />
             </form>
           </div>
@@ -310,10 +347,10 @@ const CampaignContent: FC<CampaignContentProps> = ({
             <CampaignProgress campaign={campaign} className="mt-2" />
 
             <h3 className="mt-2 text-green text-3xl">
-              {pledged.toLocaleString()} {tokenSymbol}
+              {pledged.toLocaleString()} {payTokenSymbol}
             </h3>
             <p className="text-light text-sm">
-              pledged out of {goal.toLocaleString()} {tokenSymbol} goal.
+              pledged out of {goal.toLocaleString()} {payTokenSymbol} goal.
             </p>
 
             {/* TODO: Display supporters. */}
@@ -352,18 +389,27 @@ const CampaignContent: FC<CampaignContentProps> = ({
             <form onSubmit={refundHandleSubmit(doRefund)}>
               <FormInput
                 type="number"
+                step={0.000001}
                 inputMode="decimal"
                 placeholder={prettyPrintDecimal(userTokens * 0.5, 6)}
                 accent={
-                  typeof watchRefund === "number" && !isNaN(watchRefund)
+                  expectedPayTokensReceived && percentTotalSupply
                     ? `${prettyPrintDecimal(
-                        (100 * watchRefund) / userTokens,
+                        percentTotalSupply,
                         2
-                      )}% of your balance`
+                      )}% of your balance. You will receive about ${prettyPrintDecimal(
+                        expectedPayTokensReceived,
+                        6
+                      )} ${payTokenSymbol}`
                     : undefined
                 }
                 tail={tokenSymbol}
-                error={refundErrors?.refund?.message}
+                error={
+                  refundErrors?.refund?.message ??
+                  refundCampaignError ??
+                  undefined
+                }
+                disabled={inactive}
                 {...refundRegister("refund", {
                   required: "Required",
                   valueAsNumber: true,
@@ -374,12 +420,16 @@ const CampaignContent: FC<CampaignContentProps> = ({
                   },
                   max: {
                     value: userTokens,
-                    message: `Must be less than your token balance: ${userTokens} ${tokenSymbol}.`,
+                    message: `Must be less than or equal to your token balance: ${userTokens} ${tokenSymbol}.`,
                   },
                 })}
               />
 
-              <Button submitLabel="Refund" className="mt-4" />
+              <Button
+                submitLabel="Refund"
+                className="mt-4"
+                disabled={inactive}
+              />
             </form>
           </div>
         </div>
@@ -388,11 +438,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
         <div className=" w-full lg:w-3/5">
           {activity.length ? (
             activity.map((item) => (
-              <ActivityItem
-                key={item.when.toString()}
-                campaign={campaign}
-                item={item}
-              />
+              <ActivityItem key={item.when.toString()} item={item} />
             ))
           ) : (
             <p>None yet.</p>

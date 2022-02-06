@@ -62,8 +62,8 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
             creator: state.creator,
             hidden: campaignInfo.hidden,
 
-            goal: Number(state.funding_goal.amount),
-            pledged: Number(state.funds_raised.amount),
+            goal: Number(state.funding_goal.amount) / 1e6,
+            pledged: Number(state.funds_raised.amount) / 1e6,
             // supporters: ,
 
             dao: {
@@ -72,12 +72,13 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
             },
 
             fundingToken: {
-              ...(status === Status.Pending && {
-                price: Number(state.status[status].token_price),
+              address: state.funding_token_addr,
+              ...(status === Status.Open && {
+                price: Number(state.status[status].token_price) / 1e6,
               }),
               name: fundingTokenInfo.name,
               symbol: fundingTokenInfo.symbol,
-              supply: Number(fundingTokenInfo.total_supply),
+              supply: Number(fundingTokenInfo.total_supply) / 1e6,
             },
 
             website: campaignInfo.website,
