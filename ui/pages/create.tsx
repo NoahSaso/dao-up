@@ -81,8 +81,9 @@ const CreateContent: FC = () => {
 
       <CenteredColumn className="py-10 max-w-4xl">
         <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
-          <h1 className="font-semibold text-4xl">Create a new campaign</h1>
-          <p className="mt-4 mb-10">Description...</p>
+          <h1 className="font-semibold text-4xl mb-10">
+            Create a new campaign
+          </h1>
 
           <FormInput
             label={newCampaignFields.name.label}
