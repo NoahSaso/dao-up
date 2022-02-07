@@ -1,4 +1,5 @@
 import { prettyPrintDecimal } from "../helpers/number"
+import { Status } from "../types"
 
 const renderString = (v: string) => v
 const renderBoolean = (v: boolean) => (v ? "Yes" : "No")
@@ -98,10 +99,16 @@ export const defaultNewCampaign: Partial<NewCampaign> = {
 
 export const campaignsFromResponses = (
   campaignResponses: CampaignResponse[],
-  includeHidden = false
+  includeHidden = false,
+  includePending = false
 ): Campaign[] =>
   campaignResponses
-    .filter(({ campaign }) => !!campaign && (includeHidden || !campaign.hidden))
+    .filter(
+      ({ campaign }) =>
+        !!campaign &&
+        (includeHidden || !campaign.hidden) &&
+        (includePending || campaign.status !== Status.Pending)
+    )
     .map(({ campaign }) => campaign!)
 
 export const categorizedWalletCampaigns = (

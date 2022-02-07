@@ -6,7 +6,11 @@ import { campaignsFromResponses } from "../services/campaigns"
 import { escrowContractAddresses, fetchCampaign } from "../state/campaigns"
 
 let campaignsFilterId = 0
-export const useGetCampaigns = (filter?: string, includeHidden = false) => {
+export const useGetCampaigns = (
+  filter?: string,
+  includeHidden = false,
+  includePending = false
+) => {
   const { addresses, error: escrowContractAddressesError } = useRecoilValue(
     escrowContractAddresses
   )
@@ -15,7 +19,7 @@ export const useGetCampaigns = (filter?: string, includeHidden = false) => {
   )
 
   const [campaigns, setCampaigns] = useState(
-    campaignsFromResponses(campaignResponses, includeHidden)
+    campaignsFromResponses(campaignResponses, includeHidden, includePending)
   )
   const [filtering, setFiltering] = useState(false)
   const [filterError, setFilterError] = useState(null as string | null)
@@ -24,7 +28,11 @@ export const useGetCampaigns = (filter?: string, includeHidden = false) => {
     const updateCampaigns = async () => {
       if (!filter)
         return setCampaigns(
-          campaignsFromResponses(campaignResponses, includeHidden)
+          campaignsFromResponses(
+            campaignResponses,
+            includeHidden,
+            includePending
+          )
         )
 
       setFiltering(true)
@@ -35,7 +43,8 @@ export const useGetCampaigns = (filter?: string, includeHidden = false) => {
 
         const relevantCampaigns = campaignsFromResponses(
           campaignResponses,
-          includeHidden
+          includeHidden,
+          includePending
         )
 
         const filtered = (
@@ -61,7 +70,14 @@ export const useGetCampaigns = (filter?: string, includeHidden = false) => {
     // Debounce filter input (wait 350ms before refiltering campaigns).
     const timer = setTimeout(() => updateCampaigns(), 350)
     return () => clearTimeout(timer)
-  }, [campaignResponses, filter, setCampaigns, setFiltering, includeHidden])
+  }, [
+    campaignResponses,
+    filter,
+    setCampaigns,
+    setFiltering,
+    includeHidden,
+    includePending,
+  ])
 
   const firstError =
     escrowContractAddressesError ??

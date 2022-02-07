@@ -69,7 +69,7 @@ interface MeContentProps {
   connected: boolean
 }
 const MeContent: FC<MeContentProps> = ({ walletAddress, connected }) => {
-  const { campaigns, error } = useGetCampaigns(undefined, true)
+  const { campaigns, error } = useGetCampaigns(undefined, true, true)
   const { creatorCampaigns, contributorCampaigns } = categorizedWalletCampaigns(
     campaigns,
     walletAddress ?? ""
