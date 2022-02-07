@@ -110,7 +110,7 @@ interface CampaignContentProps {
 const CampaignContent: FC<CampaignContentProps> = ({
   router: { isReady, query, push: routerPush },
 }) => {
-  const { connect, connected } = useWallet(false)
+  const { connect, connected } = useWallet()
   const { campaign, error: campaignError } = useRecoilValue(
     fetchCampaign(
       isReady && typeof query.address === "string" ? query.address : ""

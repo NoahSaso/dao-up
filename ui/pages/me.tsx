@@ -43,7 +43,8 @@ const Me: NextPage = () => {
         ) : (
           <>
             <p className="my-2">
-              You haven&apos;t connected a wallet. Connect one to start making contributions.
+              You haven&apos;t connected a wallet. Connect one to start making
+              contributions.
             </p>
             <p className="flex flex-row items-center">
               What&apos;s a wallet?

@@ -3,7 +3,7 @@ import { useRecoilValue, useSetRecoilState } from "recoil"
 
 import { keplrKeystoreIdAtom, walletAddress } from "../state/web3"
 
-const useWallet = (autoConnect = true) => {
+const useWallet = () => {
   const address = useRecoilValue(walletAddress)
   const setKeplrKeystoreId = useSetRecoilState(keplrKeystoreIdAtom)
 
@@ -11,12 +11,6 @@ const useWallet = (autoConnect = true) => {
     () => setKeplrKeystoreId((id) => id + 1),
     [setKeplrKeystoreId]
   )
-
-  // Attempt to connect to wallet automatically.
-  // TODO: Auto popups may be interpreted as spam by some users, maybe worth requiring a button click to connect if can't connect silently.
-  useEffect(() => {
-    if (autoConnect) connect()
-  }, [connect, autoConnect])
 
   // Listen for keplr keystore changes and update as needed.
   useEffect(() => {
