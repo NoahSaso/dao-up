@@ -29,6 +29,7 @@ import { prettyPrintDecimal } from "../../helpers/number"
 import { useContributeCampaign } from "../../hooks/useContributeCampaign"
 import { useRefundCampaign } from "../../hooks/useRefundCampaign"
 import { useWallet } from "../../hooks/useWallet"
+import { suggestToken } from "../../services/keplr"
 import {
   campaignWalletBalance,
   fetchCampaign,
@@ -159,6 +160,10 @@ const CampaignContent: FC<CampaignContentProps> = ({
     if (isReady && !campaign) routerPush("/campaigns")
   }, [isReady, campaign, routerPush])
 
+  // Display buttons to add tokens to wallet.
+  const [showAddFundingToken, setShowAddFundingToken] = useState(false)
+  const [showAddGovToken, setShowAddGovToken] = useState(false)
+
   // If page not ready, display loader.
   if (!isReady) return <Loader overlay />
   // Display nothing (redirecting to campaigns list, so this is just a type check).
@@ -185,13 +190,24 @@ const CampaignContent: FC<CampaignContentProps> = ({
     discord,
   } = campaign ?? {}
 
+  const suggestFundingToken = async () =>
+    setShowAddFundingToken(!(await suggestToken(campaign.fundingToken.address)))
+  const suggestGovToken = async () =>
+    setShowAddGovToken(!(await suggestToken(campaign.dao.govToken.address)))
+
   // Contribution Form
   const watchContribution = contributionWatch("contribution")
   const doContribution = async ({ contribution }: ContributionForm) => {
     if (!contribution) return
-    // If success, empty form fields.
+
     // TODO: Add success display.
-    if (await contributeCampaign(contribution)) contributionReset()
+    if (await contributeCampaign(contribution)) {
+      // Attempt to add token to Keplr.
+      await suggestFundingToken()
+
+      // Empty form fields.
+      contributionReset()
+    }
   }
 
   // Refund Form
@@ -202,9 +218,14 @@ const CampaignContent: FC<CampaignContentProps> = ({
 
     if (!refund) return
 
-    // If success, empty form fields.
     // TODO: Add success display.
-    if (await refundCampaign(refund)) refundReset()
+    if (await refundCampaign(refund)) {
+      // Attempt to add token to Keplr if receiving governance tokens.
+      if (status === Status.Funded) await suggestGovToken()
+
+      // Empty form fields.
+      refundReset()
+    }
   }
 
   const inactive = status !== Status.Open
@@ -398,7 +419,11 @@ const CampaignContent: FC<CampaignContentProps> = ({
               </ButtonLink>
             )}
 
-            <CampaignProgress campaign={campaign} className="mt-2" />
+            <CampaignProgress
+              campaign={campaign}
+              className="mt-2"
+              textClassName="text-md text-placeholder italic self-end"
+            />
 
             <h3 className="mt-2 text-green text-3xl">
               {prettyPrintDecimal(pledged)} {payTokenSymbol}
@@ -429,15 +454,41 @@ const CampaignContent: FC<CampaignContentProps> = ({
           <h2 className="text-xl text-green mb-2">Your Balance</h2>
 
           {connected ? (
-            <p className="text-light">
-              {prettyPrintDecimal(balance ?? 0)} {tokenSymbol}
-              {supply > 0 && !!balance && (
-                <span className="text-placeholder ml-2">
-                  {prettyPrintDecimal((100 * balance) / supply, 2)}% of total
-                  supply
-                </span>
+            <>
+              <p className="text-light">
+                {prettyPrintDecimal(balance ?? 0)} {tokenSymbol}
+                {supply > 0 && !!balance && (
+                  <span className="text-placeholder ml-2">
+                    {prettyPrintDecimal((100 * balance) / supply, 2)}% of total
+                    supply
+                  </span>
+                )}
+              </p>
+              {balance !== null && balance > 0 && showAddFundingToken && (
+                <div className="mt-4">
+                  <Button onClick={suggestFundingToken}>
+                    Add token to wallet
+                  </Button>
+                  <p className="text-sm text-placeholder italic mt-2">
+                    This allows you to view your campaign funding token balance
+                    ({tokenSymbol}) from your Keplr wallet. If you&apos;ve
+                    already done this, it should still be there.
+                  </p>
+                </div>
               )}
-            </p>
+              {status === Status.Funded && showAddGovToken && (
+                <div className="mt-4">
+                  <Button onClick={suggestGovToken}>
+                    Add DAO token to wallet
+                  </Button>
+                  <p className="text-sm text-placeholder italic mt-2">
+                    This allows you to view your DAO governance token balance
+                    from your Keplr wallet. If you&apos;ve already done this, it
+                    should still be there.
+                  </p>
+                </div>
+              )}
+            </>
           ) : (
             <>
               <p className="text-orange">
