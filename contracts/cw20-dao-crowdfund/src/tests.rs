@@ -13,6 +13,7 @@ use crate::{
 };
 
 const CREATOR_ADDR: &str = "creator";
+const DAO_UP_ADDR: &str = "daoup";
 const CHAIN_DENOM: &str = "ujuno";
 
 fn cw20_contract() -> Box<dyn Contract<Empty>> {
@@ -126,6 +127,8 @@ fn instantiate_escrow(
     let instantiate = InstantiateMsg {
         dao_address: dao_addr,
         cw20_code_id: cw20_id,
+	fee: Decimal::percent(3),
+	fee_receiver: Addr::unchecked(DAO_UP_ADDR),
         funding_goal: Coin {
             denom: CHAIN_DENOM.to_string(),
             amount: Uint128::from(funding_goal),
@@ -537,7 +540,7 @@ fn do_fund_refund(funding_goal: u64, gov_tokens: u64) {
         .unwrap();
 
     // Verify that the campaign has completed.
-    assert_eq!(state.status, Status::Complete { token_price });
+    assert_eq!(state.status, Status::Funded { token_price });
 
     let token_info: cw20::TokenInfoResponse = app
         .wrap()
@@ -666,7 +669,7 @@ fn test_campaign_completion() {
         .unwrap();
 
     // Verify that the campaign has completed.
-    assert_eq!(state.status, Status::Complete { token_price });
+    assert_eq!(state.status, Status::Funded { token_price });
 
     let dao_config: cw3_dao::query::ConfigResponse = app
         .wrap()
@@ -704,11 +707,17 @@ fn test_campaign_completion() {
         assert_eq!(balance.balance, expected_balance);
     }
 
+    let expected_fee = Uint128::from(funding_goal) * Decimal::percent(3);
+    let expected_dao = Uint128::from(funding_goal) - expected_fee;
+
     let dao_balance = app
         .wrap()
         .query_balance(dao_addr.clone(), CHAIN_DENOM)
         .unwrap();
-    assert_eq!(dao_balance.amount, Uint128::from(funding_goal))
+    assert_eq!(dao_balance.amount, expected_dao);
+
+    let dao_up_balance = app.wrap().query_balance(Addr::unchecked(DAO_UP_ADDR), CHAIN_DENOM).unwrap();
+    assert_eq!(dao_up_balance.amount, expected_fee);
 }
 
 #[test]
@@ -822,7 +831,7 @@ fn test_campaign_close() {
         .unwrap();
 
     // Verify that the campaign has completed.
-    assert_eq!(state.status, Status::Closed { token_price });
+    assert_eq!(state.status, Status::Cancelled { token_price });
 
     // Funding should not work.
     let err: ContractError = app

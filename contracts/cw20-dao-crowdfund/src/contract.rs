@@ -1,3 +1,4 @@
+
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
@@ -34,10 +35,17 @@ pub fn instantiate(
     let gov_token_addr = config.gov_token;
     GOV_TOKEN_ADDR.save(deps.storage, &gov_token_addr)?;
 
+    let fee_receiver = deps.api.addr_validate(&msg.fee_receiver.to_string())?;
+    if msg.fee > Decimal::percent(100) {
+	return Err(ContractError::Instantiation(format!("fee ({}) is greater than 100%", msg.fee)))
+    }
+
     let state = State {
         status: Pending {},
         dao_addr,
-        creator: info.sender,
+	creator: info.sender,
+	fee_receiver,
+	fee: msg.fee,
         funding_goal: msg.funding_goal.clone(),
         funds_raised: Coin {
             denom: msg.funding_goal.denom,
@@ -120,7 +128,7 @@ pub fn execute_close(deps: DepsMut, env: Env, sender: Addr) -> Result<Response, 
     };
 
     // TODO: return tokens to the dao!
-    state.status = Status::Closed { token_price };
+    state.status = Status::Cancelled { token_price };
     STATE.save(deps.storage, &state)?;
     Ok(Response::default()
         .add_attribute("action", "close")
@@ -154,7 +162,7 @@ pub fn execute_fund(
     state.funds_raised.amount += payment;
     // If we've met the funding goal set the state to complete.
     if state.funds_raised.amount == state.funding_goal.amount {
-        state.status = Status::Complete { token_price };
+        state.status = Status::Funded { token_price };
     }
     STATE.save(deps.storage, &state)?;
 
@@ -227,7 +235,7 @@ pub fn execute_receive_funding_tokens(
     let mut state = STATE.load(deps.storage)?;
     match state.status {
         Pending {} => Err(ContractError::NotOpen {}),
-        Status::Open { token_price } | Status::Closed { token_price } => {
+        Status::Open { token_price } | Status::Cancelled { token_price } => {
             // User is sending tokens back to the contract indicating
             // that they would like a refund.
             let sender = deps.api.addr_validate(&msg.sender)?;
@@ -266,7 +274,7 @@ pub fn execute_receive_funding_tokens(
                 .add_message(bank_msg)
                 .add_message(burn_msg))
         }
-        Status::Complete { token_price } => {
+        Status::Funded { token_price } => {
             // User is sending tokens back to the contract indicating
             // that they would like staked governance tokens.
             let sender = deps.api.addr_validate(&msg.sender)?;
@@ -302,20 +310,34 @@ pub fn execute_receive_funding_tokens(
                 funds: vec![],
             };
 
+	    let native_to_transfer = msg.amount * token_price.inv().unwrap();
+	    let fee_amount = native_to_transfer * state.fee;
+	    let dao_amount = native_to_transfer - fee_amount;
+
             // Transfer a proportional amount of funds to the DAO.
-            let funds_transfer = BankMsg::Send {
+            let dao_transfer = BankMsg::Send {
                 to_address: dao_addr.to_string(),
                 amount: vec![Coin {
                     denom: state.funding_goal.denom.clone(),
-                    amount: msg.amount * token_price.inv().unwrap(),
+                    amount: dao_amount,
                 }],
             };
+
+	    // Transfer fee to the fee account.
+	    let fee_transfer = BankMsg::Send {
+		to_address: state.fee_receiver.to_string(),
+		amount: vec![Coin {
+		    denom: state.funding_goal.denom,
+		    amount: fee_amount,
+		}]
+	    };
 
             Ok(Response::default()
                 .add_attribute("action", "swap_for_gov")
                 .add_attribute("sender", sender)
                 .add_message(token_transfer)
-                .add_message(funds_transfer))
+                .add_message(dao_transfer)
+                .add_message(fee_transfer))
         }
     }
 }
@@ -364,8 +386,8 @@ pub fn query_dump_state(deps: Deps) -> StdResult<Binary> {
     to_binary(&DumpStateResponse {
         status: state.status,
         dao_addr: state.dao_addr,
-        creator: state.creator,
         funding_goal: state.funding_goal,
+	creator: state.creator,
         funds_raised: state.funds_raised,
         funding_token_info,
         campaign_info: state.campaign_info,
