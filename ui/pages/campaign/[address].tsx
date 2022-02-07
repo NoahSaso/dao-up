@@ -394,7 +394,11 @@ const CampaignContent: FC<CampaignContentProps> = ({
               </ButtonLink>
             )}
 
-            <CampaignProgress campaign={campaign} className="mt-2" />
+            <CampaignProgress
+              campaign={campaign}
+              className="mt-2"
+              textClassName="text-md text-placeholder italic self-end"
+            />
 
             <h3 className="mt-2 text-green text-3xl">
               {prettyPrintDecimal(pledged)} {payTokenSymbol}

@@ -15,31 +15,27 @@ interface CampaignProps {
 }
 
 export const CampaignStatus: FC<CampaignProps> = ({
-  campaign: { status, pledged, goal },
+  campaign: { status },
   className,
 }) => {
-  let color: Color
+  let color: Color = Color.Placeholder
   let label: string
   switch (status) {
-    case Status.Open:
-      const funded = pledged >= goal
-      color = funded ? Color.Orange : Color.Green
-      label = funded ? "Goal Reached" : "Active"
-      break
     case Status.Pending:
-      color = Color.Placeholder
       label = "Pending"
       break
-    case Status.Cancelled:
-      color = Color.Placeholder
-      label = "Cancelled"
+    case Status.Open:
+      color = Color.Orange
+      label = "Active"
       break
     case Status.Funded:
-      color = Color.Placeholder
+      color = Color.Green
       label = "Funded"
       break
+    case Status.Cancelled:
+      label = "Cancelled"
+      break
     default:
-      color = Color.Placeholder
       label = "Unknown"
       break
   }
@@ -55,36 +51,39 @@ export const CampaignStatus: FC<CampaignProps> = ({
 
 interface CampaignProgressProps extends CampaignProps {
   thin?: boolean
+  textClassName?: string
 }
 export const CampaignProgress: FC<CampaignProgressProps> = ({
   campaign: { status, pledged, goal },
   className,
   thin,
+  textClassName,
 }) => {
   const fundedPercent = (100 * pledged) / goal
   const open = status === Status.Open
 
   return (
-    <div
-      className={cn(
-        "bg-dark overflow-hidden w-full rounded-full",
-        {
+    <div className={cn("flex flex-col justify-start w-full", className)}>
+      <p className={cn("text-white", textClassName)}>
+        {prettyPrintDecimal((100 * pledged) / goal, 0)}% funded
+      </p>
+      <div
+        className={cn("bg-dark overflow-hidden w-full rounded-full mt-1", {
           "h-[12px]": !thin,
           "h-[8px]": thin,
-        },
-        className
-      )}
-    >
-      {open ? (
-        <div
-          className="bg-green h-full"
-          style={{
-            width: `${Math.min(fundedPercent, 100).toFixed(0)}%`,
-          }}
-        ></div>
-      ) : (
-        <div className="bg-placeholder h-full w-full"></div>
-      )}
+        })}
+      >
+        {open ? (
+          <div
+            className="bg-green h-full"
+            style={{
+              width: `${Math.min(fundedPercent, 100).toFixed(0)}%`,
+            }}
+          ></div>
+        ) : (
+          <div className="bg-placeholder h-full w-full"></div>
+        )}
+      </div>
     </div>
   )
 }
@@ -151,7 +150,6 @@ export const AllCampaignsCard: FC<CampaignProps> = ({
     description,
     pledged,
     fundingToken: { symbol },
-    goal,
   } = campaign
 
   return (
@@ -160,10 +158,11 @@ export const AllCampaignsCard: FC<CampaignProps> = ({
       <p className="sm:text-lg text-green">
         {pledged.toLocaleString()} {symbol} pledged
       </p>
-      <p className="sm:text-lg text-white">
-        {prettyPrintDecimal((100 * pledged) / goal, 0)}% funded
-      </p>
-      <CampaignProgress campaign={campaign} className="mt-2" />
+      <CampaignProgress
+        campaign={campaign}
+        className="mt-2"
+        textClassName="sm:text-lg"
+      />
       <p className="mt-5">{description}</p>
     </CampaignCardWrapper>
   )
