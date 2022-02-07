@@ -36,7 +36,7 @@ export const useRefundCampaign = (campaign: Campaign | null) => {
         const msg = {
           send: {
             contract: campaign.address,
-            amount: `${amount * 1e6}`,
+            amount: `${(amount * 1e6).toFixed(0)}`,
             msg: "",
           },
         }

@@ -126,6 +126,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
     register: contributionRegister,
     formState: { errors: contributionErrors },
     watch: contributionWatch,
+    reset: contributionReset,
   } = useForm({
     defaultValues: {} as ContributionForm,
   })
@@ -140,6 +141,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
     formState: { errors: refundErrors },
     watch: refundWatch,
     control: refundControl,
+    reset: refundReset,
   } = useForm({
     defaultValues: {} as RefundForm,
   })
@@ -160,14 +162,18 @@ const CampaignContent: FC<CampaignContentProps> = ({
   const watchContribution = contributionWatch("contribution")
   const doContribution = async ({ contribution }: ContributionForm) => {
     if (!contribution) return
-    await contributeCampaign(contribution)
+    // If success, empty form fields.
+    // TODO: Add success display.
+    if (await contributeCampaign(contribution)) contributionReset()
   }
 
   // Refund Form
   const watchRefund = refundWatch("refund")
   const doRefund = async ({ refund }: RefundForm) => {
     if (!refund) return
-    await refundCampaign(refund)
+    // If success, empty form fields.
+    // TODO: Add success display.
+    if (await refundCampaign(refund)) refundReset()
   }
 
   const {
