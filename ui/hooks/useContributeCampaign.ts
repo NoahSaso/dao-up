@@ -1,56 +1,69 @@
 import { coins } from "@cosmjs/stargate"
-import { useCallback, useState } from "react"
-import { useRecoilValue, useSetRecoilState } from "recoil"
+import { useState } from "react"
+import { useRecoilCallback, useSetRecoilState } from "recoil"
 
 import { defaultExecuteFee, fundingTokenDenom } from "../helpers/config"
 import { globalLoadingAtom } from "../state/loading"
-import { signedCosmWasmClient } from "../state/web3"
-import useWallet from "./useWallet"
+import { signedCosmWasmClient, walletAddress } from "../state/web3"
+import { useRefreshCampaign } from "./useRefreshCampaign"
 
-export const useContributeCampaign = () => {
-  const { walletAddress } = useWallet()
-  const client = useRecoilValue(signedCosmWasmClient)
+export const useContributeCampaign = (campaign: Campaign | null) => {
   const setLoading = useSetRecoilState(globalLoadingAtom)
+  const { refreshCampaign } = useRefreshCampaign(campaign)
   const [contributeCampaignError, setContributeCampaignError] = useState(
     null as string | null
   )
 
-  const contributeCampaign = useCallback(
-    async (campaign: Campaign, amount: number) => {
-      if (!client) {
-        setContributeCampaignError("Failed to get signing client.")
-        return
-      }
-      if (!walletAddress) {
-        setContributeCampaignError("Wallet not connected.")
-        return
-      }
-      setLoading(true)
-
-      try {
-        const msg = {
-          fund: {},
+  const contributeCampaign = useRecoilCallback(
+    ({ snapshot }) =>
+      async (amount: number) => {
+        if (!campaign) {
+          setContributeCampaignError("Campaign is not loaded.")
+          return false
         }
 
-        const response = await client.execute(
-          walletAddress,
-          campaign.address,
-          msg,
-          defaultExecuteFee,
-          undefined,
-          coins(amount * 1e6, fundingTokenDenom)
-        )
+        const client = await snapshot.getPromise(signedCosmWasmClient)
+        const wAddress = await snapshot.getPromise(walletAddress)
+        if (!client) {
+          setContributeCampaignError("Failed to get signing client.")
+          return false
+        }
+        if (!wAddress) {
+          setContributeCampaignError("Wallet not connected.")
+          return false
+        }
 
-        console.log(response)
-      } catch (error) {
-        console.error(error)
-        // TODO: Set better error messages.
-        setContributeCampaignError(`${error}`)
-      } finally {
-        setLoading(false)
-      }
-    },
-    [setLoading, client, walletAddress]
+        setLoading(true)
+
+        try {
+          const msg = {
+            fund: {},
+          }
+
+          const response = await client.execute(
+            wAddress,
+            campaign.address,
+            msg,
+            defaultExecuteFee,
+            undefined,
+            coins(amount * 1e6, fundingTokenDenom)
+          )
+          console.log(response)
+
+          // Update campaign state.
+          refreshCampaign()
+
+          return true
+        } catch (error) {
+          console.error(error)
+          // TODO: Set better error messages.
+          setContributeCampaignError(`${error}`)
+          return false
+        } finally {
+          setLoading(false)
+        }
+      },
+    [setLoading, campaign, refreshCampaign]
   )
 
   return { contributeCampaign, contributeCampaignError }

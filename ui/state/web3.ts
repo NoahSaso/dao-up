@@ -7,7 +7,8 @@ import { atom, selector } from "recoil"
 import { endpoint } from "../helpers/config"
 import { getOfflineSigner } from "../services/keplr"
 
-// Increment keplrKeystoreId to trigger Keplr refresh/connect.
+// Change keplrKeystoreId to trigger Keplr refresh/connect.
+// Set to -1 to disable connection.
 export const keplrKeystoreIdAtom = atom({
   key: "keplrKeystoreId",
   default: 0,
@@ -17,7 +18,8 @@ export const keplrOfflineSigner = selector({
   key: "keplrOfflineSigner",
   get: async ({ get }) => {
     // Subscribe to keystore ID changes so we propagate new wallet selection.
-    get(keplrKeystoreIdAtom)
+    const id = get(keplrKeystoreIdAtom)
+    if (id < 0) return
 
     return await getOfflineSigner()
   },

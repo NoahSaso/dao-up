@@ -10,6 +10,7 @@ export const escrowContractCodeId = parseInt(
 export const fundingTokenDenom = process.env.NEXT_PUBLIC_FUNDING_TOKEN_DENOM!
 const feeDenom = process.env.NEXT_PUBLIC_FEE_DENOM!
 export const payTokenSymbol = process.env.NEXT_PUBLIC_PAY_TOKEN_SYMBOL!
+export const daoUrlPrefix = process.env.NEXT_PUBLIC_DAO_URL_PREFIX!
 
 export const defaultExecuteFee: StdFee = {
   amount: coins(100000, feeDenom),
