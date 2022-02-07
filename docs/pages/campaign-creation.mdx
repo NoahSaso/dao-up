@@ -54,6 +54,13 @@ contract. You can find your DAO's gov token address in the "Treasury"
 section of your DAO's page on DAO DAO and the campaign address on your
 campaign's page.
 
+Take care when filling in the amount field to include the number of
+decimals your token has. If you created a new token via the DAO DAO UI
+it will have six decimals. This means that the amount field should be
+`tokens_to_send * 10**6`. For more information about decimals and
+tokens see the CosmWasm [cw20
+spec](https://github.com/CosmWasm/cw-plus/blob/main/packages/cw20/README.md#base).
+
 When selecting the number of governance tokens to send, consider that
 your backers want to participate in DAO governance. Send enough tokens
 to make this possible.
