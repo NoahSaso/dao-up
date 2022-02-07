@@ -150,11 +150,11 @@ export const fetchCampaignActions = selectorFamily<
           }
         })
 
-        // Combine and sort.
-        const actions = refundActions.concat(fundActions).sort((l, r) => {
-          if (l.when === undefined) return 1
-          if (r.when === undefined) return -1
-          return l.when.getTime() - r.when.getTime()
+        // Combine and sort descending (most recent first).
+        const actions = [...refundActions, ...fundActions].sort((a, b) => {
+          if (a.when === undefined) return 1
+          if (b.when === undefined) return -1
+          return b.when.getTime() - a.when.getTime()
         })
 
         return {
