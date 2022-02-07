@@ -15,6 +15,7 @@ import {
   CampaignProgress,
   CampaignStatus,
   CenteredColumn,
+  ControlledFormPercentTokenDoubleInput,
   FormInput,
   Loader,
   ResponsiveDecoration,
@@ -138,6 +139,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
     register: refundRegister,
     formState: { errors: refundErrors },
     watch: refundWatch,
+    control: refundControl,
   } = useForm({
     defaultValues: {} as RefundForm,
   })
@@ -201,8 +203,6 @@ const CampaignContent: FC<CampaignContentProps> = ({
   const minRefund = Math.ceil(price ?? 0) / 1e6
   const expectedPayTokensReceived =
     watchRefund && watchRefund > 0 && price ? watchRefund / price : 0
-  const percentTotalSupply =
-    watchRefund && balance ? (100 * watchRefund) / balance : 0
 
   return (
     <>
@@ -317,12 +317,15 @@ const CampaignContent: FC<CampaignContentProps> = ({
                 }
                 disabled={inactive}
                 {...contributionRegister("contribution", {
-                  required: "Required",
                   valueAsNumber: true,
                   pattern: numberPattern,
                   min: {
                     value: 0,
                     message: "Must be greater than 0.",
+                  },
+                  max: {
+                    value: Number.MAX_SAFE_INTEGER / 1e6,
+                    message: "Number too large.",
                   },
                 })}
               />
@@ -393,42 +396,34 @@ const CampaignContent: FC<CampaignContentProps> = ({
               <h2 className="text-xl text-green mt-8 mb-4">Refunds</h2>
 
               <form onSubmit={refundHandleSubmit(doRefund)}>
-                <FormInput
-                  type="number"
-                  step={0.000001}
-                  inputMode="decimal"
-                  placeholder={prettyPrintDecimal(balance * 0.5, 6)}
+                <ControlledFormPercentTokenDoubleInput
+                  name="refund"
+                  control={refundControl}
+                  minValue={minRefund}
+                  maxValue={balance}
+                  currency={tokenSymbol}
+                  first={{
+                    placeholder: "50",
+                  }}
+                  second={{
+                    placeholder: prettyPrintDecimal(balance * 0.5, 6),
+                  }}
+                  shared={{
+                    disabled: inactive,
+                  }}
                   accent={
-                    expectedPayTokensReceived && percentTotalSupply
-                      ? `${prettyPrintDecimal(
-                          percentTotalSupply,
-                          2
-                        )}% of your balance. You will receive about ${prettyPrintDecimal(
+                    expectedPayTokensReceived
+                      ? `You will receive about ${prettyPrintDecimal(
                           expectedPayTokensReceived,
                           6
                         )} ${payTokenSymbol}`
                       : undefined
                   }
-                  tail={tokenSymbol}
                   error={
                     refundErrors?.refund?.message ??
                     refundCampaignError ??
                     undefined
                   }
-                  disabled={inactive}
-                  {...refundRegister("refund", {
-                    required: "Required",
-                    valueAsNumber: true,
-                    pattern: numberPattern,
-                    min: {
-                      value: minRefund,
-                      message: `Must be greater than ${minRefund.toLocaleString()} ${tokenSymbol}.`,
-                    },
-                    max: {
-                      value: balance,
-                      message: `Must be less than or equal to your token balance: ${balance} ${tokenSymbol}.`,
-                    },
-                  })}
                 />
 
                 <Button
