@@ -3,7 +3,7 @@ import { useRecoilValue, useSetRecoilState } from "recoil"
 
 import { keplrKeystoreIdAtom, walletAddress } from "../state/web3"
 
-const useWallet = () => {
+export const useWallet = () => {
   const address = useRecoilValue(walletAddress)
   const setKeplrKeystoreId = useSetRecoilState(keplrKeystoreIdAtom)
 
@@ -26,5 +26,3 @@ const useWallet = () => {
 
   return { walletAddress: address, connected: !!address, connect }
 }
-
-export default useWallet

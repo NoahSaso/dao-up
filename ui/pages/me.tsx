@@ -13,7 +13,7 @@ import {
   TooltipInfo,
 } from "../components"
 import { useGetCampaigns } from "../hooks/useGetCampaigns"
-import useWallet from "../hooks/useWallet"
+import { useWallet } from "../hooks/useWallet"
 import { categorizedWalletCampaigns } from "../services/campaigns"
 
 const Me: NextPage = () => {

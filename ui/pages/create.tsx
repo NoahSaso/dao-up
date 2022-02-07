@@ -22,7 +22,7 @@ import {
   payTokenSymbol,
 } from "../helpers/config"
 import { junoAddressPattern, numberPattern, urlPattern } from "../helpers/form"
-import useWallet from "../hooks/useWallet"
+import { useWallet } from "../hooks/useWallet"
 import { defaultNewCampaign, newCampaignFields } from "../services/campaigns"
 import { globalLoadingAtom } from "../state/loading"
 import { signedCosmWasmClient } from "../state/web3"

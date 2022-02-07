@@ -54,7 +54,12 @@ export const signedCosmWasmClient = selector({
     const signer = get(keplrOfflineSigner)
     if (!signer) return
 
-    return await SigningCosmWasmClient.connectWithSigner(endpoint, signer)
+    try {
+      return await SigningCosmWasmClient.connectWithSigner(endpoint, signer)
+    } catch (error) {
+      console.error(error)
+      // TODO: Display error.
+    }
   },
   // DAO DAO:
   // We have to do this because of how SigningCosmWasmClient
