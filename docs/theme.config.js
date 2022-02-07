@@ -62,6 +62,6 @@ export default {
   nextLinks: true,
   footer: true,
   footerEditLink: 'Edit this page on GitHub',
-  footerText: <>MIT {new Date().getFullYear()} © Nextra.</>,
+  footerText: <>Made with love by the DAO Up! <a href="https://daodao.zone/dao/juno1j5knl799tdzwfsgkfgx7l0jmcgh7vdlr4v08lu2ecqhgdxdna64smcfhgu" target="_blank" rel="noopener noreferrer">DAO.</a></>,
   unstable_faviconGlyph: '🪐',
 }
