@@ -3,16 +3,16 @@ import type { NextPage } from "next"
 import { NextRouter, useRouter } from "next/router"
 import { FC, useEffect, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
-import { IconType } from "react-icons"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
 import { IoCheckmark, IoCopy } from "react-icons/io5"
-import TimeAgo from "react-timeago"
 import { useRecoilValue } from "recoil"
 
 import {
   Button,
   ButtonLink,
+  CampaignAction,
   CampaignImage,
+  CampaignLink,
   CampaignProgress,
   CampaignStatus,
   CenteredColumn,
@@ -32,54 +32,9 @@ import { useWallet } from "../../hooks/useWallet"
 import {
   campaignWalletBalance,
   fetchCampaign,
-  fetchCampaignFundActions,
+  fetchCampaignActions,
 } from "../../state/campaigns"
-import { ActivityType, Status } from "../../types"
-
-interface CampaignLinkProps {
-  href: string
-  label: string
-  Icon?: IconType
-}
-const CampaignLink: FC<CampaignLinkProps> = ({ href, label, Icon }) => (
-  <a
-    href={href}
-    target="_blank"
-    rel="noopener noreferrer"
-    className={cn(
-      "mr-4 last:mr-0",
-      "flex flex-row items-center",
-      "hover:opacity-70"
-    )}
-  >
-    {!!Icon && <Icon className="mr-1" size={18} />}
-    {label}
-  </a>
-)
-
-interface ActivityItemProps {
-  item: ActivityItem
-}
-const ActivityItem: FC<ActivityItemProps> = ({
-  item: { when, address, amount, activity },
-}) => {
-  const formatActivity = (a: ActivityType) => {
-    if (a === ActivityType.Fund) return "+"
-    return "-"
-  }
-
-  return (
-    <div className={cn("py-5", "border-b border-light")}>
-      <div className="flex flex-row justify-between items-center">
-        <p className="font-semibold">
-          {formatActivity(activity)} {amount * 10 ** -6} {payTokenSymbol}
-        </p>
-        <TimeAgo date={when} />
-      </div>
-      <p className="text-sm font-mono mt-1">{address}</p>
-    </div>
-  )
-}
+import { Status } from "../../types"
 
 interface AddressDisplayProps {
   label: string
@@ -163,7 +118,9 @@ const CampaignContent: FC<CampaignContentProps> = ({
     fetchCampaign(campaignAddress)
   )
 
-  const activity = useRecoilValue(fetchCampaignFundActions(campaignAddress))
+  const { actions, error: campaignActionsError } = useRecoilValue(
+    fetchCampaignActions(campaignAddress)
+  )
 
   const { balance, error: balanceError } = useRecoilValue(
     campaignWalletBalance(campaign?.address)
@@ -544,13 +501,20 @@ const CampaignContent: FC<CampaignContentProps> = ({
         </div>
 
         <h2 className="text-green text-xl mt-8">Activity</h2>
-        <div className=" w-full lg:w-3/5">
-          {activity.length ? (
-            activity.map((item, idx) => <ActivityItem key={idx} item={item} />)
-          ) : (
-            <p>None yet.</p>
-          )}
-        </div>
+        {!!campaignActionsError && (
+          <p className="text-orange my-4">{campaignActionsError}</p>
+        )}
+        {!!actions && (
+          <div className="w-full lg:w-3/5">
+            {actions.length ? (
+              actions.map((item, idx) => (
+                <CampaignAction key={idx} action={item} />
+              ))
+            ) : (
+              <p>None yet.</p>
+            )}
+          </div>
+        )}
       </CenteredColumn>
     </>
   )

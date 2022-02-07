@@ -1,7 +1,7 @@
 import { atomFamily, selector, selectorFamily } from "recoil"
 
 import { daoUrlPrefix, escrowContractCodeId } from "../helpers/config"
-import { ActivityType, Status } from "../types"
+import { CampaignActionType, Status } from "../types"
 import { cosmWasmClient, walletAddress } from "./web3"
 
 export const campaignStateId = atomFamily<number, string | undefined>({
@@ -37,31 +37,35 @@ export const campaignState = selectorFamily<CampaignStateResponse, string>({
     },
 })
 
-export const fetchBlockHeight = selector<number>({
+export const fetchBlockHeight = selector<number | null>({
   key: "fetchBlockHeight",
   get: async ({ get }) => {
     const client = get(cosmWasmClient)
 
     try {
       if (!client) throw new Error("Failed to get client.")
-      const block_height = await client.getHeight()
-      return block_height
+
+      return await client.getHeight()
     } catch (error) {
       console.error(error)
-      return 0
+
+      return null
     }
   },
 })
 
-export const fetchCampaignFundActions = selectorFamily<ActivityItem[], string>({
-  key: "fetchCampaignFundAction",
+export const fetchCampaignActions = selectorFamily<
+  CampaignActionsResponse,
+  string
+>({
+  key: "fetchCampaignActions",
   get:
     (address) =>
     async ({ get }) => {
       get(campaignStateId(address))
 
       const client = get(cosmWasmClient)
-      const block_height = get(fetchBlockHeight)
+      const blockHeight = get(fetchBlockHeight)
 
       try {
         if (!address) throw new Error("Invalid address")
@@ -94,7 +98,7 @@ export const fetchCampaignFundActions = selectorFamily<ActivityItem[], string>({
         )
 
         // Extract the amount and sender.
-        const fundActivities = funds.map((fund) => {
+        const fundActions: CampaignAction[] = funds.map((fund) => {
           let amount = Number(
             fund.wasm.attributes.find((a: any) => a.key === "amount")?.value
           )
@@ -102,21 +106,24 @@ export const fetchCampaignFundActions = selectorFamily<ActivityItem[], string>({
             (a: any) => a.key === "sender"
           )?.value as string
 
-          const elapsed_blocks = block_height - fund.height
-          // Juno block times are normally in the 6 to 6.5 second
-          // range. This really doesn't need to be terribly accurate.
-          const elapsed_time = elapsed_blocks * 6.3
-          const when = new Date()
-          when.setSeconds(when.getSeconds() - elapsed_time)
+          let when
+          if (blockHeight !== null) {
+            const elapsedBlocks = blockHeight - fund.height
+            // Juno block times are normally in the 6 to 6.5 second
+            // range. This really doesn't need to be terribly accurate.
+            const elapsedTime = elapsedBlocks * 6.3
+            when = new Date()
+            when.setSeconds(when.getSeconds() - elapsedTime)
+          }
 
           return {
+            type: CampaignActionType.Fund,
             address,
             amount,
             when,
-            activity: ActivityType.Fund,
           }
         })
-        const refundActivities = refunds.map((fund) => {
+        const refundActions: CampaignAction[] = refunds.map((fund) => {
           let amount = Number(
             fund.wasm.attributes.find((a: any) => a.key === "native_returned")
               ?.value
@@ -125,34 +132,40 @@ export const fetchCampaignFundActions = selectorFamily<ActivityItem[], string>({
             (a: any) => a.key === "sender"
           )?.value as string
 
-          const elapsed_blocks = block_height - fund.height
-          const elapsed_time = elapsed_blocks * 6.3
-          const when = new Date()
-          when.setSeconds(when.getSeconds() - elapsed_time)
+          let when
+          if (blockHeight !== null) {
+            const elapsedBlocks = blockHeight - fund.height
+            const elapsedTime = elapsedBlocks * 6.3
+            when = new Date()
+            when.setSeconds(when.getSeconds() - elapsedTime)
+          }
 
           return {
+            type: CampaignActionType.Refund,
             address,
             amount,
             when,
-            activity: ActivityType.Refund,
           }
         })
 
         // Combine and sort.
-        const activites = refundActivities
-          .concat(fundActivities)
-          .sort((l, r) => {
-            const dl = l.when
-            const dr = r.when
-            if (dl < dr) return -1
-            if (dr < dl) return 1
-            return 0
-          })
+        const actions = refundActions.concat(fundActions).sort((l, r) => {
+          if (l.when === undefined) return 1
+          if (r.when === undefined) return -1
+          return l.when.getTime() - r.when.getTime()
+        })
 
-        return activites
+        return {
+          actions,
+          error: null,
+        }
       } catch (error) {
         console.error(error)
-        return []
+        // TODO: Return better error.
+        return {
+          actions: null,
+          error: `${error}`,
+        }
       }
     },
 })

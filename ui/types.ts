@@ -4,11 +4,11 @@ import { ReactNode } from "react"
 declare global {
   interface Window extends KeplrWindow {}
 
-  interface ActivityItem {
-    when: Date
+  interface CampaignAction {
+    type: CampaignActionType
     address: string
     amount: number
-    activity: ActivityType
+    when?: Date
   }
 
   interface Campaign {
@@ -88,6 +88,7 @@ declare global {
 
   type CampaignResponse = AsyncSelectorResponse<{ campaign: Campaign | null }>
 
+  // TODO: Type accurately.
   type TokenInfoResponse = AsyncSelectorResponse<{ info: any | null }>
 
   type CampaignWalletBalanceResponse = AsyncSelectorResponse<{
@@ -96,6 +97,10 @@ declare global {
 
   type EscrowContractAddressesResponse = AsyncSelectorResponse<{
     addresses: readonly string[]
+  }>
+
+  type CampaignActionsResponse = AsyncSelectorResponse<{
+    actions: CampaignAction[] | null
   }>
 }
 
@@ -113,7 +118,7 @@ export enum Color {
   Placeholder = "placeholder",
 }
 
-export enum ActivityType {
+export enum CampaignActionType {
   Fund = "fund",
   Refund = "refund",
 }

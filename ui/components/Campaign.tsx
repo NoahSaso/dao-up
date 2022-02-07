@@ -1,9 +1,12 @@
 import cn from "classnames"
 import Link from "next/link"
 import { FC, PropsWithChildren } from "react"
+import { IconType } from "react-icons"
+import TimeAgo from "react-timeago"
 
+import { payTokenSymbol } from "../helpers/config"
 import { prettyPrintDecimal } from "../helpers/number"
-import { Color, Status } from "../types"
+import { CampaignActionType, Color, Status } from "../types"
 import { StatusIndicator } from "."
 
 interface CampaignProps {
@@ -232,3 +235,47 @@ export const ContributorCampaignCard: FC<CampaignProps> = ({
     </CampaignCardWrapper>
   )
 }
+
+interface CampaignLinkProps {
+  href: string
+  label: string
+  Icon?: IconType
+}
+export const CampaignLink: FC<CampaignLinkProps> = ({ href, label, Icon }) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    className={cn(
+      "mr-4 last:mr-0",
+      "flex flex-row items-center",
+      "hover:opacity-70"
+    )}
+  >
+    {!!Icon && <Icon className="mr-1" size={18} />}
+    {label}
+  </a>
+)
+
+interface CampaignActionProps {
+  action: CampaignAction
+}
+export const CampaignAction: FC<CampaignActionProps> = ({
+  action: { when, address, amount, type },
+}) => (
+  <div className={cn("py-5", "border-b border-light")}>
+    <div className="flex flex-row justify-between items-center">
+      <p
+        className={cn("font-semibold", {
+          "text-green": type === CampaignActionType.Fund,
+          "text-orange": type === CampaignActionType.Refund,
+        })}
+      >
+        {type === CampaignActionType.Fund ? "+" : "-"} {amount * 10 ** -6}{" "}
+        {payTokenSymbol}
+      </p>
+      {!!when && <TimeAgo date={when} />}
+    </div>
+    <p className="text-sm font-mono mt-1">{address}</p>
+  </div>
+)
