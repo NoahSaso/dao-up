@@ -32,10 +32,10 @@ pub enum Status {
     },
     /// The DAO has closed the campaign. Refunds are avaliable but no
     /// new funds may be added.
-    Closed { token_price: Decimal },
+    Cancelled { token_price: Decimal },
     /// The campaign has met its funding goal. Tokens may now be
     /// exchanged for governance tokens in the DAO.
-    Complete { token_price: Decimal },
+    Funded { token_price: Decimal },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -44,6 +44,9 @@ pub struct State {
 
     pub dao_addr: Addr,
     pub creator: Addr,
+
+    pub fee_receiver: Addr,
+    pub fee: Decimal,
 
     pub funding_goal: Coin,
     pub funds_raised: Coin,
