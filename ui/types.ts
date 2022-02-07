@@ -28,6 +28,9 @@ declare global {
     dao: {
       address: string
       url: string
+      govToken: {
+        address: string
+      }
     }
 
     fundingToken: {
@@ -85,6 +88,8 @@ declare global {
   }>
 
   type CampaignResponse = AsyncSelectorResponse<{ campaign: Campaign | null }>
+
+  type TokenInfoResponse = AsyncSelectorResponse<{ info: any | null }>
 
   type EscrowContractAddressesResponse = AsyncSelectorResponse<{
     addresses: readonly string[]

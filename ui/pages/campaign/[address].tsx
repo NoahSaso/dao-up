@@ -175,7 +175,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
     pledged,
     dao: { url: daoUrl },
 
-    fundingToken: { symbol: tokenSymbol, supply, price },
+    fundingToken: { symbol: tokenSymbol, price, supply },
 
     website,
     twitter,
@@ -187,7 +187,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
   const inactive = status !== Status.Open
   const overfunded = pledged > goal
 
-  const userTokens: number = 1
+  const userTokens: number = 1e12
 
   // Contribution
   const expectedFundingTokensReceived =
@@ -195,6 +195,8 @@ const CampaignContent: FC<CampaignContentProps> = ({
       ? price * watchContribution
       : 0
   // Refund
+  // Minimum refund is how many funding tokens (with decimals) per 1 ujuno(x).
+  const minRefund = Math.ceil(price ?? 0) / 1e6
   const expectedPayTokensReceived =
     watchRefund && watchRefund > 0 && price ? watchRefund / price : 0
   const percentTotalSupply = watchRefund ? (100 * watchRefund) / userTokens : 0
@@ -347,7 +349,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
             <CampaignProgress campaign={campaign} className="mt-2" />
 
             <h3 className="mt-2 text-green text-3xl">
-              {pledged.toLocaleString()} {payTokenSymbol}
+              {prettyPrintDecimal(pledged, 6)} {payTokenSymbol}
             </h3>
             <p className="text-light text-sm">
               pledged out of {goal.toLocaleString()} {payTokenSymbol} goal.
@@ -359,10 +361,10 @@ const CampaignContent: FC<CampaignContentProps> = ({
             </h3>
             <p className="text-light text-sm">Supporters</p> */}
 
-            <h3 className="mt-6 text-green text-3xl">
+            {/* <h3 className="mt-6 text-green text-3xl">
               {supply.toLocaleString()}
             </h3>
-            <p className="text-light text-sm">Total Supply</p>
+            <p className="text-light text-sm">Total Supply</p> */}
           </div>
         </div>
 
@@ -374,10 +376,10 @@ const CampaignContent: FC<CampaignContentProps> = ({
         >
           <h2 className="text-xl text-green mb-2">Your Balance</h2>
           <p className="text-light">
-            {userTokens} {tokenSymbol}
+            {prettyPrintDecimal(userTokens, 6)} {tokenSymbol}
             {supply > 0 && (
               <span className="text-placeholder ml-2">
-                {prettyPrintDecimal((100 * userTokens) / supply, 6)}% of total
+                {prettyPrintDecimal((100 * userTokens) / supply, 2)}% of total
                 supply
               </span>
             )}
@@ -415,8 +417,8 @@ const CampaignContent: FC<CampaignContentProps> = ({
                   valueAsNumber: true,
                   pattern: numberPattern,
                   min: {
-                    value: 0,
-                    message: "Must be greater than 0.",
+                    value: minRefund,
+                    message: `Must be greater than ${minRefund.toLocaleString()} ${tokenSymbol}.`,
                   },
                   max: {
                     value: userTokens,

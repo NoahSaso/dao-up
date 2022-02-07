@@ -4,48 +4,47 @@ import { escrowContractCodeId } from "../helpers/config"
 import { Status } from "../types"
 import { cosmWasmClient } from "./web3"
 
-// GET
+export const campaignState = selectorFamily<CampaignStateResponse, string>({
+  key: "campaignState",
+  get:
+    (address) =>
+    async ({ get }) => {
+      const client = get(cosmWasmClient)
 
-export const fetchCampaignState = selectorFamily<CampaignStateResponse, string>(
-  {
-    key: "fetchCampaignState",
-    get:
-      (address) =>
-      async ({ get }) => {
-        const client = get(cosmWasmClient)
+      try {
+        if (!client) throw new Error("Failed to get client.")
+        if (!address) throw new Error("Invalid address.")
 
-        try {
-          if (!client) throw new Error("Failed to get client.")
-          if (!address) throw new Error("Invalid address.")
-
-          return {
-            state: await client.queryContractSmart(address, {
-              dump_state: {},
-            }),
-            error: null,
-          }
-        } catch (error) {
-          console.error(error)
-          // TODO: Return better error.
-          return { state: null, error: `${error}` }
+        return {
+          state: await client.queryContractSmart(address, {
+            dump_state: {},
+          }),
+          error: null,
         }
-      },
-  }
-)
+      } catch (error) {
+        console.error(error)
+        // TODO: Return better error.
+        return { state: null, error: `${error}` }
+      }
+    },
+})
 
 export const fetchCampaign = selectorFamily<CampaignResponse, string>({
   key: "fetchCampaign",
   get:
     (address) =>
     async ({ get }) => {
-      const { state: campaignState, error } = get(fetchCampaignState(address))
-      if (error) return { campaign: null, error }
+      const { state: cState, error: campaignError } = get(
+        campaignState(address)
+      )
+      if (campaignError || cState === null)
+        return { campaign: null, error: campaignError ?? "Unknown error." }
 
       const {
         campaign_info: campaignInfo,
         funding_token_info: fundingTokenInfo,
         ...state
-      } = campaignState
+      } = cState
 
       try {
         // Example: status={ "pending": {} }
@@ -69,12 +68,15 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
             dao: {
               address: state.dao_addr,
               url: `https://daodao.zone/dao/${state.dao_addr}`,
+              govToken: {
+                address: state.gov_token_addr,
+              },
             },
 
             fundingToken: {
               address: state.funding_token_addr,
               ...(status === Status.Open && {
-                price: Number(state.status[status].token_price) / 1e6,
+                price: Number(state.status[status].token_price),
               }),
               name: fundingTokenInfo.name,
               symbol: fundingTokenInfo.symbol,
@@ -97,7 +99,30 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
     },
 })
 
-// GET ALL
+export const tokenInfo = selectorFamily<TokenInfoResponse, string>({
+  key: "tokenInfo",
+  get:
+    (address) =>
+    async ({ get }) => {
+      const client = get(cosmWasmClient)
+
+      try {
+        if (!address) throw new Error("Invalid address.")
+        if (!client) throw new Error("Failed to get client.")
+
+        return {
+          info: await client.queryContractSmart(address, {
+            token_info: {},
+          }),
+          error: null,
+        }
+      } catch (error) {
+        console.error(error)
+        // TODO: Return better error.
+        return { info: null, error: `${error}` }
+      }
+    },
+})
 
 export const escrowContractAddresses =
   selector<EscrowContractAddressesResponse>({
