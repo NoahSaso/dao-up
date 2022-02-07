@@ -17,7 +17,7 @@ import { useWallet } from "../hooks/useWallet"
 import { categorizedWalletCampaigns } from "../services/campaigns"
 
 const Me: NextPage = () => {
-  const { walletAddress, connect, connected } = useWallet()
+  const { walletAddress, connect, connected, connectError } = useWallet()
 
   return (
     <>
@@ -53,6 +53,9 @@ const Me: NextPage = () => {
             <Button className="mt-8" onClick={connect}>
               Connect a wallet
             </Button>
+            {!!connectError && (
+              <p className="text-orange mt-2">{connectError}</p>
+            )}
           </>
         )}
 
