@@ -103,8 +103,8 @@ declare global {
 export enum Status {
   Pending = "pending",
   Open = "open",
-  Closed = "closed",
-  Complete = "complete",
+  Cancelled = "cancelled",
+  Funded = "funded",
 }
 
 export enum Color {

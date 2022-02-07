@@ -11,6 +11,8 @@ export const fundingTokenDenom = process.env.NEXT_PUBLIC_FUNDING_TOKEN_DENOM!
 const feeDenom = process.env.NEXT_PUBLIC_FEE_DENOM!
 export const payTokenSymbol = process.env.NEXT_PUBLIC_PAY_TOKEN_SYMBOL!
 export const daoUrlPrefix = process.env.NEXT_PUBLIC_DAO_URL_PREFIX!
+export const daoUpFee = process.env.NEXT_PUBLIC_DAO_UP_FEE!
+export const daoUpDAOAddress = process.env.NEXT_PUBLIC_DAO_UP_DAO_ADDRESS!
 
 export const defaultExecuteFee: StdFee = {
   amount: coins(100000, feeDenom),

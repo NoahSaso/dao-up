@@ -16,6 +16,8 @@ import {
 } from "../components"
 import {
   cw20CodeId,
+  daoUpDAOAddress,
+  daoUpFee,
   defaultExecuteFee,
   escrowContractCodeId,
   fundingTokenDenom,
@@ -94,6 +96,9 @@ const CreateContent: FC = () => {
           funding_goal: coin(newCampaign.goal * 1e6, fundingTokenDenom),
           funding_token_name: newCampaign.tokenName,
           funding_token_symbol: newCampaign.tokenSymbol,
+
+          fee: daoUpFee,
+          fee_receiver: daoUpDAOAddress,
 
           campaign_info: {
             name: newCampaign.name,

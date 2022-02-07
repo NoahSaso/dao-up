@@ -27,13 +27,13 @@ export const CampaignStatus: FC<CampaignProps> = ({
       color = Color.Placeholder
       label = "Pending"
       break
-    case Status.Closed:
+    case Status.Cancelled:
       color = Color.Placeholder
-      label = "Closed"
+      label = "Cancelled"
       break
-    case Status.Complete:
+    case Status.Funded:
       color = Color.Placeholder
-      label = "Complete"
+      label = "Funded"
       break
     default:
       color = Color.Placeholder
