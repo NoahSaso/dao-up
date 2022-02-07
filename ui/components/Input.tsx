@@ -390,7 +390,7 @@ export const FormWrapper: FC<FormWrapperProps> = ({
       {!!description && (
         <p
           className={cn(
-            "block text-sm font-extralight pl-5",
+            "block text-sm font-light pl-5",
             { "mb-3": !horizontal },
             surroundingClassName
           )}
@@ -402,7 +402,7 @@ export const FormWrapper: FC<FormWrapperProps> = ({
       {!!accent && (
         <p
           className={cn(
-            "block text-sm font-extralight pl-5 text-green",
+            "block text-sm font-light pl-5 text-green",
             { "mt-1": horizontal, "mt-3": !horizontal },
             surroundingClassName
           )}
