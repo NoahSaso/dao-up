@@ -117,7 +117,12 @@ export const Switch: FC<SwitchProps> = ({ on, onClick, className }) => (
     className={cn(
       "relative cursor-pointer hover:opacity-70",
       "w-[80px] h-[42px] rounded-full",
-      "bg-dark border border-light",
+      "border",
+      "flex items-center",
+      {
+        "bg-green border-green": on,
+        "bg-dark border-light": !on,
+      },
       className
     )}
     onClick={onClick}
@@ -125,10 +130,11 @@ export const Switch: FC<SwitchProps> = ({ on, onClick, className }) => (
     <div
       className={cn(
         "absolute",
-        "left-[4.5px] top-[3.5px] w-[32px] h-[32px] rounded-full",
-        "bg-light transition-all",
+        "w-[32px] h-[32px] rounded-full",
+        "transition-all",
         {
-          "!left-[41.5px]": on,
+          "bg-dark left-[41.5px]": on,
+          "bg-light left-[4.5px]": !on,
         }
       )}
     ></div>

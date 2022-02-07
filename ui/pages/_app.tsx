@@ -11,10 +11,10 @@ import { Footer } from "../components/Footer"
 import { globalLoadingAtom } from "../state/loading"
 
 const Title = "DAO Up!"
-const Description = ""
+const Description =
+  "DAO Up! is a crowdfunding tool for communities. Refunds are guaranteed if a project doesn't hit its funding goal, and successful campaigns have their treasury transferred to a DAO controlled by the backers."
 const Domain = "https://daoup.zone"
-const ImageUrl =
-  "https://daoup.zone/_next/image?url=%2Fimages%2Flogo.svg&w=128&q=75"
+const ImageUrl = "https://daoup.zone/images/banner.jpg"
 
 const DAOUp: FC<AppProps> = ({ Component, pageProps }) => {
   const loading = useRecoilValue(globalLoadingAtom)
@@ -63,7 +63,7 @@ const App: FC<AppProps> = (props) => (
       {/* Twitter */}
       <meta
         name="twitter:card"
-        content="Consolidated substance and interaction information"
+        content="Kick start your community with the crowdfunding platform for DAOs."
       />
       <meta name="twitter:title" content={Title} />
       <meta name="twitter:description" content={Description} />

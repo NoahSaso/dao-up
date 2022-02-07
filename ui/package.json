@@ -25,7 +25,7 @@
     "tailwindcss": "^3.0.18"
   },
   "devDependencies": {
-    "@keplr-wallet/types": "^0.9.10",
+    "@keplr-wallet/types": "^0.9.12",
     "@types/node": "17.0.13",
     "@types/react": "17.0.38",
     "@types/react-timeago": "^4.1.3",

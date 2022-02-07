@@ -99,7 +99,7 @@ const faqQAs = [
       <p>
         DAO stands for Decentralized Autonomous Organization. DAOs reduce
         organizational overhead by extending the trust advantages of blockchain
-        to community funding. They&aposre used for everything from{" "}
+        to community funding. They&apos;re used for everything from{" "}
         <a
           href="https://pleasr.org/"
           target="_blank"
@@ -125,11 +125,11 @@ const faqQAs = [
     q: "Is DAO Up! safe?",
     a: (
       <p>
-        DAO Up! is currently in beta and its contracts are not audited. Don’t do
-        anything mission critical with DAO Up!. Be careful. Our smart contracts
-        are open source{" "}
+        DAO Up! is currently in beta and its contracts are not audited.
+        Don&apos;t do anything mission critical with DAO Up!. Be careful. Our
+        smart contracts are open source{" "}
         <a
-          href="https://github.com/NoahSaso/dao-up"
+          href="https://github.com/NoahSaso/dao-up/tree/main/contracts"
           target="_blank"
           rel="noreferrer"
           className="underline"
@@ -144,11 +144,11 @@ const faqQAs = [
     q: "What happens if a campaign gets funded?",
     a: (
       <p>
-        Once a campaign is funded backers can claim a number of DAO governance
+        Once a campaign is funded, backers can claim a number of DAO governance
         tokens proportional to the amount of funds they backed the campaign
         with. For example: if a campaign was created to raise 100 Juno and you
-        backed it with 25 Juno you’d be entitled to 25% of the governance tokens
-        allocated to the campaign.
+        backed it with 25 Juno, you&apos;d be entitled to 25% of the governance
+        tokens allocated to the campaign.
       </p>
     ),
   },
@@ -174,7 +174,7 @@ const faqQAs = [
         <br />
         <p>
           {" "}
-          <i>“A DAO building DAO tools? DAOception!”</i> -{" "}
+          <i>&quot;A DAO building DAO tools? DAOception!&quot;</i> -{" "}
           <a
             href="https://twitter.com/DeusNero/status/1486363802618810374"
             target="_blank"

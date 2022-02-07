@@ -3,16 +3,16 @@ import type { NextPage } from "next"
 import { NextRouter, useRouter } from "next/router"
 import { FC, useEffect, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
-import { IconType } from "react-icons"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
 import { IoCheckmark, IoCopy } from "react-icons/io5"
-import TimeAgo from "react-timeago"
 import { useRecoilValue } from "recoil"
 
 import {
   Button,
   ButtonLink,
+  CampaignAction,
   CampaignImage,
+  CampaignLink,
   CampaignProgress,
   CampaignStatus,
   CenteredColumn,
@@ -29,57 +29,13 @@ import { prettyPrintDecimal } from "../../helpers/number"
 import { useContributeCampaign } from "../../hooks/useContributeCampaign"
 import { useRefundCampaign } from "../../hooks/useRefundCampaign"
 import { useWallet } from "../../hooks/useWallet"
+import { suggestToken } from "../../services/keplr"
 import {
   campaignWalletBalance,
   fetchCampaign,
-  fetchCampaignFundActions,
+  fetchCampaignActions,
 } from "../../state/campaigns"
-import { ActivityType, Status } from "../../types"
-
-interface CampaignLinkProps {
-  href: string
-  label: string
-  Icon?: IconType
-}
-const CampaignLink: FC<CampaignLinkProps> = ({ href, label, Icon }) => (
-  <a
-    href={href}
-    target="_blank"
-    rel="noopener noreferrer"
-    className={cn(
-      "mr-4 last:mr-0",
-      "flex flex-row items-center",
-      "hover:opacity-70"
-    )}
-  >
-    {!!Icon && <Icon className="mr-1" size={18} />}
-    {label}
-  </a>
-)
-
-interface ActivityItemProps {
-  item: ActivityItem
-}
-const ActivityItem: FC<ActivityItemProps> = ({
-  item: { when, address, amount, activity },
-}) => {
-  const formatActivity = (a: ActivityType) => {
-    if (a === ActivityType.Fund) return "+"
-    return "-"
-  }
-
-  return (
-    <div className={cn("py-5", "border-b border-light")}>
-      <div className="flex flex-row justify-between items-center">
-        <p className="font-semibold">
-          {formatActivity(activity)} {amount * 10 ** -6} {payTokenSymbol}
-        </p>
-        <TimeAgo date={when} />
-      </div>
-      <p className="text-sm font-mono mt-1">{address}</p>
-    </div>
-  )
-}
+import { Status } from "../../types"
 
 interface AddressDisplayProps {
   label: string
@@ -163,7 +119,9 @@ const CampaignContent: FC<CampaignContentProps> = ({
     fetchCampaign(campaignAddress)
   )
 
-  const activity = useRecoilValue(fetchCampaignFundActions(campaignAddress))
+  const { actions, error: campaignActionsError } = useRecoilValue(
+    fetchCampaignActions(campaignAddress)
+  )
 
   const { balance, error: balanceError } = useRecoilValue(
     campaignWalletBalance(campaign?.address)
@@ -202,6 +160,10 @@ const CampaignContent: FC<CampaignContentProps> = ({
     if (isReady && !campaign) routerPush("/campaigns")
   }, [isReady, campaign, routerPush])
 
+  // Display buttons to add tokens to wallet.
+  const [showAddFundingToken, setShowAddFundingToken] = useState(false)
+  const [showAddGovToken, setShowAddGovToken] = useState(false)
+
   // If page not ready, display loader.
   if (!isReady) return <Loader overlay />
   // Display nothing (redirecting to campaigns list, so this is just a type check).
@@ -228,13 +190,24 @@ const CampaignContent: FC<CampaignContentProps> = ({
     discord,
   } = campaign ?? {}
 
+  const suggestFundingToken = async () =>
+    setShowAddFundingToken(!(await suggestToken(campaign.fundingToken.address)))
+  const suggestGovToken = async () =>
+    setShowAddGovToken(!(await suggestToken(campaign.dao.govToken.address)))
+
   // Contribution Form
   const watchContribution = contributionWatch("contribution")
   const doContribution = async ({ contribution }: ContributionForm) => {
     if (!contribution) return
-    // If success, empty form fields.
+
     // TODO: Add success display.
-    if (await contributeCampaign(contribution)) contributionReset()
+    if (await contributeCampaign(contribution)) {
+      // Attempt to add token to Keplr.
+      await suggestFundingToken()
+
+      // Empty form fields.
+      contributionReset()
+    }
   }
 
   // Refund Form
@@ -245,12 +218,16 @@ const CampaignContent: FC<CampaignContentProps> = ({
 
     if (!refund) return
 
-    // If success, empty form fields.
     // TODO: Add success display.
-    if (await refundCampaign(refund)) refundReset()
+    if (await refundCampaign(refund)) {
+      // Attempt to add token to Keplr if receiving governance tokens.
+      if (status === Status.Funded) await suggestGovToken()
+
+      // Empty form fields.
+      refundReset()
+    }
   }
 
-  const inactive = status !== Status.Open
   const overfunded = pledged > goal
   const createdByMe = connected && creator === walletAddress
 
@@ -365,62 +342,64 @@ const CampaignContent: FC<CampaignContentProps> = ({
               )}
             </div>
 
-            <form
-              onSubmit={contributionHandleSubmit(doContribution)}
-              className={cn(
-                "flex flex-col items-stretch mt-8",
-                "sm:flex-row sm:items-start lg:self-stretch lg:mb-0",
-                { hidden: !open }
-              )}
-            >
-              <FormInput
-                type="number"
-                inputMode="decimal"
-                placeholder="Contribute..."
-                accent={
-                  expectedFundingTokensReceived
-                    ? `You will receive about ${prettyPrintDecimal(
-                        expectedFundingTokensReceived
-                      )} ${tokenSymbol}`
-                    : undefined
-                }
-                wrapperClassName="!mb-4 sm:!mb-0 sm:mr-4 sm:flex-1"
-                className="!py-3 !px-6 !pr-28"
-                tail={payTokenSymbol}
-                error={
-                  inactive
-                    ? `You cannot contribute to an inactive campaign.${
-                        status === Status.Pending && !createdByMe
-                          ? " Check back later once it launches."
-                          : ""
-                      }`
-                    : contributionErrors?.contribution?.message ??
-                      contributeCampaignError ??
-                      undefined
-                }
-                disabled={inactive}
-                {...contributionRegister("contribution", {
-                  valueAsNumber: true,
-                  pattern: numberPattern,
-                  min: {
-                    value: 1e-6,
-                    message: `Must be at least 0.000001 ${payTokenSymbol}.`,
-                  },
-                  max: {
-                    value: maxContribution,
-                    message: `Must be less than or equal to ${prettyPrintDecimal(
-                      maxContribution
-                    )} ${payTokenSymbol}.`,
-                  },
-                })}
-              />
+            {(status === Status.Pending || status === Status.Open) && (
+              <form
+                onSubmit={contributionHandleSubmit(doContribution)}
+                className={cn(
+                  "flex flex-col items-stretch mt-8",
+                  "sm:flex-row sm:items-start lg:self-stretch lg:mb-0",
+                  { hidden: !open }
+                )}
+              >
+                <FormInput
+                  type="number"
+                  inputMode="decimal"
+                  placeholder="Contribute..."
+                  accent={
+                    expectedFundingTokensReceived
+                      ? `You will receive about ${prettyPrintDecimal(
+                          expectedFundingTokensReceived
+                        )} ${tokenSymbol}`
+                      : undefined
+                  }
+                  wrapperClassName="!mb-4 sm:!mb-0 sm:mr-4 sm:flex-1"
+                  className="!py-3 !px-6 !pr-28"
+                  tail={payTokenSymbol}
+                  error={
+                    status === Status.Pending
+                      ? `You cannot contribute to a pending campaign.${
+                          status === Status.Pending && !createdByMe
+                            ? " Check back later once it launches."
+                            : ""
+                        }`
+                      : contributionErrors?.contribution?.message ??
+                        contributeCampaignError ??
+                        undefined
+                  }
+                  disabled={status !== Status.Open}
+                  {...contributionRegister("contribution", {
+                    valueAsNumber: true,
+                    pattern: numberPattern,
+                    min: {
+                      value: 1e-6,
+                      message: `Must be at least 0.000001 ${payTokenSymbol}.`,
+                    },
+                    max: {
+                      value: maxContribution,
+                      message: `Must be less than or equal to ${prettyPrintDecimal(
+                        maxContribution
+                      )} ${payTokenSymbol}.`,
+                    },
+                  })}
+                />
 
-              <Button
-                className="sm:h-[50px]"
-                submitLabel="Support this campaign"
-                disabled={inactive}
-              />
-            </form>
+                <Button
+                  className="sm:h-[50px]"
+                  submitLabel="Support this campaign"
+                  disabled={status !== Status.Open}
+                />
+              </form>
+            )}
           </div>
 
           <div
@@ -432,12 +411,20 @@ const CampaignContent: FC<CampaignContentProps> = ({
             <CampaignStatus campaign={campaign} className="mb-2" />
 
             {!!daoUrl && (
-              <ButtonLink href={daoUrl} className="self-stretch my-2">
+              <ButtonLink
+                href={daoUrl}
+                className="self-stretch my-2"
+                cardOutline
+              >
                 Visit the DAO
               </ButtonLink>
             )}
 
-            <CampaignProgress campaign={campaign} className="mt-2" />
+            <CampaignProgress
+              campaign={campaign}
+              className="mt-2"
+              textClassName="text-md text-placeholder italic self-end"
+            />
 
             <h3 className="mt-2 text-green text-3xl">
               {prettyPrintDecimal(pledged)} {payTokenSymbol}
@@ -468,15 +455,41 @@ const CampaignContent: FC<CampaignContentProps> = ({
           <h2 className="text-xl text-green mb-2">Your Balance</h2>
 
           {connected ? (
-            <p className="text-light">
-              {prettyPrintDecimal(balance ?? 0)} {tokenSymbol}
-              {supply > 0 && !!balance && (
-                <span className="text-placeholder ml-2">
-                  {prettyPrintDecimal((100 * balance) / supply, 2)}% of total
-                  supply
-                </span>
+            <>
+              <p className="text-light">
+                {prettyPrintDecimal(balance ?? 0)} {tokenSymbol}
+                {supply > 0 && !!balance && (
+                  <span className="text-placeholder ml-2">
+                    {prettyPrintDecimal((100 * balance) / supply, 2)}% of total
+                    supply
+                  </span>
+                )}
+              </p>
+              {balance !== null && balance > 0 && showAddFundingToken && (
+                <div className="mt-4">
+                  <Button onClick={suggestFundingToken}>
+                    Add token to wallet
+                  </Button>
+                  <p className="text-sm text-placeholder italic mt-2">
+                    This allows you to view your campaign funding token balance
+                    ({tokenSymbol}) from your Keplr wallet. If you&apos;ve
+                    already done this, it should still be there.
+                  </p>
+                </div>
               )}
-            </p>
+              {status === Status.Funded && showAddGovToken && (
+                <div className="mt-4">
+                  <Button onClick={suggestGovToken}>
+                    Add DAO token to wallet
+                  </Button>
+                  <p className="text-sm text-placeholder italic mt-2">
+                    This allows you to view your DAO governance token balance
+                    from your Keplr wallet. If you&apos;ve already done this, it
+                    should still be there.
+                  </p>
+                </div>
+              )}
+            </>
           ) : (
             <>
               <p className="text-orange">
@@ -516,7 +529,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
                       placeholder: prettyPrintDecimal(balance * 0.5),
                     }}
                     shared={{
-                      disabled: inactive,
+                      disabled: status !== Status.Open,
                     }}
                     accent={
                       expectedPayTokensReceived
@@ -536,7 +549,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
                 <Button
                   submitLabel={status === Status.Funded ? "Join DAO" : "Refund"}
                   className="mt-4"
-                  disabled={inactive && status !== Status.Funded}
+                  disabled={status !== Status.Open && status !== Status.Funded}
                 />
               </form>
             </>
@@ -544,13 +557,20 @@ const CampaignContent: FC<CampaignContentProps> = ({
         </div>
 
         <h2 className="text-green text-xl mt-8">Activity</h2>
-        <div className=" w-full lg:w-3/5">
-          {activity.length ? (
-            activity.map((item, idx) => <ActivityItem key={idx} item={item} />)
-          ) : (
-            <p>None yet.</p>
-          )}
-        </div>
+        {!!campaignActionsError && (
+          <p className="text-orange my-4">{campaignActionsError}</p>
+        )}
+        {!!actions && (
+          <div className="w-full lg:w-3/5">
+            {actions.length ? (
+              actions.map((item, idx) => (
+                <CampaignAction key={idx} action={item} />
+              ))
+            ) : (
+              <p>None yet.</p>
+            )}
+          </div>
+        )}
       </CenteredColumn>
     </>
   )

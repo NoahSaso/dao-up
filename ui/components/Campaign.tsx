@@ -1,9 +1,12 @@
 import cn from "classnames"
 import Link from "next/link"
 import { FC, PropsWithChildren } from "react"
+import { IconType } from "react-icons"
+import TimeAgo from "react-timeago"
 
+import { payTokenSymbol } from "../helpers/config"
 import { prettyPrintDecimal } from "../helpers/number"
-import { Color, Status } from "../types"
+import { CampaignActionType, Color, Status } from "../types"
 import { StatusIndicator } from "."
 
 interface CampaignProps {
@@ -12,31 +15,27 @@ interface CampaignProps {
 }
 
 export const CampaignStatus: FC<CampaignProps> = ({
-  campaign: { status, pledged, goal },
+  campaign: { status },
   className,
 }) => {
-  let color: Color
+  let color: Color = Color.Placeholder
   let label: string
   switch (status) {
-    case Status.Open:
-      const funded = pledged >= goal
-      color = funded ? Color.Orange : Color.Green
-      label = funded ? "Goal Reached" : "Active"
-      break
     case Status.Pending:
-      color = Color.Placeholder
       label = "Pending"
       break
-    case Status.Cancelled:
-      color = Color.Placeholder
-      label = "Cancelled"
+    case Status.Open:
+      color = Color.Orange
+      label = "Active"
       break
     case Status.Funded:
-      color = Color.Placeholder
+      color = Color.Green
       label = "Funded"
       break
+    case Status.Cancelled:
+      label = "Cancelled"
+      break
     default:
-      color = Color.Placeholder
       label = "Unknown"
       break
   }
@@ -52,36 +51,39 @@ export const CampaignStatus: FC<CampaignProps> = ({
 
 interface CampaignProgressProps extends CampaignProps {
   thin?: boolean
+  textClassName?: string
 }
 export const CampaignProgress: FC<CampaignProgressProps> = ({
   campaign: { status, pledged, goal },
   className,
   thin,
+  textClassName,
 }) => {
   const fundedPercent = (100 * pledged) / goal
   const open = status === Status.Open
 
   return (
-    <div
-      className={cn(
-        "bg-dark overflow-hidden w-full rounded-full",
-        {
+    <div className={cn("flex flex-col justify-start w-full", className)}>
+      <p className={cn("text-white", textClassName)}>
+        {prettyPrintDecimal((100 * pledged) / goal, 0)}% funded
+      </p>
+      <div
+        className={cn("bg-dark overflow-hidden w-full rounded-full mt-1", {
           "h-[12px]": !thin,
           "h-[8px]": thin,
-        },
-        className
-      )}
-    >
-      {open ? (
-        <div
-          className="bg-green h-full"
-          style={{
-            width: `${Math.min(fundedPercent, 100).toFixed(0)}%`,
-          }}
-        ></div>
-      ) : (
-        <div className="bg-placeholder h-full w-full"></div>
-      )}
+        })}
+      >
+        {open ? (
+          <div
+            className="bg-green h-full"
+            style={{
+              width: `${Math.min(fundedPercent, 100).toFixed(0)}%`,
+            }}
+          ></div>
+        ) : (
+          <div className="bg-placeholder h-full w-full"></div>
+        )}
+      </div>
     </div>
   )
 }
@@ -148,7 +150,6 @@ export const AllCampaignsCard: FC<CampaignProps> = ({
     description,
     pledged,
     fundingToken: { symbol },
-    goal,
   } = campaign
 
   return (
@@ -157,10 +158,11 @@ export const AllCampaignsCard: FC<CampaignProps> = ({
       <p className="sm:text-lg text-green">
         {pledged.toLocaleString()} {symbol} pledged
       </p>
-      <p className="sm:text-lg text-white">
-        {prettyPrintDecimal((100 * pledged) / goal, 0)}% funded
-      </p>
-      <CampaignProgress campaign={campaign} className="mt-2" />
+      <CampaignProgress
+        campaign={campaign}
+        className="mt-2"
+        textClassName="sm:text-lg"
+      />
       <p className="mt-5">{description}</p>
     </CampaignCardWrapper>
   )
@@ -232,3 +234,47 @@ export const ContributorCampaignCard: FC<CampaignProps> = ({
     </CampaignCardWrapper>
   )
 }
+
+interface CampaignLinkProps {
+  href: string
+  label: string
+  Icon?: IconType
+}
+export const CampaignLink: FC<CampaignLinkProps> = ({ href, label, Icon }) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    className={cn(
+      "mr-4 last:mr-0",
+      "flex flex-row items-center",
+      "hover:opacity-70"
+    )}
+  >
+    {!!Icon && <Icon className="mr-1" size={18} />}
+    {label}
+  </a>
+)
+
+interface CampaignActionProps {
+  action: CampaignAction
+}
+export const CampaignAction: FC<CampaignActionProps> = ({
+  action: { when, address, amount, type },
+}) => (
+  <div className={cn("py-5", "border-b border-light")}>
+    <div className="flex flex-row justify-between items-center">
+      <p
+        className={cn("font-semibold", {
+          "text-white": type === CampaignActionType.Fund,
+          "text-orange": type === CampaignActionType.Refund,
+        })}
+      >
+        {type === CampaignActionType.Fund ? "+" : "-"}{" "}
+        {prettyPrintDecimal(amount)} {payTokenSymbol}
+      </p>
+      {!!when && <TimeAgo date={when} className="text-placeholder" />}
+    </div>
+    <p className="text-sm text-placeholder font-mono mt-1">{address}</p>
+  </div>
+)

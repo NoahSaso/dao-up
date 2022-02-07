@@ -27,3 +27,13 @@ export const getOfflineSigner = async () => {
   await keplr.enable(chainId)
   return await keplr.getOfflineSignerAuto(chainId)
 }
+
+export const suggestToken = async (address: string) => {
+  const keplr = await get()
+  if (!keplr) return false
+
+  return keplr
+    .suggestToken(chainId, address)
+    .then(() => true)
+    .catch(() => false)
+}

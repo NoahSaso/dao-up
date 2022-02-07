@@ -6,12 +6,14 @@ interface ButtonLinkProps {
   href: string
   children: ReactNode | ReactNode[]
   outline?: boolean
+  cardOutline?: boolean
   className?: string
 }
 export const ButtonLink: FC<ButtonLinkProps> = ({
   href,
   children,
   outline,
+  cardOutline,
   className,
 }) => {
   const internal = href.startsWith("/")
@@ -28,8 +30,9 @@ export const ButtonLink: FC<ButtonLinkProps> = ({
         "border border-green",
         {
           "bg-dark text-green hover:bg-green hover:text-dark": outline,
+          "bg-card text-green hover:bg-green hover:text-card": cardOutline,
           "bg-green text-dark hover:bg-[transparent] hover:text-green":
-            !outline,
+            !outline && !cardOutline,
         },
         className
       )}
