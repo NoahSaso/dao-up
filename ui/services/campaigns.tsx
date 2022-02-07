@@ -96,11 +96,12 @@ export const defaultNewCampaign: Partial<NewCampaign> = {
   hidden: false,
 }
 
-export const visibleCampaignsFromResponses = (
-  campaignResponses: CampaignResponse[]
+export const campaignsFromResponses = (
+  campaignResponses: CampaignResponse[],
+  includeHidden = false
 ): Campaign[] =>
   campaignResponses
-    .filter(({ campaign }) => !campaign?.hidden)
+    .filter(({ campaign }) => !!campaign && (includeHidden || !campaign.hidden))
     .map(({ campaign }) => campaign!)
 
 export const categorizedWalletCampaigns = (
