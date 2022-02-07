@@ -6,12 +6,23 @@ import { atom, selector } from "recoil"
 
 import { endpoint } from "../helpers/config"
 import { getOfflineSigner } from "../services/keplr"
+import { localStorageEffect } from "./effects"
 
 // Change keplrKeystoreId to trigger Keplr refresh/connect.
 // Set to -1 to disable connection.
+// TODO: Figure out how to unset localStore if they reject in the future.
+const keplrKeystoreIdKey = "keplrKeystoreId"
 export const keplrKeystoreIdAtom = atom({
-  key: "keplrKeystoreId",
-  default: 0,
+  key: keplrKeystoreIdKey,
+  default: -1,
+  effects: [
+    // Store whether previously connected, but restart at 0 on each page load instead of infinitely increment a value in their local storage.
+    localStorageEffect(
+      keplrKeystoreIdKey,
+      (id) => (id > -1).toString(),
+      (saved) => (saved === "true" ? 0 : -1)
+    ),
+  ],
 })
 
 export const keplrOfflineSigner = selector({
@@ -21,7 +32,12 @@ export const keplrOfflineSigner = selector({
     const id = get(keplrKeystoreIdAtom)
     if (id < 0) return
 
-    return await getOfflineSigner()
+    try {
+      return await getOfflineSigner()
+    } catch (error) {
+      console.error(error)
+      // TODO: Handle error.
+    }
   },
 })
 

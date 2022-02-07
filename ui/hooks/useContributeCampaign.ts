@@ -17,6 +17,8 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
   const contributeCampaign = useRecoilCallback(
     ({ snapshot }) =>
       async (amount: number) => {
+        setContributeCampaignError(null)
+
         if (!campaign) {
           setContributeCampaignError("Campaign is not loaded.")
           return false
@@ -63,7 +65,7 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
           setLoading(false)
         }
       },
-    [setLoading, campaign, refreshCampaign]
+    [setLoading, campaign, refreshCampaign, setContributeCampaignError]
   )
 
   return { contributeCampaign, contributeCampaignError }

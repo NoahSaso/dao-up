@@ -27,6 +27,7 @@ import { numberPattern } from "../../helpers/form"
 import { prettyPrintDecimal } from "../../helpers/number"
 import { useContributeCampaign } from "../../hooks/useContributeCampaign"
 import { useRefundCampaign } from "../../hooks/useRefundCampaign"
+import useWallet from "../../hooks/useWallet"
 import { campaignWalletBalance, fetchCampaign } from "../../state/campaigns"
 import { Status } from "../../types"
 
@@ -109,6 +110,7 @@ interface CampaignContentProps {
 const CampaignContent: FC<CampaignContentProps> = ({
   router: { isReady, query, push: routerPush },
 }) => {
+  const { connect, connected } = useWallet()
   const { campaign, error: campaignError } = useRecoilValue(
     fetchCampaign(
       isReady && typeof query.address === "string" ? query.address : ""
@@ -294,7 +296,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
               onSubmit={contributionHandleSubmit(doContribution)}
               className={cn(
                 "flex flex-col items-stretch mt-8",
-                "sm:flex-row sm:items-start lg:self-stretch lg:my-0",
+                "sm:flex-row sm:items-start lg:self-stretch lg:mb-0",
                 { hidden: !open }
               )}
             >
@@ -385,15 +387,28 @@ const CampaignContent: FC<CampaignContentProps> = ({
           )}
         >
           <h2 className="text-xl text-green mb-2">Your Balance</h2>
-          <p className="text-light">
-            {prettyPrintDecimal(balance ?? 0, 6)} {tokenSymbol}
-            {supply > 0 && !!balance && (
-              <span className="text-placeholder ml-2">
-                {prettyPrintDecimal((100 * balance) / supply, 2)}% of total
-                supply
-              </span>
-            )}
-          </p>
+
+          {connected ? (
+            <p className="text-light">
+              {prettyPrintDecimal(balance ?? 0, 6)} {tokenSymbol}
+              {supply > 0 && !!balance && (
+                <span className="text-placeholder ml-2">
+                  {prettyPrintDecimal((100 * balance) / supply, 2)}% of total
+                  supply
+                </span>
+              )}
+            </p>
+          ) : (
+            <>
+              <p className="text-orange">
+                You haven&apos;t connected a wallet. Connect one to contribute,
+                view your balance, or refund.
+              </p>
+              <Button className="mt-4" onClick={connect}>
+                Connect a wallet
+              </Button>
+            </>
+          )}
 
           {balance !== null && (
             <div className={cn({ hidden: !open || balance === 0 })}>

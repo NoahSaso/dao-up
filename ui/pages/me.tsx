@@ -17,7 +17,7 @@ import useWallet from "../hooks/useWallet"
 import { categorizedWalletCampaigns } from "../services/campaigns"
 
 const Me: NextPage = () => {
-  const { walletAddress, connect } = useWallet()
+  const { walletAddress, connect, connected } = useWallet()
 
   return (
     <>
@@ -31,7 +31,7 @@ const Me: NextPage = () => {
       <CenteredColumn className="pt-5 pb-10">
         <h1 className="font-semibold text-4xl">Your Wallet</h1>
 
-        {!!walletAddress ? (
+        {connected ? (
           <>
             <StatusIndicator
               color="green"
@@ -43,8 +43,8 @@ const Me: NextPage = () => {
         ) : (
           <>
             <p className="my-2">
-              You haven&apos;t connected any wallets. Connect a wallet to start
-              making contributions.
+              You haven&apos;t connected a wallet. Connect one to start making
+              contributions.
             </p>
             <p className="flex flex-row items-center">
               What&apos;s a wallet?
@@ -57,7 +57,7 @@ const Me: NextPage = () => {
         )}
 
         <Suspense loader={{ containerClassName: "mt-16" }}>
-          <MeContent walletAddress={walletAddress} />
+          <MeContent walletAddress={walletAddress} connected={connected} />
         </Suspense>
       </CenteredColumn>
     </>
@@ -66,8 +66,9 @@ const Me: NextPage = () => {
 
 interface MeContentProps {
   walletAddress: string | undefined
+  connected: boolean
 }
-const MeContent: FC<MeContentProps> = ({ walletAddress }) => {
+const MeContent: FC<MeContentProps> = ({ walletAddress, connected }) => {
   const { campaigns, error } = useGetCampaigns()
   const { creatorCampaigns, contributorCampaigns } = categorizedWalletCampaigns(
     campaigns,
@@ -117,7 +118,7 @@ const MeContent: FC<MeContentProps> = ({ walletAddress }) => {
 
   return (
     <>
-      {!!walletAddress &&
+      {connected &&
         // If no user campaigns but user has contributed, show contributions first. Otherwise, default to campaigns on top.
         (contributorCampaigns.length && !creatorCampaigns.length ? (
           <>

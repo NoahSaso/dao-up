@@ -16,6 +16,8 @@ export const useRefundCampaign = (campaign: Campaign | null) => {
   const refundCampaign = useRecoilCallback(
     ({ snapshot }) =>
       async (amount: number) => {
+        setRefundCampaignError(null)
+
         if (!campaign) {
           setRefundCampaignError("Campaign is not loaded.")
           return false
@@ -65,7 +67,7 @@ export const useRefundCampaign = (campaign: Campaign | null) => {
           setLoading(false)
         }
       },
-    [setLoading, campaign, refreshCampaign]
+    [setLoading, campaign, refreshCampaign, setRefundCampaignError]
   )
 
   return { refundCampaign, refundCampaignError }
