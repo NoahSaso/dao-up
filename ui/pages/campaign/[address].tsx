@@ -27,7 +27,6 @@ import { numberPattern } from "../../helpers/form"
 import { prettyPrintDecimal } from "../../helpers/number"
 import { useContributeCampaign } from "../../hooks/useContributeCampaign"
 import { useRefundCampaign } from "../../hooks/useRefundCampaign"
-import useWallet from "../../hooks/useWallet"
 import { campaignWalletBalance, fetchCampaign } from "../../state/campaigns"
 import { Status } from "../../types"
 
@@ -110,7 +109,6 @@ interface CampaignContentProps {
 const CampaignContent: FC<CampaignContentProps> = ({
   router: { isReady, query, push: routerPush },
 }) => {
-  useWallet()
   const { campaign, error: campaignError } = useRecoilValue(
     fetchCampaign(
       isReady && typeof query.address === "string" ? query.address : ""
