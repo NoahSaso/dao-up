@@ -1,14 +1,22 @@
-import { selector, selectorFamily } from "recoil"
+import { atomFamily, selector, selectorFamily } from "recoil"
 
-import { escrowContractCodeId } from "../helpers/config"
+import { daoUrlPrefix, escrowContractCodeId } from "../helpers/config"
 import { Status } from "../types"
 import { cosmWasmClient } from "./web3"
+
+export const campaignStateId = atomFamily<number, string | undefined>({
+  key: "campaignStateId",
+  default: 0,
+})
 
 export const campaignState = selectorFamily<CampaignStateResponse, string>({
   key: "campaignState",
   get:
     (address) =>
     async ({ get }) => {
+      // Allow us to manually refresh campaign state.
+      get(campaignStateId(address))
+
       const client = get(cosmWasmClient)
 
       try {
@@ -67,7 +75,7 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
 
             dao: {
               address: state.dao_addr,
-              url: `https://daodao.zone/dao/${state.dao_addr}`,
+              url: daoUrlPrefix + state.dao_addr,
               govToken: {
                 address: state.gov_token_addr,
               },

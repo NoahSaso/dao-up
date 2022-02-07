@@ -127,7 +127,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
   })
 
   const { contributeCampaign, contributeCampaignError } =
-    useContributeCampaign()
+    useContributeCampaign(campaign)
 
   // Refund Form
   const {
@@ -139,7 +139,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
     defaultValues: {} as RefundForm,
   })
 
-  const { refundCampaign, refundCampaignError } = useRefundCampaign()
+  const { refundCampaign, refundCampaignError } = useRefundCampaign(campaign)
 
   // If no campaign, navigate to campaigns list.
   useEffect(() => {
@@ -155,14 +155,14 @@ const CampaignContent: FC<CampaignContentProps> = ({
   const watchContribution = contributionWatch("contribution")
   const doContribution = async ({ contribution }: ContributionForm) => {
     if (!contribution) return
-    await contributeCampaign(campaign, contribution)
+    await contributeCampaign(contribution)
   }
 
   // Refund Form
   const watchRefund = refundWatch("refund")
   const doRefund = async ({ refund }: RefundForm) => {
     if (!refund) return
-    await refundCampaign(campaign, refund)
+    await refundCampaign(refund)
   }
 
   const {
@@ -185,6 +185,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
   } = campaign ?? {}
 
   const inactive = status !== Status.Open
+  const complete = status === Status.Complete
   const overfunded = pledged > goal
 
   const userTokens: number = 1e12
@@ -203,7 +204,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
 
   return (
     <>
-      {!!daoUrl && (
+      {complete && (
         <p className="bg-green text-dark text-center w-full px-12 py-2">
           {name} has been successfully funded!{" "}
           <a
