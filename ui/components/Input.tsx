@@ -53,6 +53,7 @@ export const Input = forwardRef<HTMLInputElement, UnforwardedInputProps>(
           className
         )}
         disabled={disabled}
+        {...(props.type === "number" ? { step: 1e-6 } : {})}
         {...props}
         ref={ref}
       />
@@ -597,48 +598,52 @@ export const ControlledFormPercentTokenDoubleInput: FC<
   shared,
   second,
   ...props
-}) => (
-  <Controller
-    control={control}
-    name={name}
-    rules={{
-      required: required ? "Required" : undefined,
-      pattern: numberPattern,
-      min: {
-        value: minValue ?? 0,
-        message: `Must be at least ${prettyPrintDecimal(
-          (minValue ?? 0) / maxValue,
-          2
-        )}% / ${prettyPrintDecimal(minValue ?? 0)} ${currency}.`,
-      },
-      max: {
-        value: maxValue,
-        message: `Must be less than or equal to 100% / ${prettyPrintDecimal(
-          maxValue
-        )} ${currency}.`,
-      },
-    }}
-    render={({
-      field: { onChange, onBlur, value, ref, ...field },
-      fieldState: { error },
-    }) => (
-      <FormPercentTokenDoubleInput
-        error={error?.message}
-        maxValue={maxValue}
-        currency={currency}
-        value={value}
-        onChangeAmount={onChange}
-        shared={{
-          onBlur,
-          className: cn({ "!border-orange": !!error }),
-          ...shared,
-        }}
-        second={{
-          ...second,
-          ...field,
-        }}
-        {...props}
-      />
-    )}
-  />
-)
+}) => {
+  const min = minValue ?? 1e-6
+
+  return (
+    <Controller
+      control={control}
+      name={name}
+      rules={{
+        required: required ? "Required" : undefined,
+        pattern: numberPattern,
+        min: {
+          value: min,
+          message: `Must be at least ${prettyPrintDecimal(
+            min / maxValue,
+            2
+          )}% / ${prettyPrintDecimal(min)} ${currency}.`,
+        },
+        max: {
+          value: maxValue,
+          message: `Must be less than or equal to 100% / ${prettyPrintDecimal(
+            maxValue
+          )} ${currency}.`,
+        },
+      }}
+      render={({
+        field: { onChange, onBlur, value, ref, ...field },
+        fieldState: { error },
+      }) => (
+        <FormPercentTokenDoubleInput
+          error={error?.message}
+          maxValue={maxValue}
+          currency={currency}
+          value={value}
+          onChangeAmount={onChange}
+          shared={{
+            onBlur,
+            className: cn({ "!border-orange": !!error }),
+            ...shared,
+          }}
+          second={{
+            ...second,
+            ...field,
+          }}
+          {...props}
+        />
+      )}
+    />
+  )
+}

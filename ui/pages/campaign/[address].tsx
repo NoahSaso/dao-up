@@ -255,7 +255,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
   )
   // Refund
   // Minimum refund is how many funding tokens (with decimals) per 1 ujuno(x).
-  const minRefund = Math.ceil(price ?? 0) / 1e6
+  const minRefund = Math.ceil(price ?? 1e-6) / 1e6
   const expectedPayTokensReceived =
     watchRefund && watchRefund > 0 && price ? watchRefund / price : 0
 
@@ -364,14 +364,12 @@ const CampaignContent: FC<CampaignContentProps> = ({
             >
               <FormInput
                 type="number"
-                step={0.000001}
                 inputMode="decimal"
                 placeholder="Contribute..."
                 accent={
                   expectedFundingTokensReceived
                     ? `You will receive about ${prettyPrintDecimal(
-                        expectedFundingTokensReceived,
-                        6
+                        expectedFundingTokensReceived
                       )} ${tokenSymbol}`
                     : undefined
                 }
@@ -394,8 +392,8 @@ const CampaignContent: FC<CampaignContentProps> = ({
                   valueAsNumber: true,
                   pattern: numberPattern,
                   min: {
-                    value: 0,
-                    message: `Must be greater than 0 ${payTokenSymbol}.`,
+                    value: 1e-6,
+                    message: `Must be at least 0.000001 ${payTokenSymbol}.`,
                   },
                   max: {
                     value: maxContribution,
@@ -431,7 +429,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
             <CampaignProgress campaign={campaign} className="mt-2" />
 
             <h3 className="mt-2 text-green text-3xl">
-              {prettyPrintDecimal(pledged, 6)} {payTokenSymbol}
+              {prettyPrintDecimal(pledged)} {payTokenSymbol}
             </h3>
             <p className="text-light text-sm">
               pledged out of {goal.toLocaleString()} {payTokenSymbol} goal.
@@ -460,7 +458,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
 
           {connected ? (
             <p className="text-light">
-              {prettyPrintDecimal(balance ?? 0, 6)} {tokenSymbol}
+              {prettyPrintDecimal(balance ?? 0)} {tokenSymbol}
               {supply > 0 && !!balance && (
                 <span className="text-placeholder ml-2">
                   {prettyPrintDecimal((100 * balance) / supply, 2)}% of total
@@ -512,8 +510,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
                     accent={
                       expectedPayTokensReceived
                         ? `You will receive about ${prettyPrintDecimal(
-                            expectedPayTokensReceived,
-                            6
+                            expectedPayTokensReceived
                           )} ${payTokenSymbol}`
                         : undefined
                     }

@@ -245,8 +245,8 @@ const CreateContent: FC = () => {
               valueAsNumber: true,
               pattern: numberPattern,
               min: {
-                value: 0.01,
-                message: "Must be at least 0.01.",
+                value: 1e-6,
+                message: "Must be at least 0.000001.",
               },
             })}
           />
