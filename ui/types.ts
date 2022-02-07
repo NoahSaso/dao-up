@@ -8,6 +8,7 @@ declare global {
     when: Date
     address: string
     amount: number
+    activity: ActivityType
   }
 
   interface Campaign {
@@ -45,8 +46,6 @@ declare global {
     website?: string
     twitter?: string
     discord?: string
-
-    activity: ActivityItem[]
   }
 
   interface NewCampaign {
@@ -112,6 +111,11 @@ export enum Color {
   Orange = "orange",
   Light = "light",
   Placeholder = "placeholder",
+}
+
+export enum ActivityType {
+  Fund = "fund",
+  Refund = "refund",
 }
 
 export type ColorType = `${Color}`

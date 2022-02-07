@@ -29,8 +29,12 @@ import { prettyPrintDecimal } from "../../helpers/number"
 import { useContributeCampaign } from "../../hooks/useContributeCampaign"
 import { useRefundCampaign } from "../../hooks/useRefundCampaign"
 import { useWallet } from "../../hooks/useWallet"
-import { campaignWalletBalance, fetchCampaign } from "../../state/campaigns"
-import { Status } from "../../types"
+import {
+  campaignWalletBalance,
+  fetchCampaign,
+  fetchCampaignFundActions,
+} from "../../state/campaigns"
+import { ActivityType, Status } from "../../types"
 
 interface CampaignLinkProps {
   href: string
@@ -57,18 +61,25 @@ interface ActivityItemProps {
   item: ActivityItem
 }
 const ActivityItem: FC<ActivityItemProps> = ({
-  item: { when, address, amount },
-}) => (
-  <div className={cn("py-5", "border-b border-light")}>
-    <div className="flex flex-row justify-between items-center">
-      <p className="font-semibold">
-        {amount} {payTokenSymbol}
-      </p>
-      <TimeAgo date={when} />
+  item: { when, address, amount, activity },
+}) => {
+  const formatActivity = (a: ActivityType) => {
+    if (a === ActivityType.Fund) return "+"
+    return "-"
+  }
+
+  return (
+    <div className={cn("py-5", "border-b border-light")}>
+      <div className="flex flex-row justify-between items-center">
+        <p className="font-semibold">
+          {formatActivity(activity)} {amount * 10 ** -6} {payTokenSymbol}
+        </p>
+        <TimeAgo date={when} />
+      </div>
+      <p className="text-sm font-mono mt-1">{address}</p>
     </div>
-    <p>{address}</p>
-  </div>
-)
+  )
+}
 
 interface AddressDisplayProps {
   label: string
@@ -152,6 +163,8 @@ const CampaignContent: FC<CampaignContentProps> = ({
     fetchCampaign(campaignAddress)
   )
 
+  const activity = useRecoilValue(fetchCampaignFundActions(campaignAddress))
+
   const { balance, error: balanceError } = useRecoilValue(
     campaignWalletBalance(campaign?.address)
   )
@@ -213,8 +226,6 @@ const CampaignContent: FC<CampaignContentProps> = ({
     website,
     twitter,
     discord,
-
-    activity,
   } = campaign ?? {}
 
   // Contribution Form
@@ -535,9 +546,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
         <h2 className="text-green text-xl mt-8">Activity</h2>
         <div className=" w-full lg:w-3/5">
           {activity.length ? (
-            activity.map((item) => (
-              <ActivityItem key={item.when.toString()} item={item} />
-            ))
+            activity.map((item, idx) => <ActivityItem key={idx} item={item} />)
           ) : (
             <p>None yet.</p>
           )}
