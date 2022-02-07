@@ -1,7 +1,9 @@
+import { coin } from "@cosmjs/stargate"
 import type { NextPage } from "next"
 import { useRouter } from "next/router"
-import { FC, useEffect } from "react"
+import { FC, useCallback, useEffect, useState } from "react"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
+import { useRecoilValue, useSetRecoilState } from "recoil"
 
 import {
   Button,
@@ -12,10 +14,18 @@ import {
   ResponsiveDecoration,
   Suspense,
 } from "../components"
-import { payTokenSymbol } from "../helpers/config"
+import {
+  cw20CodeId,
+  defaultExecuteFee,
+  escrowContractCodeId,
+  fundingTokenDenom,
+  payTokenSymbol,
+} from "../helpers/config"
 import { junoAddressPattern, numberPattern, urlPattern } from "../helpers/form"
-import { useCreateCampaign } from "../hooks/useCreateCampaign"
+import useWallet from "../hooks/useWallet"
 import { defaultNewCampaign, newCampaignFields } from "../services/campaigns"
+import { globalLoadingAtom } from "../state/loading"
+import { signedCosmWasmClient } from "../state/web3"
 
 const Create: NextPage = () => (
   <>
@@ -33,9 +43,16 @@ const Create: NextPage = () => (
 )
 
 const CreateContent: FC = () => {
-  const router = useRouter()
-  const { createCampaign, createCampaignError, setLoading } =
-    useCreateCampaign()
+  const { push: routerPush } = useRouter()
+  const { walletAddress, connect, connected } = useWallet()
+  const client = useRecoilValue(signedCosmWasmClient)
+  const setLoading = useSetRecoilState(globalLoadingAtom)
+  const [createCampaignError, setCreateCampaignError] = useState(
+    null as string | null
+  )
+  const [pendingCampaignCreation, setPendingCampaignCreation] = useState(
+    null as Partial<NewCampaign> | null
+  )
 
   const {
     handleSubmit,
@@ -54,20 +71,105 @@ const CreateContent: FC = () => {
       })
   }, [createCampaignError])
 
-  const onSubmit: SubmitHandler<Partial<NewCampaign>> = async (values) => {
-    // TODO: Perform final validation here?
-    const address = await createCampaign(
-      values as unknown as NewCampaign,
-      false
-    )
+  const createCampaign = useCallback(
+    async (newCampaign: NewCampaign) => {
+      setCreateCampaignError(null)
 
-    // If the campaign was created successfully, redirect to the campaign page.
-    // If the campaign was not created successfully, createCampaignError will show.
-    if (address) await router.push(`/campaign/${address}`)
+      if (!client) {
+        setCreateCampaignError("Failed to get signing client.")
+        return
+      }
+      if (!walletAddress) {
+        setCreateCampaignError("Wallet not connected.")
+        return
+      }
 
-    // Hide loading since we told createCampaign not to hide it when done.
-    setLoading(false)
-  }
+      setLoading(true)
+
+      try {
+        const msg = {
+          dao_address: newCampaign.daoAddress,
+          cw20_code_id: cw20CodeId,
+
+          funding_goal: coin(newCampaign.goal * 1e6, fundingTokenDenom),
+          funding_token_name: newCampaign.tokenName,
+          funding_token_symbol: newCampaign.tokenSymbol,
+
+          campaign_info: {
+            name: newCampaign.name,
+            description: newCampaign.description,
+            hidden: newCampaign.hidden,
+
+            ...(newCampaign.imageUrl && { image_url: newCampaign.imageUrl }),
+            ...(newCampaign.website && { website: newCampaign.website }),
+            ...(newCampaign.twitter && { twitter: newCampaign.twitter }),
+            ...(newCampaign.discord && { discord: newCampaign.discord }),
+          },
+        }
+
+        const { contractAddress } = await client.instantiate(
+          walletAddress,
+          escrowContractCodeId,
+          msg,
+          `[DAO Up!] ${newCampaign.name}`,
+          defaultExecuteFee
+        )
+
+        console.log(contractAddress)
+
+        return contractAddress
+      } catch (error) {
+        console.error(error)
+        // TODO: Set better error messages.
+        setCreateCampaignError(`${error}`)
+      }
+      // Don't stop loading until we've redirected or not. Handled elsewhere.
+    },
+    [setLoading, client, walletAddress, setCreateCampaignError]
+  )
+
+  const onSubmit: SubmitHandler<Partial<NewCampaign>> = useCallback(
+    async (values) => {
+      // Connect to wallet if necessary.
+      if (!connected) {
+        setPendingCampaignCreation(values)
+        connect()
+        return
+      }
+
+      // TODO: Perform final validation here?
+      const address = await createCampaign(values as unknown as NewCampaign)
+
+      // If the campaign was created successfully, redirect to the campaign page.
+      // If the campaign was not created successfully, createCampaignError will show.
+      if (address) await routerPush(`/campaign/${address}`)
+
+      // Hide loading since we told createCampaign not to hide it when done.
+      setLoading(false)
+    },
+    [
+      createCampaign,
+      connected,
+      setLoading,
+      connect,
+      routerPush,
+      setPendingCampaignCreation,
+    ]
+  )
+
+  // Fire pending creation after connection succeeds.
+  useEffect(() => {
+    if (connected && pendingCampaignCreation) {
+      onSubmit(pendingCampaignCreation)
+      setPendingCampaignCreation(null)
+    }
+  }, [
+    connected,
+    createCampaign,
+    pendingCampaignCreation,
+    setPendingCampaignCreation,
+    onSubmit,
+  ])
 
   return (
     <>

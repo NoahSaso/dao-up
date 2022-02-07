@@ -110,7 +110,7 @@ interface CampaignContentProps {
 const CampaignContent: FC<CampaignContentProps> = ({
   router: { isReady, query, push: routerPush },
 }) => {
-  const { connect, connected } = useWallet()
+  const { walletAddress, connect, connected } = useWallet()
   const { campaign, error: campaignError } = useRecoilValue(
     fetchCampaign(
       isReady && typeof query.address === "string" ? query.address : ""
@@ -181,6 +181,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
     description,
 
     status,
+    creator,
 
     goal,
     pledged,
@@ -198,6 +199,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
   const inactive = status !== Status.Open
   const complete = status === Status.Complete
   const overfunded = pledged > goal
+  const createdByMe = connected && creator === walletAddress
 
   // Contribution
   const expectedFundingTokensReceived =
@@ -317,9 +319,15 @@ const CampaignContent: FC<CampaignContentProps> = ({
                 className="!py-3 !px-6 !pr-28"
                 tail={payTokenSymbol}
                 error={
-                  contributionErrors?.contribution?.message ??
-                  contributeCampaignError ??
-                  undefined
+                  inactive
+                    ? `You cannot contribute to an inactive campaign.${
+                        status === Status.Pending && !createdByMe
+                          ? " Check back later once it launches."
+                          : ""
+                      }`
+                    : contributionErrors?.contribution?.message ??
+                      contributeCampaignError ??
+                      undefined
                 }
                 disabled={inactive}
                 {...contributionRegister("contribution", {

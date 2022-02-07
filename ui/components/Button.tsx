@@ -61,7 +61,7 @@ export const Button: FC<ButtonProps> = ({
       "text-dark hover:bg-[transparent]": !simple && !outline,
     },
     { "hover:opacity-50": simple },
-    { "opacity-50 pointer-events-none cursor-not-allowed": disabled },
+    { "opacity-40 pointer-events-none cursor-not-allowed": disabled },
     className
   )
 

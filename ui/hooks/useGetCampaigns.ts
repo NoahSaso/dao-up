@@ -2,11 +2,15 @@ import fuzzysort from "fuzzysort"
 import { useEffect, useState } from "react"
 import { useRecoilValue, waitForAll } from "recoil"
 
-import { visibleCampaignsFromResponses } from "../services/campaigns"
+import { campaignsFromResponses } from "../services/campaigns"
 import { escrowContractAddresses, fetchCampaign } from "../state/campaigns"
 
 let campaignsFilterId = 0
-export const useGetCampaigns = (filter?: string) => {
+export const useGetCampaigns = (
+  filter?: string,
+  includeHidden = false,
+  includePending = false
+) => {
   const { addresses, error: escrowContractAddressesError } = useRecoilValue(
     escrowContractAddresses
   )
@@ -15,7 +19,7 @@ export const useGetCampaigns = (filter?: string) => {
   )
 
   const [campaigns, setCampaigns] = useState(
-    visibleCampaignsFromResponses(campaignResponses)
+    campaignsFromResponses(campaignResponses, includeHidden, includePending)
   )
   const [filtering, setFiltering] = useState(false)
   const [filterError, setFilterError] = useState(null as string | null)
@@ -23,7 +27,13 @@ export const useGetCampaigns = (filter?: string) => {
   useEffect(() => {
     const updateCampaigns = async () => {
       if (!filter)
-        return setCampaigns(visibleCampaignsFromResponses(campaignResponses))
+        return setCampaigns(
+          campaignsFromResponses(
+            campaignResponses,
+            includeHidden,
+            includePending
+          )
+        )
 
       setFiltering(true)
       setFilterError(null)
@@ -31,11 +41,14 @@ export const useGetCampaigns = (filter?: string) => {
       try {
         let id = ++campaignsFilterId
 
-        const visibleCampaigns =
-          visibleCampaignsFromResponses(campaignResponses)
+        const relevantCampaigns = campaignsFromResponses(
+          campaignResponses,
+          includeHidden,
+          includePending
+        )
 
         const filtered = (
-          await fuzzysort.goAsync(filter, visibleCampaigns, {
+          await fuzzysort.goAsync(filter, relevantCampaigns, {
             keys: ["name", "description"],
             allowTypo: true,
           })
@@ -57,7 +70,14 @@ export const useGetCampaigns = (filter?: string) => {
     // Debounce filter input (wait 350ms before refiltering campaigns).
     const timer = setTimeout(() => updateCampaigns(), 350)
     return () => clearTimeout(timer)
-  }, [campaignResponses, filter, setCampaigns, setFiltering])
+  }, [
+    campaignResponses,
+    filter,
+    setCampaigns,
+    setFiltering,
+    includeHidden,
+    includePending,
+  ])
 
   const firstError =
     escrowContractAddressesError ??
