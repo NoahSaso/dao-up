@@ -36,6 +36,7 @@ export const Input = forwardRef<HTMLInputElement, UnforwardedInputProps>(
       tail,
       tailContainerClassName,
       tailClassName,
+      disabled,
       ...props
     },
     ref
@@ -48,15 +49,18 @@ export const Input = forwardRef<HTMLInputElement, UnforwardedInputProps>(
           "rounded-full",
           "border border-card focus:outline-none focus:border-green",
           "transition",
+          { "opacity-40 pointer-events-none cursor-not-allowed": disabled },
           className
         )}
+        disabled={disabled}
         {...props}
         ref={ref}
       />
       {!!tail && (
         <div
           className={cn(
-            "absolute top-0 right-0 bottom-0 rounded-full",
+            "absolute top-[1px] right-[1px] bottom-[1px] rounded-full",
+            { "opacity-40 pointer-events-none cursor-not-allowed": disabled },
             tailContainerClassName
           )}
         >
