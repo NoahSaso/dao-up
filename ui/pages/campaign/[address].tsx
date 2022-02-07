@@ -406,7 +406,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
 
               <Button
                 className="sm:h-[50px]"
-                submitLabel="Support this Campaign"
+                submitLabel="Support this campaign"
                 disabled={inactive}
               />
             </form>
