@@ -55,6 +55,13 @@ export const Header: FC = () => (
       <div className="flex flex-row items-center">
         <NavItem href="/campaigns">Campaigns</NavItem>
 
+        <NavItem
+          href="https://docs.daoup.zone"
+          className="hidden md:inline-block"
+        >
+          Docs
+        </NavItem>
+
         <NavItem href="/#faq" className="hidden md:inline-block">
           FAQ
         </NavItem>

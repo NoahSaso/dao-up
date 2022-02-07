@@ -7,12 +7,14 @@ import { FC } from "react"
 import { RecoilRoot, useRecoilValue } from "recoil"
 
 import { Header, Loader, Suspense } from "../components"
+import { Footer } from "../components/Footer"
 import { globalLoadingAtom } from "../state/loading"
 
 const Title = "DAO Up!"
 const Description = ""
-const Domain = "https://dao-up.net"
-const ImageUrl = "https://dao-up.net/image.png"
+const Domain = "https://daoup.zone"
+const ImageUrl =
+  "https://daoup.zone/_next/image?url=%2Fimages%2Flogo.svg&w=128&q=75"
 
 const DAOUp: FC<AppProps> = ({ Component, pageProps }) => {
   const loading = useRecoilValue(globalLoadingAtom)
@@ -35,6 +37,8 @@ const DAOUp: FC<AppProps> = ({ Component, pageProps }) => {
           <Component {...pageProps} />
         </main>
       </Suspense>
+
+      <Footer />
     </>
   )
 }
