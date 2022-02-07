@@ -228,7 +228,6 @@ const CampaignContent: FC<CampaignContentProps> = ({
     }
   }
 
-  const inactive = status !== Status.Open
   const overfunded = pledged > goal
   const createdByMe = connected && creator === walletAddress
 
@@ -343,62 +342,64 @@ const CampaignContent: FC<CampaignContentProps> = ({
               )}
             </div>
 
-            <form
-              onSubmit={contributionHandleSubmit(doContribution)}
-              className={cn(
-                "flex flex-col items-stretch mt-8",
-                "sm:flex-row sm:items-start lg:self-stretch lg:mb-0",
-                { hidden: !open }
-              )}
-            >
-              <FormInput
-                type="number"
-                inputMode="decimal"
-                placeholder="Contribute..."
-                accent={
-                  expectedFundingTokensReceived
-                    ? `You will receive about ${prettyPrintDecimal(
-                        expectedFundingTokensReceived
-                      )} ${tokenSymbol}`
-                    : undefined
-                }
-                wrapperClassName="!mb-4 sm:!mb-0 sm:mr-4 sm:flex-1"
-                className="!py-3 !px-6 !pr-28"
-                tail={payTokenSymbol}
-                error={
-                  inactive
-                    ? `You cannot contribute to an inactive campaign.${
-                        status === Status.Pending && !createdByMe
-                          ? " Check back later once it launches."
-                          : ""
-                      }`
-                    : contributionErrors?.contribution?.message ??
-                      contributeCampaignError ??
-                      undefined
-                }
-                disabled={inactive}
-                {...contributionRegister("contribution", {
-                  valueAsNumber: true,
-                  pattern: numberPattern,
-                  min: {
-                    value: 1e-6,
-                    message: `Must be at least 0.000001 ${payTokenSymbol}.`,
-                  },
-                  max: {
-                    value: maxContribution,
-                    message: `Must be less than or equal to ${prettyPrintDecimal(
-                      maxContribution
-                    )} ${payTokenSymbol}.`,
-                  },
-                })}
-              />
+            {(status === Status.Pending || status === Status.Open) && (
+              <form
+                onSubmit={contributionHandleSubmit(doContribution)}
+                className={cn(
+                  "flex flex-col items-stretch mt-8",
+                  "sm:flex-row sm:items-start lg:self-stretch lg:mb-0",
+                  { hidden: !open }
+                )}
+              >
+                <FormInput
+                  type="number"
+                  inputMode="decimal"
+                  placeholder="Contribute..."
+                  accent={
+                    expectedFundingTokensReceived
+                      ? `You will receive about ${prettyPrintDecimal(
+                          expectedFundingTokensReceived
+                        )} ${tokenSymbol}`
+                      : undefined
+                  }
+                  wrapperClassName="!mb-4 sm:!mb-0 sm:mr-4 sm:flex-1"
+                  className="!py-3 !px-6 !pr-28"
+                  tail={payTokenSymbol}
+                  error={
+                    status === Status.Pending
+                      ? `You cannot contribute to a pending campaign.${
+                          status === Status.Pending && !createdByMe
+                            ? " Check back later once it launches."
+                            : ""
+                        }`
+                      : contributionErrors?.contribution?.message ??
+                        contributeCampaignError ??
+                        undefined
+                  }
+                  disabled={status !== Status.Open}
+                  {...contributionRegister("contribution", {
+                    valueAsNumber: true,
+                    pattern: numberPattern,
+                    min: {
+                      value: 1e-6,
+                      message: `Must be at least 0.000001 ${payTokenSymbol}.`,
+                    },
+                    max: {
+                      value: maxContribution,
+                      message: `Must be less than or equal to ${prettyPrintDecimal(
+                        maxContribution
+                      )} ${payTokenSymbol}.`,
+                    },
+                  })}
+                />
 
-              <Button
-                className="sm:h-[50px]"
-                submitLabel="Support this campaign"
-                disabled={inactive}
-              />
-            </form>
+                <Button
+                  className="sm:h-[50px]"
+                  submitLabel="Support this campaign"
+                  disabled={status !== Status.Open}
+                />
+              </form>
+            )}
           </div>
 
           <div
@@ -528,7 +529,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
                       placeholder: prettyPrintDecimal(balance * 0.5),
                     }}
                     shared={{
-                      disabled: inactive,
+                      disabled: status !== Status.Open,
                     }}
                     accent={
                       expectedPayTokensReceived
@@ -548,7 +549,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
                 <Button
                   submitLabel={status === Status.Funded ? "Join DAO" : "Refund"}
                   className="mt-4"
-                  disabled={inactive && status !== Status.Funded}
+                  disabled={status !== Status.Open && status !== Status.Funded}
                 />
               </form>
             </>
