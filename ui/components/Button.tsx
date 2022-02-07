@@ -31,6 +31,7 @@ interface ButtonProps
   > {
   color?: ColorType
   outline?: boolean
+  cardOutline?: boolean
   submitLabel?: string
   simple?: boolean
   // Manually add to both types of element (input and button)
@@ -40,6 +41,7 @@ export const Button: FC<ButtonProps> = ({
   children,
   color = Color.Green,
   outline,
+  cardOutline,
   className,
   submitLabel,
   simple,
@@ -53,12 +55,14 @@ export const Button: FC<ButtonProps> = ({
     { "py-2 px-4 rounded-full": !simple },
     { border: !simple },
     {
-      [buttonBorderClasses[color][(outline ?? false).toString() as BoolString]]:
-        !simple,
+      [buttonBorderClasses[color][
+        (outline ?? cardOutline ?? false).toString() as BoolString
+      ]]: !simple,
     },
     {
       "bg-dark hover:text-dark": !simple && outline,
-      "text-dark hover:bg-[transparent]": !simple && !outline,
+      "bg-card hover:text-card": !simple && cardOutline,
+      "text-dark hover:bg-[transparent]": !simple && !outline && !cardOutline,
     },
     { "hover:opacity-50": simple },
     { "opacity-40 pointer-events-none cursor-not-allowed": disabled },

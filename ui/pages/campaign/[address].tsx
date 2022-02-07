@@ -389,7 +389,11 @@ const CampaignContent: FC<CampaignContentProps> = ({
             <CampaignStatus campaign={campaign} className="mb-2" />
 
             {!!daoUrl && (
-              <ButtonLink href={daoUrl} className="self-stretch my-2">
+              <ButtonLink
+                href={daoUrl}
+                className="self-stretch my-2"
+                cardOutline
+              >
                 Visit the DAO
               </ButtonLink>
             )}

@@ -267,15 +267,15 @@ export const CampaignAction: FC<CampaignActionProps> = ({
     <div className="flex flex-row justify-between items-center">
       <p
         className={cn("font-semibold", {
-          "text-green": type === CampaignActionType.Fund,
+          "text-white": type === CampaignActionType.Fund,
           "text-orange": type === CampaignActionType.Refund,
         })}
       >
         {type === CampaignActionType.Fund ? "+" : "-"}{" "}
         {prettyPrintDecimal(amount)} {payTokenSymbol}
       </p>
-      {!!when && <TimeAgo date={when} />}
+      {!!when && <TimeAgo date={when} className="text-placeholder" />}
     </div>
-    <p className="text-sm font-mono mt-1">{address}</p>
+    <p className="text-sm text-placeholder font-mono mt-1">{address}</p>
   </div>
 )
