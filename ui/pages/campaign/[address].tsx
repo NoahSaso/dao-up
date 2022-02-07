@@ -1,10 +1,11 @@
 import cn from "classnames"
 import type { NextPage } from "next"
 import { NextRouter, useRouter } from "next/router"
-import { FC, useEffect } from "react"
+import { FC, useEffect, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { IconType } from "react-icons"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
+import { IoCheckmark, IoCopy } from "react-icons/io5"
 import TimeAgo from "react-timeago"
 import { useRecoilValue } from "recoil"
 
@@ -69,6 +70,38 @@ const ActivityItem: FC<ActivityItemProps> = ({
   </div>
 )
 
+interface AddressDisplayProps {
+  label: string
+  address: string
+}
+const AddressDisplay: FC<AddressDisplayProps> = ({ label, address }) => {
+  const [copied, setCopied] = useState(false)
+  const copiedTimer = useRef<NodeJS.Timeout | null>(null)
+  const copy = () => {
+    if (copiedTimer.current) clearTimeout(copiedTimer.current)
+    navigator.clipboard.writeText(address)
+    setCopied(true)
+    copiedTimer.current = setTimeout(() => setCopied(false), 5000)
+  }
+
+  const Icon = copied ? IoCheckmark : IoCopy
+
+  return (
+    <p
+      className="mt-1 first-of-type:mt-4 flex flex-row justify-between items-center hover:opacity-70 transition cursor-pointer select-none"
+      onClick={copy}
+    >
+      <span className="text-placeholder pr-2">{label}</span>
+      <span className="text-green opacity-70 font-mono flex flex-row items-center">
+        <Icon size={28} className="pr-2" />
+        {address.substring(0, 8)}
+        ...
+        {address.substring(address.length - 6, address.length)}
+      </span>
+    </p>
+  )
+}
+
 interface ContributionForm {
   contribution?: number
 }
@@ -107,15 +140,18 @@ export const Campaign: NextPage = () => {
 interface CampaignContentProps {
   router: NextRouter
 }
+// TODO: Generate custom message to fund & activate campaign with governance tokens automatically.
 const CampaignContent: FC<CampaignContentProps> = ({
   router: { isReady, query, push: routerPush },
 }) => {
   const { walletAddress, connect, connected } = useWallet()
+
+  const campaignAddress =
+    isReady && typeof query.address === "string" ? query.address : ""
   const { campaign, error: campaignError } = useRecoilValue(
-    fetchCampaign(
-      isReady && typeof query.address === "string" ? query.address : ""
-    )
+    fetchCampaign(campaignAddress)
   )
+
   const { balance, error: balanceError } = useRecoilValue(
     campaignWalletBalance(campaign?.address)
   )
@@ -185,7 +221,10 @@ const CampaignContent: FC<CampaignContentProps> = ({
 
     goal,
     pledged,
-    dao: { url: daoUrl },
+    dao: {
+      url: daoUrl,
+      govToken: { address: govTokenAddress },
+    },
 
     fundingToken: { symbol: tokenSymbol, price, supply },
 
@@ -197,7 +236,6 @@ const CampaignContent: FC<CampaignContentProps> = ({
   } = campaign ?? {}
 
   const inactive = status !== Status.Open
-  const complete = status === Status.Complete
   const overfunded = pledged > goal
   const createdByMe = connected && creator === walletAddress
 
@@ -214,7 +252,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
 
   return (
     <>
-      {complete && (
+      {status === Status.Complete && (
         <p className="bg-green text-dark text-center w-full px-12 py-2">
           {name} has been successfully funded!{" "}
           <a
@@ -280,6 +318,19 @@ const CampaignContent: FC<CampaignContentProps> = ({
                         />
                       )}
                     </div>
+                  )}
+
+                  {status === Status.Pending && (
+                    <>
+                      <AddressDisplay
+                        label="Escrow contract"
+                        address={campaignAddress}
+                      />
+                      <AddressDisplay
+                        label="Governance token"
+                        address={govTokenAddress}
+                      />
+                    </>
                   )}
                 </div>
               </div>
