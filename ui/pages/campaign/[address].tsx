@@ -194,24 +194,6 @@ const CampaignContent: FC<CampaignContentProps> = ({
   // Display nothing (redirecting to campaigns list, so this is just a type check).
   if (!campaign) return null
 
-  // Contribution Form
-  const watchContribution = contributionWatch("contribution")
-  const doContribution = async ({ contribution }: ContributionForm) => {
-    if (!contribution) return
-    // If success, empty form fields.
-    // TODO: Add success display.
-    if (await contributeCampaign(contribution)) contributionReset()
-  }
-
-  // Refund Form
-  const watchRefund = refundWatch("refund")
-  const doRefund = async ({ refund }: RefundForm) => {
-    if (!refund) return
-    // If success, empty form fields.
-    // TODO: Add success display.
-    if (await refundCampaign(refund)) refundReset()
-  }
-
   const {
     name,
     description,
@@ -235,6 +217,28 @@ const CampaignContent: FC<CampaignContentProps> = ({
     activity,
   } = campaign ?? {}
 
+  // Contribution Form
+  const watchContribution = contributionWatch("contribution")
+  const doContribution = async ({ contribution }: ContributionForm) => {
+    if (!contribution) return
+    // If success, empty form fields.
+    // TODO: Add success display.
+    if (await contributeCampaign(contribution)) contributionReset()
+  }
+
+  // Refund Form
+  const watchRefund = refundWatch("refund")
+  const doRefund = async ({ refund }: RefundForm) => {
+    // If funded, the refund action becomes the join DAO action, so send all tokens.
+    if (status === Status.Funded) refund = balance ?? 0
+
+    if (!refund) return
+
+    // If success, empty form fields.
+    // TODO: Add success display.
+    if (await refundCampaign(refund)) refundReset()
+  }
+
   const inactive = status !== Status.Open
   const overfunded = pledged > goal
   const createdByMe = connected && creator === walletAddress
@@ -244,15 +248,20 @@ const CampaignContent: FC<CampaignContentProps> = ({
     watchContribution && watchContribution > 0 && price
       ? price * watchContribution
       : 0
+  // Max contribution is remaining amount left to fund. Cannot fund more than goal.
+  const maxContribution = Math.min(
+    goal - pledged,
+    Number.MAX_SAFE_INTEGER / 1e6
+  )
   // Refund
   // Minimum refund is how many funding tokens (with decimals) per 1 ujuno(x).
-  const minRefund = Math.ceil(price ?? 0) / 1e6
+  const minRefund = Math.ceil(price ?? 1e-6) / 1e6
   const expectedPayTokensReceived =
     watchRefund && watchRefund > 0 && price ? watchRefund / price : 0
 
   return (
     <>
-      {status === Status.Complete && (
+      {status === Status.Funded && (
         <p className="bg-green text-dark text-center w-full px-12 py-2">
           {name} has been successfully funded!{" "}
           <a
@@ -355,14 +364,12 @@ const CampaignContent: FC<CampaignContentProps> = ({
             >
               <FormInput
                 type="number"
-                step={0.000001}
                 inputMode="decimal"
                 placeholder="Contribute..."
                 accent={
                   expectedFundingTokensReceived
                     ? `You will receive about ${prettyPrintDecimal(
-                        expectedFundingTokensReceived,
-                        6
+                        expectedFundingTokensReceived
                       )} ${tokenSymbol}`
                     : undefined
                 }
@@ -385,19 +392,21 @@ const CampaignContent: FC<CampaignContentProps> = ({
                   valueAsNumber: true,
                   pattern: numberPattern,
                   min: {
-                    value: 0,
-                    message: "Must be greater than 0.",
+                    value: 1e-6,
+                    message: `Must be at least 0.000001 ${payTokenSymbol}.`,
                   },
                   max: {
-                    value: Number.MAX_SAFE_INTEGER / 1e6,
-                    message: "Number too large.",
+                    value: maxContribution,
+                    message: `Must be less than or equal to ${prettyPrintDecimal(
+                      maxContribution
+                    )} ${payTokenSymbol}.`,
                   },
                 })}
               />
 
               <Button
                 className="sm:h-[50px]"
-                submitLabel="Support this Campaign"
+                submitLabel="Support this campaign"
                 disabled={inactive}
               />
             </form>
@@ -420,7 +429,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
             <CampaignProgress campaign={campaign} className="mt-2" />
 
             <h3 className="mt-2 text-green text-3xl">
-              {prettyPrintDecimal(pledged, 6)} {payTokenSymbol}
+              {prettyPrintDecimal(pledged)} {payTokenSymbol}
             </h3>
             <p className="text-light text-sm">
               pledged out of {goal.toLocaleString()} {payTokenSymbol} goal.
@@ -449,7 +458,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
 
           {connected ? (
             <p className="text-light">
-              {prettyPrintDecimal(balance ?? 0, 6)} {tokenSymbol}
+              {prettyPrintDecimal(balance ?? 0)} {tokenSymbol}
               {supply > 0 && !!balance && (
                 <span className="text-placeholder ml-2">
                   {prettyPrintDecimal((100 * balance) / supply, 2)}% of total
@@ -469,48 +478,57 @@ const CampaignContent: FC<CampaignContentProps> = ({
             </>
           )}
 
-          {balance !== null && (
-            <div className={cn({ hidden: !open || balance === 0 })}>
-              <h2 className="text-xl text-green mt-8 mb-4">Refunds</h2>
+          {status !== Status.Pending && balance !== null && balance > 0 && (
+            <>
+              {status !== Status.Funded && (
+                <h2 className="text-xl text-green mt-8 mb-4">Refunds</h2>
+              )}
 
               <form onSubmit={refundHandleSubmit(doRefund)}>
-                <ControlledFormPercentTokenDoubleInput
-                  name="refund"
-                  control={refundControl}
-                  minValue={minRefund}
-                  maxValue={balance}
-                  currency={tokenSymbol}
-                  first={{
-                    placeholder: "50",
-                  }}
-                  second={{
-                    placeholder: prettyPrintDecimal(balance * 0.5, 6),
-                  }}
-                  shared={{
-                    disabled: inactive,
-                  }}
-                  accent={
-                    expectedPayTokensReceived
-                      ? `You will receive about ${prettyPrintDecimal(
-                          expectedPayTokensReceived,
-                          6
-                        )} ${payTokenSymbol}`
-                      : undefined
-                  }
-                  error={
-                    refundErrors?.refund?.message ??
-                    refundCampaignError ??
-                    undefined
-                  }
-                />
+                {status === Status.Funded ? (
+                  <p className="mt-4 text-placeholder italic">
+                    This campaign has been successfully funded. To join the DAO,
+                    exchange your {tokenSymbol} tokens by clicking the button
+                    below.
+                  </p>
+                ) : (
+                  <ControlledFormPercentTokenDoubleInput
+                    name="refund"
+                    control={refundControl}
+                    minValue={minRefund}
+                    maxValue={balance}
+                    currency={tokenSymbol}
+                    first={{
+                      placeholder: "50",
+                    }}
+                    second={{
+                      placeholder: prettyPrintDecimal(balance * 0.5),
+                    }}
+                    shared={{
+                      disabled: inactive,
+                    }}
+                    accent={
+                      expectedPayTokensReceived
+                        ? `You will receive about ${prettyPrintDecimal(
+                            expectedPayTokensReceived
+                          )} ${payTokenSymbol}`
+                        : undefined
+                    }
+                    error={
+                      refundErrors?.refund?.message ??
+                      refundCampaignError ??
+                      undefined
+                    }
+                  />
+                )}
 
                 <Button
-                  submitLabel="Refund"
+                  submitLabel={status === Status.Funded ? "Join DAO" : "Refund"}
                   className="mt-4"
-                  disabled={inactive}
+                  disabled={inactive && status !== Status.Funded}
                 />
               </form>
-            </div>
+            </>
           )}
         </div>
 

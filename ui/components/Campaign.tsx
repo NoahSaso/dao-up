@@ -27,13 +27,13 @@ export const CampaignStatus: FC<CampaignProps> = ({
       color = Color.Placeholder
       label = "Pending"
       break
-    case Status.Closed:
+    case Status.Cancelled:
       color = Color.Placeholder
-      label = "Closed"
+      label = "Cancelled"
       break
-    case Status.Complete:
+    case Status.Funded:
       color = Color.Placeholder
-      label = "Complete"
+      label = "Funded"
       break
     default:
       color = Color.Placeholder
@@ -132,8 +132,10 @@ export const CampaignImage: FC<CampaignImageProps> = ({
     className={cn("bg-green shrink-0 overflow-hidden rounded-md", className)}
     style={{ width: size, height: size }}
   >
-    {/* eslint-disable-next-line @next/next/no-img-element */}
-    {!!imageUrl && <img src={imageUrl} alt="image" className="w-full h-full" />}
+    {!!imageUrl && (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={imageUrl} alt="image" className="w-full h-full object-cover" />
+    )}
   </div>
 )
 
