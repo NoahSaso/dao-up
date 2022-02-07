@@ -11,7 +11,7 @@ import { getOfflineSigner } from "../services/keplr"
 // Set to -1 to disable connection.
 export const keplrKeystoreIdAtom = atom({
   key: "keplrKeystoreId",
-  default: 0,
+  default: -1,
 })
 
 export const keplrOfflineSigner = selector({
@@ -21,7 +21,12 @@ export const keplrOfflineSigner = selector({
     const id = get(keplrKeystoreIdAtom)
     if (id < 0) return
 
-    return await getOfflineSigner()
+    try {
+      return await getOfflineSigner()
+    } catch (error) {
+      console.error(error)
+      // TODO: Handle error.
+    }
   },
 })
 

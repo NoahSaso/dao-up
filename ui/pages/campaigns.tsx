@@ -10,9 +10,6 @@ import {
   Suspense,
 } from "../components"
 import { useGetCampaigns } from "../hooks/useGetCampaigns"
-import useWallet from "../hooks/useWallet"
-import { visibleCampaignsFromResponses } from "../services/campaigns"
-import { escrowContractAddresses, fetchCampaign } from "../state/campaigns"
 
 const Campaigns: NextPage = () => {
   const [filter, setFilter] = useState("")
