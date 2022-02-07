@@ -91,6 +91,10 @@ declare global {
 
   type TokenInfoResponse = AsyncSelectorResponse<{ info: any | null }>
 
+  type CampaignWalletBalanceResponse = AsyncSelectorResponse<{
+    balance: number | null
+  }>
+
   type EscrowContractAddressesResponse = AsyncSelectorResponse<{
     addresses: readonly string[]
   }>

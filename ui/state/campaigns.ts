@@ -2,7 +2,7 @@ import { atomFamily, selector, selectorFamily } from "recoil"
 
 import { daoUrlPrefix, escrowContractCodeId } from "../helpers/config"
 import { Status } from "../types"
-import { cosmWasmClient } from "./web3"
+import { cosmWasmClient, walletAddress } from "./web3"
 
 export const campaignStateId = atomFamily<number, string | undefined>({
   key: "campaignStateId",
@@ -42,11 +42,11 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
   get:
     (address) =>
     async ({ get }) => {
-      const { state: cState, error: campaignError } = get(
+      const { state: cState, error: campaignStateError } = get(
         campaignState(address)
       )
-      if (campaignError || cState === null)
-        return { campaign: null, error: campaignError ?? "Unknown error." }
+      if (campaignStateError || cState === null)
+        return { campaign: null, error: campaignStateError ?? "Unknown error." }
 
       const {
         campaign_info: campaignInfo,
@@ -128,6 +128,49 @@ export const tokenInfo = selectorFamily<TokenInfoResponse, string>({
         console.error(error)
         // TODO: Return better error.
         return { info: null, error: `${error}` }
+      }
+    },
+})
+
+export const campaignWalletBalance = selectorFamily<
+  CampaignWalletBalanceResponse,
+  string | undefined | null
+>({
+  key: "campaignWalletBalance",
+  get:
+    (campaignAddress) =>
+    async ({ get }) => {
+      if (!campaignAddress) return { balance: null, error: null }
+
+      const address = get(walletAddress)
+      const client = get(cosmWasmClient)
+
+      const { campaign, error: campaignError } = get(
+        fetchCampaign(campaignAddress)
+      )
+      if (campaignError || campaign === null)
+        return { balance: null, error: null }
+
+      try {
+        if (!address) throw new Error("Wallet not connected.")
+        if (!client) throw new Error("Failed to get client.")
+        if (!campaign) throw new Error("Failed to get campaign.")
+
+        const { balance } = await client.queryContractSmart(
+          campaign.fundingToken.address,
+          {
+            balance: { address },
+          }
+        )
+
+        return {
+          balance: Number(balance) / 1e6,
+          error: null,
+        }
+      } catch (error) {
+        console.error(error)
+        // TODO: Return better error.
+        return { balance: null, error: `${error}` }
       }
     },
 })

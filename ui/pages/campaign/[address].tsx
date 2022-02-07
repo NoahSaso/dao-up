@@ -27,7 +27,7 @@ import { prettyPrintDecimal } from "../../helpers/number"
 import { useContributeCampaign } from "../../hooks/useContributeCampaign"
 import { useRefundCampaign } from "../../hooks/useRefundCampaign"
 import useWallet from "../../hooks/useWallet"
-import { fetchCampaign } from "../../state/campaigns"
+import { campaignWalletBalance, fetchCampaign } from "../../state/campaigns"
 import { Status } from "../../types"
 
 interface CampaignLinkProps {
@@ -110,10 +110,13 @@ const CampaignContent: FC<CampaignContentProps> = ({
   router: { isReady, query, push: routerPush },
 }) => {
   useWallet()
-  const { campaign, error } = useRecoilValue(
+  const { campaign, error: campaignError } = useRecoilValue(
     fetchCampaign(
       isReady && typeof query.address === "string" ? query.address : ""
     )
+  )
+  const { balance, error: balanceError } = useRecoilValue(
+    campaignWalletBalance(campaign?.address)
   )
 
   // Contribution Form
@@ -188,8 +191,6 @@ const CampaignContent: FC<CampaignContentProps> = ({
   const complete = status === Status.Complete
   const overfunded = pledged > goal
 
-  const userTokens: number = 1e12
-
   // Contribution
   const expectedFundingTokensReceived =
     watchContribution && watchContribution > 0 && price
@@ -200,7 +201,8 @@ const CampaignContent: FC<CampaignContentProps> = ({
   const minRefund = Math.ceil(price ?? 0) / 1e6
   const expectedPayTokensReceived =
     watchRefund && watchRefund > 0 && price ? watchRefund / price : 0
-  const percentTotalSupply = watchRefund ? (100 * watchRefund) / userTokens : 0
+  const percentTotalSupply =
+    watchRefund && balance ? (100 * watchRefund) / balance : 0
 
   return (
     <>
@@ -377,64 +379,66 @@ const CampaignContent: FC<CampaignContentProps> = ({
         >
           <h2 className="text-xl text-green mb-2">Your Balance</h2>
           <p className="text-light">
-            {prettyPrintDecimal(userTokens, 6)} {tokenSymbol}
-            {supply > 0 && (
+            {prettyPrintDecimal(balance ?? 0, 6)} {tokenSymbol}
+            {supply > 0 && !!balance && (
               <span className="text-placeholder ml-2">
-                {prettyPrintDecimal((100 * userTokens) / supply, 2)}% of total
+                {prettyPrintDecimal((100 * balance) / supply, 2)}% of total
                 supply
               </span>
             )}
           </p>
 
-          <div className={cn({ hidden: !open || userTokens === 0 })}>
-            <h2 className="text-xl text-green mt-8 mb-4">Refunds</h2>
+          {balance !== null && (
+            <div className={cn({ hidden: !open || balance === 0 })}>
+              <h2 className="text-xl text-green mt-8 mb-4">Refunds</h2>
 
-            <form onSubmit={refundHandleSubmit(doRefund)}>
-              <FormInput
-                type="number"
-                step={0.000001}
-                inputMode="decimal"
-                placeholder={prettyPrintDecimal(userTokens * 0.5, 6)}
-                accent={
-                  expectedPayTokensReceived && percentTotalSupply
-                    ? `${prettyPrintDecimal(
-                        percentTotalSupply,
-                        2
-                      )}% of your balance. You will receive about ${prettyPrintDecimal(
-                        expectedPayTokensReceived,
-                        6
-                      )} ${payTokenSymbol}`
-                    : undefined
-                }
-                tail={tokenSymbol}
-                error={
-                  refundErrors?.refund?.message ??
-                  refundCampaignError ??
-                  undefined
-                }
-                disabled={inactive}
-                {...refundRegister("refund", {
-                  required: "Required",
-                  valueAsNumber: true,
-                  pattern: numberPattern,
-                  min: {
-                    value: minRefund,
-                    message: `Must be greater than ${minRefund.toLocaleString()} ${tokenSymbol}.`,
-                  },
-                  max: {
-                    value: userTokens,
-                    message: `Must be less than or equal to your token balance: ${userTokens} ${tokenSymbol}.`,
-                  },
-                })}
-              />
+              <form onSubmit={refundHandleSubmit(doRefund)}>
+                <FormInput
+                  type="number"
+                  step={0.000001}
+                  inputMode="decimal"
+                  placeholder={prettyPrintDecimal(balance * 0.5, 6)}
+                  accent={
+                    expectedPayTokensReceived && percentTotalSupply
+                      ? `${prettyPrintDecimal(
+                          percentTotalSupply,
+                          2
+                        )}% of your balance. You will receive about ${prettyPrintDecimal(
+                          expectedPayTokensReceived,
+                          6
+                        )} ${payTokenSymbol}`
+                      : undefined
+                  }
+                  tail={tokenSymbol}
+                  error={
+                    refundErrors?.refund?.message ??
+                    refundCampaignError ??
+                    undefined
+                  }
+                  disabled={inactive}
+                  {...refundRegister("refund", {
+                    required: "Required",
+                    valueAsNumber: true,
+                    pattern: numberPattern,
+                    min: {
+                      value: minRefund,
+                      message: `Must be greater than ${minRefund.toLocaleString()} ${tokenSymbol}.`,
+                    },
+                    max: {
+                      value: balance,
+                      message: `Must be less than or equal to your token balance: ${balance} ${tokenSymbol}.`,
+                    },
+                  })}
+                />
 
-              <Button
-                submitLabel="Refund"
-                className="mt-4"
-                disabled={inactive}
-              />
-            </form>
-          </div>
+                <Button
+                  submitLabel="Refund"
+                  className="mt-4"
+                  disabled={inactive}
+                />
+              </form>
+            </div>
+          )}
         </div>
 
         <h2 className="text-green text-xl mt-8">Activity</h2>
