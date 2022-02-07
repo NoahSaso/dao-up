@@ -99,9 +99,10 @@ export const fetchCampaignActions = selectorFamily<
 
         // Extract the amount and sender.
         const fundActions: CampaignAction[] = funds.map((fund) => {
-          let amount = Number(
-            fund.wasm.attributes.find((a: any) => a.key === "amount")?.value
-          )
+          let amount =
+            Number(
+              fund.wasm.attributes.find((a: any) => a.key === "amount")?.value
+            ) / 1e6
           let address = fund.wasm.attributes.find(
             (a: any) => a.key === "sender"
           )?.value as string
@@ -124,10 +125,11 @@ export const fetchCampaignActions = selectorFamily<
           }
         })
         const refundActions: CampaignAction[] = refunds.map((fund) => {
-          let amount = Number(
-            fund.wasm.attributes.find((a: any) => a.key === "native_returned")
-              ?.value
-          )
+          let amount =
+            Number(
+              fund.wasm.attributes.find((a: any) => a.key === "native_returned")
+                ?.value
+            ) / 1e6
           let address = fund.wasm.attributes.find(
             (a: any) => a.key === "sender"
           )?.value as string

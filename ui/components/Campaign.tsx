@@ -271,8 +271,8 @@ export const CampaignAction: FC<CampaignActionProps> = ({
           "text-orange": type === CampaignActionType.Refund,
         })}
       >
-        {type === CampaignActionType.Fund ? "+" : "-"} {amount * 10 ** -6}{" "}
-        {payTokenSymbol}
+        {type === CampaignActionType.Fund ? "+" : "-"}{" "}
+        {prettyPrintDecimal(amount)} {payTokenSymbol}
       </p>
       {!!when && <TimeAgo date={when} />}
     </div>
