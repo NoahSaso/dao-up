@@ -78,7 +78,7 @@ const FAQQuestion: FC<FAQQuestionProps> = ({ question, answer }) => {
           })}
         />
       </div>
-      <p
+      <div
         className={cn(
           "pl-4 pr-12 transition-all overflow-hidden max-h-0 my-0",
           {
@@ -87,7 +87,7 @@ const FAQQuestion: FC<FAQQuestionProps> = ({ question, answer }) => {
         )}
       >
         {answer}
-      </p>
+      </div>
     </div>
   )
 }
@@ -187,6 +187,25 @@ const faqQAs = [
       </>
     ),
   },
+  {
+    q: "Where can I read the docs?",
+    a: (
+      <>
+        <p>
+          Check out{" "}
+          <a
+            href="https://docs.daoup.zone"
+            target="_blank"
+            rel="noreferrer"
+            className="underline"
+          >
+            docs.daoup.zone
+          </a>
+          .
+        </p>
+      </>
+    ),
+  },
 ]
 
 const Home: NextPage = () => (
@@ -276,8 +295,8 @@ const Home: NextPage = () => (
           subtitle="Show your community you mean business by using a platform that guarantees refundability and democratized control over your funds."
           listItems={[
             "Select your funding goal.",
-            "Name your token and configure your DAO.",
-            "Set the token distribution for creators.",
+            "Create a fundraising token.",
+            "Use your existing DAO DAO DAO.",
             "Kick start your community.",
           ]}
           button={<ButtonLink href="/create">Create Campaign</ButtonLink>}
