@@ -454,7 +454,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
                 allocates governance tokens to it.
               </p>
               <p className="mt-2">
-                Need help? We've got{" "}
+                Need help? We&apos;ve got{" "}
                 <a
                   href="https://docs.daoup.zone"
                   target="_blank"
