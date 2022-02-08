@@ -119,14 +119,21 @@ const MeContent: FC<MeContentProps> = ({ walletAddress, connected }) => {
     </>
   )
 
+  // TODO: Get contributions from this wallet.
   return (
     <>
       {connected &&
         // If no user campaigns but user has contributed, show contributions first. Otherwise, default to campaigns on top.
         (contributorCampaigns.length && !creatorCampaigns.length ? (
-          <>{campaignsBlock}</>
+          <>
+            {/* {contributionsBlock} */}
+            {campaignsBlock}
+          </>
         ) : (
-          <>{campaignsBlock}</>
+          <>
+            {campaignsBlock}
+            {/* {contributionsBlock} */}
+          </>
         ))}
     </>
   )
