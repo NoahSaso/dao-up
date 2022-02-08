@@ -3,6 +3,7 @@ import type { NextPage } from "next"
 import { useRouter } from "next/router"
 import { FC, useCallback, useEffect, useState } from "react"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
+import { IoCheckmark, IoWarning } from "react-icons/io5"
 import {
   useRecoilValue,
   useRecoilValueLoadable,
@@ -15,6 +16,7 @@ import {
   FormInput,
   FormSwitch,
   FormTextArea,
+  Loader,
   ResponsiveDecoration,
   Suspense,
 } from "../components"
@@ -69,20 +71,22 @@ const CreateContent: FC = () => {
     watch,
   } = useForm({ defaultValues: defaultNewCampaign })
 
-  // Automatically verify DAO contract address.
+  // Automatically verify DAO contract address exists on chain.
   const watchDAOAddress = watch("daoAddress")
-  // Only returns DAO address once it matches the regex.
-  const completeWatchDAOAddress = watchDAOAddress?.match(
+  const daoAddressFormatValid = !!watchDAOAddress?.match(
     daoAddressPattern.value
-  )
-    ? watchDAOAddress
-    : undefined
+  )?.length
   const {
     state: daoConfigState,
     contents: { config: daoConfigData, error: daoConfigError },
-  } = useRecoilValueLoadable(daoConfig(completeWatchDAOAddress))
+  } = useRecoilValueLoadable(
+    // Only attempt to load DAO address once it matches the regex.
+    daoConfig(daoAddressFormatValid ? watchDAOAddress : undefined)
+  )
   const checkingDAO = daoConfigState === "loading"
   const validDAO = daoConfigState === "hasValue" && daoConfigData !== null
+  // Only invalid if pattern matches AND has determined invalid address.
+  const invalidDAO = daoAddressFormatValid && !validDAO
 
   // Scroll to bottom of page when error is displayed.
   useEffect(() => {
@@ -275,16 +279,20 @@ const CreateContent: FC = () => {
             placeholder="juno..."
             type="text"
             error={
-              (completeWatchDAOAddress ? daoConfigError : null) ??
+              (daoAddressFormatValid ? daoConfigError : null) ??
               errors.daoAddress?.message
             }
-            accent={
-              checkingDAO
-                ? "Verifying DAO exists..."
-                : validDAO
-                ? "DAO exists."
-                : undefined
+            tail={
+              checkingDAO ? (
+                <Loader size={28} />
+              ) : validDAO ? (
+                <IoCheckmark size={28} className="text-green" />
+              ) : invalidDAO ? (
+                <IoWarning size={28} className="text-orange" />
+              ) : undefined
             }
+            tailClassName="!bg-dark"
+            className="!pr-24"
             {...register("daoAddress", {
               required: "Required",
               pattern: daoAddressPattern,
