@@ -60,6 +60,10 @@ const AddressDisplay: FC<AddressDisplayProps> = ({ label, address }) => {
   )
 }
 
+interface FundPendingForm {
+  tokens?: number
+}
+
 interface ContributionForm {
   contribution?: number
 }
@@ -118,16 +122,17 @@ const CampaignContent: FC<CampaignContentProps> = ({
     campaignWalletBalance(campaign?.address)
   )
 
-  // Fund pending with gov tokens
+  // Funding Form for pending campaigns
   const {
-    register: fundingGovTokensRegister,
-    formState: { errors: fundingGovTokensErrors },
-    watch: fundingGovTokensWatch,
-  } = useForm({ mode: "onChange" })
-  const watchFundingGovTokens = fundingGovTokensWatch("tokens")
+    handleSubmit: fundPendingHandleSubmit,
+    register: fundPendingRegister,
+    formState: { errors: fundPendingErrors },
+    watch: fundPendingWatch,
+  } = useForm({ mode: "onChange", defaultValues: {} as FundPendingForm })
+  const watchFundPending = fundPendingWatch("tokens")
   const campaignFundingMessage =
-    watchFundingGovTokens && !fundingGovTokensErrors.tokens && campaign
-      ? getCampaignFundingMessage(campaign, watchFundingGovTokens)
+    watchFundPending && !fundPendingErrors.tokens && campaign
+      ? getCampaignFundingMessage(campaign, watchFundPending)
       : undefined
   const {
     copy: copyCampaignFundingMessage,
@@ -207,6 +212,17 @@ const CampaignContent: FC<CampaignContentProps> = ({
     setShowAddFundingToken(!(await suggestToken(campaign.fundingToken.address)))
   const suggestGovToken = async () =>
     setShowAddGovToken(!(await suggestToken(campaign.dao.govToken.address)))
+
+  // Funding Form for pending campaigns
+  const doFundPending = async ({ tokens }: FundPendingForm) => {
+    if (!tokens) return
+
+    const message = getCampaignFundingMessage(campaign, tokens)
+    alert(message)
+    // TODO: Add success display.
+    // if (await fundPendingCampaign(tokens)) {
+    // }
+  }
 
   // Contribution Form
   const watchContribution = contributionWatch("contribution")
@@ -463,7 +479,8 @@ const CampaignContent: FC<CampaignContentProps> = ({
                 )}
             </div>
             {status === Status.Pending && (
-              <div
+              <form
+                onSubmit={fundPendingHandleSubmit(doFundPending)}
                 className={cn(
                   "bg-card rounded-3xl p-8 mt-4 border border-orange",
                   "flex flex-col items-stretch self-stretch",
@@ -479,11 +496,11 @@ const CampaignContent: FC<CampaignContentProps> = ({
                   type="number"
                   inputMode="decimal"
                   placeholder="1000000"
-                  wrapperClassName="mt-4 mb-4"
+                  wrapperClassName="mt-4 mb-2"
                   className="!pr-28 border-light"
                   tail={govTokenSymbol}
-                  error={fundingGovTokensErrors?.tokens?.message}
-                  {...fundingGovTokensRegister("tokens", {
+                  error={fundPendingErrors?.tokens?.message}
+                  {...fundPendingRegister("tokens", {
                     valueAsNumber: true,
                     pattern: numberPattern,
                     min: {
@@ -499,8 +516,8 @@ const CampaignContent: FC<CampaignContentProps> = ({
                   })}
                 />
                 {!!campaignFundingMessage && (
-                  <div className="relative">
-                    <pre className="text-mono whitespace-pre-wrap">
+                  <div className="relative mb-2">
+                    <pre className="text-mono whitespace-pre-wrap break-all">
                       {campaignFundingMessage}
                     </pre>
                     <div
@@ -512,7 +529,9 @@ const CampaignContent: FC<CampaignContentProps> = ({
                   </div>
                 )}
 
-                <p className="mt-2">
+                <Button submitLabel="Create Proposal" />
+
+                {/* <p className="mt-2">
                   Need help? We&apos;ve got{" "}
                   <a
                     href="https://docs.daoup.zone/campaign-creation#starting-the-campaign"
@@ -523,8 +542,8 @@ const CampaignContent: FC<CampaignContentProps> = ({
                     docs
                   </a>
                   .
-                </p>
-              </div>
+                </p> */}
+              </form>
             )}
           </div>
         </div>
