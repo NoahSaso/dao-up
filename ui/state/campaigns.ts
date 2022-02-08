@@ -68,8 +68,8 @@ export const fetchCampaignActions = selectorFamily<
       const blockHeight = get(fetchBlockHeight)
 
       try {
-        if (!address) throw new Error("Invalid address")
-        if (!client) throw new Error("Failed to get client")
+        if (!address) throw new Error("Invalid address.")
+        if (!client) throw new Error("Failed to get client.")
 
         // Get all of the wasm messages involving this contract.
         const events = await client.searchTx({

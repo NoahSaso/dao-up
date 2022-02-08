@@ -120,8 +120,6 @@ const CreateContent: FC = () => {
           defaultExecuteFee
         )
 
-        console.log(contractAddress)
-
         return contractAddress
       } catch (error) {
         console.error(error)

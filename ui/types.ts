@@ -88,8 +88,15 @@ declare global {
 
   type CampaignResponse = AsyncSelectorResponse<{ campaign: Campaign | null }>
 
-  // TODO: Type accurately.
-  type TokenInfoResponse = AsyncSelectorResponse<{ info: any | null }>
+  type TokenInfoResponse = AsyncSelectorResponse<{
+    info: {
+      decimals: number
+      name: string
+      symbol: string
+      total_supply: number
+      [k: string]: unknown
+    } | null
+  }>
 
   type CampaignWalletBalanceResponse = AsyncSelectorResponse<{
     balance: number | null
