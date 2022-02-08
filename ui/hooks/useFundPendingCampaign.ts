@@ -65,7 +65,9 @@ export const useFundPendingCampaign = (campaign: Campaign | null) => {
             title: `Activate DAO Up! campaign`,
             description: `Send ${prettyPrintDecimal(amount)} ${
               campaign.dao.govToken.symbol
-            } to ${campaign.name} campaign on DAO Up! in order to launch it.`,
+            } to the [${campaign.name}](https://daoup.zone/campaign/${
+              campaign.address
+            }) campaign on DAO Up! in order to launch it.`,
             msgs: [cosmMsg],
           },
         }

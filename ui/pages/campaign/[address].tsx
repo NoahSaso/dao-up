@@ -524,19 +524,23 @@ const CampaignContent: FC<CampaignContentProps> = ({
                 </h3>
                 <p className="text-light text-sm">Backers</p> */}
 
-              {!!campaignGovTokenPercentage && !!govTokenSymbol && (
-                <>
-                  <h3 className="mt-6 text-green text-3xl">
-                    {prettyPrintDecimal(campaignGovTokenPercentage, 2)}%{" "}
-                    governance
-                  </h3>
-                  <p className="text-light text-sm">
-                    Campaign backers will have{" "}
-                    {prettyPrintDecimal(campaignGovTokenPercentage, 2)}% voting
-                    power in the DAO.
-                  </p>
-                </>
-              )}
+              {/* Hide for funded campaigns since campaignGovTokenPercentage won't remain constant. */}
+              {/* TODO: Store initial fund amount in contract staet and use that instead. */}
+              {status !== Status.Funded &&
+                !!campaignGovTokenPercentage &&
+                !!govTokenSymbol && (
+                  <>
+                    <h3 className="mt-6 text-green text-3xl">
+                      {prettyPrintDecimal(campaignGovTokenPercentage, 2)}%{" "}
+                      governance
+                    </h3>
+                    <p className="text-light text-sm">
+                      Campaign backers will have{" "}
+                      {prettyPrintDecimal(campaignGovTokenPercentage, 2)}%
+                      voting power in the DAO.
+                    </p>
+                  </>
+                )}
             </div>
           </div>
         </div>
