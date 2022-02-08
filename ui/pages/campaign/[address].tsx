@@ -379,8 +379,8 @@ const CampaignContent: FC<CampaignContentProps> = ({
                   This campaign is pending and cannot accept funds until the DAO
                   allocates governance tokens ({govTokenSymbol}) to it.{" "}
                   <span className="underline">
-                    If you are part of the DAO, you can quickly create a funding
-                    proposal below!
+                    If you are part of the DAO, you can create a funding
+                    proposal below.
                   </span>
                 </p>
 
