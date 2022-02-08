@@ -292,6 +292,7 @@ const CreateContent: FC = () => {
               ) : undefined
             }
             tailClassName="!bg-dark"
+            className="!pr-24"
             {...register("daoAddress", {
               required: "Required",
               pattern: daoAddressPattern,
