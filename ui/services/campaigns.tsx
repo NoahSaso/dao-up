@@ -123,3 +123,22 @@ export const categorizedWalletCampaigns = (
       c.creator !== address
   ),
 })
+
+export const getCampaignFundingMessage = (campaign: Campaign, tokens: number) =>
+  `
+{
+  "wasm": {
+    "execute": {
+      "contract_addr": "${campaign.dao.govToken.address}",
+      "msg": {
+        "send": {
+          "contract": "${campaign.address}",
+          "amount": "${tokens * 1e6}",
+          "msg": ""
+        }
+      },
+      "funds": []
+    }
+  }
+}
+`.trim()

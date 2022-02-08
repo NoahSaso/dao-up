@@ -190,16 +190,32 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
         ...state
       } = cState
 
-      const { balance: govTokenBalance, error: govTokenBalanceError } = get(
+      const {
+        balance: campaignGovTokenBalance,
+        error: campaignGovTokenBalanceError,
+      } = get(
         tokenBalance({
           tokenAddress: state.gov_token_addr,
           walletAddress: address,
         })
       )
-      if (govTokenBalanceError || govTokenBalance === null)
+      if (campaignGovTokenBalanceError || campaignGovTokenBalance === null)
         return {
           campaign: null,
-          error: govTokenBalanceError ?? "Unknown error.",
+          error: campaignGovTokenBalanceError ?? "Unknown error.",
+        }
+
+      const { balance: daoGovTokenBalance, error: daoGovTokenBalanceError } =
+        get(
+          tokenBalance({
+            tokenAddress: state.gov_token_addr,
+            walletAddress: state.dao_addr,
+          })
+        )
+      if (daoGovTokenBalanceError || daoGovTokenBalance === null)
+        return {
+          campaign: null,
+          error: daoGovTokenBalanceError ?? "Unknown error.",
         }
 
       try {
@@ -229,7 +245,8 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
                 address: state.gov_token_addr,
                 name: govTokenInfo.name,
                 symbol: govTokenInfo.symbol,
-                daoBalance: govTokenBalance,
+                campaignBalance: campaignGovTokenBalance,
+                daoBalance: daoGovTokenBalance,
                 supply: Number(govTokenInfo.total_supply) / 1e6,
               },
             },

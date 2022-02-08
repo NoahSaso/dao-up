@@ -1,10 +1,9 @@
 import cn from "classnames"
 import type { NextPage } from "next"
 import { NextRouter, useRouter } from "next/router"
-import { FC, useEffect, useRef, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
-import { IoCheckmark, IoCopy } from "react-icons/io5"
 import { useRecoilValue } from "recoil"
 
 import {
@@ -26,8 +25,10 @@ import { payTokenSymbol } from "../../helpers/config"
 import { numberPattern } from "../../helpers/form"
 import { prettyPrintDecimal } from "../../helpers/number"
 import { useContributeCampaign } from "../../hooks/useContributeCampaign"
+import { useCopy } from "../../hooks/useCopy"
 import { useRefundCampaign } from "../../hooks/useRefundCampaign"
 import { useWallet } from "../../hooks/useWallet"
+import { getCampaignFundingMessage } from "../../services/campaigns"
 import { suggestToken } from "../../services/keplr"
 import {
   campaignWalletBalance,
@@ -41,16 +42,7 @@ interface AddressDisplayProps {
   address: string
 }
 const AddressDisplay: FC<AddressDisplayProps> = ({ label, address }) => {
-  const [copied, setCopied] = useState(false)
-  const copiedTimer = useRef<NodeJS.Timeout | null>(null)
-  const copy = () => {
-    if (copiedTimer.current) clearTimeout(copiedTimer.current)
-    navigator.clipboard.writeText(address)
-    setCopied(true)
-    copiedTimer.current = setTimeout(() => setCopied(false), 5000)
-  }
-
-  const Icon = copied ? IoCheckmark : IoCopy
+  const { copy, Icon } = useCopy(address)
 
   return (
     <p
@@ -126,6 +118,22 @@ const CampaignContent: FC<CampaignContentProps> = ({
     campaignWalletBalance(campaign?.address)
   )
 
+  // Fund pending with gov tokens
+  const {
+    register: fundingGovTokensRegister,
+    formState: { errors: fundingGovTokensErrors },
+    watch: fundingGovTokensWatch,
+  } = useForm({ mode: "onChange" })
+  const watchFundingGovTokens = fundingGovTokensWatch("tokens")
+  const campaignFundingMessage =
+    watchFundingGovTokens && !fundingGovTokensErrors.tokens && campaign
+      ? getCampaignFundingMessage(campaign, watchFundingGovTokens)
+      : undefined
+  const {
+    copy: copyCampaignFundingMessage,
+    Icon: CopyCampaignFundingMessageIcon,
+  } = useCopy(campaignFundingMessage)
+
   // Contribution Form
   const {
     handleSubmit: contributionHandleSubmit,
@@ -182,6 +190,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
       govToken: {
         address: govTokenAddress,
         symbol: govTokenSymbol,
+        campaignBalance: govTokenCampaignBalance,
         daoBalance: govTokenDAOBalance,
         supply: govTokenSupply,
       },
@@ -401,7 +410,8 @@ const CampaignContent: FC<CampaignContentProps> = ({
             <div
               className={cn(
                 "bg-card rounded-3xl p-8 mt-4 lg:mt-8",
-                "flex flex-col items-start"
+                "flex flex-col items-start",
+                "max-w-full"
               )}
             >
               <CampaignStatus campaign={campaign} className="mb-2" />
@@ -434,29 +444,74 @@ const CampaignContent: FC<CampaignContentProps> = ({
                 </h3>
                 <p className="text-light text-sm">Supporters</p> */}
 
-              {!!govTokenDAOBalance && !!govTokenSupply && !!govTokenSymbol && (
-                <>
-                  <h3 className="mt-6 text-green text-3xl">
-                    {prettyPrintDecimal(govTokenDAOBalance / govTokenSupply, 2)}
-                    % {govTokenSymbol}
-                  </h3>
-                  <p className="text-light text-sm">
-                    Campaign&apos;s percentage of total governance token supply.
-                  </p>
-                </>
-              )}
+              {!!govTokenCampaignBalance &&
+                !!govTokenSupply &&
+                !!govTokenSymbol && (
+                  <>
+                    <h3 className="mt-6 text-green text-3xl">
+                      {prettyPrintDecimal(
+                        govTokenCampaignBalance / govTokenSupply,
+                        2
+                      )}
+                      % {govTokenSymbol}
+                    </h3>
+                    <p className="text-light text-sm">
+                      Campaign&apos;s percentage of total governance token
+                      supply.
+                    </p>
+                  </>
+                )}
             </div>
             {status === Status.Pending && (
               <div
                 className={cn(
                   "bg-card rounded-3xl p-8 mt-4 border border-orange",
-                  "flex flex-col items-start self-stretch"
+                  "flex flex-col items-stretch self-stretch",
+                  "max-w-full"
                 )}
               >
                 <p>
                   This campaign is pending. It can not accept funds until the
                   DAO allocates governance tokens to it.
                 </p>
+
+                <FormInput
+                  type="number"
+                  inputMode="decimal"
+                  placeholder="1000000"
+                  wrapperClassName="mt-4 mb-4"
+                  className="!pr-28 border-light"
+                  tail={govTokenSymbol}
+                  error={fundingGovTokensErrors?.tokens?.message}
+                  {...fundingGovTokensRegister("tokens", {
+                    valueAsNumber: true,
+                    pattern: numberPattern,
+                    min: {
+                      value: 1e-6,
+                      message: `Must be at least 0.000001 ${govTokenSymbol}.`,
+                    },
+                    max: {
+                      value: govTokenDAOBalance ?? 0,
+                      message: `Must be less than or equal to the amount of ${govTokenSymbol} the DAO has in its treasury: ${prettyPrintDecimal(
+                        govTokenDAOBalance ?? 0
+                      )} ${govTokenSymbol}.`,
+                    },
+                  })}
+                />
+                {!!campaignFundingMessage && (
+                  <div className="relative">
+                    <pre className="text-mono whitespace-pre-wrap">
+                      {campaignFundingMessage}
+                    </pre>
+                    <div
+                      className="absolute top-1 right-1 p-3 rounded-lg bg-dark cursor-pointer hover:opacity-70"
+                      onClick={copyCampaignFundingMessage}
+                    >
+                      <CopyCampaignFundingMessageIcon size={20} />
+                    </div>
+                  </div>
+                )}
+
                 <p className="mt-2">
                   Need help? We&apos;ve got{" "}
                   <a
