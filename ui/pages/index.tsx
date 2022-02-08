@@ -280,7 +280,7 @@ const Home: NextPage = () => (
           "text-2xl lg:text-3xl xl:text-4xl"
         )}
       >
-        Superior experience for both creators and supporters.
+        Superior experience for both creators and backers.
       </h2>
 
       <div
@@ -305,7 +305,7 @@ const Home: NextPage = () => (
         />
 
         <Card
-          title="Supporters"
+          title="Backers"
           subtitle="Know that your contribution is safe. DAO Up! smart contracts make funding transparent and guarantee democratized control over all funds raised."
           listItems={[
             "Back promising projects.",

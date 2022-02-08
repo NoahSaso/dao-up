@@ -258,7 +258,10 @@ const CampaignContent: FC<CampaignContentProps> = ({
     }
   }
 
-  const createdByMe = connected && creator === walletAddress
+  const campaignGovTokenPercentage =
+    govTokenCampaignBalance && govTokenSupply && govTokenSupply > 0
+      ? govTokenCampaignBalance / govTokenSupply
+      : undefined
 
   // Contribution
   const expectedFundingTokensReceived =
@@ -528,29 +531,25 @@ const CampaignContent: FC<CampaignContentProps> = ({
               <p className="text-light text-sm">
                 pledged out of {goal.toLocaleString()} {payTokenSymbol} goal.
               </p>
-              {/* TODO: Display supporters. */}
+              {/* TODO: Display backers. */}
               {/* <h3 className="mt-6 text-green text-3xl">
-                {supporters.toLocaleString()}
+                {backers.toLocaleString()}
                 </h3>
-                <p className="text-light text-sm">Supporters</p> */}
+                <p className="text-light text-sm">Backers</p> */}
 
-              {!!govTokenCampaignBalance &&
-                !!govTokenSupply &&
-                !!govTokenSymbol && (
-                  <>
-                    <h3 className="mt-6 text-green text-3xl">
-                      {prettyPrintDecimal(
-                        govTokenCampaignBalance / govTokenSupply,
-                        2
-                      )}
-                      % {govTokenSymbol}
-                    </h3>
-                    <p className="text-light text-sm">
-                      Campaign&apos;s percentage of total governance token
-                      supply.
-                    </p>
-                  </>
-                )}
+              {!!campaignGovTokenPercentage && !!govTokenSymbol && (
+                <>
+                  <h3 className="mt-6 text-green text-3xl">
+                    {prettyPrintDecimal(campaignGovTokenPercentage, 2)}%{" "}
+                    governance
+                  </h3>
+                  <p className="text-light text-sm">
+                    Campaign backers will have{" "}
+                    {prettyPrintDecimal(campaignGovTokenPercentage, 2)}% voting
+                    power in the DAO.
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>

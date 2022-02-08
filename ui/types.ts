@@ -24,7 +24,7 @@ declare global {
     goal: number
     pledged: number
     // TODO: Figure out how best to retrieve this.
-    // supporters: number
+    // backers: number
 
     dao: {
       address: string

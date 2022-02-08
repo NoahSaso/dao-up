@@ -235,7 +235,7 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
 
             goal: Number(state.funding_goal.amount) / 1e6,
             pledged: Number(state.funds_raised.amount) / 1e6,
-            // supporters: ,
+            // backers: ,
 
             dao: {
               address: state.dao_addr,
