@@ -1,4 +1,3 @@
-
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
@@ -37,15 +36,18 @@ pub fn instantiate(
 
     let fee_receiver = deps.api.addr_validate(&msg.fee_receiver.to_string())?;
     if msg.fee > Decimal::percent(100) {
-	return Err(ContractError::Instantiation(format!("fee ({}) is greater than 100%", msg.fee)))
+        return Err(ContractError::Instantiation(format!(
+            "fee ({}) is greater than 100%",
+            msg.fee
+        )));
     }
 
     let state = State {
         status: Pending {},
         dao_addr,
-	creator: info.sender,
-	fee_receiver,
-	fee: msg.fee,
+        creator: info.sender,
+        fee_receiver,
+        fee: msg.fee,
         funding_goal: msg.funding_goal.clone(),
         funds_raised: Coin {
             denom: msg.funding_goal.denom,
@@ -243,9 +245,9 @@ pub fn execute_receive_funding_tokens(
             // Token price is in tokens / native. `tokens * 1 /
             // (tokens / native)` = native owed.
             let native_owed = msg.amount * token_price.inv().unwrap();
-	    if native_owed.is_zero() {
-		return Err(ContractError::SmallRefund { token_price })
-	    }
+            if native_owed.is_zero() {
+                return Err(ContractError::SmallRefund { token_price });
+            }
 
             let bank_msg = BankMsg::Send {
                 to_address: sender.to_string(),
@@ -310,9 +312,9 @@ pub fn execute_receive_funding_tokens(
                 funds: vec![],
             };
 
-	    let native_to_transfer = msg.amount * token_price.inv().unwrap();
-	    let fee_amount = native_to_transfer * state.fee;
-	    let dao_amount = native_to_transfer - fee_amount;
+            let native_to_transfer = msg.amount * token_price.inv().unwrap();
+            let fee_amount = native_to_transfer * state.fee;
+            let dao_amount = native_to_transfer - fee_amount;
 
             // Transfer a proportional amount of funds to the DAO.
             let dao_transfer = BankMsg::Send {
@@ -323,14 +325,14 @@ pub fn execute_receive_funding_tokens(
                 }],
             };
 
-	    // Transfer fee to the fee account.
-	    let fee_transfer = BankMsg::Send {
-		to_address: state.fee_receiver.to_string(),
-		amount: vec![Coin {
-		    denom: state.funding_goal.denom,
-		    amount: fee_amount,
-		}]
-	    };
+            // Transfer fee to the fee account.
+            let fee_transfer = BankMsg::Send {
+                to_address: state.fee_receiver.to_string(),
+                amount: vec![Coin {
+                    denom: state.funding_goal.denom,
+                    amount: fee_amount,
+                }],
+            };
 
             Ok(Response::default()
                 .add_attribute("action", "swap_for_gov")
@@ -383,13 +385,19 @@ pub fn query_dump_state(deps: Deps) -> StdResult<Binary> {
         &cw20::Cw20QueryMsg::TokenInfo {},
     )?;
 
+    let gov_token_info: cw20::TokenInfoResponse = deps.querier.query_wasm_smart(
+        gov_token_addr.clone(),
+        &cw20::Cw20QueryMsg::TokenInfo {},
+    )?;
+
     to_binary(&DumpStateResponse {
         status: state.status,
         dao_addr: state.dao_addr,
         funding_goal: state.funding_goal,
-	creator: state.creator,
+        creator: state.creator,
         funds_raised: state.funds_raised,
         funding_token_info,
+	gov_token_info,
         campaign_info: state.campaign_info,
         gov_token_addr,
         funding_token_addr,

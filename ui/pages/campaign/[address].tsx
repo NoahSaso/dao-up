@@ -456,7 +456,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
               <p className="mt-2">
                 Need help? We&apos;ve got{" "}
                 <a
-                  href="https://docs.daoup.zone"
+                  href="https://docs.daoup.zone/campaign-creation"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="underline"

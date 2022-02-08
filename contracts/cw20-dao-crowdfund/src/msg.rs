@@ -67,6 +67,7 @@ pub enum QueryMsg {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub struct DumpStateResponse {
     pub status: Status,
     pub dao_addr: Addr,
@@ -74,6 +75,7 @@ pub struct DumpStateResponse {
     pub funding_goal: Coin,
     pub funds_raised: Coin,
     pub funding_token_info: cw20::TokenInfoResponse,
+    pub gov_token_info: cw20::TokenInfoResponse,
     pub campaign_info: Campaign,
     pub gov_token_addr: Addr,
     pub funding_token_addr: Addr,

@@ -320,6 +320,15 @@ fn test_campaign_creation() {
             total_supply: Uint128::zero(),
         }
     );
+    assert_eq!(
+	state.gov_token_info,
+        cw20::TokenInfoResponse {
+            name: "Bong DAO".to_string(),
+            symbol: "BDAO".to_string(),
+            decimals: 6,
+            total_supply: Uint128::from(100100000000 as u64),
+        }
+    );
 
     let config: cw3_dao::query::ConfigResponse = app
         .wrap()
