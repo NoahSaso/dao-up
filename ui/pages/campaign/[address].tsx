@@ -441,7 +441,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
                     % {govTokenSymbol}
                   </h3>
                   <p className="text-light text-sm">
-                    Campaign Percentage of Governance Token Supply
+                    Campaign&apos;s percentage of total governance token supply.
                   </p>
                 </>
               )}
