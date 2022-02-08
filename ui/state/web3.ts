@@ -43,8 +43,13 @@ export const keplrOfflineSigner = selector({
 
 export const cosmWasmClient = selector({
   key: "cosmWasmClient",
-  get: () => {
-    return CosmWasmClient.connect(endpoint)
+  get: async () => {
+    try {
+      return await CosmWasmClient.connect(endpoint)
+    } catch (error) {
+      console.error(error)
+      // TODO: Display error.
+    }
   },
 })
 

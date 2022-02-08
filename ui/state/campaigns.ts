@@ -186,8 +186,37 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
       const {
         campaign_info: campaignInfo,
         funding_token_info: fundingTokenInfo,
+        gov_token_info: govTokenInfo,
         ...state
       } = cState
+
+      const {
+        balance: campaignGovTokenBalance,
+        error: campaignGovTokenBalanceError,
+      } = get(
+        tokenBalance({
+          tokenAddress: state.gov_token_addr,
+          walletAddress: address,
+        })
+      )
+      if (campaignGovTokenBalanceError || campaignGovTokenBalance === null)
+        return {
+          campaign: null,
+          error: campaignGovTokenBalanceError ?? "Unknown error.",
+        }
+
+      const { balance: daoGovTokenBalance, error: daoGovTokenBalanceError } =
+        get(
+          tokenBalance({
+            tokenAddress: state.gov_token_addr,
+            walletAddress: state.dao_addr,
+          })
+        )
+      if (daoGovTokenBalanceError || daoGovTokenBalance === null)
+        return {
+          campaign: null,
+          error: daoGovTokenBalanceError ?? "Unknown error.",
+        }
 
       try {
         // Example: status={ "pending": {} }
@@ -206,13 +235,19 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
 
             goal: Number(state.funding_goal.amount) / 1e6,
             pledged: Number(state.funds_raised.amount) / 1e6,
-            // supporters: ,
+            // backers: ,
 
             dao: {
               address: state.dao_addr,
               url: daoUrlPrefix + state.dao_addr,
+
               govToken: {
                 address: state.gov_token_addr,
+                name: govTokenInfo.name,
+                symbol: govTokenInfo.symbol,
+                campaignBalance: campaignGovTokenBalance,
+                daoBalance: daoGovTokenBalance,
+                supply: Number(govTokenInfo.total_supply) / 1e6,
               },
             },
 
@@ -265,36 +300,27 @@ export const tokenInfo = selectorFamily<TokenInfoResponse, string>({
     },
 })
 
-export const campaignWalletBalance = selectorFamily<
-  CampaignWalletBalanceResponse,
-  string | undefined | null
+export const tokenBalance = selectorFamily<
+  TokenBalanceResponse,
+  {
+    tokenAddress: string | undefined | null
+    walletAddress: string | undefined | null
+  }
 >({
-  key: "campaignWalletBalance",
+  key: "tokenBalance",
   get:
-    (campaignAddress) =>
+    ({ tokenAddress, walletAddress }) =>
     async ({ get }) => {
-      if (!campaignAddress) return { balance: null, error: null }
+      if (!tokenAddress || !walletAddress) return { balance: null, error: null }
 
-      const address = get(walletAddress)
       const client = get(cosmWasmClient)
 
-      const { campaign, error: campaignError } = get(
-        fetchCampaign(campaignAddress)
-      )
-      if (campaignError || campaign === null)
-        return { balance: null, error: null }
-
       try {
-        if (!address) throw new Error("Wallet not connected.")
         if (!client) throw new Error("Failed to get client.")
-        if (!campaign) throw new Error("Failed to get campaign.")
 
-        const { balance } = await client.queryContractSmart(
-          campaign.fundingToken.address,
-          {
-            balance: { address },
-          }
-        )
+        const { balance } = await client.queryContractSmart(tokenAddress, {
+          balance: { address: walletAddress },
+        })
 
         return {
           balance: Number(balance) / 1e6,
@@ -305,6 +331,39 @@ export const campaignWalletBalance = selectorFamily<
         // TODO: Return better error.
         return { balance: null, error: `${error}` }
       }
+    },
+})
+
+export const campaignWalletBalance = selectorFamily<
+  TokenBalanceResponse,
+  string | undefined | null
+>({
+  key: "campaignWalletBalance",
+  get:
+    (campaignAddress) =>
+    async ({ get }) => {
+      if (!campaignAddress) return { balance: null, error: null }
+
+      const address = get(walletAddress)
+
+      if (!address) return { balance: null, error: null }
+
+      const { campaign, error: campaignError } = get(
+        fetchCampaign(campaignAddress)
+      )
+      if (campaignError || campaign === null)
+        return { balance: null, error: null }
+
+      const { balance, error: tokenBalanceError } = get(
+        tokenBalance({
+          tokenAddress: campaign.fundingToken.address,
+          walletAddress: address,
+        })
+      )
+      if (tokenBalanceError || balance === null)
+        return { balance: null, error: tokenBalanceError }
+
+      return { balance, error: null }
     },
 })
 
