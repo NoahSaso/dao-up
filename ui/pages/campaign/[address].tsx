@@ -348,19 +348,6 @@ const CampaignContent: FC<CampaignContentProps> = ({
                       )}
                     </div>
                   )}
-
-                  {status === Status.Pending && (
-                    <>
-                      <AddressDisplay
-                        label="Escrow contract"
-                        address={campaignAddress}
-                      />
-                      <AddressDisplay
-                        label="Governance token"
-                        address={govTokenAddress}
-                      />
-                    </>
-                  )}
                 </div>
               </div>
 
