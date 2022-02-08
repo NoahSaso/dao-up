@@ -127,6 +127,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
     handleSubmit: fundPendingHandleSubmit,
     register: fundPendingRegister,
     formState: { errors: fundPendingErrors },
+    watch: fundPendingWatch,
   } = useForm({ mode: "onChange", defaultValues: {} as FundPendingForm })
 
   const { fundPendingCampaign, fundPendingCampaignError } =
@@ -152,7 +153,6 @@ const CampaignContent: FC<CampaignContentProps> = ({
   // Refund Form
   const {
     handleSubmit: refundHandleSubmit,
-    register: refundRegister,
     formState: { errors: refundErrors },
     watch: refundWatch,
     control: refundControl,
@@ -210,6 +210,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
     setShowAddGovToken(!(await suggestToken(campaign.dao.govToken.address)))
 
   // Funding form for pending campaigns
+  const watchFundPendingTokens = fundPendingWatch("tokens") ?? 0
   const doFundPending = async ({ tokens }: FundPendingForm) => {
     setFundCampaignProposalUrl(null)
     if (!tokens) return
@@ -399,6 +400,16 @@ const CampaignContent: FC<CampaignContentProps> = ({
                       undefined
                     }
                     disabled={!!fundCampaignProposalUrl}
+                    accent={
+                      govTokenSupply
+                        ? `This will allocate ${watchFundPendingTokens} ${
+                            govTokenSymbol ?? "governance tokens"
+                          } (${prettyPrintDecimal(
+                            (100 * watchFundPendingTokens) / govTokenSupply,
+                            2
+                          )}% of total supply) from the DAO's treasury to the campaign to be distributed among the backers.`
+                        : undefined
+                    }
                     {...fundPendingRegister("tokens", {
                       valueAsNumber: true,
                       pattern: numberPattern,
@@ -417,6 +428,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
 
                   <Button
                     disabled={!!fundCampaignProposalUrl}
+                    className="sm:h-[50px]"
                     submitLabel="Propose"
                   />
                 </div>
