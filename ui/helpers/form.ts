@@ -1,7 +1,13 @@
-export const junoAddressPattern = {
-  // TODO: get real juno regex
-  value: /^juno.+$/,
-  message: "Invalid Juno address. Ensure it starts with 'juno'.",
+import { chainPrefix } from "./config"
+
+export const walletAddressPattern = {
+  value: new RegExp(`^${chainPrefix}[a-km-zA-HJ-NP-Z0-9]{39}$`, "i"),
+  message: "Invalid wallet address.",
+}
+
+export const daoAddressPattern = {
+  value: new RegExp(`^${chainPrefix}[a-km-zA-HJ-NP-Z0-9]{59}$`, "i"),
+  message: "Invalid DAO address.",
 }
 
 export const urlPattern = {
