@@ -401,11 +401,11 @@ const CampaignContent: FC<CampaignContentProps> = ({
               </form>
             )}
           </div>
-          <div className="flex flex-col flex-wrap">
+          <div className="flex flex-col flex-wrap self-stretch">
             <div
               className={cn(
-                "bg-card rounded-3xl p-8 mt-8",
-                "flex flex-col items-start self-stretch"
+                "bg-card rounded-3xl p-8 mt-4 lg:mt-8",
+                "flex flex-col items-start"
               )}
             >
               <CampaignStatus campaign={campaign} className="mb-2" />
@@ -443,36 +443,40 @@ const CampaignContent: FC<CampaignContentProps> = ({
                 </h3>
                 <p className="text-light text-sm">Total Supply</p> */}
             </div>
-            <div
-              className={cn(
-                "bg-card rounded-3xl p-8 mt-8 border border-orange",
-                "flex flex-col items-start self-stretch"
-              )}
-            >
-              <p>
-                This campaign is pending. It can not accept funds until the DAO
-                allocates governance tokens to it.
-              </p>
-              <p className="mt-2">
-                Need help? We&apos;ve got{" "}
-                <a
-                  href="https://docs.daoup.zone"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline"
-                >
-                  docs
-                </a>
-                .
-              </p>
-            </div>
+            {status === Status.Pending && (
+              <div
+                className={cn(
+                  "bg-card rounded-3xl p-8 mt-4 border border-orange",
+                  "flex flex-col items-start self-stretch"
+                )}
+              >
+                <p>
+                  This campaign is pending. It can not accept funds until the
+                  DAO allocates governance tokens to it.
+                </p>
+                <p className="mt-2">
+                  Need help? We&apos;ve got{" "}
+                  <a
+                    href="https://docs.daoup.zone/campaign-creation#starting-the-campaign"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    docs
+                  </a>
+                  .
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
         <div
           className={cn(
             "bg-card rounded-3xl",
-            "mt-8 py-8 px-12 w-full lg:w-3/5"
+            "mt-4 lg:mt-8",
+            "w-full lg:w-3/5",
+            "py-8 px-12"
           )}
         >
           <h2 className="text-xl text-green mb-2">Your Balance</h2>
