@@ -21,7 +21,6 @@ import {
   Loader,
   ResponsiveDecoration,
   Suspense,
-  TooltipInfo,
 } from "../../components"
 import { payTokenSymbol } from "../../helpers/config"
 import { numberPattern } from "../../helpers/form"
@@ -180,7 +179,12 @@ const CampaignContent: FC<CampaignContentProps> = ({
     pledged,
     dao: {
       url: daoUrl,
-      govToken: { address: govTokenAddress },
+      govToken: {
+        address: govTokenAddress,
+        symbol: govTokenSymbol,
+        daoBalance: govTokenDAOBalance,
+        supply: govTokenSupply,
+      },
     },
 
     fundingToken: { symbol: tokenSymbol, price, supply },
@@ -430,10 +434,17 @@ const CampaignContent: FC<CampaignContentProps> = ({
                 </h3>
                 <p className="text-light text-sm">Supporters</p> */}
 
-              {/* <h3 className="mt-6 text-green text-3xl">
-                {supply.toLocaleString()}
-                </h3>
-                <p className="text-light text-sm">Total Supply</p> */}
+              {!!govTokenDAOBalance && !!govTokenSupply && !!govTokenSymbol && (
+                <>
+                  <h3 className="mt-6 text-green text-3xl">
+                    {prettyPrintDecimal(govTokenDAOBalance / govTokenSupply, 2)}
+                    % {govTokenSymbol}
+                  </h3>
+                  <p className="text-light text-sm">
+                    Campaign Percentage of Governance Token Supply
+                  </p>
+                </>
+              )}
             </div>
             {status === Status.Pending && (
               <div

@@ -31,6 +31,10 @@ declare global {
       url: string
       govToken: {
         address: string
+        name?: string
+        symbol?: string
+        daoBalance?: number
+        supply?: number
       }
     }
 
@@ -98,7 +102,7 @@ declare global {
     } | null
   }>
 
-  type CampaignWalletBalanceResponse = AsyncSelectorResponse<{
+  type TokenBalanceResponse = AsyncSelectorResponse<{
     balance: number | null
   }>
 
