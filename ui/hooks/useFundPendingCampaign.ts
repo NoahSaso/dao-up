@@ -78,7 +78,6 @@ export const useFundPendingCampaign = (campaign: Campaign | null) => {
           msg,
           defaultExecuteFee
         )
-        console.log(response)
 
         const proposalId = findAttribute(
           response.logs,
