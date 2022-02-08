@@ -109,6 +109,8 @@ declare global {
   type CampaignActionsResponse = AsyncSelectorResponse<{
     actions: CampaignAction[] | null
   }>
+
+  type DAOConfigResponse = AsyncSelectorResponse<{ config: any | null }>
 }
 
 export enum Status {

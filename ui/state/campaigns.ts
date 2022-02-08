@@ -328,3 +328,38 @@ export const escrowContractAddresses =
       }
     },
   })
+
+export const daoConfig = selectorFamily<DAOConfigResponse, string | undefined>({
+  key: "daoConfig",
+  get:
+    (address) =>
+    async ({ get }) => {
+      const client = get(cosmWasmClient)
+
+      try {
+        if (!address) throw new Error("Invalid address.")
+        if (!client) throw new Error("Failed to get client.")
+
+        return {
+          config: await client.queryContractSmart(address, {
+            get_config: {},
+          }),
+          error: null,
+        }
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          (error.message.includes("decoding bech32 failed: invalid checksum") ||
+            error.message.includes("contract: not found") ||
+            error.message === "Invalid address.")
+        )
+          return {
+            config: null,
+            error:
+              "DAO does not exist on chain (ensure you are on the Juno Testnet chain).",
+          }
+
+        return { config: null, error: `${error}` }
+      }
+    },
+})

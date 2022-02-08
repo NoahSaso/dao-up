@@ -3,7 +3,11 @@ import type { NextPage } from "next"
 import { useRouter } from "next/router"
 import { FC, useCallback, useEffect, useState } from "react"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
-import { useRecoilValue, useSetRecoilState } from "recoil"
+import {
+  useRecoilValue,
+  useRecoilValueLoadable,
+  useSetRecoilState,
+} from "recoil"
 
 import {
   Button,
@@ -23,9 +27,10 @@ import {
   fundingTokenDenom,
   payTokenSymbol,
 } from "../helpers/config"
-import { junoAddressPattern, numberPattern, urlPattern } from "../helpers/form"
+import { daoAddressPattern, numberPattern, urlPattern } from "../helpers/form"
 import { useWallet } from "../hooks/useWallet"
 import { defaultNewCampaign, newCampaignFields } from "../services/campaigns"
+import { daoConfig } from "../state/campaigns"
 import { globalLoadingAtom } from "../state/loading"
 import { signedCosmWasmClient } from "../state/web3"
 
@@ -61,7 +66,23 @@ const CreateContent: FC = () => {
     register,
     formState: { errors },
     control,
+    watch,
   } = useForm({ defaultValues: defaultNewCampaign })
+
+  // Automatically verify DAO contract address.
+  const watchDAOAddress = watch("daoAddress")
+  // Only returns DAO address once it matches the regex.
+  const completeWatchDAOAddress = watchDAOAddress?.match(
+    daoAddressPattern.value
+  )
+    ? watchDAOAddress
+    : undefined
+  const {
+    state: daoConfigState,
+    contents: { config: daoConfigData, error: daoConfigError },
+  } = useRecoilValueLoadable(daoConfig(completeWatchDAOAddress))
+  const checkingDAO = daoConfigState === "loading"
+  const validDAO = daoConfigState === "hasValue" && daoConfigData !== null
 
   // Scroll to bottom of page when error is displayed.
   useEffect(() => {
@@ -253,10 +274,21 @@ const CreateContent: FC = () => {
             label={newCampaignFields.daoAddress.label}
             placeholder="juno..."
             type="text"
-            error={errors.daoAddress?.message}
+            error={
+              (completeWatchDAOAddress ? daoConfigError : null) ??
+              errors.daoAddress?.message
+            }
+            accent={
+              checkingDAO
+                ? "Verifying DAO exists..."
+                : validDAO
+                ? "DAO exists."
+                : undefined
+            }
             {...register("daoAddress", {
               required: "Required",
-              pattern: junoAddressPattern,
+              pattern: daoAddressPattern,
+              validate: () => validDAO,
             })}
           />
 
