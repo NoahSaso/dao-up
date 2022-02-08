@@ -46,7 +46,7 @@ const Create: NextPage = () => (
 
 const CreateContent: FC = () => {
   const { push: routerPush } = useRouter()
-  const { walletAddress, connect, connected } = useWallet()
+  const { walletAddress, connect, connected, connectError } = useWallet()
   const client = useRecoilValue(signedCosmWasmClient)
   const setLoading = useSetRecoilState(globalLoadingAtom)
   const [createCampaignError, setCreateCampaignError] = useState(
@@ -65,13 +65,13 @@ const CreateContent: FC = () => {
 
   // Scroll to bottom of page when error is displayed.
   useEffect(() => {
-    if (createCampaignError)
+    if (createCampaignError || connectError)
       window.scrollTo({
         left: 0,
         top: document.body.scrollHeight,
         behavior: "smooth",
       })
-  }, [createCampaignError])
+  }, [createCampaignError, connectError])
 
   const createCampaign = useCallback(
     async (newCampaign: NewCampaign) => {
@@ -138,7 +138,7 @@ const CreateContent: FC = () => {
       // Connect to wallet if necessary.
       if (!connected) {
         setPendingCampaignCreation(values)
-        connect()
+        await connect()
         return
       }
 
@@ -359,9 +359,9 @@ const CreateContent: FC = () => {
             })}
           />
 
-          {createCampaignError && (
+          {!!(createCampaignError || connectError) && (
             <p className="text-orange mb-4 self-end max-w-lg">
-              {createCampaignError}
+              {createCampaignError ?? connectError}
             </p>
           )}
 
