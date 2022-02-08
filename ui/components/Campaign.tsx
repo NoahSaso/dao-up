@@ -60,7 +60,7 @@ export const CampaignProgress: FC<CampaignProgressProps> = ({
   textClassName,
 }) => {
   const fundedPercent = (100 * pledged) / goal
-  const open = status === Status.Open
+  const showProgress = status === Status.Open || status === Status.Funded
 
   return (
     <div className={cn("flex flex-col justify-start w-full", className)}>
@@ -73,7 +73,7 @@ export const CampaignProgress: FC<CampaignProgressProps> = ({
           "h-[8px]": thin,
         })}
       >
-        {open ? (
+        {showProgress ? (
           <div
             className="bg-green h-full"
             style={{
@@ -163,7 +163,7 @@ export const AllCampaignsCard: FC<CampaignProps> = ({
         className="mt-2"
         textClassName="sm:text-lg"
       />
-      <p className="mt-5">{description}</p>
+      <p className="mt-5 line-clamp-3">{description}</p>
     </CampaignCardWrapper>
   )
 }

@@ -9,11 +9,12 @@ let campaignsFilterId = 0
 export const useGetCampaigns = (
   filter?: string,
   includeHidden = false,
-  includePending = false
+  includePending = true
 ) => {
   const { addresses, error: escrowContractAddressesError } = useRecoilValue(
     escrowContractAddresses
   )
+
   const campaignResponses = useRecoilValue(
     waitForAll(addresses.map((address) => fetchCampaign(address)))
   )

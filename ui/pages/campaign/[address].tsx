@@ -401,48 +401,71 @@ const CampaignContent: FC<CampaignContentProps> = ({
               </form>
             )}
           </div>
+          <div className="flex flex-col flex-wrap">
+            <div
+              className={cn(
+                "bg-card rounded-3xl p-8 mt-8",
+                "flex flex-col items-start self-stretch"
+              )}
+            >
+              <CampaignStatus campaign={campaign} className="mb-2" />
 
-          <div
-            className={cn(
-              "bg-card rounded-3xl p-8 mt-8",
-              "flex flex-col items-start self-stretch"
-            )}
-          >
-            <CampaignStatus campaign={campaign} className="mb-2" />
+              {!!daoUrl && (
+                <ButtonLink
+                  href={daoUrl}
+                  className="self-stretch my-2"
+                  cardOutline
+                >
+                  Visit the DAO
+                </ButtonLink>
+              )}
 
-            {!!daoUrl && (
-              <ButtonLink
-                href={daoUrl}
-                className="self-stretch my-2"
-                cardOutline
-              >
-                Visit the DAO
-              </ButtonLink>
-            )}
+              <CampaignProgress
+                campaign={campaign}
+                className="mt-2"
+                textClassName="text-md text-placeholder italic self-end"
+              />
 
-            <CampaignProgress
-              campaign={campaign}
-              className="mt-2"
-              textClassName="text-md text-placeholder italic self-end"
-            />
+              <h3 className="mt-2 text-green text-3xl">
+                {prettyPrintDecimal(pledged)} {payTokenSymbol}
+              </h3>
+              <p className="text-light text-sm">
+                pledged out of {goal.toLocaleString()} {payTokenSymbol} goal.
+              </p>
+              {/* TODO: Display supporters. */}
+              {/* <h3 className="mt-6 text-green text-3xl">
+                {supporters.toLocaleString()}
+                </h3>
+                <p className="text-light text-sm">Supporters</p> */}
 
-            <h3 className="mt-2 text-green text-3xl">
-              {prettyPrintDecimal(pledged)} {payTokenSymbol}
-            </h3>
-            <p className="text-light text-sm">
-              pledged out of {goal.toLocaleString()} {payTokenSymbol} goal.
-            </p>
-
-            {/* TODO: Display supporters. */}
-            {/* <h3 className="mt-6 text-green text-3xl">
-              {supporters.toLocaleString()}
-            </h3>
-            <p className="text-light text-sm">Supporters</p> */}
-
-            {/* <h3 className="mt-6 text-green text-3xl">
-              {supply.toLocaleString()}
-            </h3>
-            <p className="text-light text-sm">Total Supply</p> */}
+              {/* <h3 className="mt-6 text-green text-3xl">
+                {supply.toLocaleString()}
+                </h3>
+                <p className="text-light text-sm">Total Supply</p> */}
+            </div>
+            <div
+              className={cn(
+                "bg-card rounded-3xl p-8 mt-8 border border-orange",
+                "flex flex-col items-start self-stretch"
+              )}
+            >
+              <p>
+                This campaign is pending. It can not accept funds until the DAO
+                allocates governance tokens to it.
+              </p>
+              <p className="mt-2">
+                Need help? We've got{" "}
+                <a
+                  href="https://docs.daoup.zone"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  docs
+                </a>
+                .
+              </p>
+            </div>
           </div>
         </div>
 
