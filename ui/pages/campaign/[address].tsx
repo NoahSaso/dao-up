@@ -228,7 +228,6 @@ const CampaignContent: FC<CampaignContentProps> = ({
     }
   }
 
-  const overfunded = pledged > goal
   const createdByMe = connected && creator === walletAddress
 
   // Contribution
@@ -333,13 +332,6 @@ const CampaignContent: FC<CampaignContentProps> = ({
               </div>
 
               <p className="mt-4">{description}</p>
-
-              {overfunded && (
-                <p className="flex flex-row items-center mt-8">
-                  This campaign is overfunded.
-                  <TooltipInfo text="" />
-                </p>
-              )}
             </div>
 
             {(status === Status.Pending || status === Status.Open) && (
