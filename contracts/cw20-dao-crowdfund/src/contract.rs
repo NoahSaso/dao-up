@@ -397,7 +397,7 @@ pub fn query_dump_state(deps: Deps) -> StdResult<Binary> {
         creator: state.creator,
         funds_raised: state.funds_raised,
         funding_token_info,
-	gov_token_info,
+        gov_token_info,
         campaign_info: state.campaign_info,
         gov_token_addr,
         funding_token_addr,
