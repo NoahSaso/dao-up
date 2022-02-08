@@ -210,7 +210,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
     setShowAddGovToken(!(await suggestToken(campaign.dao.govToken.address)))
 
   // Funding form for pending campaigns
-  const watchFundPendingTokens = fundPendingWatch("tokens") ?? 0
+  const watchFundPendingTokens = fundPendingWatch("tokens") || 0
   const doFundPending = async ({ tokens }: FundPendingForm) => {
     setFundCampaignProposalUrl(null)
     if (!tokens) return
