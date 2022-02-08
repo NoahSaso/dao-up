@@ -356,7 +356,7 @@ export const daoConfig = selectorFamily<DAOConfigResponse, string | undefined>({
           return {
             config: null,
             error:
-              "DAO does not exist on chain (ensure you are on the Juno Testnet chain).",
+              "DAO does not exist on chain (ensure your DAO exists on the Juno Testnet chain).",
           }
 
         return { config: null, error: `${error}` }
