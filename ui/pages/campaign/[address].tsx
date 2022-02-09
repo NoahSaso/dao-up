@@ -362,7 +362,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
                   "bg-card rounded-3xl p-8 border border-orange"
                 )}
               >
-                <p>
+                <p className="text-orange">
                   This campaign is pending and cannot accept funds until the DAO
                   allocates governance tokens ({govTokenSymbol}) to it.{" "}
                   <span className="underline">
@@ -400,6 +400,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
                           )}% of total supply) from the DAO's treasury to the campaign to be distributed among the backers.`
                         : undefined
                     }
+                    accentClassName="text-light"
                     {...fundPendingRegister("tokens", {
                       valueAsNumber: true,
                       pattern: numberPattern,
