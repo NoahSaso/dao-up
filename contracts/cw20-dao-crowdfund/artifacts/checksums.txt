@@ -1,1 +1,1 @@
-2f51af9b147c825bd8f4ea921aa7d84ae70a9e3c7f226d807ae6add72f661e94  cw20_dao_crowdfund.wasm
+3366f0bdea5a00c811d4b7d2c1d392d68f366ac7521ded035c4c403df7b296be  cw20_dao_crowdfund.wasm
