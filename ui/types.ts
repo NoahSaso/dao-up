@@ -24,13 +24,18 @@ declare global {
     goal: number
     pledged: number
     // TODO: Figure out how best to retrieve this.
-    // supporters: number
+    // backers: number
 
     dao: {
       address: string
       url: string
       govToken: {
         address: string
+        name?: string
+        symbol?: string
+        campaignBalance?: number
+        daoBalance?: number
+        supply?: number
       }
     }
 
@@ -98,7 +103,7 @@ declare global {
     } | null
   }>
 
-  type CampaignWalletBalanceResponse = AsyncSelectorResponse<{
+  type TokenBalanceResponse = AsyncSelectorResponse<{
     balance: number | null
   }>
 

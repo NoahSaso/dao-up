@@ -302,7 +302,7 @@ const CreateContent: FC = () => {
 
           <FormInput
             label={newCampaignFields.tokenName.label}
-            description="The name of the tokens supporters will receive for their contributions. These become exchangeable for the DAO's governance tokens when funding succeeds."
+            description="The name of the tokens backers will receive for their contributions. These become exchangeable for the DAO's governance tokens when funding succeeds."
             placeholder="Funding Token"
             type="text"
             error={errors.tokenName?.message}

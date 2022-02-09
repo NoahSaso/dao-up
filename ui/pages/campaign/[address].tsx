@@ -1,10 +1,9 @@
 import cn from "classnames"
 import type { NextPage } from "next"
 import { NextRouter, useRouter } from "next/router"
-import { FC, useEffect, useRef, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
-import { IoCheckmark, IoCopy } from "react-icons/io5"
 import { useRecoilValue } from "recoil"
 
 import {
@@ -21,12 +20,13 @@ import {
   Loader,
   ResponsiveDecoration,
   Suspense,
-  TooltipInfo,
 } from "../../components"
-import { payTokenSymbol } from "../../helpers/config"
+import { daoUrlPrefix, payTokenSymbol } from "../../helpers/config"
 import { numberPattern } from "../../helpers/form"
 import { prettyPrintDecimal } from "../../helpers/number"
 import { useContributeCampaign } from "../../hooks/useContributeCampaign"
+import { useCopy } from "../../hooks/useCopy"
+import { useFundPendingCampaign } from "../../hooks/useFundPendingCampaign"
 import { useRefundCampaign } from "../../hooks/useRefundCampaign"
 import { useWallet } from "../../hooks/useWallet"
 import { suggestToken } from "../../services/keplr"
@@ -42,16 +42,7 @@ interface AddressDisplayProps {
   address: string
 }
 const AddressDisplay: FC<AddressDisplayProps> = ({ label, address }) => {
-  const [copied, setCopied] = useState(false)
-  const copiedTimer = useRef<NodeJS.Timeout | null>(null)
-  const copy = () => {
-    if (copiedTimer.current) clearTimeout(copiedTimer.current)
-    navigator.clipboard.writeText(address)
-    setCopied(true)
-    copiedTimer.current = setTimeout(() => setCopied(false), 5000)
-  }
-
-  const Icon = copied ? IoCheckmark : IoCopy
+  const { copy, Icon } = useCopy(address)
 
   return (
     <p
@@ -67,6 +58,10 @@ const AddressDisplay: FC<AddressDisplayProps> = ({ label, address }) => {
       </span>
     </p>
   )
+}
+
+interface FundPendingForm {
+  tokens?: number
 }
 
 interface ContributionForm {
@@ -127,6 +122,20 @@ const CampaignContent: FC<CampaignContentProps> = ({
     campaignWalletBalance(campaign?.address)
   )
 
+  // Funding form for pending campaigns
+  const {
+    handleSubmit: fundPendingHandleSubmit,
+    register: fundPendingRegister,
+    formState: { errors: fundPendingErrors },
+    watch: fundPendingWatch,
+  } = useForm({ mode: "onChange", defaultValues: {} as FundPendingForm })
+
+  const { fundPendingCampaign, fundPendingCampaignError } =
+    useFundPendingCampaign(campaign)
+  const [fundCampaignProposalUrl, setFundCampaignProposalUrl] = useState(
+    null as string | null
+  )
+
   // Contribution Form
   const {
     handleSubmit: contributionHandleSubmit,
@@ -144,7 +153,6 @@ const CampaignContent: FC<CampaignContentProps> = ({
   // Refund Form
   const {
     handleSubmit: refundHandleSubmit,
-    register: refundRegister,
     formState: { errors: refundErrors },
     watch: refundWatch,
     control: refundControl,
@@ -180,7 +188,13 @@ const CampaignContent: FC<CampaignContentProps> = ({
     pledged,
     dao: {
       url: daoUrl,
-      govToken: { address: govTokenAddress },
+      govToken: {
+        address: govTokenAddress,
+        symbol: govTokenSymbol,
+        campaignBalance: govTokenCampaignBalance,
+        daoBalance: govTokenDAOBalance,
+        supply: govTokenSupply,
+      },
     },
 
     fundingToken: { symbol: tokenSymbol, price, supply },
@@ -194,6 +208,22 @@ const CampaignContent: FC<CampaignContentProps> = ({
     setShowAddFundingToken(!(await suggestToken(campaign.fundingToken.address)))
   const suggestGovToken = async () =>
     setShowAddGovToken(!(await suggestToken(campaign.dao.govToken.address)))
+
+  // Funding form for pending campaigns
+  const watchFundPendingTokens = fundPendingWatch("tokens") || 0
+  const doFundPending = async ({ tokens }: FundPendingForm) => {
+    setFundCampaignProposalUrl(null)
+    if (!tokens) return
+
+    // TODO: Add success display.
+    const proposalId = await fundPendingCampaign(tokens)
+    // Open proposal on DAO DAO if created.
+    if (proposalId) {
+      setFundCampaignProposalUrl(
+        daoUrlPrefix + `${campaign.dao.address}/proposals/${proposalId}`
+      )
+    }
+  }
 
   // Contribution Form
   const watchContribution = contributionWatch("contribution")
@@ -228,7 +258,10 @@ const CampaignContent: FC<CampaignContentProps> = ({
     }
   }
 
-  const createdByMe = connected && creator === walletAddress
+  const campaignGovTokenPercentage =
+    govTokenCampaignBalance && govTokenSupply && govTokenSupply > 0
+      ? (100 * govTokenCampaignBalance) / govTokenSupply
+      : undefined
 
   // Contribution
   const expectedFundingTokensReceived =
@@ -315,32 +348,101 @@ const CampaignContent: FC<CampaignContentProps> = ({
                       )}
                     </div>
                   )}
-
-                  {status === Status.Pending && (
-                    <>
-                      <AddressDisplay
-                        label="Escrow contract"
-                        address={campaignAddress}
-                      />
-                      <AddressDisplay
-                        label="Governance token"
-                        address={govTokenAddress}
-                      />
-                    </>
-                  )}
                 </div>
               </div>
 
               <p className="mt-4">{description}</p>
             </div>
 
-            {(status === Status.Pending || status === Status.Open) && (
+            {status === Status.Pending ? (
+              <form
+                onSubmit={fundPendingHandleSubmit(doFundPending)}
+                className={cn(
+                  "mt-8 lg:self-stretch lg:mb-0",
+                  "bg-card rounded-3xl p-8 border border-orange"
+                )}
+              >
+                <p className="text-orange">
+                  This campaign is pending and cannot accept funds until the DAO
+                  allocates governance tokens ({govTokenSymbol}) to it.{" "}
+                  <span className="underline">
+                    If you are part of the DAO, you can create a funding
+                    proposal below.
+                  </span>
+                </p>
+
+                <div
+                  className={cn(
+                    "flex flex-col items-stretch mt-4",
+                    "sm:flex-row sm:items-stretch"
+                  )}
+                >
+                  <FormInput
+                    type="number"
+                    inputMode="decimal"
+                    placeholder="1000000"
+                    wrapperClassName="!mb-4 sm:!mb-0 sm:mr-4 sm:flex-1"
+                    className="!pr-28 border-light"
+                    tail={govTokenSymbol}
+                    error={
+                      fundPendingErrors?.tokens?.message ??
+                      fundPendingCampaignError ??
+                      undefined
+                    }
+                    disabled={!!fundCampaignProposalUrl}
+                    accent={
+                      govTokenSupply
+                        ? `This will allocate ${watchFundPendingTokens} ${
+                            govTokenSymbol ?? "governance tokens"
+                          } (${prettyPrintDecimal(
+                            (100 * watchFundPendingTokens) / govTokenSupply,
+                            2
+                          )}% of total supply) from the DAO's treasury to the campaign to be distributed among the backers.`
+                        : undefined
+                    }
+                    accentClassName="text-light"
+                    {...fundPendingRegister("tokens", {
+                      valueAsNumber: true,
+                      pattern: numberPattern,
+                      min: {
+                        value: 1e-6,
+                        message: `Must be at least 0.000001 ${govTokenSymbol}.`,
+                      },
+                      max: {
+                        value: govTokenDAOBalance ?? 0,
+                        message: `Must be less than or equal to the amount of ${govTokenSymbol} the DAO has in its treasury: ${prettyPrintDecimal(
+                          govTokenDAOBalance ?? 0
+                        )} ${govTokenSymbol}.`,
+                      },
+                    })}
+                  />
+
+                  <Button
+                    disabled={!!fundCampaignProposalUrl}
+                    className="sm:h-[50px]"
+                    submitLabel="Propose"
+                  />
+                </div>
+
+                {!!fundCampaignProposalUrl && (
+                  <>
+                    <p className="mt-6 mb-2 text-green">
+                      Proposal successfully created! This campaign will activate
+                      immediately once the proposal is approved and executed on
+                      DAO DAO.
+                    </p>
+                    <ButtonLink href={fundCampaignProposalUrl} cardOutline>
+                      View Proposal
+                    </ButtonLink>
+                  </>
+                )}
+              </form>
+            ) : status === Status.Open ? (
               <form
                 onSubmit={contributionHandleSubmit(doContribution)}
                 className={cn(
                   "flex flex-col items-stretch mt-8",
-                  "sm:flex-row sm:items-start lg:self-stretch lg:mb-0",
-                  { hidden: !open }
+                  "sm:flex-row sm:items-start lg:self-stretch lg:mb-0"
                 )}
               >
                 <FormInput
@@ -358,17 +460,10 @@ const CampaignContent: FC<CampaignContentProps> = ({
                   className="!py-3 !px-6 !pr-28"
                   tail={payTokenSymbol}
                   error={
-                    status === Status.Pending
-                      ? `You cannot contribute to a pending campaign.${
-                          status === Status.Pending && !createdByMe
-                            ? " Check back later once it launches."
-                            : ""
-                        }`
-                      : contributionErrors?.contribution?.message ??
-                        contributeCampaignError ??
-                        undefined
+                    contributionErrors?.contribution?.message ??
+                    contributeCampaignError ??
+                    undefined
                   }
-                  disabled={status !== Status.Open}
                   {...contributionRegister("contribution", {
                     valueAsNumber: true,
                     pattern: numberPattern,
@@ -388,16 +483,16 @@ const CampaignContent: FC<CampaignContentProps> = ({
                 <Button
                   className="sm:h-[50px]"
                   submitLabel="Support this campaign"
-                  disabled={status !== Status.Open}
                 />
               </form>
-            )}
+            ) : undefined}
           </div>
           <div className="flex flex-col flex-wrap self-stretch">
             <div
               className={cn(
                 "bg-card rounded-3xl p-8 mt-4 lg:mt-8",
-                "flex flex-col items-start"
+                "flex flex-col items-start",
+                "max-w-full"
               )}
             >
               <CampaignStatus campaign={campaign} className="mb-2" />
@@ -424,42 +519,30 @@ const CampaignContent: FC<CampaignContentProps> = ({
               <p className="text-light text-sm">
                 pledged out of {goal.toLocaleString()} {payTokenSymbol} goal.
               </p>
-              {/* TODO: Display supporters. */}
+              {/* TODO: Display backers. */}
               {/* <h3 className="mt-6 text-green text-3xl">
-                {supporters.toLocaleString()}
+                {backers.toLocaleString()}
                 </h3>
-                <p className="text-light text-sm">Supporters</p> */}
+                <p className="text-light text-sm">Backers</p> */}
 
-              {/* <h3 className="mt-6 text-green text-3xl">
-                {supply.toLocaleString()}
-                </h3>
-                <p className="text-light text-sm">Total Supply</p> */}
-            </div>
-            {status === Status.Pending && (
-              <div
-                className={cn(
-                  "bg-card rounded-3xl p-8 mt-4 border border-orange",
-                  "flex flex-col items-start self-stretch"
+              {/* Hide for funded campaigns since campaignGovTokenPercentage won't remain constant. */}
+              {/* TODO: Store initial fund amount in contract staet and use that instead. */}
+              {status !== Status.Funded &&
+                !!campaignGovTokenPercentage &&
+                !!govTokenSymbol && (
+                  <>
+                    <h3 className="mt-6 text-green text-3xl">
+                      {prettyPrintDecimal(campaignGovTokenPercentage, 2)}%{" "}
+                      governance
+                    </h3>
+                    <p className="text-light text-sm">
+                      Campaign backers will have{" "}
+                      {prettyPrintDecimal(campaignGovTokenPercentage, 2)}%
+                      voting power in the DAO.
+                    </p>
+                  </>
                 )}
-              >
-                <p>
-                  This campaign is pending. It can not accept funds until the
-                  DAO allocates governance tokens to it.
-                </p>
-                <p className="mt-2">
-                  Need help? We&apos;ve got{" "}
-                  <a
-                    href="https://docs.daoup.zone/campaign-creation#starting-the-campaign"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline"
-                  >
-                    docs
-                  </a>
-                  .
-                </p>
-              </div>
-            )}
+            </div>
           </div>
         </div>
 

@@ -347,6 +347,7 @@ interface FormItemProps {
   label?: string
   description?: string
   accent?: string
+  accentClassName?: string
   error?: string
   wrapperClassName?: string
   surroundingClassName?: string
@@ -361,6 +362,7 @@ export const FormWrapper: FC<FormWrapperProps> = ({
   label,
   description,
   accent,
+  accentClassName,
   error,
   wrapperClassName,
   surroundingClassName,
@@ -411,6 +413,7 @@ export const FormWrapper: FC<FormWrapperProps> = ({
           className={cn(
             "block text-sm font-light pl-5 text-green",
             { "mt-1": horizontal, "mt-3": !horizontal },
+            accentClassName,
             surroundingClassName
           )}
         >
@@ -443,6 +446,7 @@ export const FormInput = forwardRef<
       label,
       description,
       accent,
+      accentClassName,
       error,
       wrapperClassName,
       surroundingClassName,
@@ -456,6 +460,7 @@ export const FormInput = forwardRef<
       label={label}
       description={description}
       accent={accent}
+      accentClassName={accentClassName}
       error={error}
       wrapperClassName={wrapperClassName}
       surroundingClassName={surroundingClassName}
