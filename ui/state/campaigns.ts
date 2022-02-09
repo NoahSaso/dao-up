@@ -300,6 +300,11 @@ export const tokenInfo = selectorFamily<TokenInfoResponse, string>({
     },
 })
 
+export const tokenAddressBalanceId = atomFamily<number, string | undefined>({
+  key: "tokenAddressBalanceId",
+  default: 0,
+})
+
 export const tokenBalance = selectorFamily<
   TokenBalanceResponse,
   {
@@ -312,6 +317,9 @@ export const tokenBalance = selectorFamily<
     ({ tokenAddress, walletAddress }) =>
     async ({ get }) => {
       if (!tokenAddress || !walletAddress) return { balance: null, error: null }
+
+      // Allow us to manually refresh balance for given token.
+      get(tokenAddressBalanceId(tokenAddress))
 
       const client = get(cosmWasmClient)
 
