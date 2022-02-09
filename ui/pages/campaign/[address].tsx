@@ -260,7 +260,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
 
   const campaignGovTokenPercentage =
     govTokenCampaignBalance && govTokenSupply && govTokenSupply > 0
-      ? govTokenCampaignBalance / govTokenSupply
+      ? (100 * govTokenCampaignBalance) / govTokenSupply
       : undefined
 
   // Contribution
