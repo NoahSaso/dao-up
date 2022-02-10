@@ -35,7 +35,7 @@ export const useWallet = () => {
       if (!errorSet)
         setConnectError(
           <>
-            Please install the{" "}
+            Install the{" "}
             <a
               href="https://www.keplr.app"
               target="_blank"
