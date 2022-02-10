@@ -396,6 +396,45 @@ export const escrowContractAddresses =
     },
   })
 
+export const escrowContractAddressesCount = selector<number>({
+  key: "escrowContractAddressesCount",
+  get: async ({ get }) => {
+    const { addresses } = get(escrowContractAddresses)
+    return addresses.length
+  },
+})
+
+export const pagedEscrowContractAddresses = selectorFamily<
+  EscrowContractAddressesResponse,
+  { page: number | null; size: number }
+>({
+  key: "pagedEscrowContractAddresses",
+  get:
+    ({ page, size }) =>
+    async ({ get }) => {
+      const { addresses, error: addressesError } = get(escrowContractAddresses)
+      if (addressesError || !addresses.length)
+        return { addresses, error: addressesError }
+
+      // Do not page if page is null.
+      if (page === null) return { addresses, error: null }
+
+      const start = (page - 1) * size
+      const end = page * size
+
+      let pagedAddresses: string[]
+      if (start > addresses.length) {
+        pagedAddresses = []
+      } else if (end > addresses.length) {
+        pagedAddresses = addresses.slice(start, addresses.length)
+      } else {
+        pagedAddresses = addresses.slice(start, end)
+      }
+
+      return { addresses: pagedAddresses, error: null }
+    },
+})
+
 export const daoConfig = selectorFamily<DAOConfigResponse, string | undefined>({
   key: "daoConfig",
   get:
