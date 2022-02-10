@@ -26,7 +26,7 @@ export const CampaignStatus: FC<CampaignProps> = ({
       break
     case Status.Open:
       color = Color.Orange
-      label = "Active"
+      label = "Open"
       break
     case Status.Funded:
       color = Color.Green
