@@ -5,7 +5,7 @@ import {
   Button,
   ButtonLink,
   CenteredColumn,
-  ContributorCampaignCard,
+  // ContributorCampaignCard,
   CreatorCampaignCard,
   ResponsiveDecoration,
   StatusIndicator,
@@ -96,30 +96,30 @@ const MeContent: FC<MeContentProps> = ({ walletAddress, connected }) => {
     </>
   )
 
-  const contributionsBlock = (
-    <>
-      <h1 className="font-semibold text-4xl mt-16">Your Contributions</h1>
-      {contributorCampaigns.length ? (
-        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 mt-8">
-          {contributorCampaigns.map((campaign) => (
-            <ContributorCampaignCard
-              key={campaign.address}
-              campaign={campaign}
-            />
-          ))}
-        </div>
-      ) : (
-        <>
-          <p className="mt-2 mb-8">
-            You haven&apos;t made any contributions to campaigns.
-          </p>
-          <ButtonLink href="/campaigns">View all campaigns</ButtonLink>
-        </>
-      )}
-    </>
-  )
-
   // TODO: Get contributions from this wallet.
+  // const contributionsBlock = (
+  //   <>
+  //     <h1 className="font-semibold text-4xl mt-16">Your Contributions</h1>
+  //     {contributorCampaigns.length ? (
+  //       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 mt-8">
+  //         {contributorCampaigns.map((campaign) => (
+  //           <ContributorCampaignCard
+  //             key={campaign.address}
+  //             campaign={campaign}
+  //           />
+  //         ))}
+  //       </div>
+  //     ) : (
+  //       <>
+  //         <p className="mt-2 mb-8">
+  //           You haven&apos;t made any contributions to campaigns.
+  //         </p>
+  //         <ButtonLink href="/campaigns">View all campaigns</ButtonLink>
+  //       </>
+  //     )}
+  //   </>
+  // )
+
   return (
     <>
       {connected &&

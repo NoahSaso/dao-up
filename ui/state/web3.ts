@@ -29,16 +29,16 @@ export const fetchKeplr = selector({
   },
 })
 
+export const keplrConnectedBeforeKey = "keplrConnectedBefore"
 // Change keplrKeystoreId to trigger Keplr refresh/connect.
 // Set to -1 to disable connection.
-const keplrKeystoreIdKey = "keplrKeystoreId"
 export const keplrKeystoreIdAtom = atom({
-  key: keplrKeystoreIdKey,
+  key: "keplrKeystoreId",
   default: -1,
   effects: [
     // Store whether previously connected, but restart at 0 on each page load instead of infinitely increment a value in their local storage.
     localStorageEffect(
-      keplrKeystoreIdKey,
+      keplrConnectedBeforeKey,
       (id) => (id > -1).toString(),
       (saved) => (saved === "true" ? 0 : -1)
     ),
@@ -60,7 +60,11 @@ export const keplrOfflineSigner = selector({
       return await keplr.getOfflineSignerAuto(chainId)
     } catch (error) {
       console.error(error)
-      // TODO: Handle error.
+
+      // If failed to connect and was previously connected, stop trying to connect automatically in the future.
+      if (localStorage.getItem(keplrConnectedBeforeKey) === "true") {
+        localStorage.removeItem(keplrConnectedBeforeKey)
+      }
     }
   },
 })

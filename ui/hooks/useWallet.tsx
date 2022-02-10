@@ -12,32 +12,29 @@ export const useWallet = () => {
   const [connectError, setConnectError] = useState(null as ReactNode | null)
 
   const connect = useCallback(async () => {
+    // Set install message error if keplr not installed.
+    if (!keplr) {
+      setKeplrKeystoreId(-1)
+      return setConnectError(<InstallWalletMessage />)
+    }
+
     setConnectError(null)
 
-    let shouldSetInstallError = true
-    let enabled = false
     // Attempt to connect and update keystore accordingly.
     try {
-      if (keplr) {
-        await keplr.enable(chainId)
-        enabled = true
-      }
+      await keplr.enable(chainId)
+      // If connection succeeds, propagate client to selector dependency chain.
+      setKeplrKeystoreId((id) => id + 1)
     } catch (error) {
+      // Otherwise set disconnected so we don't try to connect again without manual action.
+      setKeplrKeystoreId(-1)
+
       // Ignore rejected requests since the user knows they rejected.
-      shouldSetInstallError = false
       if (!(error instanceof Error) || error.message !== "Request rejected") {
         // TODO: Handle non-rejection errors better.
         console.log(error)
         setConnectError(`${error}`)
       }
-    }
-
-    // If connection succeeds, propagate client to selector dependency chain.
-    if (enabled) setKeplrKeystoreId((id) => id + 1)
-    // Otherwise set disconnected so we don't try to connect again without manual action.
-    else {
-      setKeplrKeystoreId(-1)
-      if (shouldSetInstallError) setConnectError(<InstallWalletMessage />)
     }
   }, [setKeplrKeystoreId, setConnectError, keplr])
 
