@@ -12,7 +12,7 @@ import {
   Suspense,
   TooltipInfo,
 } from "../components"
-import { useGetCampaigns } from "../hooks/useGetCampaigns"
+import { useCampaigns } from "../hooks/useCampaigns"
 import { useWallet } from "../hooks/useWallet"
 import { categorizedWalletCampaigns } from "../services/campaigns"
 
@@ -72,7 +72,7 @@ interface MeContentProps {
   connected: boolean
 }
 const MeContent: FC<MeContentProps> = ({ walletAddress, connected }) => {
-  const { campaigns, error } = useGetCampaigns(undefined, true, true)
+  const { campaigns, error } = useCampaigns(undefined, true, true)
   const { creatorCampaigns, contributorCampaigns } = categorizedWalletCampaigns(
     campaigns,
     walletAddress ?? ""

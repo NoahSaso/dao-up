@@ -9,7 +9,7 @@ import {
   ResponsiveDecoration,
   Suspense,
 } from "../components"
-import { useGetCampaigns } from "../hooks/useGetCampaigns"
+import { useCampaigns } from "../hooks/useCampaigns"
 
 const Campaigns: NextPage = () => {
   const [filter, setFilter] = useState("")
@@ -47,7 +47,7 @@ interface CampaignsContentProps {
 }
 
 const CampaignsContent: FC<CampaignsContentProps> = ({ filter }) => {
-  const { filtering, campaigns, error } = useGetCampaigns(filter)
+  const { filtering, campaigns, error } = useCampaigns(filter)
 
   // Show loader if actively filtering data.
   if (filtering) return <Loader />

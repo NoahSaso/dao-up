@@ -6,7 +6,7 @@ import { campaignsFromResponses } from "../services/campaigns"
 import { escrowContractAddresses, fetchCampaign } from "../state/campaigns"
 
 let campaignsFilterId = 0
-export const useGetCampaigns = (
+export const useCampaigns = (
   filter?: string,
   includeHidden = false,
   includePending = true
