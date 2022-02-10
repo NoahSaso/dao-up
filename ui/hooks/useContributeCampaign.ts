@@ -18,7 +18,6 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
     null as string | null
   )
 
-  // TODO: Attempt to connect manually before so we can show connection errors.
   const contributeCampaign = useCallback(
     async (amount: number) => {
       setContributeCampaignError(null)

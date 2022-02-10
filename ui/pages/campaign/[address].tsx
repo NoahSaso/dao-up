@@ -29,7 +29,7 @@ import { useCopy } from "../../hooks/useCopy"
 import { useFundPendingCampaign } from "../../hooks/useFundPendingCampaign"
 import { useRefundCampaign } from "../../hooks/useRefundCampaign"
 import { useWallet } from "../../hooks/useWallet"
-import { suggestToken } from "../../services/keplr"
+import { InstallWalletMessage, suggestToken } from "../../services/keplr"
 import {
   campaignWalletBalance,
   fetchCampaign,
@@ -102,11 +102,10 @@ export const Campaign: NextPage = () => {
 interface CampaignContentProps {
   router: NextRouter
 }
-// TODO: Generate custom message to fund & activate campaign with governance tokens automatically.
 const CampaignContent: FC<CampaignContentProps> = ({
   router: { isReady, query, push: routerPush },
 }) => {
-  const { connect, connected, connectError } = useWallet()
+  const { connect, connected, connectError, installed, keplr } = useWallet()
 
   const campaignAddress =
     isReady && typeof query.address === "string" ? query.address : ""
@@ -205,9 +204,15 @@ const CampaignContent: FC<CampaignContentProps> = ({
   } = campaign ?? {}
 
   const suggestFundingToken = async () =>
-    setShowAddFundingToken(!(await suggestToken(campaign.fundingToken.address)))
+    keplr &&
+    setShowAddFundingToken(
+      !(await suggestToken(keplr, campaign.fundingToken.address))
+    )
   const suggestGovToken = async () =>
-    setShowAddGovToken(!(await suggestToken(campaign.dao.govToken.address)))
+    keplr &&
+    setShowAddGovToken(
+      !(await suggestToken(keplr, campaign.dao.govToken.address))
+    )
 
   // Funding form for pending campaigns
   const watchFundPendingTokens = fundPendingWatch("tokens") || 0
@@ -361,15 +366,23 @@ const CampaignContent: FC<CampaignContentProps> = ({
                   "bg-card rounded-3xl p-8 border border-orange"
                 )}
               >
-                <p className="text-orange">
-                  You haven&apos;t connected a wallet. Connect one to
-                  contribute, view your balance, or refund.
-                </p>
-                <Button className="mt-4" onClick={connect}>
-                  Connect a wallet
-                </Button>
-                {!!connectError && (
-                  <p className="text-orange mt-2">{connectError}</p>
+                {installed ? (
+                  <>
+                    <p className="text-orange">
+                      You haven&apos;t connected a wallet. Connect one to
+                      contribute, view your balance, or refund.
+                    </p>
+                    <Button className="mt-4" onClick={connect}>
+                      Connect a wallet
+                    </Button>
+                    {!!connectError && (
+                      <p className="text-orange mt-2">{connectError}</p>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-orange text-md font-bold">
+                    <InstallWalletMessage />
+                  </p>
                 )}
               </div>
             )}

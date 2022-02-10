@@ -20,7 +20,6 @@ export const useFundPendingCampaign = (campaign: Campaign | null) => {
     null as string | null
   )
 
-  // TODO: Attempt to connect manually before so we can show connection errors.
   const fundPendingCampaign = useCallback(
     async (amount: number) => {
       setFundPendingCampaignError(null)
