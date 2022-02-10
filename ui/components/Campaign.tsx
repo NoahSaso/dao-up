@@ -265,7 +265,7 @@ export const CampaignAction: FC<CampaignActionProps> = ({
   <div className={cn("py-5", "border-b border-light")}>
     <div className="flex flex-row justify-between items-center">
       <p
-        className={cn("font-semibold", {
+        className={cn("font-semibold pr-2", {
           "text-white": type === CampaignActionType.Fund,
           "text-orange": type === CampaignActionType.Refund,
         })}
@@ -275,6 +275,8 @@ export const CampaignAction: FC<CampaignActionProps> = ({
       </p>
       {!!when && <TimeAgo date={when} className="text-placeholder" />}
     </div>
-    <p className="text-sm text-placeholder font-mono mt-1">{address}</p>
+    <p className="text-xs sm:text-sm text-placeholder font-mono break-all mt-1">
+      {address}
+    </p>
   </div>
 )

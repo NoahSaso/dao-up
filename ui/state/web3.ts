@@ -2,23 +2,43 @@ import {
   CosmWasmClient,
   SigningCosmWasmClient,
 } from "@cosmjs/cosmwasm-stargate"
+import { Keplr } from "@keplr-wallet/types"
 import { atom, selector } from "recoil"
 
-import { endpoint } from "../helpers/config"
-import { getOfflineSigner } from "../services/keplr"
+import { chainId, endpoint } from "../helpers/config"
 import { localStorageEffect } from "./effects"
 
+export const fetchKeplr = selector({
+  key: "fetchKeplr",
+  get: async () => {
+    if (window.keplr || document.readyState === "complete") return window.keplr
+
+    return new Promise<Keplr | undefined>((resolve) => {
+      const documentStateChange = (event: Event) => {
+        if (
+          event.target &&
+          (event.target as Document).readyState === "complete"
+        ) {
+          document.removeEventListener("readystatechange", documentStateChange)
+          resolve(window.keplr)
+        }
+      }
+
+      document.addEventListener("readystatechange", documentStateChange)
+    })
+  },
+})
+
+export const keplrConnectedBeforeKey = "keplrConnectedBefore"
 // Change keplrKeystoreId to trigger Keplr refresh/connect.
 // Set to -1 to disable connection.
-// TODO: Figure out how to unset localStore if they reject in the future.
-const keplrKeystoreIdKey = "keplrKeystoreId"
 export const keplrKeystoreIdAtom = atom({
-  key: keplrKeystoreIdKey,
+  key: "keplrKeystoreId",
   default: -1,
   effects: [
     // Store whether previously connected, but restart at 0 on each page load instead of infinitely increment a value in their local storage.
     localStorageEffect(
-      keplrKeystoreIdKey,
+      keplrConnectedBeforeKey,
       (id) => (id > -1).toString(),
       (saved) => (saved === "true" ? 0 : -1)
     ),
@@ -32,11 +52,19 @@ export const keplrOfflineSigner = selector({
     const id = get(keplrKeystoreIdAtom)
     if (id < 0) return
 
+    const keplr = get(fetchKeplr)
+    if (!keplr) return
+
     try {
-      return await getOfflineSigner()
+      await keplr.enable(chainId)
+      return await keplr.getOfflineSignerAuto(chainId)
     } catch (error) {
       console.error(error)
-      // TODO: Handle error.
+
+      // If failed to connect and was previously connected, stop trying to connect automatically in the future.
+      if (localStorage.getItem(keplrConnectedBeforeKey) === "true") {
+        localStorage.removeItem(keplrConnectedBeforeKey)
+      }
     }
   },
 })

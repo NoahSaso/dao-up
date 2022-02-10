@@ -116,10 +116,6 @@ export const categorizedWalletCampaigns = (
   address: string
 ) => ({
   creatorCampaigns: campaigns.filter((c) => c.creator === address),
-  // TODO: Somehow figure out if this wallet is a supporter.
-  contributorCampaigns: campaigns.filter(
-    (c) =>
-      // c.contributors.includes(address)
-      c.creator !== address
-  ),
+  // TODO: Somehow figure out if this wallet is a backer.
+  contributorCampaigns: [],
 })
