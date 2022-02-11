@@ -28,10 +28,11 @@ export const Select: FC<SelectProps> = ({
   return (
     <Button
       className={cn(
-        "flex flex-row justify-between items-center relative z-10 rounded-md",
+        "flex flex-row justify-between items-center relative z-10 rounded-md py-1.5 px-3",
         className
       )}
       onClick={() => setOpen((o) => !o)}
+      outline
     >
       <div className="flex flex-col items-start">
         {label}
@@ -58,7 +59,7 @@ export const Select: FC<SelectProps> = ({
             key={itemLabel}
             className={cn(
               "flex flex-row justify-between items-center",
-              "w-full h-full py-2 px-4",
+              "w-full h-full py-1.5 px-3",
               "cursor-pointer hover:text-dark/50",
               "border-b border-dark/20 last:border-b-0"
             )}
