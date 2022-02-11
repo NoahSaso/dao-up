@@ -20,7 +20,7 @@ const singleFilterMaker = (key: string, value: string) =>
 export const filterExists = (filter: string, key: string, value: string) =>
   singleFilterMaker(key, value).test(filter)
 export const addFilter = (filter: string, key: string, value: string) =>
-  filter + ` ${key}:${value}`
+  (filter + ` ${key}:${value}`).trim()
 export const removeFilter = (filter: string, key: string, value: string) =>
   filter.replaceAll(singleFilterMaker(key, value), "").trim()
 

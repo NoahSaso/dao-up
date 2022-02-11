@@ -1,5 +1,6 @@
 import cn from "classnames"
 import type { NextPage } from "next"
+import { useRouter } from "next/router"
 import { FC, useCallback, useEffect, useState } from "react"
 import { useRecoilValueLoadable } from "recoil"
 
@@ -20,15 +21,46 @@ import { Status } from "../types"
 const minPage = 1
 const pageSize = 20
 
+let alreadyLoadedFromQuery = false
+
 const Campaigns: NextPage = () => {
+  const { query, isReady, push: routerPush } = useRouter()
   const [filter, setFilter] = useState("")
-  const [currFilter, setCurrFilter] = useState("")
+  const [activeFilter, setActiveFilter] = useState("")
+
+  // Load filter from query string.
+  useEffect(() => {
+    if (alreadyLoadedFromQuery || !isReady || typeof query?.q !== "string")
+      return
+
+    const decoded = decodeURIComponent(query.q)
+    setFilter(decoded)
+    setActiveFilter(decoded)
+
+    // Only load once.
+    alreadyLoadedFromQuery = true
+  }, [query, isReady, setFilter, setActiveFilter])
+
+  // Save filter to query string.
+  useEffect(() => {
+    if (!isReady) return
+
+    routerPush(
+      {
+        pathname: "/campaigns",
+        query: { q: encodeURIComponent(activeFilter) },
+        hash: window.location.hash,
+      },
+      undefined,
+      { shallow: true }
+    )
+  }, [query, isReady, activeFilter, routerPush])
 
   // Debounce filter input: wait until filter stops changing before refiltering campaigns.
   useEffect(() => {
-    const timer = setTimeout(() => setCurrFilter(filter.trim()), 350)
+    const timer = setTimeout(() => setActiveFilter(filter.trim()), 350)
     return () => clearTimeout(timer)
-  }, [filter, setCurrFilter])
+  }, [filter, setActiveFilter])
 
   return (
     <>
@@ -71,7 +103,7 @@ const Campaigns: NextPage = () => {
         />
 
         <Suspense>
-          <CampaignsContent filter={currFilter} />
+          <CampaignsContent filter={activeFilter} />
         </Suspense>
       </CenteredColumn>
     </>
