@@ -1,3 +1,6 @@
+import fuzzysort from "fuzzysort"
+
+import { getFilterFns } from "../helpers/filter"
 import { prettyPrintDecimal } from "../helpers/number"
 import { Status } from "../types"
 
@@ -119,3 +122,27 @@ export const categorizedWalletCampaigns = (
   // TODO: Somehow figure out if this wallet is a backer.
   contributorCampaigns: [],
 })
+
+export const filterCampaigns = async (
+  campaigns: Campaign[],
+  filter?: string
+) => {
+  if (!filter) return campaigns
+
+  const { query, filterFns } = getFilterFns(filter)
+
+  if (filterFns)
+    // Filter out campaigns that don't match all active filters.
+    campaigns = campaigns.filter((campaign) =>
+      filterFns.every((fn) => fn(campaign))
+    )
+
+  if (!query) return campaigns
+
+  return (
+    await fuzzysort.goAsync(query, campaigns, {
+      keys: ["name", "description"],
+      allowTypo: true,
+    })
+  ).map(({ obj }) => obj)
+}

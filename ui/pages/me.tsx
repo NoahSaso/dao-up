@@ -1,5 +1,6 @@
 import type { NextPage } from "next"
 import { FC } from "react"
+import { useRecoilValue } from "recoil"
 
 import {
   Button,
@@ -12,9 +13,9 @@ import {
   Suspense,
   TooltipInfo,
 } from "../components"
-import { useGetCampaigns } from "../hooks/useGetCampaigns"
 import { useWallet } from "../hooks/useWallet"
 import { categorizedWalletCampaigns } from "../services/campaigns"
+import { allCampaigns } from "../state/campaigns"
 
 const Me: NextPage = () => {
   const { walletAddress, connect, connected, connectError } = useWallet()
@@ -72,9 +73,9 @@ interface MeContentProps {
   connected: boolean
 }
 const MeContent: FC<MeContentProps> = ({ walletAddress, connected }) => {
-  const { campaigns, error } = useGetCampaigns(undefined, true, true)
+  const { campaigns, error } = useRecoilValue(allCampaigns)
   const { creatorCampaigns, contributorCampaigns } = categorizedWalletCampaigns(
-    campaigns,
+    campaigns ?? [],
     walletAddress ?? ""
   )
 
@@ -122,6 +123,7 @@ const MeContent: FC<MeContentProps> = ({ walletAddress, connected }) => {
 
   return (
     <>
+      {!!error && <p className="text-orange">{error}</p>}
       {connected &&
         // If no user campaigns but user has contributed, show contributions first. Otherwise, default to campaigns on top.
         (contributorCampaigns.length && !creatorCampaigns.length ? (
