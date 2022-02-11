@@ -16,7 +16,6 @@ import {
   Button,
   CenteredColumn,
   Input,
-  Loader,
   ResponsiveDecoration,
   Select,
   Suspense,
@@ -94,12 +93,12 @@ const Campaigns: NextPage = () => {
       />
 
       <CenteredColumn className="pt-5 pb-10">
-        <div className="flex flex-column justify-start items-start sm:flex-row sm:items-center">
+        <div className="flex flex-col justify-start items-start sm:flex-row sm:items-center">
           <h1 className="font-semibold text-4xl">All Campaigns</h1>
 
-          <div className="flex flex-wrap flex-row justify-start items-center ml-10 sm:ml-0">
+          <div className="flex flex-wrap flex-row justify-start items-center ml-0 mt-4 sm:ml-10 sm:mt-0">
             <Select
-              className="ml-10 w-40"
+              className="w-40"
               label="Status"
               items={Object.entries(Status).map(([label, value]) => ({
                 label,
