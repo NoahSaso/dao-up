@@ -186,7 +186,7 @@ const CampaignsContent: FC<CampaignsContentProps> = ({
     hasMore: canGoForward,
     error,
   } = (contents ?? {
-    campaigns: [],
+    campaigns: null,
     hasMore: false,
     error: null,
   }) as CampaignsResponse
@@ -205,7 +205,7 @@ const CampaignsContent: FC<CampaignsContentProps> = ({
 
   return (
     <>
-      {(canGoBack || canGoForward) && (
+      {(canGoBack || canGoForward) && !!campaigns && (
         <Pagination
           className="-mt-2 mb-6"
           canGoBack={canGoBack}
@@ -226,7 +226,7 @@ const CampaignsContent: FC<CampaignsContentProps> = ({
         ))}
       </div>
 
-      {(canGoBack || canGoForward) && (
+      {(canGoBack || canGoForward) && !campaigns && (
         <Pagination
           className="my-6"
           canGoBack={canGoBack}

@@ -468,7 +468,7 @@ export const filteredCampaigns = selectorFamily<
           pagedEscrowContractAddresses(addressPageInfo)
         )
         if (addressesError)
-          return { campaigns: [], hasMore: false, error: addressesError }
+          return { campaigns: null, hasMore: false, error: addressesError }
 
         const pageAddresses = addresses.slice(
           addressPageInfo.startIndex,
