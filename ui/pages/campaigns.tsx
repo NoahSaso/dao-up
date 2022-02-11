@@ -1,7 +1,14 @@
 import cn from "classnames"
 import type { NextPage } from "next"
 import { useRouter } from "next/router"
-import { FC, useCallback, useEffect, useState } from "react"
+import {
+  Dispatch,
+  FC,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from "react"
 import { useRecoilValueLoadable } from "recoil"
 
 import {
@@ -28,33 +35,48 @@ const Campaigns: NextPage = () => {
   const [filter, setFilter] = useState("")
   const [activeFilter, setActiveFilter] = useState("")
 
-  // Load filter from query string.
+  const [page, setPage] = useState(1)
+
+  // Load data from query.
   useEffect(() => {
-    if (alreadyLoadedFromQuery || !isReady || typeof query?.q !== "string")
-      return
-
-    const decoded = decodeURIComponent(query.q)
-    setFilter(decoded)
-    setActiveFilter(decoded)
-
+    if (alreadyLoadedFromQuery || !isReady) return
     // Only load once.
     alreadyLoadedFromQuery = true
-  }, [query, isReady, setFilter, setActiveFilter])
 
-  // Save filter to query string.
+    if (typeof query?.q === "string") {
+      const decoded = decodeURIComponent(query.q)
+      setFilter(decoded)
+      setActiveFilter(decoded)
+    }
+
+    if (typeof query?.p === "string") {
+      let loadedPage = Number(query.p) || minPage
+      if (loadedPage < minPage) loadedPage = minPage
+      setPage(loadedPage)
+    }
+  }, [query, isReady, setFilter, setActiveFilter, setPage])
+
+  // Save data to query.
   useEffect(() => {
-    if (!isReady) return
+    // Only save data once ready and when the data changes.
+    if (
+      !isReady ||
+      (query.q === encodeURIComponent(filter) && query.p === page.toString())
+    )
+      return
 
     routerPush(
       {
         pathname: "/campaigns",
-        query: { q: encodeURIComponent(activeFilter) },
-        hash: window.location.hash,
+        query: {
+          q: encodeURIComponent(filter),
+          p: page,
+        },
       },
       undefined,
       { shallow: true }
     )
-  }, [query, isReady, activeFilter, routerPush])
+  }, [query, page, isReady, filter, routerPush])
 
   // Debounce filter input: wait until filter stops changing before refiltering campaigns.
   useEffect(() => {
@@ -103,7 +125,11 @@ const Campaigns: NextPage = () => {
         />
 
         <Suspense>
-          <CampaignsContent filter={activeFilter} />
+          <CampaignsContent
+            filter={activeFilter}
+            page={page}
+            setPage={setPage}
+          />
         </Suspense>
       </CenteredColumn>
     </>
@@ -136,15 +162,15 @@ const Pagination: FC<PaginationProps> = ({
 
 interface CampaignsContentProps {
   filter: string
+  page: number
+  setPage: Dispatch<SetStateAction<number>>
 }
 
-const CampaignsContent: FC<CampaignsContentProps> = ({ filter }) => {
-  const [page, setPage] = useState(() => {
-    // Load page number from hash.
-    let pageFromHash = Number(window.location.hash.slice(1)) || minPage
-    if (pageFromHash < minPage) pageFromHash = minPage
-    return pageFromHash
-  })
+const CampaignsContent: FC<CampaignsContentProps> = ({
+  filter,
+  page,
+  setPage,
+}) => {
   const goBack = useCallback(
     () => setPage((p) => Math.max(minPage, p - 1)),
     [setPage]
@@ -167,12 +193,6 @@ const CampaignsContent: FC<CampaignsContentProps> = ({ filter }) => {
 
   // Pagination state
   const canGoBack = page > minPage
-
-  // Update hash with page number.
-  useEffect(() => {
-    if (page < minPage) setPage(minPage)
-    else if (typeof page === "number") window.location.hash = "#" + page
-  }, [page, setPage])
 
   // If loads no campaigns and not on first page, go back to first page.
   useEffect(() => {
