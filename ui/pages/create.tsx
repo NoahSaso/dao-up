@@ -24,12 +24,14 @@ import {
   cw20CodeId,
   daoUpDAOAddress,
   daoUpFee,
+  daoUpFeeNum,
   defaultExecuteFee,
   escrowContractCodeId,
   fundingTokenDenom,
   payTokenSymbol,
 } from "../helpers/config"
 import { daoAddressPattern, numberPattern, urlPattern } from "../helpers/form"
+import { prettyPrintDecimal } from "../helpers/number"
 import { useWallet } from "../hooks/useWallet"
 import { defaultNewCampaign, newCampaignFields } from "../services/campaigns"
 import { daoConfig } from "../state/campaigns"
@@ -69,6 +71,7 @@ const CreateContent: FC = () => {
     formState: { errors },
     control,
     watch,
+    setValue,
   } = useForm({ defaultValues: defaultNewCampaign })
 
   // Automatically verify DAO contract address exists on chain.
@@ -87,6 +90,13 @@ const CreateContent: FC = () => {
   const validDAO = daoConfigState === "hasValue" && daoConfigData !== null
   // Only invalid if pattern matches AND has determined invalid address.
   const invalidDAO = daoAddressFormatValid && !validDAO
+
+  // Compute relevant goal fee amounts.
+  const watchGoal = watch("goal") ?? 0
+  const goalReceived = watchGoal ? watchGoal * (1 - daoUpFeeNum) : undefined
+  const raiseToGoal = watchGoal
+    ? Math.ceil(watchGoal / (1 - daoUpFeeNum))
+    : undefined
 
   // Scroll to bottom of page when error is displayed.
   useEffect(() => {
@@ -263,6 +273,25 @@ const CreateContent: FC = () => {
             className="!pr-28"
             tail={payTokenSymbol}
             error={errors.goal?.message}
+            accent={
+              goalReceived && raiseToGoal ? (
+                <>
+                  DAO Up! will take a 3% cut and you&apos;ll receive{" "}
+                  <span className="text-light">
+                    {prettyPrintDecimal(goalReceived)} {payTokenSymbol}
+                  </span>
+                  .{" "}
+                  <Button
+                    simple
+                    className="inline underline"
+                    onClick={() => setValue("goal", raiseToGoal)}
+                  >
+                    Raise {prettyPrintDecimal(raiseToGoal)} {payTokenSymbol}
+                  </Button>{" "}
+                  to receive {prettyPrintDecimal(watchGoal)} {payTokenSymbol}.
+                </>
+              ) : undefined
+            }
             {...register("goal", {
               required: "Required",
               valueAsNumber: true,

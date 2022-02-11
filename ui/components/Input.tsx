@@ -344,11 +344,11 @@ PercentTokenDoubleInput.displayName = "PercentTokenDoubleInput"
 // Form-wrapped components
 
 interface FormItemProps {
-  label?: string
+  label?: ReactNode
   description?: string
-  accent?: string
+  accent?: ReactNode
   accentClassName?: string
-  error?: string
+  error?: ReactNode
   wrapperClassName?: string
   surroundingClassName?: string
   horizontal?: boolean
