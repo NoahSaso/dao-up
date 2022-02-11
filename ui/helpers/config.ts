@@ -12,6 +12,7 @@ const feeDenom = process.env.NEXT_PUBLIC_FEE_DENOM!
 export const payTokenSymbol = process.env.NEXT_PUBLIC_PAY_TOKEN_SYMBOL!
 export const daoUrlPrefix = process.env.NEXT_PUBLIC_DAO_URL_PREFIX!
 export const daoUpFee = process.env.NEXT_PUBLIC_DAO_UP_FEE!
+export const daoUpFeeNum = Number(daoUpFee)
 export const daoUpDAOAddress = process.env.NEXT_PUBLIC_DAO_UP_DAO_ADDRESS!
 export const chainPrefix = process.env.NEXT_PUBLIC_CHAIN_BECH32_PREFIX!
 

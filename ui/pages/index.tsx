@@ -143,13 +143,21 @@ const faqQAs = [
   {
     q: "What happens if a campaign gets funded?",
     a: (
-      <p>
-        Once a campaign is funded, backers can claim a number of DAO governance
-        tokens proportional to the amount of funds they backed the campaign
-        with. For example: if a campaign was created to raise 100 Juno and you
-        backed it with 25 Juno, you&apos;d be entitled to 25% of the governance
-        tokens allocated to the campaign.
-      </p>
+      <>
+        <p>
+          Once a campaign is funded, backers can claim a number of DAO
+          governance tokens proportional to the amount of funds they backed the
+          campaign with. When a backer claims their governance tokens, the DAO
+          is sent the backer&apos;s contribution.
+        </p>
+        <br />
+        <p>
+          For example: if a campaign was created to raise 100 Juno, and you
+          backed it with 25 Juno, you&apos;d be entitled to 25% of the
+          governance tokens allocated to the campaign, and the DAO would
+          simultaneously receive 25 Juno (minus the 3% fee taken by DAO Up!).
+        </p>
+      </>
     ),
   },
   {
@@ -157,9 +165,19 @@ const faqQAs = [
     a: (
       <p>
         No funds will be transferred to the fundraising DAO unless the campaign
-        reaches its goal. This ensures that campaigns that are funded on DAO Up!
-        have the resources they need to succeed and protects backers. Refunds
-        are available at any time before the campaign reaches its funding goal.
+        reaches its goal. This protects backers and ensures that campaigns
+        funded on DAO Up! have the resources they need to succeed. Refunds are
+        available at any time before the campaign reaches its funding goal.
+      </p>
+    ),
+  },
+  {
+    q: "How much does DAO Up! cost?",
+    a: (
+      <p>
+        DAO Up! takes a 3% fee from all successfully-funded campaigns. If a
+        campaign doesn&apos;t succeed, backers will be able to refund their
+        money in full, and neither DAO Up! nor the campaign receives any money.
       </p>
     ),
   },
@@ -168,8 +186,8 @@ const faqQAs = [
     a: (
       <>
         <p>
-          DAO DAO is a DAO that builds DAOs. DAO Up! works with all DAO DAO
-          DAOs.
+          DAO DAO is a DAO that builds and helps members interact with DAOs. DAO
+          Up! works with all DAO DAO DAOs.
         </p>
         <br />
         <p>
@@ -184,11 +202,18 @@ const faqQAs = [
             DeusNero
           </a>
         </p>
+        <br />
+        <p>
+          Once you join a DAO through DAO Up!, you will participate in the DAO
+          (i.e. vote on decisions) through the DAO&apos;s page on DAO DAO. You
+          can find the DAO&apos;s page by clicking the &quot;Visit the
+          DAO&quot;button on its campaign page here on DAO Up!.
+        </p>
       </>
     ),
   },
   {
-    q: "Where can I read the docs?",
+    q: "Where can I find the docs?",
     a: (
       <>
         <p>
