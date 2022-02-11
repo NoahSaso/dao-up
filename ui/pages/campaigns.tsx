@@ -15,7 +15,7 @@ import {
 import { filteredCampaigns } from "../state/campaigns"
 
 const minPage = 1
-const pageSize = 2
+const pageSize = 20
 
 const Campaigns: NextPage = () => {
   const [filter, setFilter] = useState("")
