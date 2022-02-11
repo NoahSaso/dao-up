@@ -1,6 +1,6 @@
 import cn from "classnames"
 import type { NextPage } from "next"
-import { FC, useEffect, useState } from "react"
+import { FC, useCallback, useEffect, useState } from "react"
 import { useRecoilValueLoadable } from "recoil"
 
 import {
@@ -10,9 +10,12 @@ import {
   Input,
   Loader,
   ResponsiveDecoration,
+  Select,
   Suspense,
 } from "../components"
+import { addFilter, filterExists, removeFilter } from "../helpers/filter"
 import { filteredCampaigns } from "../state/campaigns"
+import { Status } from "../types"
 
 const minPage = 1
 const pageSize = 20
@@ -37,7 +40,27 @@ const Campaigns: NextPage = () => {
       />
 
       <CenteredColumn className="pt-5 pb-10">
-        <h1 className="font-semibold text-4xl">All Campaigns</h1>
+        <div className="flex flex-column justify-start items-start sm:flex-row sm:items-center">
+          <h1 className="font-semibold text-4xl">All Campaigns</h1>
+
+          <div className="flex flex-wrap flex-row justify-start items-center ml-10 sm:ml-0">
+            <Select
+              className="ml-10 w-40"
+              label="Status"
+              items={Object.entries(Status).map(([label, value]) => ({
+                label,
+                onClick: (on) =>
+                  on
+                    ? setFilter((filter) => addFilter(filter, "status", value))
+                    : setFilter((filter) =>
+                        removeFilter(filter, "status", value)
+                      ),
+                selected: filterExists(filter, "status", value),
+              }))}
+            />
+          </div>
+        </div>
+
         <Input
           containerClassName="mt-4 mb-6"
           className="w-full"
@@ -90,12 +113,21 @@ const CampaignsContent: FC<CampaignsContentProps> = ({ filter }) => {
     if (pageFromHash < minPage) pageFromHash = minPage
     return pageFromHash
   })
+  const goBack = useCallback(
+    () => setPage((p) => Math.max(minPage, p - 1)),
+    [setPage]
+  )
+  const goForward = useCallback(() => setPage((p) => p + 1), [setPage])
 
   const { state, contents } = useRecoilValueLoadable(
     filteredCampaigns({ filter, page, size: pageSize })
   )
   const filtering = state === "loading"
-  const { campaigns, hasMore, error } = (contents ?? {
+  const {
+    campaigns,
+    hasMore: canGoForward,
+    error,
+  } = (contents ?? {
     campaigns: [],
     hasMore: false,
     error: null,
@@ -121,13 +153,15 @@ const CampaignsContent: FC<CampaignsContentProps> = ({ filter }) => {
 
   return (
     <>
-      <Pagination
-        className="-mt-2 mb-6"
-        canGoBack={canGoBack}
-        canGoForward={hasMore}
-        goBack={() => setPage((p) => Math.max(minPage, p - 1))}
-        goForward={() => setPage((p) => p + 1)}
-      />
+      {(canGoBack || canGoForward) && (
+        <Pagination
+          className="-mt-2 mb-6"
+          canGoBack={canGoBack}
+          canGoForward={canGoForward}
+          goBack={goBack}
+          goForward={goForward}
+        />
+      )}
 
       {campaigns?.length === 0 && (
         <p className="text-orange">No campaigns found.</p>
@@ -140,13 +174,15 @@ const CampaignsContent: FC<CampaignsContentProps> = ({ filter }) => {
         ))}
       </div>
 
-      <Pagination
-        className="my-6"
-        canGoBack={canGoBack}
-        canGoForward={hasMore}
-        goBack={() => setPage((p) => Math.max(minPage, p - 1))}
-        goForward={() => setPage((p) => p + 1)}
-      />
+      {(canGoBack || canGoForward) && (
+        <Pagination
+          className="my-6"
+          canGoBack={canGoBack}
+          canGoForward={canGoForward}
+          goBack={goBack}
+          goForward={goForward}
+        />
+      )}
     </>
   )
 }

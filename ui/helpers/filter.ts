@@ -14,6 +14,16 @@ const filterRegex = new RegExp(
   "gi"
 )
 
+// Filter utils for modifying string.
+const singleFilterMaker = (key: string, value: string) =>
+  new RegExp(`${key}\\s*:\\s*"?${value}"?`, "gi")
+export const filterExists = (filter: string, key: string, value: string) =>
+  singleFilterMaker(key, value).test(filter)
+export const addFilter = (filter: string, key: string, value: string) =>
+  filter + ` ${key}:${value}`
+export const removeFilter = (filter: string, key: string, value: string) =>
+  filter.replaceAll(singleFilterMaker(key, value), "").trim()
+
 export const getFilterFns = (filter: string) => {
   let query = filter
 
