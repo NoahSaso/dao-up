@@ -1,8 +1,11 @@
-import { atomFamily, selector, selectorFamily } from "recoil"
+import { QueryContractsByCodeResponse } from "cosmjs-types/cosmwasm/wasm/v1/query"
+import { atomFamily, selector, selectorFamily, waitForAll } from "recoil"
 
 import { daoUrlPrefix, escrowContractCodeId } from "../helpers/config"
+import { extractPageInfo } from "../helpers/filter"
+import { campaignsFromResponses, filterCampaigns } from "../services/campaigns"
 import { CampaignActionType, Status } from "../types"
-import { cosmWasmClient, walletAddress } from "./web3"
+import { cosmWasmClient, cosmWasmQueryClient, walletAddress } from "./web3"
 
 export const campaignStateId = atomFamily<number, string | undefined>({
   key: "campaignStateId",
@@ -375,64 +378,148 @@ export const campaignWalletBalance = selectorFamily<
     },
 })
 
-export const escrowContractAddresses =
-  selector<EscrowContractAddressesResponse>({
-    key: "escrowContractAddresses",
-    get: async ({ get }) => {
-      const client = get(cosmWasmClient)
+export const escrowContractAddresses = selectorFamily<
+  QueryContractsByCodeResponse | undefined,
+  { startAtKey?: number[] }
+>({
+  key: "escrowContractAddresses",
+  get:
+    ({ startAtKey }) =>
+    async ({ get }) => {
+      const queryClient = get(cosmWasmQueryClient)
+      if (!queryClient) return
 
-      try {
-        if (!client) throw new Error("Failed to get client.")
-
-        return {
-          addresses: await client.getContracts(escrowContractCodeId),
-          error: null,
-        }
-      } catch (error) {
-        console.error(error)
-        // TODO: Return better error.
-        return { addresses: [], error: `${error}` }
-      }
+      return await queryClient.wasm.listContractsByCodeId(
+        escrowContractCodeId,
+        startAtKey && new Uint8Array(startAtKey)
+      )
     },
-  })
-
-export const escrowContractAddressesCount = selector<number>({
-  key: "escrowContractAddressesCount",
-  get: async ({ get }) => {
-    const { addresses } = get(escrowContractAddresses)
-    return addresses.length
-  },
 })
 
+// Pass null to get all addresses.
 export const pagedEscrowContractAddresses = selectorFamily<
   EscrowContractAddressesResponse,
-  { page: number | null; size: number }
+  PageInfo | null
 >({
   key: "pagedEscrowContractAddresses",
   get:
-    ({ page, size }) =>
+    (page) =>
     async ({ get }) => {
-      const { addresses, error: addressesError } = get(escrowContractAddresses)
-      if (addressesError || !addresses.length)
-        return { addresses, error: addressesError }
+      const addresses: string[] = []
 
-      // Do not page if page is null.
-      if (page === null) return { addresses, error: null }
+      // Don't attempt to get paged contracts if no client.
+      const queryClient = get(cosmWasmQueryClient)
+      if (!queryClient)
+        return {
+          addresses,
+          error: "Failed to get query client.",
+        }
 
-      const start = (page - 1) * size
-      const end = page * size
+      let startAtKey: number[] | undefined = undefined
+      do {
+        const response = get(
+          escrowContractAddresses({
+            startAtKey: startAtKey && Array.from(startAtKey),
+          })
+        ) as QueryContractsByCodeResponse | undefined
 
-      let pagedAddresses: string[]
-      if (start > addresses.length) {
-        pagedAddresses = []
-      } else if (end > addresses.length) {
-        pagedAddresses = addresses.slice(start, addresses.length)
-      } else {
-        pagedAddresses = addresses.slice(start, end)
+        if (response) {
+          addresses.push(...response.contracts)
+          startAtKey = Array.from(response.pagination?.nextKey ?? [])
+        }
+      } while (
+        startAtKey?.length !== 0 &&
+        (!page || addresses.length - 1 < page.endIndex)
+      )
+
+      return {
+        addresses: page
+          ? addresses.slice(page.startIndex, page.endIndex)
+          : addresses,
+        error: null,
       }
-
-      return { addresses: pagedAddresses, error: null }
     },
+})
+
+export const filteredCampaigns = selectorFamily<
+  CampaignsResponse,
+  {
+    filter: string
+    includeHidden?: boolean
+    includePending?: boolean
+    page: number
+    size: number
+  }
+>({
+  key: "filteredCampaigns",
+  get:
+    ({ filter, includeHidden = false, includePending = true, page, size }) =>
+    async ({ get }) => {
+      const allCampaigns: Campaign[] = []
+      const pageInfo = extractPageInfo(page, size)
+
+      let addressPage = 1
+      const addressPageSize = 50
+      let addressesLeft = true
+      do {
+        const addressPageInfo = extractPageInfo(addressPage, addressPageSize)
+
+        const { addresses, error: addressesError } = get(
+          pagedEscrowContractAddresses(addressPageInfo)
+        )
+        if (addressesError)
+          return { campaigns: [], hasMore: false, error: addressesError }
+
+        const pageAddresses = addresses.slice(
+          addressPageInfo.startIndex,
+          addressPageInfo.endIndex
+        )
+
+        // If we got the asked-for page size, we might still have addresses left.
+        addressesLeft = pageAddresses.length === addressPageSize
+
+        const campaignResponses = get(
+          waitForAll(pageAddresses.map((address) => fetchCampaign(address)))
+        )
+
+        let relevantCampaigns = campaignsFromResponses(
+          campaignResponses,
+          includeHidden,
+          includePending
+        )
+        relevantCampaigns = await filterCampaigns(relevantCampaigns, filter)
+        allCampaigns.unshift(...relevantCampaigns)
+
+        addressPage++
+
+        // Stop once 2 more addresses have been loaded after endIndex, since end is an index (+1 to get count) AND we want to see if there are any addresses left (+1 to check existence of address on next page).
+      } while (allCampaigns.length < pageInfo.endIndex + 2 && addressesLeft)
+
+      return {
+        campaigns: allCampaigns.slice(pageInfo.startIndex, pageInfo.endIndex),
+        // More pages if more campaigns exist beyond this page's end.
+        hasMore: allCampaigns.length > pageInfo.endIndex,
+        error: null,
+      }
+    },
+})
+
+export const allCampaigns = selector<CampaignsResponse>({
+  key: "allCampaigns",
+  get: async ({ get }) => {
+    const { addresses, error: addressesError } = get(
+      pagedEscrowContractAddresses(null)
+    )
+    if (addressesError)
+      return { campaigns: [], hasMore: false, error: addressesError }
+
+    const campaignResponses = get(
+      waitForAll(addresses.map((address) => fetchCampaign(address)))
+    )
+    const campaigns = campaignsFromResponses(campaignResponses, true, true)
+
+    return { campaigns, hasMore: false, error: null }
+  },
 })
 
 export const daoConfig = selectorFamily<DAOConfigResponse, string | undefined>({

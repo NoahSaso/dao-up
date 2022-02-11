@@ -80,6 +80,13 @@ declare global {
 
   type NewCampaignFieldKey = keyof NewCampaign
 
+  interface PageInfo {
+    startIndex: number
+    endIndex: number
+    // So this interface can be used as a Recoil selectorFamily argument type...
+    [key: string]: number
+  }
+
   // Selectors
 
   type AsyncSelectorResponse<T> = T & {
@@ -92,6 +99,10 @@ declare global {
   }>
 
   type CampaignResponse = AsyncSelectorResponse<{ campaign: Campaign | null }>
+  type CampaignsResponse = AsyncSelectorResponse<{
+    campaigns: Campaign[] | null
+    hasMore: boolean
+  }>
 
   type TokenInfoResponse = AsyncSelectorResponse<{
     info: {
@@ -108,7 +119,7 @@ declare global {
   }>
 
   type EscrowContractAddressesResponse = AsyncSelectorResponse<{
-    addresses: readonly string[]
+    addresses: string[]
   }>
 
   type CampaignActionsResponse = AsyncSelectorResponse<{

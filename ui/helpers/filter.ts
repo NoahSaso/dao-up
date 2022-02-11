@@ -65,3 +65,23 @@ export const getFilterFns = (filter: string) => {
 
   return { query, filterFns }
 }
+
+export const extractPageInfo = (page: number, size: number): PageInfo => ({
+  startIndex: (page - 1) * size,
+  endIndex: page * size,
+})
+
+export const getPageFromData = <T>(data: any[], page: number, size: number) => {
+  const { startIndex, endIndex } = extractPageInfo(page, size)
+
+  let pageData: any[]
+  if (startIndex > data.length) {
+    pageData = []
+  } else if (endIndex > data.length) {
+    pageData = data.slice(startIndex, data.length)
+  } else {
+    pageData = data.slice(startIndex, endIndex)
+  }
+
+  return pageData
+}
