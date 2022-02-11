@@ -9,7 +9,7 @@ import {
   useEffect,
   useState,
 } from "react"
-import { useRecoilValueLoadable } from "recoil"
+import { useRecoilValue } from "recoil"
 
 import {
   AllCampaignsCard,
@@ -177,31 +177,19 @@ const CampaignsContent: FC<CampaignsContentProps> = ({
   )
   const goForward = useCallback(() => setPage((p) => p + 1), [setPage])
 
-  const { state, contents } = useRecoilValueLoadable(
-    filteredCampaigns({ filter, page, size: pageSize })
-  )
-  const filtering = state === "loading"
+  // Pagination state
+  const canGoBack = page > minPage
   const {
     campaigns,
     hasMore: canGoForward,
     error,
-  } = (contents ?? {
-    campaigns: null,
-    hasMore: false,
-    error: null,
-  }) as CampaignsResponse
-
-  // Pagination state
-  const canGoBack = page > minPage
+  } = useRecoilValue(filteredCampaigns({ filter, page, size: pageSize }))
 
   // If loads no campaigns and not on first page, go back to first page.
   useEffect(() => {
-    if (state === "hasValue" && page !== minPage && campaigns?.length === 0)
-      setPage(minPage)
-  }, [state, campaigns, page, setPage])
-
-  // Show loader if actively filtering data.
-  if (filtering) return <Loader />
+    // Ensure campaigns are non null but empty, so we know it did not error.
+    if (campaigns?.length === 0 && page !== minPage) setPage(minPage)
+  }, [campaigns, page, setPage])
 
   return (
     <>
