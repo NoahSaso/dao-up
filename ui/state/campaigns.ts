@@ -37,23 +37,6 @@ export const campaignState = selectorFamily<CampaignStateResponse, string>({
     },
 })
 
-export const fetchBlockHeight = selector<number | null>({
-  key: "fetchBlockHeight",
-  get: async ({ get }) => {
-    const client = get(cosmWasmClient)
-
-    try {
-      if (!client) throw new Error("Failed to get client.")
-
-      return await client.getHeight()
-    } catch (error) {
-      console.error(error)
-
-      return null
-    }
-  },
-})
-
 export const fetchCampaignActions = selectorFamily<
   CampaignActionsResponse,
   string
@@ -65,11 +48,12 @@ export const fetchCampaignActions = selectorFamily<
       get(campaignStateId(address))
 
       const client = get(cosmWasmClient)
-      const blockHeight = get(fetchBlockHeight)
 
       try {
         if (!address) throw new Error("Invalid address.")
         if (!client) throw new Error("Failed to get client.")
+
+        const blockHeight = await client?.getHeight()
 
         // Get all of the wasm messages involving this contract.
         const events = await client.searchTx({
