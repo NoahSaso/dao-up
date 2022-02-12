@@ -1,4 +1,3 @@
-import cn from "classnames"
 import { FC } from "react"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
 import ReactMarkdown from "react-markdown"
@@ -22,42 +21,33 @@ export const CampaignDetails: FC<CampaignDetailsProps> = ({
   name,
   imageUrl,
 }) => (
-  <div className={cn("flex flex-col text-left")}>
-    <div className={cn("flex flex-col", "lg:flex-row")}>
-      <div className="flex">
-        <div className="mb-4 lg:mb-0 mr-4">
-          <CampaignImage imageUrl={imageUrl} size={139} />
-        </div>
-        <div className={cn("flex flex-col")}>
-          <h1 className="font-medium text-5xl">{name}</h1>
+  <div className="flex flex-col text-left">
+    <div className="flex flex-col text-center items-center md:flex-row md:items-start md:text-left">
+      <CampaignImage
+        imageUrl={imageUrl}
+        size={139}
+        className="mb-4 md:mb-0 mr-4"
+      />
+      <div className="flex flex-col">
+        <h1 className="font-medium text-4xl">{name}</h1>
 
-          {!!(website || twitter || discord) && (
-            <div
-              className={cn(
-                "flex flex-row items-center justify-center lg:justify-start ",
-                "text-green",
-                "mt-4"
-              )}
-            >
-              {!!website && (
-                <CampaignLink
-                  href={website}
-                  label={new URL(website).hostname}
-                />
-              )}
-              {!!twitter && (
-                <CampaignLink
-                  href={`https://twitter.com/${twitter}`}
-                  label={(twitter.startsWith("@") ? "" : "@") + twitter}
-                  Icon={FaTwitter}
-                />
-              )}
-              {!!discord && (
-                <CampaignLink href={discord} label="Discord" Icon={FaDiscord} />
-              )}
-            </div>
-          )}
-        </div>
+        {!!(website || twitter || discord) && (
+          <div className="flex flex-row items-center justify-center md:justify-start text-green mt-4">
+            {!!website && (
+              <CampaignLink href={website} label={new URL(website).hostname} />
+            )}
+            {!!twitter && (
+              <CampaignLink
+                href={`https://twitter.com/${twitter}`}
+                label={(twitter.startsWith("@") ? "" : "@") + twitter}
+                Icon={FaTwitter}
+              />
+            )}
+            {!!discord && (
+              <CampaignLink href={discord} label="Discord" Icon={FaDiscord} />
+            )}
+          </div>
+        )}
       </div>
     </div>
 

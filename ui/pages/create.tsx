@@ -41,6 +41,9 @@ import { globalLoadingAtom } from "../state/loading"
 import { signedCosmWasmClient } from "../state/web3"
 import { Color } from "../types"
 
+const validUrlOrUndefined = (u: string | undefined) =>
+  u && u.match(urlPattern.value) ? u : undefined
+
 const Create: NextPage = () => (
   <>
     <ResponsiveDecoration
@@ -103,11 +106,8 @@ const CreateContent: FC = () => {
 
   // Information for displaying campaign preview.
   const campaignName = watch("name")
-  const campaignImage = watch("imageUrl")
+  const campaignImageUrl = validUrlOrUndefined(watch("imageUrl"))
   const campaignDescription = watch("description")
-
-  const validUrlOrUndefined = (u: string | undefined) =>
-    u && u.match(urlPattern.value) ? u : undefined
 
   const campaignWebsite = validUrlOrUndefined(watch("website"))
   const campaignDiscord = validUrlOrUndefined(watch("discord"))
@@ -238,13 +238,12 @@ const CreateContent: FC = () => {
 
       <CenteredColumn className="py-6 max-w-3xl">
         <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-8">
             <h1 className="font-semibold text-4xl">Create a new campaign</h1>
             <Button
               outline
               color={Color.Light}
               onClick={() => setShowCampaignDescriptionPreview((b) => !b)}
-              className="w-min mt-4 mb-8"
             >
               <div className="flex items-center gap-2">
                 {showCampaignDescriptionPreview ? <FaEyeSlash /> : <FaEye />}
@@ -254,11 +253,11 @@ const CreateContent: FC = () => {
           </div>
 
           {showCampaignDescriptionPreview ? (
-            <div className="max-w-prose mb-8">
+            <div className="w-full max-w-prose self-center mb-8 border border-light p-8 rounded-3xl">
               <CampaignDetails
                 name={campaignName || "Your campaign"}
                 description={campaignDescription || "Your campaign description"}
-                imageUrl={campaignImage}
+                imageUrl={campaignImageUrl}
                 website={campaignWebsite}
                 twitter={campaignTwitter}
                 discord={campaignDiscord}

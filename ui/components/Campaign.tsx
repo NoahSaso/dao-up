@@ -166,13 +166,15 @@ const CampaignCardWrapper: FC<CampaignCardWrapperProps> = ({
 interface CampaignImageProps {
   size?: number
   imageUrl?: string
+  className?: string
 }
 export const CampaignImage: FC<CampaignImageProps> = ({
   imageUrl,
+  className,
   size = 135,
 }) => (
   <div
-    className={cn("bg-green shrink-0 overflow-hidden rounded-md")}
+    className={cn("bg-green shrink-0 overflow-hidden rounded-md", className)}
     style={{ width: size, height: size }}
   >
     {!!imageUrl && (
