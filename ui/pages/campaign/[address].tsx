@@ -76,9 +76,7 @@ const PieLegend: FC<PieLegendProps> = ({ items, className }) => (
     {items.map(({ label, color: backgroundColor }) => (
       <div key={label} className="flex flex-row items-center mt-1 first:mt-0">
         <div
-          className={cn(
-            "w-3 h-3 rounded-full mr-2 shrink-0 border border-dark"
-          )}
+          className={cn("w-10 h-5 mr-2 shrink-0")}
           style={{ backgroundColor }}
         ></div>
         <p className="text-light">{label}</p>
@@ -217,7 +215,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
         address: govTokenAddress,
         symbol: govTokenSymbol,
         campaignBalance: govTokenCampaignBalance,
-        daoBalance: govTokenDAOBalance,
+        daoBalance: govTokenDAOTreasuryBalance,
         supply: govTokenSupply,
       },
     },
@@ -293,22 +291,21 @@ const CampaignContent: FC<CampaignContentProps> = ({
     }
   }
 
-  // DAO voting power of campaign.
-  const campaignGovTokenPercentage =
-    govTokenCampaignBalance && govTokenSupply && govTokenSupply > 0
-      ? (100 * govTokenCampaignBalance) / govTokenSupply
+  // DAO voting power of campaign (determined by proportion of campaign's governance token balance to all governance tokens not in the DAO's treasury).
+  const campaignVotingPower =
+    govTokenCampaignBalance &&
+    govTokenSupply &&
+    govTokenDAOTreasuryBalance &&
+    govTokenSupply > govTokenDAOTreasuryBalance
+      ? (100 * govTokenCampaignBalance) /
+        (govTokenSupply - govTokenDAOTreasuryBalance)
       : undefined
   // DAO voting power of existing DAO members.
-  const daoMemberGovTokenBalance =
+  const govTokenDAOMemberBalance =
     govTokenSupply &&
-    govTokenSupply > 0 &&
-    typeof govTokenDAOBalance === "number" &&
+    govTokenDAOTreasuryBalance !== undefined &&
     govTokenCampaignBalance
-      ? govTokenSupply - govTokenDAOBalance - govTokenCampaignBalance
-      : undefined
-  const daoMemberGovTokenPercentage =
-    daoMemberGovTokenBalance && govTokenSupply && govTokenSupply > 0
-      ? (100 * daoMemberGovTokenBalance) / govTokenSupply
+      ? govTokenSupply - govTokenDAOTreasuryBalance - govTokenCampaignBalance
       : undefined
 
   // Contribution
@@ -487,9 +484,9 @@ const CampaignContent: FC<CampaignContentProps> = ({
                         message: `Must be at least 0.000001 ${govTokenSymbol}.`,
                       },
                       max: {
-                        value: govTokenDAOBalance ?? 0,
+                        value: govTokenDAOTreasuryBalance ?? 0,
                         message: `Must be less than or equal to the amount of ${govTokenSymbol} the DAO has in its treasury: ${prettyPrintDecimal(
-                          govTokenDAOBalance ?? 0
+                          govTokenDAOTreasuryBalance ?? 0
                         )} ${govTokenSymbol}.`,
                       },
                     })}
@@ -609,11 +606,10 @@ const CampaignContent: FC<CampaignContentProps> = ({
             {/* Hide for funded campaigns since campaignGovTokenPercentage won't remain constant. */}
             {/* TODO: Store initial fund amount in contract staet and use that instead. */}
             {status !== Status.Funded &&
-              !!campaignGovTokenPercentage &&
-              !!govTokenDAOBalance &&
+              !!campaignVotingPower &&
+              !!govTokenDAOTreasuryBalance &&
               !!govTokenCampaignBalance &&
               !!govTokenSupply &&
-              !!daoMemberGovTokenPercentage &&
               !!govTokenSymbol && (
                 <div
                   className={cn(
@@ -623,64 +619,64 @@ const CampaignContent: FC<CampaignContentProps> = ({
                   )}
                 >
                   <h3 className="text-green text-3xl">
-                    {prettyPrintDecimal(campaignGovTokenPercentage, 2)}%{" "}
-                    governance
+                    {prettyPrintDecimal(campaignVotingPower, 2)}% governance
                   </h3>
                   <p className="text-light text-sm">
                     Campaign backers will have{" "}
-                    {prettyPrintDecimal(campaignGovTokenPercentage, 2)}% voting
-                    power in the DAO, shown in{" "}
-                    <span className="text-green">green</span> below.
+                    {prettyPrintDecimal(campaignVotingPower, 2)}% voting power
+                    in the DAO. Voting power ignores the DAO&apos;s treasury
+                    balance. To learn more,{" "}
+                    <a
+                      href="https://docs.daoup.zone/evaluating-campaigns#what-is-a-good-percentage-of-governance-power"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:no-underline"
+                    >
+                      read the docs
+                    </a>
+                    .
                   </p>
 
                   <Pie
                     options={{
                       // Disable all events (hover, tooltip, etc.)
                       events: [],
-                      plugins: {
-                        legend: {
-                          position: "bottom",
-                          maxWidth: 200,
-                          maxHeight: 100,
-                        },
-                      },
                       animation: false,
                     }}
                     data={{
                       datasets: [
                         {
                           data: [
-                            govTokenDAOBalance,
+                            govTokenDAOMemberBalance,
+                            govTokenDAOTreasuryBalance,
                             govTokenCampaignBalance,
-                            daoMemberGovTokenBalance,
                           ],
                           backgroundColor: [
-                            "transparent",
-                            theme.colors.green,
-                            theme.colors.dark,
+                            theme.colors.pieMedium,
+                            theme.colors.pieDark,
+                            theme.colors.pieLight,
                           ],
-                          borderWidth: 2,
-                          borderColor: theme.colors.dark,
+                          borderWidth: 0,
                         },
                       ],
                     }}
-                    className="!w-48 !h-48 mt-4 self-center"
+                    className="!w-48 !h-48 mt-8 self-center"
                   />
 
                   <PieLegend
-                    className="mt-2"
+                    className="mt-4"
                     items={[
                       {
-                        label: "DAO Treasury",
-                        color: "transparent",
-                      },
-                      {
                         label: "Campaign",
-                        color: theme.colors.green,
+                        color: theme.colors.pieLight,
                       },
                       {
-                        label: "Current DAO Members/Creators",
-                        color: theme.colors.dark,
+                        label: "Current DAO members/creators",
+                        color: theme.colors.pieMedium,
+                      },
+                      {
+                        label: "DAO's treasury",
+                        color: theme.colors.pieDark,
                       },
                     ]}
                   />
