@@ -61,7 +61,7 @@ const FAQQuestion: FC<FAQQuestionProps> = ({ question, answer }) => {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className={cn("py-5", "border-t border-dark last:border-b")}>
+    <div className={cn("py-5 border-t border-dark last:border-b")}>
       <div
         className={cn(
           "flex flex-row justify-between items-center",
