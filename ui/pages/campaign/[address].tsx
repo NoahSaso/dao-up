@@ -11,6 +11,7 @@ import {
   Button,
   ButtonLink,
   CampaignAction,
+  CampaignDetails,
   CampaignFavoriteToggle,
   CampaignProgress,
   CampaignStatus,
@@ -21,7 +22,6 @@ import {
   ResponsiveDecoration,
   Suspense,
 } from "../../components"
-import { CampaignDetails } from "../../components/CampaignDetails"
 import { daoUrlPrefix, payTokenSymbol, theme } from "../../helpers/config"
 import { numberPattern } from "../../helpers/form"
 import { prettyPrintDecimal } from "../../helpers/number"

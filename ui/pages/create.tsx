@@ -13,6 +13,7 @@ import {
 
 import {
   Button,
+  CampaignDetails,
   CenteredColumn,
   FormInput,
   FormSwitch,
@@ -21,7 +22,6 @@ import {
   ResponsiveDecoration,
   Suspense,
 } from "../components"
-import { CampaignDetails } from "../components/CampaignDetails"
 import {
   cw20CodeId,
   daoUpDAOAddress,
@@ -105,6 +105,14 @@ const CreateContent: FC = () => {
   const campaignName = watch("name")
   const campaignImage = watch("imageUrl")
   const campaignDescription = watch("description")
+
+  const validUrlOrUndefined = (u: string | undefined) =>
+    u && u.match(urlPattern.value) ? u : undefined
+
+  const campaignWebsite = validUrlOrUndefined(watch("website"))
+  const campaignDiscord = validUrlOrUndefined(watch("discord"))
+  const campaignTwitter = watch("twitter")
+
   const [showCampaignDescriptionPreview, setShowCampaignDescriptionPreview] =
     useState(false)
 
@@ -230,19 +238,34 @@ const CreateContent: FC = () => {
 
       <CenteredColumn className="py-6 max-w-3xl">
         <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
+          <div className="flex items-center justify-between">
+            <h1 className="font-semibold text-4xl">Create a new campaign</h1>
+            <Button
+              outline
+              color={Color.Light}
+              onClick={() => setShowCampaignDescriptionPreview((b) => !b)}
+              className="w-min mt-4 mb-8"
+            >
+              <div className="flex items-center gap-2">
+                {showCampaignDescriptionPreview ? <FaEyeSlash /> : <FaEye />}
+                Preview
+              </div>
+            </Button>
+          </div>
+
           {showCampaignDescriptionPreview ? (
-            <div className="max-w-prose">
+            <div className="max-w-prose mb-8">
               <CampaignDetails
                 name={campaignName || "Your campaign"}
                 description={campaignDescription || "Your campaign description"}
                 imageUrl={campaignImage}
+                website={campaignWebsite}
+                twitter={campaignTwitter}
+                discord={campaignDiscord}
               />
             </div>
           ) : (
             <>
-              <h1 className="font-semibold text-4xl mb-8">
-                Create a new campaign
-              </h1>
               <div className="lg:mx-2">
                 <FormInput
                   label={newCampaignFields.name.label}
@@ -279,74 +302,63 @@ const CreateContent: FC = () => {
                   spellCheck={false}
                   autoCorrect="off"
                   error={errors.imageUrl?.message}
-                  wrapperClassName="mb-0"
                   {...register("imageUrl", {
                     required: false,
                     pattern: urlPattern,
                   })}
                 />
               </div>
+              <h2 className="font-semibold text-2xl mb-8">
+                Community Platforms
+              </h2>
+              <div className="lg:mx-2">
+                <FormInput
+                  label={newCampaignFields.website.label}
+                  placeholder="https://your.campaign"
+                  type="url"
+                  spellCheck={false}
+                  autoCorrect="off"
+                  error={errors.website?.message}
+                  {...register("website", {
+                    required: false,
+                    pattern: urlPattern,
+                  })}
+                />
+
+                <FormInput
+                  label={newCampaignFields.twitter.label}
+                  placeholder="@CampaignDAO"
+                  type="text"
+                  error={errors.twitter?.message}
+                  {...register("twitter", {
+                    required: false,
+                    pattern: {
+                      value: /^@.+$/,
+                      message:
+                        "Invalid Twitter handle. Ensure it starts with '@'.",
+                    },
+                  })}
+                />
+
+                <FormInput
+                  label={newCampaignFields.discord.label}
+                  placeholder="https://discord.gg/campaign"
+                  type="url"
+                  spellCheck={false}
+                  autoCorrect="off"
+                  error={errors.discord?.message}
+                  {...register("discord", {
+                    required: false,
+                    pattern: {
+                      value: /^https:\/\/discord\.gg\/.+$/,
+                      message:
+                        "Invalid Discord invite. Ensure it starts with 'https://discord.gg/'",
+                    },
+                  })}
+                />
+              </div>
             </>
           )}
-
-          <Button
-            outline
-            color={Color.Light}
-            onClick={() => setShowCampaignDescriptionPreview((b) => !b)}
-            className="w-min mt-6 mb-10"
-          >
-            <div className="flex items-center gap-2">
-              {showCampaignDescriptionPreview ? <FaEyeSlash /> : <FaEye />}
-              Preview
-            </div>
-          </Button>
-
-          <h2 className="font-semibold text-2xl mb-8">Community Platforms</h2>
-          <div className="lg:mx-2">
-            <FormInput
-              label={newCampaignFields.website.label}
-              placeholder="https://your.campaign"
-              type="url"
-              spellCheck={false}
-              autoCorrect="off"
-              error={errors.website?.message}
-              {...register("website", {
-                required: false,
-                pattern: urlPattern,
-              })}
-            />
-
-            <FormInput
-              label={newCampaignFields.twitter.label}
-              placeholder="@CampaignDAO"
-              type="text"
-              error={errors.twitter?.message}
-              {...register("twitter", {
-                required: false,
-                pattern: {
-                  value: /^@.+$/,
-                  message: "Invalid Twitter handle. Ensure it starts with '@'.",
-                },
-              })}
-            />
-
-            <FormInput
-              label={newCampaignFields.discord.label}
-              placeholder="https://discord.gg/campaign"
-              type="url"
-              spellCheck={false}
-              autoCorrect="off"
-              error={errors.discord?.message}
-              {...register("discord", {
-                required: false,
-                pattern: {
-                  value: /^https:\/\/discord\.gg\/.+$/,
-                  message:
-                    "Invalid Discord invite. Ensure it starts with 'https://discord.gg/'",
-                },
-              })}
-            />
-          </div>
 
           <h2 className="font-semibold text-2xl mb-8">Funding details</h2>
           <div className="lg:mx-2">
