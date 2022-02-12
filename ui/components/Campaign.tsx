@@ -1,8 +1,9 @@
 import cn from "classnames"
 import Link from "next/link"
-import { FC, PropsWithChildren, useCallback } from "react"
+import { FC, PropsWithChildren, ReactNode, useCallback } from "react"
 import { IconType } from "react-icons"
 import { IoHeart, IoHeartOutline } from "react-icons/io5"
+import ReactMarkdown from "react-markdown"
 import TimeAgo from "react-timeago"
 import { useRecoilState } from "recoil"
 
@@ -54,22 +55,36 @@ export const CampaignStatus: FC<CampaignProps> = ({
 
 interface CampaignProgressProps extends CampaignProps {
   thin?: boolean
-  textClassName?: string
+  leftItem?: ReactNode
+  hidePercent?: boolean
 }
 export const CampaignProgress: FC<CampaignProgressProps> = ({
   campaign: { status, pledged, goal },
   className,
   thin,
-  textClassName,
+  leftItem,
+  hidePercent = false,
 }) => {
   const fundedPercent = (100 * pledged) / goal
   const showProgress = status === Status.Open || status === Status.Funded
 
   return (
     <div className={cn("flex flex-col justify-start w-full", className)}>
-      <p className={cn("text-white", textClassName)}>
-        {prettyPrintDecimal((100 * pledged) / goal, 0)}% funded
-      </p>
+      {(!hidePercent || !!leftItem) && (
+        <div
+          className={cn("self-stretch flex flex-row items-end gap-2", {
+            "justify-between": leftItem,
+            "justify-end": !leftItem,
+          })}
+        >
+          {leftItem}
+          {!hidePercent && (
+            <p className="text-placeholder italic text-right">
+              {prettyPrintDecimal((100 * pledged) / goal, 0)}% funded
+            </p>
+          )}
+        </div>
+      )}
       <div
         className={cn("bg-dark overflow-hidden w-full rounded-full mt-1", {
           "h-[12px]": !thin,
@@ -146,12 +161,13 @@ const CampaignCardWrapper: FC<CampaignCardWrapperProps> = ({
         className="absolute top-4 right-4"
       />
       <Link href={`/campaign/${campaign.address}`}>
-        <a className="flex flex-col justify-start items-stretch xs:flex-row p-6 sm:p-10">
+        {/* The campaigns list splits into two columns at lg, and these cards become narrow again, so reduce padding and then increase again. */}
+        <a className="flex flex-col justify-start items-stretch sm:flex-row p-6 sm:p-8 lg:p-6 2xl:p-8">
           <CampaignImage imageUrl={campaign.imageUrl} />
           <div
             className={cn(
               "flex flex-col items-stretch flex-1",
-              "ml-0 mt-4 xs:ml-5 xs:mt-0",
+              "ml-0 mt-4 sm:ml-5 sm:mt-0",
               contentClassName
             )}
           >
@@ -198,15 +214,21 @@ export const AllCampaignsCard: FC<CampaignProps> = ({
   return (
     <CampaignCardWrapper campaign={campaign} className={className}>
       <h2 className="font-medium text-xl pr-6">{name}</h2>
-      <p className="sm:text-lg text-green">
-        {pledged.toLocaleString()} {symbol} pledged
-      </p>
       <CampaignProgress
         campaign={campaign}
         className="mt-2"
-        textClassName="sm:text-lg"
+        leftItem={
+          <p className="sm:text-lg text-green">
+            {pledged.toLocaleString()} {payTokenSymbol} pledged
+          </p>
+        }
+        hidePercent
       />
-      <p className="mt-5 line-clamp-3">{description}</p>
+      <ReactMarkdown
+        children={description}
+        linkTarget="_blank"
+        className="mt-2 line-clamp-2"
+      />
     </CampaignCardWrapper>
   )
 }

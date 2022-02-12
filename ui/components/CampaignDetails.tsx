@@ -51,6 +51,10 @@ export const CampaignDetails: FC<CampaignDetailsProps> = ({
       </div>
     </div>
 
-    <ReactMarkdown children={description} className="mt-4 prose prose-invert" />
+    <ReactMarkdown
+      children={description}
+      linkTarget="_blank"
+      className="mt-4 prose prose-invert"
+    />
   </div>
 )
