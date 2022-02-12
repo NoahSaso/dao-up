@@ -1,5 +1,6 @@
 import { FC, useState } from "react"
 import { useForm } from "react-hook-form"
+
 import { daoUrlPrefix } from "../helpers/config"
 import { numberPattern } from "../helpers/form"
 import { prettyPrintDecimal } from "../helpers/number"
@@ -13,14 +14,18 @@ interface FundPendingForm {
   tokens?: number
 }
 
-interface PendingCardProps {
+interface FundPendingCardProps {
   campaign: Campaign
 }
 
-export const PendingCard: FC<PendingCardProps> = ({ campaign }) => {
+export const FundPendingCard: FC<FundPendingCardProps> = ({ campaign }) => {
   const {
     dao: {
-      govToken: { daoBalance, symbol, supply },
+      govToken: {
+        daoBalance: govTokenDAOBalance,
+        symbol: govTokenSymbol,
+        supply: govTokenSupply,
+      },
     },
   } = campaign
 
@@ -29,9 +34,9 @@ export const PendingCard: FC<PendingCardProps> = ({ campaign }) => {
     register,
     formState: { errors },
     watch,
-  } = useForm({
+  } = useForm<FundPendingForm>({
     mode: "onChange",
-    defaultValues: {} as FundPendingForm,
+    defaultValues: {},
   })
 
   const { connected } = useWallet()
@@ -62,11 +67,21 @@ export const PendingCard: FC<PendingCardProps> = ({ campaign }) => {
       }
       onSubmit={handleSubmit(doFundPending)}
     >
-      {!fundCampaignProposalUrl && (
+      {fundCampaignProposalUrl ? (
+        <>
+          <p className="mb-4 text-green">
+            Proposal successfully created! This campaign will activate once the
+            proposal is approved and executed on DAO DAO.
+          </p>
+          <ButtonLink href={fundCampaignProposalUrl} cardOutline>
+            View Proposal
+          </ButtonLink>
+        </>
+      ) : (
         <>
           <p className="text-orange">
             This campaign is pending and cannot accept funds until the DAO
-            allocates governance tokens ({symbol}) to it.{" "}
+            allocates governance tokens ({govTokenSymbol}) to it.{" "}
             <span className="underline">
               If you are part of the DAO, you can create a funding proposal
               below.
@@ -80,17 +95,17 @@ export const PendingCard: FC<PendingCardProps> = ({ campaign }) => {
               placeholder="1000000"
               wrapperClassName="!mb-4 sm:!mb-0 sm:mr-4 sm:flex-1"
               className="!pr-28 border-light"
-              tail={symbol}
+              tail={govTokenSymbol}
               error={
                 errors?.tokens?.message ?? fundPendingCampaignError ?? undefined
               }
               disabled={!!fundCampaignProposalUrl || !connected}
               accent={
-                supply
+                govTokenSupply
                   ? `This will allocate ${fundPendingTokens} ${
-                      symbol ?? "governance tokens"
+                      govTokenSymbol ?? "governance tokens"
                     } (${prettyPrintDecimal(
-                      (100 * fundPendingTokens) / supply,
+                      (100 * fundPendingTokens) / govTokenSupply,
                       2
                     )}% of total supply) from the DAO's treasury to the campaign to be distributed among the backers.`
                   : undefined
@@ -101,13 +116,13 @@ export const PendingCard: FC<PendingCardProps> = ({ campaign }) => {
                 pattern: numberPattern,
                 min: {
                   value: 1e-6,
-                  message: `Must be at least 0.000001 ${symbol}.`,
+                  message: `Must be at least 0.000001 ${govTokenSymbol}.`,
                 },
                 max: {
-                  value: daoBalance ?? 0,
-                  message: `Must be less than or equal to the amount of ${symbol} the DAO has in its treasury: ${prettyPrintDecimal(
-                    daoBalance ?? 0
-                  )} ${symbol}.`,
+                  value: govTokenDAOBalance ?? 0,
+                  message: `Must be less than or equal to the amount of ${govTokenSymbol} the DAO has in its treasury: ${prettyPrintDecimal(
+                    govTokenDAOBalance ?? 0
+                  )} ${govTokenSymbol}.`,
                 },
               })}
             />
@@ -118,17 +133,6 @@ export const PendingCard: FC<PendingCardProps> = ({ campaign }) => {
               submitLabel="Propose"
             />
           </div>
-        </>
-      )}
-      {!!fundCampaignProposalUrl && (
-        <>
-          <p className="mb-4 text-green">
-            Proposal successfully created! This campaign will activate once the
-            proposal is approved and executed on DAO DAO.
-          </p>
-          <ButtonLink href={fundCampaignProposalUrl} cardOutline>
-            View Proposal
-          </ButtonLink>
         </>
       )}
     </form>

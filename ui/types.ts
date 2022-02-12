@@ -36,11 +36,11 @@ declare global {
       url: string
       govToken: {
         address: string
-        name?: string
-        symbol?: string
-        campaignBalance?: number
-        daoBalance?: number
-        supply?: number
+        name: string
+        symbol: string
+        campaignBalance: number
+        daoBalance: number
+        supply: number
       }
     }
 

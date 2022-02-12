@@ -1,9 +1,12 @@
-import { FC, useCallback, useState } from "react"
+import { Dispatch, FC, SetStateAction, useCallback, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useSetRecoilState } from "recoil"
+
+import { payTokenSymbol } from "../helpers/config"
+import { numberPattern } from "../helpers/form"
+import { prettyPrintDecimal } from "../helpers/number"
 import { useContributeCampaign } from "../hooks/useContributeCampaign"
 import { useWallet } from "../hooks/useWallet"
-import { suggestToken } from "../services/keplr"
 import { favoriteCampaignAddressesAtom } from "../state/campaigns"
 import { Button } from "./Button"
 import { FormInput } from "./Input"
@@ -14,32 +17,37 @@ interface ContributionForm {
 
 interface ContributeCardProps {
   campaign: Campaign
+  suggestFundingToken: () => Promise<void>
 }
 
-export const ContributeCard: FC<ContributeCardProps> = ({ campaign }) => {
+export const ContributeCard: FC<ContributeCardProps> = ({
+  campaign,
+  suggestFundingToken,
+}) => {
+  const {
+    goal,
+    pledged,
+
+    fundingToken: { symbol: tokenSymbol, price: fundingTokenPrice },
+  } = campaign
+
+  const { connected, keplr } = useWallet()
+
+  const { contributeCampaign, contributeCampaignError } =
+    useContributeCampaign(campaign)
+
   const {
     handleSubmit,
     register,
     formState: { errors },
     watch,
     reset,
-  } = useForm({
+  } = useForm<ContributionForm>({
     mode: "onChange",
-    defaultValues: {} as ContributionForm,
+    defaultValues: {},
   })
-  const { connected, keplr } = useWallet()
 
-  const { contributeCampaign, contributeCampaignError } =
-    useContributeCampaign(campaign)
-
-  const [showAddFundingToken, setShowAddFundingToken] = useState(false)
-
-  const suggestFundingToken = async () =>
-    keplr &&
-    setShowAddFundingToken(
-      !(await suggestToken(keplr, campaign.fundingToken.address))
-    )
-
+  // Add campaign to favorites if funding.
   const setFavoriteAddresses = useSetRecoilState(favoriteCampaignAddressesAtom)
   const addFavorite = useCallback(
     (address: string) =>
@@ -50,6 +58,16 @@ export const ContributeCard: FC<ContributeCardProps> = ({ campaign }) => {
   )
 
   const watchContribution = watch("contribution")
+  const expectedFundingTokensReceived =
+    watchContribution && watchContribution > 0 && fundingTokenPrice
+      ? fundingTokenPrice * watchContribution
+      : 0
+  // Max contribution is remaining amount left to fund. Cannot fund more than goal.
+  const maxContribution = Math.min(
+    goal - pledged,
+    Number.MAX_SAFE_INTEGER / 1e6
+  )
+
   const doContribution = async ({ contribution }: ContributionForm) => {
     if (!contribution) return
 
@@ -85,12 +103,10 @@ export const ContributeCard: FC<ContributeCardProps> = ({ campaign }) => {
         className="!py-3 !px-6 !pr-28"
         tail={payTokenSymbol}
         error={
-          contributionErrors?.contribution?.message ??
-          contributeCampaignError ??
-          undefined
+          errors?.contribution?.message ?? contributeCampaignError ?? undefined
         }
         disabled={!connected}
-        {...contributionRegister("contribution", {
+        {...register("contribution", {
           valueAsNumber: true,
           pattern: numberPattern,
           min: {

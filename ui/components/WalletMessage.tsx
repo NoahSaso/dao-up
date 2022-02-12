@@ -1,4 +1,5 @@
 import { FC } from "react"
+
 import { useWallet } from "../hooks/useWallet"
 import { InstallWalletMessage } from "../services/keplr"
 import { Button } from "./Button"
