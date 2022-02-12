@@ -5,13 +5,16 @@ import { IconType } from "react-icons"
 import { IoHeart, IoHeartOutline } from "react-icons/io5"
 import ReactMarkdown from "react-markdown"
 import TimeAgo from "react-timeago"
-import { useRecoilState } from "recoil"
+import { useRecoilState, useRecoilValueLoadable } from "recoil"
 
 import { payTokenSymbol } from "../helpers/config"
 import { prettyPrintDecimal } from "../helpers/number"
-import { favoriteCampaignAddressesAtom } from "../state/campaigns"
+import {
+  campaignWalletBalance,
+  favoriteCampaignAddressesAtom,
+} from "../state/campaigns"
 import { CampaignActionType, Color, Status } from "../types"
-import { Button, StatusIndicator } from "."
+import { Button, Loader, StatusIndicator } from "."
 
 interface CampaignProps {
   campaign: Campaign
@@ -55,14 +58,14 @@ export const CampaignStatus: FC<CampaignProps> = ({
 
 interface CampaignProgressProps extends CampaignProps {
   thin?: boolean
-  leftItem?: ReactNode
+  showPledged?: boolean
   hidePercent?: boolean
 }
 export const CampaignProgress: FC<CampaignProgressProps> = ({
   campaign: { status, pledged, goal },
   className,
   thin,
-  leftItem,
+  showPledged = false,
   hidePercent = false,
 }) => {
   const fundedPercent = (100 * pledged) / goal
@@ -70,14 +73,18 @@ export const CampaignProgress: FC<CampaignProgressProps> = ({
 
   return (
     <div className={cn("flex flex-col justify-start w-full", className)}>
-      {(!hidePercent || !!leftItem) && (
+      {(!hidePercent || showPledged) && (
         <div
           className={cn("self-stretch flex flex-row items-end gap-2", {
-            "justify-between": leftItem,
-            "justify-end": !leftItem,
+            "justify-between": showPledged,
+            "justify-end": !showPledged,
           })}
         >
-          {leftItem}
+          {showPledged && (
+            <p className="sm:text-lg text-green">
+              {pledged.toLocaleString()} {payTokenSymbol} pledged
+            </p>
+          )}
           {!hidePercent && (
             <p className="text-placeholder italic text-right">
               {prettyPrintDecimal((100 * pledged) / goal, 0)}% funded
@@ -136,6 +143,27 @@ export const CampaignFavoriteToggle: FC<CampaignProps> = ({
   )
 }
 
+interface CampaignImageProps {
+  size?: number
+  imageUrl?: string
+  className?: string
+}
+export const CampaignImage: FC<CampaignImageProps> = ({
+  imageUrl,
+  className,
+  size = 135,
+}) => (
+  <div
+    className={cn("bg-green shrink-0 overflow-hidden rounded-md", className)}
+    style={{ width: size, height: size }}
+  >
+    {!!imageUrl && (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={imageUrl} alt="image" className="w-full h-full object-cover" />
+    )}
+  </div>
+)
+
 interface CampaignCardWrapperProps extends PropsWithChildren<CampaignProps> {
   contentClassName?: string
 }
@@ -168,9 +196,13 @@ const CampaignCardWrapper: FC<CampaignCardWrapperProps> = ({
             className={cn(
               "flex flex-col items-stretch flex-1",
               "ml-0 mt-4 sm:ml-5 sm:mt-0",
+              "overflow-hidden",
               contentClassName
             )}
           >
+            <h2 className="font-medium text-xl pr-6 text-ellipsis overflow-hidden whitespace-nowrap break-words">
+              {campaign.name}
+            </h2>
             {children}
           </div>
         </a>
@@ -179,133 +211,86 @@ const CampaignCardWrapper: FC<CampaignCardWrapperProps> = ({
   )
 }
 
-interface CampaignImageProps {
-  size?: number
-  imageUrl?: string
-  className?: string
-}
-export const CampaignImage: FC<CampaignImageProps> = ({
-  imageUrl,
-  className,
-  size = 135,
-}) => (
-  <div
-    className={cn("bg-green shrink-0 overflow-hidden rounded-md", className)}
-    style={{ width: size, height: size }}
-  >
-    {!!imageUrl && (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={imageUrl} alt="image" className="w-full h-full object-cover" />
-    )}
-  </div>
-)
-
 export const AllCampaignsCard: FC<CampaignProps> = ({
   campaign,
   className,
-}) => {
-  const {
-    name,
-    description,
-    pledged,
-    fundingToken: { symbol },
-  } = campaign
-
-  return (
-    <CampaignCardWrapper campaign={campaign} className={className}>
-      <h2 className="font-medium text-xl pr-6">{name}</h2>
-      <CampaignProgress
-        campaign={campaign}
-        className="mt-2"
-        leftItem={
-          <p className="sm:text-lg text-green">
-            {pledged.toLocaleString()} {payTokenSymbol} pledged
-          </p>
-        }
-        hidePercent
-      />
-      <ReactMarkdown
-        children={description}
-        linkTarget="_blank"
-        className="mt-2 line-clamp-2"
-      />
-    </CampaignCardWrapper>
-  )
-}
+}) => (
+  <CampaignCardWrapper campaign={campaign} className={className}>
+    <CampaignProgress
+      campaign={campaign}
+      className="mt-2"
+      showPledged
+      hidePercent
+    />
+    <ReactMarkdown
+      children={campaign.description}
+      linkTarget="_blank"
+      className="mt-2 line-clamp-2"
+    />
+  </CampaignCardWrapper>
+)
 
 export const CreatorCampaignCard: FC<CampaignProps> = ({
   campaign,
   className,
-}) => {
-  const {
-    name,
-    pledged,
-    fundingToken: { symbol },
-    goal,
-  } = campaign
+}) => (
+  <CampaignCardWrapper campaign={campaign} className={className}>
+    <CampaignStatus campaign={campaign} />
 
-  return (
-    <CampaignCardWrapper campaign={campaign} className={className}>
-      <h2 className="font-medium text-xl pr-6">{name}</h2>
-      <CampaignStatus campaign={campaign} className="" />
+    <CampaignProgress campaign={campaign} className="mt-4" showPledged />
+  </CampaignCardWrapper>
+)
 
-      <p className="text-xl text-green font-medium mt-8">
-        {prettyPrintDecimal((100 * pledged) / goal, 0)}%{" "}
-        <span className="text-base font-light">Funded</span>
-      </p>
-      <p className="text-placeholder">
-        {pledged.toLocaleString()} {symbol} pledged
-      </p>
-    </CampaignCardWrapper>
-  )
-}
-
-export const ContributorCampaignCard: FC<CampaignProps> = ({
+export const FavoriteCampaignCard: FC<CampaignProps> = ({
   campaign,
   className,
 }) => {
   const {
-    name,
-    pledged,
-    goal,
-    fundingToken: { supply },
+    fundingToken: { symbol, supply },
   } = campaign
 
-  const userTokens = 200
+  const { state, contents } = useRecoilValueLoadable(
+    campaignWalletBalance(campaign?.address)
+  )
+  const balance = state === "hasValue" ? contents.balance : undefined
+  const balancePercent = balance && supply && (100 * balance) / supply
 
   return (
     <CampaignCardWrapper campaign={campaign} className={className}>
-      <h2 className="font-medium text-xl pr-6">{name}</h2>
-      <div
-        className={cn(
-          "font-light text-white",
-          "flex flex-col xs:flex-row xs:flex-wrap",
-          "mt-2 xs:mt-0"
-        )}
-      >
-        <p className="xs:mr-3">
-          {prettyPrintDecimal((100 * pledged) / goal, 0)}% funded
-        </p>
-        <CampaignStatus campaign={campaign} className="shrink-0" />
-      </div>
+      <CampaignStatus campaign={campaign} className="shrink-0" />
+      <CampaignProgress campaign={campaign} thin />
 
-      <div className="flex flex-row items-end text-green mt-8">
-        <p className="text-xl font-medium">{userTokens.toLocaleString()}</p>
-        <p className="text-base font-light ml-1">Tokens</p>
+      <div className="flex flex-row items-end gap-2 mt-5">
+        {typeof balance === "number" ? (
+          <>
+            <p className="text-green">
+              <span className="text-xl font-medium mr-1">
+                {prettyPrintDecimal(balance)}
+              </span>
+              <span className="text-base font-light">{symbol}</span>
+            </p>
+            <p className="text-placeholder font-sm text-right">
+              {prettyPrintDecimal(balancePercent, 2)}% of total supply
+            </p>
+          </>
+        ) : (
+          <Loader size={32} />
+        )}
       </div>
-      <p className="text-placeholder">
-        {prettyPrintDecimal((100 * userTokens) / supply, 2)}% of total supply
-      </p>
     </CampaignCardWrapper>
   )
 }
 
-interface CampaignLinkProps {
+interface CampaignPlatformLinkProps {
   href: string
   label: string
   Icon?: IconType
 }
-export const CampaignLink: FC<CampaignLinkProps> = ({ href, label, Icon }) => (
+export const CampaignPlatformLink: FC<CampaignPlatformLinkProps> = ({
+  href,
+  label,
+  Icon,
+}) => (
   <a
     href={href}
     target="_blank"

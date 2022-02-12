@@ -6,8 +6,8 @@ import {
   Button,
   ButtonLink,
   CenteredColumn,
-  ContributorCampaignCard,
   CreatorCampaignCard,
+  FavoriteCampaignCard,
   ResponsiveDecoration,
   StatusIndicator,
   Suspense,
@@ -105,10 +105,7 @@ const MeContent: FC<MeContentProps> = ({ walletAddress, connected }) => {
       {favorites?.length ? (
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 mt-8">
           {favorites.map((campaign) => (
-            <ContributorCampaignCard
-              key={campaign.address}
-              campaign={campaign}
-            />
+            <FavoriteCampaignCard key={campaign.address} campaign={campaign} />
           ))}
         </div>
       ) : (

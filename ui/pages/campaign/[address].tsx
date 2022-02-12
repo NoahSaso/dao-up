@@ -213,7 +213,6 @@ const CampaignContent: FC<CampaignContentProps> = ({
 
   const {
     name,
-    description,
 
     status,
 
@@ -234,10 +233,6 @@ const CampaignContent: FC<CampaignContentProps> = ({
       price: fundingTokenPrice,
       supply: fundingTokenSupply,
     },
-
-    website,
-    twitter,
-    discord,
   } = campaign ?? {}
 
   const suggestFundingToken = async () =>
@@ -318,6 +313,12 @@ const CampaignContent: FC<CampaignContentProps> = ({
     govTokenDAOTreasuryBalance !== undefined &&
     govTokenCampaignBalance
       ? govTokenSupply - govTokenDAOTreasuryBalance - govTokenCampaignBalance
+      : undefined
+
+  // Percent of funding tokens the user's balance represents.
+  const fundingTokenBalancePercent =
+    fundingTokenBalance && fundingTokenSupply
+      ? (100 * fundingTokenBalance) / fundingTokenSupply
       : undefined
 
   // Contribution
@@ -570,7 +571,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
                 <p className="text-light text-sm">Backers</p> */}
             </div>
 
-            {/* Hide for funded campaigns since campaignGovTokenPercentage won't remain constant. */}
+            {/* Hide for funded campaigns since govTokenCampaignBalance won't remain constant. */}
             {/* TODO: Store initial fund amount in contract staet and use that instead. */}
             {status !== Status.Funded &&
               !!campaignVotingPower &&
@@ -666,13 +667,10 @@ const CampaignContent: FC<CampaignContentProps> = ({
 
             <p className="text-light">
               {prettyPrintDecimal(fundingTokenBalance ?? 0)} {tokenSymbol}
-              {fundingTokenSupply > 0 && !!fundingTokenBalance && (
+              {fundingTokenBalancePercent && (
                 <span className="text-placeholder ml-2">
-                  {prettyPrintDecimal(
-                    (100 * fundingTokenBalance) / fundingTokenSupply,
-                    2
-                  )}
-                  % of total supply
+                  {prettyPrintDecimal(fundingTokenBalancePercent, 2)}% of total
+                  supply
                 </span>
               )}
             </p>

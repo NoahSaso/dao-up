@@ -43,9 +43,9 @@ declare global {
       address: string
       // fundingToken/JUNO
       price?: number
+      supply?: number
       name: string
       symbol: string
-      supply: number
     }
 
     website?: string

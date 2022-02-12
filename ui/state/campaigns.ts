@@ -243,10 +243,15 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
               address: state.funding_token_addr,
               ...(status === Status.Open && {
                 price: Number(state.status[status].token_price),
+                // Funding tokens are minted on-demand, so calculate the total that will ever exist
+                // by multiplying the price of one token (in JUNO) by the goal (in JUNO).
+                supply:
+                  (Number(state.funding_goal.amount) *
+                    Number(state.status[status].token_price)) /
+                  1e6,
               }),
               name: fundingTokenInfo.name,
               symbol: fundingTokenInfo.symbol,
-              supply: Number(fundingTokenInfo.total_supply) / 1e6,
             },
 
             website: campaignInfo.website,

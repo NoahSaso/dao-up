@@ -2,7 +2,7 @@ import { FC } from "react"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
 import ReactMarkdown from "react-markdown"
 
-import { CampaignImage, CampaignLink } from "./Campaign"
+import { CampaignImage, CampaignPlatformLink } from "./Campaign"
 
 interface CampaignDetailsProps {
   website?: string
@@ -34,17 +34,24 @@ export const CampaignDetails: FC<CampaignDetailsProps> = ({
         {!!(website || twitter || discord) && (
           <div className="flex flex-row items-center justify-center md:justify-start text-green mt-4">
             {!!website && (
-              <CampaignLink href={website} label={new URL(website).hostname} />
+              <CampaignPlatformLink
+                href={website}
+                label={new URL(website).hostname}
+              />
             )}
             {!!twitter && (
-              <CampaignLink
+              <CampaignPlatformLink
                 href={`https://twitter.com/${twitter}`}
                 label={(twitter.startsWith("@") ? "" : "@") + twitter}
                 Icon={FaTwitter}
               />
             )}
             {!!discord && (
-              <CampaignLink href={discord} label="Discord" Icon={FaDiscord} />
+              <CampaignPlatformLink
+                href={discord}
+                label="Discord"
+                Icon={FaDiscord}
+              />
             )}
           </div>
         )}
