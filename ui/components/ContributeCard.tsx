@@ -31,7 +31,7 @@ export const ContributeCard: FC<ContributeCardProps> = ({
     fundingToken: { symbol: tokenSymbol, price: fundingTokenPrice },
   } = campaign
 
-  const { connected, keplr } = useWallet()
+  const { connected } = useWallet()
 
   const { contributeCampaign, contributeCampaignError } =
     useContributeCampaign(campaign)
@@ -64,7 +64,8 @@ export const ContributeCard: FC<ContributeCardProps> = ({
       : 0
   // Max contribution is remaining amount left to fund. Cannot fund more than goal.
   const maxContribution = Math.min(
-    goal - pledged,
+    // Weird subtraction issues. JavaScript thinks 11 - 10.999 = 0.0009999999999994458
+    Number((goal - pledged).toFixed(6)),
     Number.MAX_SAFE_INTEGER / 1e6
   )
 

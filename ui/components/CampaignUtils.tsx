@@ -58,7 +58,8 @@ export const CampaignProgress: FC<CampaignProgressProps> = ({
   showPledged = false,
   hidePercent = false,
 }) => {
-  const fundedPercent = (100 * pledged) / goal
+  // Round down so we don't say 100% funded until it has actually been funded.
+  const fundedPercent = Math.floor((100 * pledged) / goal)
   const showProgress = status === Status.Open || status === Status.Funded
 
   return (
@@ -77,7 +78,7 @@ export const CampaignProgress: FC<CampaignProgressProps> = ({
           )}
           {!hidePercent && (
             <p className="text-placeholder italic text-right">
-              {prettyPrintDecimal((100 * pledged) / goal, 0)}% funded
+              {prettyPrintDecimal(fundedPercent, 0)}% funded
             </p>
           )}
         </div>

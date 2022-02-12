@@ -8,7 +8,7 @@ export const WalletMessage: FC = () => {
   const { connect, connectError, installed } = useWallet()
 
   return (
-    <div className="mt-8 lg:self-stretch lg:mb-0 max-w-prose bg-card rounded-3xl p-8 border border-orange">
+    <div className="lg:self-stretch max-w-prose bg-card rounded-3xl p-8 border border-orange">
       {installed ? (
         <>
           <p className="text-orange">

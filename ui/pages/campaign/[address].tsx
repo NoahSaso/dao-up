@@ -1,4 +1,3 @@
-import cn from "classnames"
 import type { NextPage } from "next"
 import { NextRouter, useRouter } from "next/router"
 import { FC, useEffect, useState } from "react"
@@ -8,7 +7,7 @@ import {
   BalanceRefundCard,
   CampaignAction,
   CampaignDetails,
-  CampaignStateCard,
+  CampaignInfoCard,
   CenteredColumn,
   FundPendingCard,
   GovernanceCard,
@@ -118,8 +117,8 @@ const CampaignContent: FC<CampaignContentProps> = ({
       )}
 
       <CenteredColumn className="pt-10 pb-12 sm:pt-20 xl:w-8/12">
-        <div className="flex flex-col justify-start items-center lg:flex-row lg:justify-between lg:items-stretch">
-          <div className="flex flex-col justify-between items-stretch w-full lg:w-3/5 lg:shrink-0 lg:mr-10">
+        <div className="flex flex-col justify-start items-center gap-8 lg:flex-row lg:justify-between lg:items-stretch">
+          <div className="flex flex-col items-stretch gap-8 w-full lg:w-3/5 lg:shrink-0">
             <CampaignDetails {...campaign} />
 
             {!connected && <WalletMessage />}
@@ -132,29 +131,33 @@ const CampaignContent: FC<CampaignContentProps> = ({
                 suggestFundingToken={suggestFundingToken}
               />
             ) : undefined}
+
+            <CampaignInfoCard campaign={campaign} className="lg:hidden" />
+
+            {connected && (
+              <BalanceRefundCard
+                campaign={campaign}
+                showAddGovToken={showAddGovToken}
+                suggestGovToken={suggestGovToken}
+                showAddFundingToken={showAddFundingToken}
+                suggestFundingToken={suggestFundingToken}
+              />
+            )}
           </div>
-          <div className="flex flex-col flex-wrap self-stretch">
-            <CampaignStateCard campaign={campaign} />
+
+          <div className="flex flex-col flex-wrap self-stretch gap-8 flex-1">
+            <CampaignInfoCard campaign={campaign} className="hidden lg:block" />
 
             {/* TODO: Show for funded campaigns by storing initial fund amount in contract state and use that instead (since govTokenCampaignBalance won't remain constant). */}
             {status === Status.Open && <GovernanceCard campaign={campaign} />}
           </div>
         </div>
 
-        {connected && (
-          <BalanceRefundCard
-            campaign={campaign}
-            showAddGovToken={showAddGovToken}
-            suggestGovToken={suggestGovToken}
-            showAddFundingToken={showAddFundingToken}
-            suggestFundingToken={suggestFundingToken}
-          />
-        )}
-
         <h2 className="text-green text-xl mt-8">Activity</h2>
         {!!campaignActionsError && (
           <p className="text-orange my-4">{campaignActionsError}</p>
         )}
+
         {!!actions && (
           <div className="w-full lg:w-3/5">
             {actions.length ? (

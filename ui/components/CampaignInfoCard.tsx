@@ -10,11 +10,15 @@ import {
   CampaignStatus,
 } from "."
 
-interface CampaignStateCardProps {
+interface CampaignInfoCardProps {
   campaign: Campaign
+  className?: string
 }
 
-export const CampaignStateCard: FC<CampaignStateCardProps> = ({ campaign }) => {
+export const CampaignInfoCard: FC<CampaignInfoCardProps> = ({
+  campaign,
+  className,
+}) => {
   const {
     pledged,
     goal,
@@ -22,7 +26,12 @@ export const CampaignStateCard: FC<CampaignStateCardProps> = ({ campaign }) => {
   } = campaign
 
   return (
-    <div className="bg-card rounded-3xl p-8 flex flex-col items-start max-w-full relative">
+    <div
+      className={cn(
+        "bg-card rounded-3xl p-8 flex flex-col items-start max-w-full relative",
+        className
+      )}
+    >
       <div className="flex flex-row justify-between items-center self-stretch mb-4">
         <CampaignStatus campaign={campaign} />
         <CampaignFavoriteToggle campaign={campaign} />

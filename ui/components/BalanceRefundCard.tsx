@@ -88,7 +88,7 @@ export const BalanceRefundCard: FC<BalanceRefundCardProps> = ({
       : 0
 
   return (
-    <div className="bg-card rounded-3xl w-full lg:w-3/5 py-8 px-12">
+    <div className="bg-card rounded-3xl w-full py-8 px-12">
       <h2 className="text-xl text-green mb-2">Your Balance</h2>
 
       <p className="text-light">
@@ -122,55 +122,61 @@ export const BalanceRefundCard: FC<BalanceRefundCardProps> = ({
         </div>
       )}
 
-      {status !== Status.Pending &&
+      {(status === Status.Open || status === Status.Funded) &&
         fundingTokenBalance !== null &&
         fundingTokenBalance > 0 && (
           <>
             {status !== Status.Funded && (
-              <h2 className="text-xl text-green mt-8 mb-4">Refunds</h2>
+              <h2 className="text-xl text-green mt-6 mb-4">Refunds</h2>
             )}
 
             <form onSubmit={handleSubmit(doRefund)}>
               {status === Status.Funded ? (
-                <p className="mt-4 text-placeholder italic">
-                  This campaign has been successfully funded. To join the DAO,
-                  exchange your {fundingTokenSymbol} tokens by clicking the
-                  button below.
-                </p>
+                <>
+                  <p className="my-4 text-placeholder italic">
+                    This campaign has been successfully funded. To join the DAO,
+                    exchange your {fundingTokenSymbol} tokens by clicking the
+                    button below.
+                  </p>
+                  <Button submitLabel="Join DAO" />
+                </>
               ) : (
-                <ControlledFormPercentTokenDoubleInput
-                  name="refund"
-                  control={control}
-                  minValue={minRefund}
-                  maxValue={fundingTokenBalance}
-                  currency={fundingTokenSymbol}
-                  first={{
-                    placeholder: "50",
-                  }}
-                  second={{
-                    placeholder: prettyPrintDecimal(fundingTokenBalance * 0.5),
-                  }}
-                  shared={{
-                    disabled: status !== Status.Open,
-                  }}
-                  accent={
-                    expectedPayTokensReceived
-                      ? `You will receive about ${prettyPrintDecimal(
-                          expectedPayTokensReceived
-                        )} ${payTokenSymbol}`
-                      : undefined
-                  }
-                  error={
-                    errors?.refund?.message ?? refundCampaignError ?? undefined
-                  }
-                />
-              )}
+                <div className="flex flex-row items-start gap-4">
+                  <ControlledFormPercentTokenDoubleInput
+                    name="refund"
+                    control={control}
+                    minValue={minRefund}
+                    maxValue={fundingTokenBalance}
+                    currency={fundingTokenSymbol}
+                    first={{
+                      placeholder: "50",
+                    }}
+                    second={{
+                      placeholder: prettyPrintDecimal(
+                        fundingTokenBalance * 0.5
+                      ),
+                    }}
+                    shared={{
+                      disabled: status !== Status.Open,
+                    }}
+                    accent={
+                      expectedPayTokensReceived
+                        ? `You will receive about ${prettyPrintDecimal(
+                            expectedPayTokensReceived
+                          )} ${payTokenSymbol}`
+                        : undefined
+                    }
+                    error={
+                      errors?.refund?.message ??
+                      refundCampaignError ??
+                      undefined
+                    }
+                    wrapperClassName="mb-0 flex-1"
+                  />
 
-              <Button
-                submitLabel={status === Status.Funded ? "Join DAO" : "Refund"}
-                className="mt-4"
-                disabled={status !== Status.Open && status !== Status.Funded}
-              />
+                  <Button submitLabel="Refund" className="h-[50px]" />
+                </div>
+              )}
             </form>
           </>
         )}
