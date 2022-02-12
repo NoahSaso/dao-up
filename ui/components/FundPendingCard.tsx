@@ -20,12 +20,10 @@ interface FundPendingCardProps {
 
 export const FundPendingCard: FC<FundPendingCardProps> = ({ campaign }) => {
   const {
-    dao: {
-      govToken: {
-        daoBalance: govTokenDAOBalance,
-        symbol: govTokenSymbol,
-        supply: govTokenSupply,
-      },
+    govToken: {
+      daoBalance: govTokenDAOBalance,
+      symbol: govTokenSymbol,
+      supply: govTokenSupply,
     },
   } = campaign
 

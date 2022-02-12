@@ -6,7 +6,7 @@ import { useRecoilValue } from "recoil"
 import { payTokenSymbol } from "../helpers/config"
 import { prettyPrintDecimal } from "../helpers/number"
 import { useRefundCampaign } from "../hooks/useRefundCampaign"
-import { campaignWalletBalance } from "../state/campaigns"
+import { walletTokenBalance } from "../state/campaigns"
 import { Status } from "../types"
 import { Button, ControlledFormPercentTokenDoubleInput } from "."
 
@@ -30,18 +30,27 @@ export const BalanceRefundCard: FC<BalanceRefundCardProps> = ({
   suggestFundingToken,
 }) => {
   const {
-    address,
     status,
 
     fundingToken: {
+      address: fundingTokenAddress,
       supply: fundingTokenSupply,
       price: fundingTokenPrice,
       symbol: fundingTokenSymbol,
     },
+
+    govToken: {
+      address: govTokenAddress,
+      symbol: govTokenSymbol,
+      supply: govTokenSupply,
+    },
   } = campaign
 
   const { balance: fundingTokenBalance, error: fundingTokenBalanceError } =
-    useRecoilValue(campaignWalletBalance(address))
+    useRecoilValue(walletTokenBalance(fundingTokenAddress))
+
+  const { balance: govTokenBalance, error: govTokenBalanceError } =
+    useRecoilValue(walletTokenBalance(govTokenAddress))
 
   const { refundCampaign, refundCampaignError } = useRefundCampaign(campaign)
 
@@ -91,26 +100,43 @@ export const BalanceRefundCard: FC<BalanceRefundCardProps> = ({
     <div className="bg-card rounded-3xl w-full py-8 px-12">
       <h2 className="text-xl text-green mb-2">Your Balance</h2>
 
-      <p className="text-light">
-        {prettyPrintDecimal(fundingTokenBalance ?? 0)} {fundingTokenSymbol}
-        {fundingTokenBalancePercent && (
-          <span className="text-placeholder ml-2">
-            {prettyPrintDecimal(fundingTokenBalancePercent, 2)}% of total supply
-          </span>
-        )}
-      </p>
-      {fundingTokenBalance !== null &&
-        fundingTokenBalance > 0 &&
-        showAddFundingToken && (
-          <div className="mt-4">
-            <Button onClick={suggestFundingToken}>Add token to wallet</Button>
-            <p className="text-sm text-placeholder italic mt-2">
-              This allows you to view your campaign funding token balance (
-              {fundingTokenSymbol}) from your Keplr wallet. If you&apos;ve
-              already done this, it should still be there.
-            </p>
-          </div>
-        )}
+      {/* Show funding token balance if funded and has not yet swapped to governance tokens. */}
+      {(status !== Status.Funded ||
+        !!fundingTokenBalance ||
+        !govTokenBalance) && (
+        <p className="text-light">
+          {prettyPrintDecimal(fundingTokenBalance ?? 0)} {fundingTokenSymbol}
+          {fundingTokenBalancePercent && (
+            <span className="text-placeholder ml-2">
+              {prettyPrintDecimal(fundingTokenBalancePercent, 2)}% of total
+              supply
+            </span>
+          )}
+        </p>
+      )}
+
+      {!!fundingTokenBalance && showAddFundingToken && (
+        <div className="mt-4">
+          <Button onClick={suggestFundingToken}>Add token to wallet</Button>
+          <p className="text-sm text-placeholder italic mt-2">
+            This allows you to view your campaign funding token balance (
+            {fundingTokenSymbol}) from your Keplr wallet. If you&apos;ve already
+            done this, it should still be there.
+          </p>
+        </div>
+      )}
+
+      {!!govTokenBalance && (
+        <>
+          <p className="text-light">
+            {prettyPrintDecimal(govTokenBalance)} {govTokenSymbol}
+          </p>
+          <p className="text-placeholder italic">
+            You have voting power in the DAO.
+          </p>
+        </>
+      )}
+
       {status === Status.Funded && showAddGovToken && (
         <div className="mt-4">
           <Button onClick={suggestGovToken}>Add DAO token to wallet</Button>

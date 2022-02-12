@@ -35,12 +35,10 @@ interface GovernanceCardProps {
 
 export const GovernanceCard: FC<GovernanceCardProps> = ({ campaign }) => {
   const {
-    dao: {
-      govToken: {
-        campaignBalance: govTokenCampaignBalance,
-        daoBalance: govTokenDAOTreasuryBalance,
-        supply: govTokenSupply,
-      },
+    govToken: {
+      campaignBalance: govTokenCampaignBalance,
+      daoBalance: govTokenDAOTreasuryBalance,
+      supply: govTokenSupply,
     },
   } = campaign
 

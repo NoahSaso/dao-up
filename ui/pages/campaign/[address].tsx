@@ -86,10 +86,9 @@ const CampaignContent: FC<CampaignContentProps> = ({
     name,
     status,
 
-    dao: {
-      url: daoUrl,
-      govToken: { address: govTokenAddress },
-    },
+    dao: { url: daoUrl },
+
+    govToken: { address: govTokenAddress },
   } = campaign ?? {}
 
   const suggestFundingToken = async () =>
