@@ -1,7 +1,11 @@
 import { QueryContractsByCodeResponse } from "cosmjs-types/cosmwasm/wasm/v1/query"
 import { atom, atomFamily, selector, selectorFamily, waitForAll } from "recoil"
 
-import { daoUrlPrefix, escrowContractCodeId } from "../helpers/config"
+import {
+  daoUrlPrefix,
+  denyListContractAddress,
+  escrowContractCodeId,
+} from "../helpers/config"
 import { extractPageInfo } from "../helpers/filter"
 import { campaignsFromResponses, filterCampaigns } from "../services/campaigns"
 import { CampaignActionType, Status } from "../types"
@@ -407,6 +411,7 @@ export const pagedEscrowContractAddresses = selectorFamily<
 
       let startAtKey: number[] | undefined = undefined
       do {
+        const addressDenyList = get(campaignDenyList)
         const response = get(
           escrowContractAddresses({
             startAtKey: startAtKey && Array.from(startAtKey),
@@ -414,7 +419,10 @@ export const pagedEscrowContractAddresses = selectorFamily<
         ) as QueryContractsByCodeResponse | undefined
 
         if (response) {
-          addresses.push(...response.contracts)
+          const contracts = response.contracts.filter(
+            (a) => !addressDenyList.includes(a)
+          )
+          addresses.push(...contracts)
           startAtKey = Array.from(response.pagination?.nextKey ?? [])
         }
       } while (
@@ -429,6 +437,28 @@ export const pagedEscrowContractAddresses = selectorFamily<
         error: null,
       }
     },
+})
+
+export const campaignDenyList = selector<string[]>({
+  key: "campaignDenyList",
+  get: async ({ get }) => {
+    const client = get(cosmWasmClient)
+    try {
+      if (!client) {
+        return []
+      }
+      const addresses = (
+        (await client.queryContractSmart(denyListContractAddress, {
+          get_addresses: {},
+        })) as AddressPriorityListResponse
+      ).map(({ addr }) => addr)
+
+      return addresses
+    } catch (e) {
+      console.error(e)
+      return []
+    }
+  },
 })
 
 export const filteredCampaigns = selectorFamily<

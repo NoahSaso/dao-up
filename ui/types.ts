@@ -132,6 +132,13 @@ declare global {
   }>
 
   type DAOConfigResponse = AsyncSelectorResponse<{ config: any | null }>
+
+  interface AddressPriorityListItem {
+    addr: string
+    priority: number
+  }
+
+  type AddressPriorityListResponse = AddressPriorityListItem[]
 }
 
 export enum Status {
