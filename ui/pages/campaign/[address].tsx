@@ -1,7 +1,9 @@
+import { ArcElement, Chart as ChartJS } from "chart.js"
 import cn from "classnames"
 import type { NextPage } from "next"
 import { NextRouter, useRouter } from "next/router"
 import { FC, useEffect, useState } from "react"
+import { Pie } from "react-chartjs-2"
 import { useForm } from "react-hook-form"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
 import { useRecoilValue } from "recoil"
@@ -21,7 +23,7 @@ import {
   ResponsiveDecoration,
   Suspense,
 } from "../../components"
-import { daoUrlPrefix, payTokenSymbol } from "../../helpers/config"
+import { daoUrlPrefix, payTokenSymbol, theme } from "../../helpers/config"
 import { numberPattern } from "../../helpers/form"
 import { prettyPrintDecimal } from "../../helpers/number"
 import { useContributeCampaign } from "../../hooks/useContributeCampaign"
@@ -36,6 +38,8 @@ import {
   fetchCampaignActions,
 } from "../../state/campaigns"
 import { Status } from "../../types"
+
+ChartJS.register(ArcElement)
 
 interface AddressDisplayProps {
   label: string
@@ -59,6 +63,29 @@ const AddressDisplay: FC<AddressDisplayProps> = ({ label, address }) => {
     </p>
   )
 }
+
+interface PieLegendProps {
+  items: {
+    label: string
+    color: string
+  }[]
+  className?: string
+}
+const PieLegend: FC<PieLegendProps> = ({ items, className }) => (
+  <div className={cn("flex flex-col", className)}>
+    {items.map(({ label, color: backgroundColor }) => (
+      <div key={label} className="flex flex-row items-center mt-1 first:mt-0">
+        <div
+          className={cn(
+            "w-3 h-3 rounded-full mr-2 shrink-0 border border-dark"
+          )}
+          style={{ backgroundColor }}
+        ></div>
+        <p className="text-light">{label}</p>
+      </div>
+    ))}
+  </div>
+)
 
 interface FundPendingForm {
   tokens?: number
@@ -266,9 +293,22 @@ const CampaignContent: FC<CampaignContentProps> = ({
     }
   }
 
+  // DAO voting power of campaign.
   const campaignGovTokenPercentage =
     govTokenCampaignBalance && govTokenSupply && govTokenSupply > 0
       ? (100 * govTokenCampaignBalance) / govTokenSupply
+      : undefined
+  // DAO voting power of existing DAO members.
+  const daoMemberGovTokenBalance =
+    govTokenSupply &&
+    govTokenSupply > 0 &&
+    typeof govTokenDAOBalance === "number" &&
+    govTokenCampaignBalance
+      ? govTokenSupply - govTokenDAOBalance - govTokenCampaignBalance
+      : undefined
+  const daoMemberGovTokenPercentage =
+    daoMemberGovTokenBalance && govTokenSupply && govTokenSupply > 0
+      ? (100 * daoMemberGovTokenBalance) / govTokenSupply
       : undefined
 
   // Contribution
@@ -564,25 +604,89 @@ const CampaignContent: FC<CampaignContentProps> = ({
                 {backers.toLocaleString()}
                 </h3>
                 <p className="text-light text-sm">Backers</p> */}
-
-              {/* Hide for funded campaigns since campaignGovTokenPercentage won't remain constant. */}
-              {/* TODO: Store initial fund amount in contract staet and use that instead. */}
-              {status !== Status.Funded &&
-                !!campaignGovTokenPercentage &&
-                !!govTokenSymbol && (
-                  <>
-                    <h3 className="mt-6 text-green text-3xl">
-                      {prettyPrintDecimal(campaignGovTokenPercentage, 2)}%{" "}
-                      governance
-                    </h3>
-                    <p className="text-light text-sm">
-                      Campaign backers will have{" "}
-                      {prettyPrintDecimal(campaignGovTokenPercentage, 2)}%
-                      voting power in the DAO.
-                    </p>
-                  </>
-                )}
             </div>
+
+            {/* Hide for funded campaigns since campaignGovTokenPercentage won't remain constant. */}
+            {/* TODO: Store initial fund amount in contract staet and use that instead. */}
+            {status !== Status.Funded &&
+              !!campaignGovTokenPercentage &&
+              !!govTokenDAOBalance &&
+              !!govTokenCampaignBalance &&
+              !!govTokenSupply &&
+              !!daoMemberGovTokenPercentage &&
+              !!govTokenSymbol && (
+                <div
+                  className={cn(
+                    "bg-card rounded-3xl p-8 mt-4 lg:mt-8",
+                    "flex flex-col items-start",
+                    "max-w-full"
+                  )}
+                >
+                  <h3 className="text-green text-3xl">
+                    {prettyPrintDecimal(campaignGovTokenPercentage, 2)}%{" "}
+                    governance
+                  </h3>
+                  <p className="text-light text-sm">
+                    Campaign backers will have{" "}
+                    {prettyPrintDecimal(campaignGovTokenPercentage, 2)}% voting
+                    power in the DAO, shown in{" "}
+                    <span className="text-green">green</span> below.
+                  </p>
+
+                  <Pie
+                    options={{
+                      // Disable all events (hover, tooltip, etc.)
+                      events: [],
+                      plugins: {
+                        legend: {
+                          position: "bottom",
+                          maxWidth: 200,
+                          maxHeight: 100,
+                        },
+                      },
+                      animation: false,
+                    }}
+                    data={{
+                      datasets: [
+                        {
+                          data: [
+                            govTokenDAOBalance,
+                            govTokenCampaignBalance,
+                            daoMemberGovTokenBalance,
+                          ],
+                          backgroundColor: [
+                            "transparent",
+                            theme.colors.green,
+                            theme.colors.dark,
+                          ],
+                          borderWidth: 2,
+                          borderColor: theme.colors.dark,
+                        },
+                      ],
+                    }}
+                    className="!w-48 !h-48 mt-4 self-center"
+                  />
+
+                  <PieLegend
+                    className="mt-2"
+                    items={[
+                      {
+                        label: "DAO Treasury",
+                        color: "transparent",
+                      },
+                      {
+                        label: "Campaign",
+                        color: theme.colors.green,
+                      },
+                      {
+                        label: "Current DAO Members/Creators",
+                        color: theme.colors.dark,
+                      },
+                    ]}
+                  />
+                  <div className="flex flex-col"></div>
+                </div>
+              )}
           </div>
         </div>
 

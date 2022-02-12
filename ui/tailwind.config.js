@@ -1,4 +1,5 @@
 const { fontFamily, screens } = require("tailwindcss/defaultTheme")
+const { colors } = require("./helpers/theme")
 
 module.exports = {
   content: [
@@ -12,14 +13,7 @@ module.exports = {
       ...fontFamily,
       sans: ["DM Sans", ...fontFamily.sans],
     },
-    colors: {
-      light: "#f4f4f4",
-      dark: "#0e0e0e",
-      green: "#c1eb7c",
-      orange: "#daa27a",
-      card: "#1c1d1a",
-      placeholder: "#666666",
-    },
+    colors,
     screens: {
       xs: "420px",
       ...screens,
@@ -33,7 +27,5 @@ module.exports = {
       },
     },
   },
-  plugins: [
-    require('@tailwindcss/line-clamp'),
-  ],
+  plugins: [require("@tailwindcss/line-clamp")],
 }
