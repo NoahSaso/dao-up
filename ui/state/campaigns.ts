@@ -1,10 +1,11 @@
 import { QueryContractsByCodeResponse } from "cosmjs-types/cosmwasm/wasm/v1/query"
-import { atomFamily, selector, selectorFamily, waitForAll } from "recoil"
+import { atom, atomFamily, selector, selectorFamily, waitForAll } from "recoil"
 
 import { daoUrlPrefix, escrowContractCodeId } from "../helpers/config"
 import { extractPageInfo } from "../helpers/filter"
 import { campaignsFromResponses, filterCampaigns } from "../services/campaigns"
 import { CampaignActionType, Status } from "../types"
+import { localStorageEffectJSON } from "./effects"
 import { cosmWasmClient, cosmWasmQueryClient, walletAddress } from "./web3"
 
 export const campaignStateId = atomFamily<number, string | undefined>({
@@ -539,4 +540,26 @@ export const daoConfig = selectorFamily<DAOConfigResponse, string | undefined>({
         return { config: null, error: `${error}` }
       }
     },
+})
+
+export const favoriteCampaignAddressesKey = "favoriteCampaignAddresses"
+// Change keplrKeystoreId to trigger Keplr refresh/connect.
+// Set to -1 to disable connection.
+export const favoriteCampaignAddressesAtom = atom({
+  key: favoriteCampaignAddressesKey,
+  default: [] as string[],
+  effects: [localStorageEffectJSON(favoriteCampaignAddressesKey)],
+})
+
+export const favoriteCampaigns = selector<CampaignsResponse>({
+  key: "favoriteCampaigns",
+  get: async ({ get }) => {
+    const addresses = get(favoriteCampaignAddressesAtom)
+    const campaignResponses = get(
+      waitForAll(addresses.map((address) => fetchCampaign(address)))
+    )
+    const campaigns = campaignsFromResponses(campaignResponses, true, true)
+
+    return { campaigns, hasMore: false, error: null }
+  },
 })

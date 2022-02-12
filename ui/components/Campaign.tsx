@@ -1,13 +1,16 @@
 import cn from "classnames"
 import Link from "next/link"
-import { FC, PropsWithChildren } from "react"
+import { FC, PropsWithChildren, useCallback } from "react"
 import { IconType } from "react-icons"
+import { IoHeart, IoHeartOutline } from "react-icons/io5"
 import TimeAgo from "react-timeago"
+import { useRecoilState } from "recoil"
 
 import { payTokenSymbol } from "../helpers/config"
 import { prettyPrintDecimal } from "../helpers/number"
+import { favoriteCampaignAddressesAtom } from "../state/campaigns"
 import { CampaignActionType, Color, Status } from "../types"
-import { StatusIndicator } from "."
+import { Button, StatusIndicator } from "."
 
 interface CampaignProps {
   campaign: Campaign
@@ -88,6 +91,36 @@ export const CampaignProgress: FC<CampaignProgressProps> = ({
   )
 }
 
+export const CampaignFavoriteToggle: FC<CampaignProps> = ({
+  campaign,
+  className,
+}) => {
+  const [favoriteAddresses, setFavoriteAddresses] = useRecoilState(
+    favoriteCampaignAddressesAtom
+  )
+  const toggleFavorite = useCallback(
+    (address: string) =>
+      setFavoriteAddresses((addresses) =>
+        addresses.includes(address)
+          ? addresses.filter((a) => a !== address)
+          : [...addresses, address]
+      ),
+    [setFavoriteAddresses]
+  )
+  const isFavorite = !!favoriteAddresses?.includes(campaign.address)
+  const FavoriteIcon = isFavorite ? IoHeart : IoHeartOutline
+
+  return (
+    <Button
+      onClick={() => toggleFavorite(campaign.address)}
+      bare
+      className={className}
+    >
+      <FavoriteIcon size={24} className="text-green" />
+    </Button>
+  )
+}
+
 interface CampaignCardWrapperProps extends PropsWithChildren<CampaignProps> {
   contentClassName?: string
 }
@@ -96,31 +129,39 @@ const CampaignCardWrapper: FC<CampaignCardWrapperProps> = ({
   className,
   children,
   contentClassName,
-}) => (
-  <Link href={`/campaign/${campaign.address}`}>
-    <a
+}) => {
+  return (
+    <div
       className={cn(
-        "flex flex-col justify-start items-stretch xs:flex-row",
-        "bg-card rounded-3xl p-6 sm:p-10",
+        "bg-card rounded-3xl",
         "border border-card hover:border-green",
         "transition",
         "cursor-pointer",
+        "relative",
         className
       )}
     >
-      <CampaignImage campaign={campaign} />
-      <div
-        className={cn(
-          "flex flex-col items-stretch flex-1",
-          "ml-0 mt-4 xs:ml-5 xs:mt-0",
-          contentClassName
-        )}
-      >
-        {children}
-      </div>
-    </a>
-  </Link>
-)
+      <CampaignFavoriteToggle
+        campaign={campaign}
+        className="absolute top-4 right-4"
+      />
+      <Link href={`/campaign/${campaign.address}`}>
+        <a className="flex flex-col justify-start items-stretch xs:flex-row p-6 sm:p-10">
+          <CampaignImage campaign={campaign} />
+          <div
+            className={cn(
+              "flex flex-col items-stretch flex-1",
+              "ml-0 mt-4 xs:ml-5 xs:mt-0",
+              contentClassName
+            )}
+          >
+            {children}
+          </div>
+        </a>
+      </Link>
+    </div>
+  )
+}
 
 interface CampaignImageProps extends CampaignProps {
   size?: number
@@ -154,7 +195,7 @@ export const AllCampaignsCard: FC<CampaignProps> = ({
 
   return (
     <CampaignCardWrapper campaign={campaign} className={className}>
-      <h2 className="font-medium text-xl">{name}</h2>
+      <h2 className="font-medium text-xl pr-6">{name}</h2>
       <p className="sm:text-lg text-green">
         {pledged.toLocaleString()} {symbol} pledged
       </p>
@@ -181,7 +222,7 @@ export const CreatorCampaignCard: FC<CampaignProps> = ({
 
   return (
     <CampaignCardWrapper campaign={campaign} className={className}>
-      <h2 className="font-medium text-xl">{name}</h2>
+      <h2 className="font-medium text-xl pr-6">{name}</h2>
       <CampaignStatus campaign={campaign} className="" />
 
       <p className="text-xl text-green font-medium mt-8">
@@ -210,7 +251,7 @@ export const ContributorCampaignCard: FC<CampaignProps> = ({
 
   return (
     <CampaignCardWrapper campaign={campaign} className={className}>
-      <h2 className="font-medium text-xl">{name}</h2>
+      <h2 className="font-medium text-xl pr-6">{name}</h2>
       <div
         className={cn(
           "font-light text-white",
