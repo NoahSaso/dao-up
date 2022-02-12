@@ -1,7 +1,9 @@
+import { ArcElement, Chart as ChartJS } from "chart.js"
 import cn from "classnames"
 import type { NextPage } from "next"
 import { NextRouter, useRouter } from "next/router"
 import { FC, useCallback, useEffect, useState } from "react"
+import { Pie } from "react-chartjs-2"
 import { useForm } from "react-hook-form"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
 import { useRecoilValue, useSetRecoilState } from "recoil"
@@ -22,7 +24,7 @@ import {
   ResponsiveDecoration,
   Suspense,
 } from "../../components"
-import { daoUrlPrefix, payTokenSymbol } from "../../helpers/config"
+import { daoUrlPrefix, payTokenSymbol, theme } from "../../helpers/config"
 import { numberPattern } from "../../helpers/form"
 import { prettyPrintDecimal } from "../../helpers/number"
 import { useContributeCampaign } from "../../hooks/useContributeCampaign"
@@ -38,6 +40,8 @@ import {
   fetchCampaignActions,
 } from "../../state/campaigns"
 import { Status } from "../../types"
+
+ChartJS.register(ArcElement)
 
 interface AddressDisplayProps {
   label: string
@@ -61,6 +65,27 @@ const AddressDisplay: FC<AddressDisplayProps> = ({ label, address }) => {
     </p>
   )
 }
+
+interface PieLegendProps {
+  items: {
+    label: string
+    color: string
+  }[]
+  className?: string
+}
+const PieLegend: FC<PieLegendProps> = ({ items, className }) => (
+  <div className={cn("flex flex-col", className)}>
+    {items.map(({ label, color: backgroundColor }) => (
+      <div key={label} className="flex flex-row items-center mt-1 first:mt-0">
+        <div
+          className={cn("w-10 h-5 mr-2 shrink-0")}
+          style={{ backgroundColor }}
+        ></div>
+        <p className="text-light">{label}</p>
+      </div>
+    ))}
+  </div>
+)
 
 interface FundPendingForm {
   tokens?: number
@@ -202,7 +227,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
         address: govTokenAddress,
         symbol: govTokenSymbol,
         campaignBalance: govTokenCampaignBalance,
-        daoBalance: govTokenDAOBalance,
+        daoBalance: govTokenDAOTreasuryBalance,
         supply: govTokenSupply,
       },
     },
@@ -281,9 +306,21 @@ const CampaignContent: FC<CampaignContentProps> = ({
     }
   }
 
-  const campaignGovTokenPercentage =
-    govTokenCampaignBalance && govTokenSupply && govTokenSupply > 0
-      ? (100 * govTokenCampaignBalance) / govTokenSupply
+  // DAO voting power of campaign (determined by proportion of campaign's governance token balance to all governance tokens not in the DAO's treasury).
+  const campaignVotingPower =
+    govTokenCampaignBalance &&
+    govTokenSupply &&
+    govTokenDAOTreasuryBalance &&
+    govTokenSupply > govTokenDAOTreasuryBalance
+      ? (100 * govTokenCampaignBalance) /
+        (govTokenSupply - govTokenDAOTreasuryBalance)
+      : undefined
+  // DAO voting power of existing DAO members.
+  const govTokenDAOMemberBalance =
+    govTokenSupply &&
+    govTokenDAOTreasuryBalance !== undefined &&
+    govTokenCampaignBalance
+      ? govTokenSupply - govTokenDAOTreasuryBalance - govTokenCampaignBalance
       : undefined
 
   // Contribution
@@ -462,9 +499,9 @@ const CampaignContent: FC<CampaignContentProps> = ({
                         message: `Must be at least 0.000001 ${govTokenSymbol}.`,
                       },
                       max: {
-                        value: govTokenDAOBalance ?? 0,
+                        value: govTokenDAOTreasuryBalance ?? 0,
                         message: `Must be less than or equal to the amount of ${govTokenSymbol} the DAO has in its treasury: ${prettyPrintDecimal(
-                          govTokenDAOBalance ?? 0
+                          govTokenDAOTreasuryBalance ?? 0
                         )} ${govTokenSymbol}.`,
                       },
                     })}
@@ -583,25 +620,88 @@ const CampaignContent: FC<CampaignContentProps> = ({
                 {backers.toLocaleString()}
                 </h3>
                 <p className="text-light text-sm">Backers</p> */}
-
-              {/* Hide for funded campaigns since campaignGovTokenPercentage won't remain constant. */}
-              {/* TODO: Store initial fund amount in contract staet and use that instead. */}
-              {status !== Status.Funded &&
-                !!campaignGovTokenPercentage &&
-                !!govTokenSymbol && (
-                  <>
-                    <h3 className="mt-6 text-green text-3xl">
-                      {prettyPrintDecimal(campaignGovTokenPercentage, 2)}%{" "}
-                      governance
-                    </h3>
-                    <p className="text-light text-sm">
-                      Campaign backers will have{" "}
-                      {prettyPrintDecimal(campaignGovTokenPercentage, 2)}%
-                      voting power in the DAO.
-                    </p>
-                  </>
-                )}
             </div>
+
+            {/* Hide for funded campaigns since campaignGovTokenPercentage won't remain constant. */}
+            {/* TODO: Store initial fund amount in contract staet and use that instead. */}
+            {status !== Status.Funded &&
+              !!campaignVotingPower &&
+              !!govTokenDAOTreasuryBalance &&
+              !!govTokenCampaignBalance &&
+              !!govTokenSupply &&
+              !!govTokenSymbol && (
+                <div
+                  className={cn(
+                    "bg-card rounded-3xl p-8 mt-4 lg:mt-8",
+                    "flex flex-col items-start",
+                    "max-w-full"
+                  )}
+                >
+                  <h3 className="text-green text-3xl">
+                    {prettyPrintDecimal(campaignVotingPower, 2)}% governance
+                  </h3>
+                  <p className="text-light text-sm">
+                    Campaign backers will have{" "}
+                    {prettyPrintDecimal(campaignVotingPower, 2)}% voting power
+                    in the DAO. Voting power ignores the DAO&apos;s treasury
+                    balance. To learn more,{" "}
+                    <a
+                      href="https://docs.daoup.zone/evaluating-campaigns#what-is-a-good-percentage-of-governance-power"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:no-underline"
+                    >
+                      read the docs
+                    </a>
+                    .
+                  </p>
+
+                  <Pie
+                    options={{
+                      // Disable all events (hover, tooltip, etc.)
+                      events: [],
+                      animation: false,
+                    }}
+                    data={{
+                      datasets: [
+                        {
+                          data: [
+                            govTokenDAOMemberBalance,
+                            govTokenDAOTreasuryBalance,
+                            govTokenCampaignBalance,
+                          ],
+                          backgroundColor: [
+                            theme.colors.pieMedium,
+                            theme.colors.pieDark,
+                            theme.colors.pieLight,
+                          ],
+                          borderWidth: 0,
+                        },
+                      ],
+                    }}
+                    className="!w-48 !h-48 mt-8 self-center"
+                  />
+
+                  <PieLegend
+                    className="mt-4"
+                    items={[
+                      {
+                        label: "Campaign",
+                        color: theme.colors.pieLight,
+                      },
+                      {
+                        label: "Current DAO members/creators",
+                        color: theme.colors.pieMedium,
+                      },
+                      {
+                        label: "DAO's treasury",
+                        color: theme.colors.pieDark,
+                      },
+                    ]}
+                  />
+                  <div className="flex flex-col"></div>
+                </div>
+              )}
           </div>
         </div>
 
