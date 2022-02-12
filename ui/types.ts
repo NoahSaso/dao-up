@@ -4,6 +4,11 @@ import { ReactNode } from "react"
 declare global {
   interface Window extends KeplrWindow {}
 
+  interface CampaignProps {
+    campaign: Campaign
+    className?: string
+  }
+
   interface CampaignAction {
     type: CampaignActionType
     address: string
