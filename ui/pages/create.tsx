@@ -3,6 +3,7 @@ import type { NextPage } from "next"
 import { useRouter } from "next/router"
 import { FC, useCallback, useEffect, useState } from "react"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
+import { FaEye, FaEyeSlash } from "react-icons/fa"
 import { IoCheckmark, IoWarning } from "react-icons/io5"
 import {
   useRecoilValue,
@@ -12,6 +13,7 @@ import {
 
 import {
   Button,
+  CampaignDetails,
   CenteredColumn,
   FormInput,
   FormSwitch,
@@ -37,6 +39,10 @@ import { defaultNewCampaign, newCampaignFields } from "../services/campaigns"
 import { daoConfig } from "../state/campaigns"
 import { globalLoadingAtom } from "../state/loading"
 import { signedCosmWasmClient } from "../state/web3"
+import { Color } from "../types"
+
+const validUrlOrUndefined = (u: string | undefined) =>
+  u && u.match(urlPattern.value) ? u : undefined
 
 const Create: NextPage = () => (
   <>
@@ -97,6 +103,18 @@ const CreateContent: FC = () => {
   const raiseToGoal = watchGoal
     ? Math.ceil(watchGoal / (1 - daoUpFeeNum))
     : undefined
+
+  // Information for displaying campaign preview.
+  const campaignName = watch("name")
+  const campaignImageUrl = validUrlOrUndefined(watch("imageUrl"))
+  const campaignDescription = watch("description")
+
+  const campaignWebsite = validUrlOrUndefined(watch("website"))
+  const campaignDiscord = validUrlOrUndefined(watch("discord"))
+  const campaignTwitter = watch("twitter")
+
+  const [showCampaignDescriptionPreview, setShowCampaignDescriptionPreview] =
+    useState(false)
 
   // Scroll to bottom of page when error is displayed.
   useEffect(() => {
@@ -218,213 +236,249 @@ const CreateContent: FC = () => {
         className="top-0 right-0 opacity-70"
       />
 
-      <CenteredColumn className="py-10 max-w-4xl">
+      <CenteredColumn className="py-6 max-w-3xl">
         <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
-          <h1 className="font-semibold text-4xl mb-10">
-            Create a new campaign
-          </h1>
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="font-semibold text-4xl">Create a new campaign</h1>
+            <Button
+              outline
+              color={Color.Light}
+              onClick={() => setShowCampaignDescriptionPreview((b) => !b)}
+            >
+              <div className="flex items-center gap-2">
+                {showCampaignDescriptionPreview ? <FaEyeSlash /> : <FaEye />}
+                Preview
+              </div>
+            </Button>
+          </div>
 
-          <FormInput
-            label={newCampaignFields.name.label}
-            placeholder="Name"
-            type="text"
-            error={errors.name?.message}
-            {...register("name", {
-              required: "Required",
-              pattern: {
-                value: /\S/,
-                message: "Invalid name.",
-              },
-            })}
-          />
-
-          <FormTextArea
-            label={newCampaignFields.description.label}
-            placeholder="Describe what your campaign is about..."
-            rows={8}
-            error={errors.description?.message}
-            {...register("description", {
-              required: "Required",
-              pattern: {
-                value: /\S/,
-                message: "Invalid description.",
-              },
-            })}
-          />
-
-          <FormInput
-            label={newCampaignFields.imageUrl.label}
-            placeholder="https://your.campaign/logo.svg"
-            type="url"
-            spellCheck={false}
-            autoCorrect="off"
-            error={errors.imageUrl?.message}
-            {...register("imageUrl", {
-              required: false,
-              pattern: urlPattern,
-            })}
-          />
-
-          <FormInput
-            label={newCampaignFields.goal.label}
-            placeholder="10,000"
-            type="number"
-            inputMode="decimal"
-            className="!pr-28"
-            tail={payTokenSymbol}
-            error={errors.goal?.message}
-            accent={
-              goalReceived && raiseToGoal ? (
-                <>
-                  DAO Up! will take a 3% cut and you&apos;ll receive{" "}
-                  <span className="text-light">
-                    {prettyPrintDecimal(goalReceived)} {payTokenSymbol}
-                  </span>
-                  .{" "}
-                  <Button
-                    bare
-                    className="inline underline"
-                    onClick={() => setValue("goal", raiseToGoal)}
-                  >
-                    Raise {prettyPrintDecimal(raiseToGoal)} {payTokenSymbol}
-                  </Button>{" "}
-                  to receive {prettyPrintDecimal(watchGoal)} {payTokenSymbol}.
-                </>
-              ) : undefined
-            }
-            {...register("goal", {
-              required: "Required",
-              valueAsNumber: true,
-              pattern: numberPattern,
-              min: {
-                value: 1e-6,
-                message: "Must be at least 0.000001.",
-              },
-            })}
-          />
-
-          <FormInput
-            label={newCampaignFields.daoAddress.label}
-            placeholder="juno..."
-            type="text"
-            error={
-              (daoAddressFormatValid ? daoConfigError : null) ??
-              errors.daoAddress?.message
-            }
-            tail={
-              checkingDAO ? (
-                <Loader size={28} />
-              ) : validDAO ? (
-                <IoCheckmark size={28} className="text-green" />
-              ) : invalidDAO ? (
-                <IoWarning size={28} className="text-orange" />
-              ) : undefined
-            }
-            tailClassName="!bg-dark"
-            className="!pr-24"
-            {...register("daoAddress", {
-              required: "Required",
-              pattern: daoAddressPattern,
-              validate: () => validDAO,
-            })}
-          />
-
-          <FormInput
-            label={newCampaignFields.tokenName.label}
-            description="The name of the tokens backers will receive for their contributions. These become exchangeable for the DAO's governance tokens when funding succeeds."
-            placeholder="Funding Token"
-            type="text"
-            error={errors.tokenName?.message}
-            {...register("tokenName", {
-              required: "Required",
-              pattern: {
-                value: /\S/,
-                message: "Invalid token name.",
-              },
-            })}
-          />
-
-          <FormInput
-            label={newCampaignFields.tokenSymbol.label}
-            placeholder="TOKEN"
-            type="text"
-            error={errors.tokenSymbol?.message}
-            {...register("tokenSymbol", {
-              required: "Required",
-              pattern: {
-                value: /^\s*[a-zA-Z-]{3,12}\s*$/,
-                message: "Must be between 3 and 12 alphabetical characters.",
-              },
-              minLength: {
-                value: 3,
-                message: "Must be at least 3 characters.",
-              },
-              maxLength: {
-                value: 12,
-                message: "Must be 12 or fewer characters.",
-              },
-            })}
-          />
-
-          <Controller
-            control={control}
-            name="hidden"
-            render={({ field: { onChange, value }, fieldState: { error } }) => (
-              <FormSwitch
-                label={newCampaignFields.hidden.label}
-                description="Whether or not to hide this campaign from the public directory of active campaigns. You may want to turn this on if you plan to send a direct link to your community. Default is no."
-                error={error?.message}
-                onClick={() => onChange(!value)}
-                on={!!value}
+          {showCampaignDescriptionPreview ? (
+            <div className="w-full self-center mb-8 border border-light p-8 rounded-3xl">
+              <CampaignDetails
+                name={campaignName || "Your campaign"}
+                description={campaignDescription || "Your campaign description"}
+                imageUrl={campaignImageUrl}
+                website={campaignWebsite}
+                twitter={campaignTwitter}
+                discord={campaignDiscord}
               />
-            )}
-          />
+            </div>
+          ) : (
+            <>
+              <div className="lg:mx-2">
+                <FormInput
+                  label={newCampaignFields.name.label}
+                  placeholder="Name"
+                  type="text"
+                  error={errors.name?.message}
+                  {...register("name", {
+                    required: "Required",
+                    pattern: {
+                      value: /\S/,
+                      message: "Invalid name.",
+                    },
+                  })}
+                />
 
-          <h2 className="font-semibold text-3xl mb-10">Community Platforms</h2>
+                <FormTextArea
+                  label={newCampaignFields.description.label}
+                  placeholder="Describe what your campaign is about.."
+                  rows={8}
+                  error={errors.description?.message}
+                  {...register("description", {
+                    required: "Required",
+                    pattern: {
+                      value: /\S/,
+                      message: "Invalid description.",
+                    },
+                  })}
+                />
 
-          <FormInput
-            label={newCampaignFields.website.label}
-            placeholder="https://your.campaign"
-            type="url"
-            spellCheck={false}
-            autoCorrect="off"
-            error={errors.website?.message}
-            {...register("website", {
-              required: false,
-              pattern: urlPattern,
-            })}
-          />
+                <FormInput
+                  label={newCampaignFields.imageUrl.label}
+                  placeholder="https://your.campaign/logo.svg"
+                  type="url"
+                  spellCheck={false}
+                  autoCorrect="off"
+                  error={errors.imageUrl?.message}
+                  {...register("imageUrl", {
+                    required: false,
+                    pattern: urlPattern,
+                  })}
+                />
+              </div>
+              <h2 className="font-semibold text-2xl mb-8">
+                Community Platforms
+              </h2>
+              <div className="lg:mx-2">
+                <FormInput
+                  label={newCampaignFields.website.label}
+                  placeholder="https://your.campaign"
+                  type="url"
+                  spellCheck={false}
+                  autoCorrect="off"
+                  error={errors.website?.message}
+                  {...register("website", {
+                    required: false,
+                    pattern: urlPattern,
+                  })}
+                />
 
-          <FormInput
-            label={newCampaignFields.twitter.label}
-            placeholder="@CampaignDAO"
-            type="text"
-            error={errors.twitter?.message}
-            {...register("twitter", {
-              required: false,
-              pattern: {
-                value: /^@.+$/,
-                message: "Invalid Twitter handle. Ensure it starts with '@'.",
-              },
-            })}
-          />
+                <FormInput
+                  label={newCampaignFields.twitter.label}
+                  placeholder="@CampaignDAO"
+                  type="text"
+                  error={errors.twitter?.message}
+                  {...register("twitter", {
+                    required: false,
+                    pattern: {
+                      value: /^@.+$/,
+                      message:
+                        "Invalid Twitter handle. Ensure it starts with '@'.",
+                    },
+                  })}
+                />
 
-          <FormInput
-            label={newCampaignFields.discord.label}
-            placeholder="https://discord.gg/campaign"
-            type="url"
-            spellCheck={false}
-            autoCorrect="off"
-            error={errors.discord?.message}
-            {...register("discord", {
-              required: false,
-              pattern: {
-                value: /^https:\/\/discord\.gg\/.+$/,
-                message:
-                  "Invalid Discord invite. Ensure it starts with 'https://discord.gg/'",
-              },
-            })}
-          />
+                <FormInput
+                  label={newCampaignFields.discord.label}
+                  placeholder="https://discord.gg/campaign"
+                  type="url"
+                  spellCheck={false}
+                  autoCorrect="off"
+                  error={errors.discord?.message}
+                  {...register("discord", {
+                    required: false,
+                    pattern: {
+                      value: /^https:\/\/discord\.gg\/.+$/,
+                      message:
+                        "Invalid Discord invite. Ensure it starts with 'https://discord.gg/'",
+                    },
+                  })}
+                />
+              </div>
+            </>
+          )}
+
+          <h2 className="font-semibold text-2xl mb-8">Funding details</h2>
+          <div className="lg:mx-2">
+            <FormInput
+              label={newCampaignFields.goal.label}
+              placeholder="10,000"
+              type="number"
+              inputMode="decimal"
+              className="!pr-28"
+              tail={payTokenSymbol}
+              error={errors.goal?.message}
+              accent={
+                goalReceived && raiseToGoal ? (
+                  <>
+                    DAO Up! will take a 3% cut and you&apos;ll receive{" "}
+                    <span className="text-light">
+                      {prettyPrintDecimal(goalReceived)} {payTokenSymbol}
+                    </span>
+                    .{" "}
+                    <Button
+                      bare
+                      className="inline underline"
+                      onClick={() => setValue("goal", raiseToGoal)}
+                    >
+                      Raise {prettyPrintDecimal(raiseToGoal)} {payTokenSymbol}
+                    </Button>{" "}
+                    to receive {prettyPrintDecimal(watchGoal)} {payTokenSymbol}.
+                  </>
+                ) : undefined
+              }
+              {...register("goal", {
+                required: "Required",
+                valueAsNumber: true,
+                pattern: numberPattern,
+                min: {
+                  value: 1e-6,
+                  message: "Must be at least 0.000001.",
+                },
+              })}
+            />
+
+            <FormInput
+              label={newCampaignFields.daoAddress.label}
+              placeholder="juno..."
+              type="text"
+              error={
+                (daoAddressFormatValid ? daoConfigError : null) ??
+                errors.daoAddress?.message
+              }
+              tail={
+                checkingDAO ? (
+                  <Loader size={28} />
+                ) : validDAO ? (
+                  <IoCheckmark size={28} className="text-green" />
+                ) : invalidDAO ? (
+                  <IoWarning size={28} className="text-orange" />
+                ) : undefined
+              }
+              tailClassName="!bg-dark"
+              className="!pr-24"
+              {...register("daoAddress", {
+                required: "Required",
+                pattern: daoAddressPattern,
+                validate: () => validDAO,
+              })}
+            />
+
+            <FormInput
+              label={newCampaignFields.tokenName.label}
+              description="The name of the tokens backers will receive for their contributions. These become exchangeable for the DAO's governance tokens when funding succeeds."
+              placeholder="Funding Token"
+              type="text"
+              error={errors.tokenName?.message}
+              {...register("tokenName", {
+                required: "Required",
+                pattern: {
+                  value: /\S/,
+                  message: "Invalid token name.",
+                },
+              })}
+            />
+
+            <FormInput
+              label={newCampaignFields.tokenSymbol.label}
+              placeholder="TOKEN"
+              type="text"
+              error={errors.tokenSymbol?.message}
+              {...register("tokenSymbol", {
+                required: "Required",
+                pattern: {
+                  value: /^\s*[a-zA-Z-]{3,12}\s*$/,
+                  message: "Must be between 3 and 12 alphabetical characters.",
+                },
+                minLength: {
+                  value: 3,
+                  message: "Must be at least 3 characters.",
+                },
+                maxLength: {
+                  value: 12,
+                  message: "Must be 12 or fewer characters.",
+                },
+              })}
+            />
+
+            <Controller
+              control={control}
+              name="hidden"
+              render={({
+                field: { onChange, value },
+                fieldState: { error },
+              }) => (
+                <FormSwitch
+                  label={newCampaignFields.hidden.label}
+                  description="Whether or not to hide this campaign from the public directory of active campaigns. You may want to turn this on if you plan to send a direct link to your community. Default is no."
+                  error={error?.message}
+                  onClick={() => onChange(!value)}
+                  on={!!value}
+                />
+              )}
+            />
+          </div>
 
           {!!(createCampaignError || connectError) && (
             <p className="text-orange mb-4 self-end max-w-lg">

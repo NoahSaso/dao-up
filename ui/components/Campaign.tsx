@@ -147,7 +147,7 @@ const CampaignCardWrapper: FC<CampaignCardWrapperProps> = ({
       />
       <Link href={`/campaign/${campaign.address}`}>
         <a className="flex flex-col justify-start items-stretch xs:flex-row p-6 sm:p-10">
-          <CampaignImage campaign={campaign} />
+          <CampaignImage imageUrl={campaign.imageUrl} />
           <div
             className={cn(
               "flex flex-col items-stretch flex-1",
@@ -163,11 +163,13 @@ const CampaignCardWrapper: FC<CampaignCardWrapperProps> = ({
   )
 }
 
-interface CampaignImageProps extends CampaignProps {
+interface CampaignImageProps {
   size?: number
+  imageUrl?: string
+  className?: string
 }
 export const CampaignImage: FC<CampaignImageProps> = ({
-  campaign: { imageUrl },
+  imageUrl,
   className,
   size = 135,
 }) => (

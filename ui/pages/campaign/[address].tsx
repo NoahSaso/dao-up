@@ -5,16 +5,14 @@ import { NextRouter, useRouter } from "next/router"
 import { FC, useCallback, useEffect, useState } from "react"
 import { Pie } from "react-chartjs-2"
 import { useForm } from "react-hook-form"
-import { FaDiscord, FaTwitter } from "react-icons/fa"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
 import {
   Button,
   ButtonLink,
   CampaignAction,
+  CampaignDetails,
   CampaignFavoriteToggle,
-  CampaignImage,
-  CampaignLink,
   CampaignProgress,
   CampaignStatus,
   CenteredColumn,
@@ -47,6 +45,7 @@ interface AddressDisplayProps {
   label: string
   address: string
 }
+
 const AddressDisplay: FC<AddressDisplayProps> = ({ label, address }) => {
   const { copy, Icon } = useCopy(address)
 
@@ -217,14 +216,12 @@ const CampaignContent: FC<CampaignContentProps> = ({
     description,
 
     status,
-    creator,
 
     goal,
     pledged,
     dao: {
       url: daoUrl,
       govToken: {
-        address: govTokenAddress,
         symbol: govTokenSymbol,
         campaignBalance: govTokenCampaignBalance,
         daoBalance: govTokenDAOTreasuryBalance,
@@ -357,7 +354,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
         </p>
       )}
 
-      <CenteredColumn className="pt-10 pb-12 sm:pt-20 2xl:w-2/3">
+      <CenteredColumn className="pt-10 pb-12 sm:pt-20 xl:w-8/12">
         <div
           className={cn(
             "flex flex-col justify-start items-center",
@@ -369,57 +366,12 @@ const CampaignContent: FC<CampaignContentProps> = ({
               "flex flex-col justify-between items-stretch w-full lg:w-3/5 lg:shrink-0 lg:mr-10"
             )}
           >
-            <div className={cn("flex flex-col text-center lg:text-left")}>
-              <div className={cn("flex flex-col items-center", "lg:flex-row")}>
-                <CampaignImage
-                  campaign={campaign}
-                  className="mb-4 lg:mb-0 lg:mr-4"
-                  size={139}
-                />
-
-                <div className={cn("flex flex-col")}>
-                  <h1 className="font-medium text-5xl">{name}</h1>
-
-                  {!!(website || twitter || discord) && (
-                    <div
-                      className={cn(
-                        "flex flex-row items-center justify-center lg:justify-start ",
-                        "text-green",
-                        "mt-4"
-                      )}
-                    >
-                      {!!website && (
-                        <CampaignLink
-                          href={website}
-                          label={new URL(website).hostname}
-                        />
-                      )}
-                      {!!twitter && (
-                        <CampaignLink
-                          href={`https://twitter.com/${twitter}`}
-                          label={(twitter.startsWith("@") ? "" : "@") + twitter}
-                          Icon={FaTwitter}
-                        />
-                      )}
-                      {!!discord && (
-                        <CampaignLink
-                          href={discord}
-                          label="Discord"
-                          Icon={FaDiscord}
-                        />
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <p className="mt-4">{description}</p>
-            </div>
+            <CampaignDetails {...campaign} />
 
             {!connected && (
               <div
                 className={cn(
-                  "mt-8 lg:self-stretch lg:mb-0",
+                  "mt-8 lg:self-stretch lg:mb-0 max-w-prose",
                   "bg-card rounded-3xl p-8 border border-orange"
                 )}
               >

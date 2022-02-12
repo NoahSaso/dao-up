@@ -129,7 +129,6 @@ pub fn execute_close(deps: DepsMut, env: Env, sender: Addr) -> Result<Response, 
         funds: vec![],
     };
 
-    // TODO: return tokens to the dao!
     state.status = Status::Cancelled { token_price };
     STATE.save(deps.storage, &state)?;
     Ok(Response::default()
