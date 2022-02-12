@@ -21,6 +21,8 @@ import {
   Loader,
   ResponsiveDecoration,
   Suspense,
+  WalletMessage,
+  PendingCard,
 } from "../../components"
 import { daoUrlPrefix, payTokenSymbol, theme } from "../../helpers/config"
 import { numberPattern } from "../../helpers/form"
@@ -30,7 +32,7 @@ import { useCopy } from "../../hooks/useCopy"
 import { useFundPendingCampaign } from "../../hooks/useFundPendingCampaign"
 import { useRefundCampaign } from "../../hooks/useRefundCampaign"
 import { useWallet } from "../../hooks/useWallet"
-import { InstallWalletMessage, suggestToken } from "../../services/keplr"
+import { suggestToken } from "../../services/keplr"
 import {
   campaignWalletBalance,
   favoriteCampaignAddressesAtom,
@@ -131,8 +133,7 @@ interface CampaignContentProps {
 const CampaignContent: FC<CampaignContentProps> = ({
   router: { isReady, query, push: routerPush },
 }) => {
-  const { connect, connected, connectError, installed, keplr } = useWallet()
-
+  const { connected, keplr } = useWallet()
   const campaignAddress =
     isReady && typeof query.address === "string" ? query.address : ""
   const { campaign, error: campaignError } = useRecoilValue(
@@ -246,22 +247,6 @@ const CampaignContent: FC<CampaignContentProps> = ({
       !(await suggestToken(keplr, campaign.dao.govToken.address))
     )
 
-  // Funding form for pending campaigns
-  const watchFundPendingTokens = fundPendingWatch("tokens") || 0
-  const doFundPending = async ({ tokens }: FundPendingForm) => {
-    setFundCampaignProposalUrl(null)
-    if (!tokens) return
-
-    // TODO: Add success display.
-    const proposalId = await fundPendingCampaign(tokens)
-    // Open proposal on DAO DAO if created.
-    if (proposalId) {
-      setFundCampaignProposalUrl(
-        daoUrlPrefix + `${campaign.dao.address}/proposals/${proposalId}`
-      )
-    }
-  }
-
   // Contribution Form
   const watchContribution = contributionWatch("contribution")
   const doContribution = async ({ contribution }: ContributionForm) => {
@@ -369,117 +354,10 @@ const CampaignContent: FC<CampaignContentProps> = ({
           >
             <CampaignDetails {...campaign} />
 
-            {!connected && (
-              <div
-                className={cn(
-                  "mt-8 lg:self-stretch lg:mb-0 max-w-prose",
-                  "bg-card rounded-3xl p-8 border border-orange"
-                )}
-              >
-                {installed ? (
-                  <>
-                    <p className="text-orange">
-                      You haven&apos;t connected a wallet. Connect one to
-                      contribute, view your balance, or refund.
-                    </p>
-                    <Button className="mt-4" onClick={connect}>
-                      Connect a wallet
-                    </Button>
-                    {!!connectError && (
-                      <p className="text-orange mt-2">{connectError}</p>
-                    )}
-                  </>
-                ) : (
-                  <p className="text-orange text-md font-bold">
-                    <InstallWalletMessage />
-                  </p>
-                )}
-              </div>
-            )}
+            {connected || <WalletMessage />}
 
             {status === Status.Pending ? (
-              <form
-                onSubmit={fundPendingHandleSubmit(doFundPending)}
-                className={cn(
-                  "mt-8 lg:self-stretch lg:mb-0",
-                  "bg-card rounded-3xl p-8 border border-orange"
-                )}
-              >
-                <p className="text-orange">
-                  This campaign is pending and cannot accept funds until the DAO
-                  allocates governance tokens ({govTokenSymbol}) to it.{" "}
-                  <span className="underline">
-                    If you are part of the DAO, you can create a funding
-                    proposal below.
-                  </span>
-                </p>
-
-                <div
-                  className={cn(
-                    "flex flex-col items-stretch mt-4",
-                    "sm:flex-row sm:items-stretch"
-                  )}
-                >
-                  <FormInput
-                    type="number"
-                    inputMode="decimal"
-                    placeholder="1000000"
-                    wrapperClassName="!mb-4 sm:!mb-0 sm:mr-4 sm:flex-1"
-                    className="!pr-28 border-light"
-                    tail={govTokenSymbol}
-                    error={
-                      fundPendingErrors?.tokens?.message ??
-                      fundPendingCampaignError ??
-                      undefined
-                    }
-                    disabled={!!fundCampaignProposalUrl || !connected}
-                    accent={
-                      govTokenSupply
-                        ? `This will allocate ${watchFundPendingTokens} ${
-                            govTokenSymbol ?? "governance tokens"
-                          } (${prettyPrintDecimal(
-                            (100 * watchFundPendingTokens) / govTokenSupply,
-                            2
-                          )}% of total supply) from the DAO's treasury to the campaign to be distributed among the backers.`
-                        : undefined
-                    }
-                    accentClassName="text-light"
-                    {...fundPendingRegister("tokens", {
-                      valueAsNumber: true,
-                      pattern: numberPattern,
-                      min: {
-                        value: 1e-6,
-                        message: `Must be at least 0.000001 ${govTokenSymbol}.`,
-                      },
-                      max: {
-                        value: govTokenDAOTreasuryBalance ?? 0,
-                        message: `Must be less than or equal to the amount of ${govTokenSymbol} the DAO has in its treasury: ${prettyPrintDecimal(
-                          govTokenDAOTreasuryBalance ?? 0
-                        )} ${govTokenSymbol}.`,
-                      },
-                    })}
-                  />
-
-                  <Button
-                    disabled={!!fundCampaignProposalUrl || !connected}
-                    className="sm:h-[50px]"
-                    submitLabel="Propose"
-                  />
-                </div>
-
-                {!!fundCampaignProposalUrl && (
-                  <>
-                    <p className="mt-6 mb-2 text-green">
-                      Proposal successfully created! This campaign will activate
-                      immediately once the proposal is approved and executed on
-                      DAO DAO.
-                    </p>
-                    <ButtonLink href={fundCampaignProposalUrl} cardOutline>
-                      View Proposal
-                    </ButtonLink>
-                  </>
-                )}
-              </form>
+              <PendingCard campaign={campaign} />
             ) : status === Status.Open ? (
               <form
                 onSubmit={contributionHandleSubmit(doContribution)}

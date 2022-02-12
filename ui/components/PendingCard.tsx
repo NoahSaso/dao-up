@@ -1,0 +1,136 @@
+import { FC, useState } from "react"
+import { useForm } from "react-hook-form"
+import { daoUrlPrefix } from "../helpers/config"
+import { numberPattern } from "../helpers/form"
+import { prettyPrintDecimal } from "../helpers/number"
+import { useFundPendingCampaign } from "../hooks/useFundPendingCampaign"
+import { useWallet } from "../hooks/useWallet"
+import { Button } from "./Button"
+import { ButtonLink } from "./ButtonLink"
+import { FormInput } from "./Input"
+
+interface FundPendingForm {
+  tokens?: number
+}
+
+interface PendingCardProps {
+  campaign: Campaign
+}
+
+export const PendingCard: FC<PendingCardProps> = ({ campaign }) => {
+  const {
+    dao: {
+      govToken: { daoBalance, symbol, supply },
+    },
+  } = campaign
+
+  const {
+    handleSubmit,
+    register,
+    formState: { errors },
+    watch,
+  } = useForm({
+    mode: "onChange",
+    defaultValues: {} as FundPendingForm,
+  })
+
+  const { connected } = useWallet()
+
+  const fundPendingTokens = watch("tokens") || 0
+  const [fundCampaignProposalUrl, setFundCampaignProposalUrl] = useState("")
+  const { fundPendingCampaign, fundPendingCampaignError } =
+    useFundPendingCampaign(campaign)
+
+  const doFundPending = async ({ tokens }: FundPendingForm) => {
+    setFundCampaignProposalUrl("")
+    if (!tokens) return
+
+    // TODO: Add success display.
+    const proposalId = await fundPendingCampaign(tokens)
+    // Open proposal on DAO DAO if created.
+    if (proposalId) {
+      setFundCampaignProposalUrl(
+        daoUrlPrefix + `${campaign.dao.address}/proposals/${proposalId}`
+      )
+    }
+  }
+
+  return (
+    <form
+      className={
+        "mt-8 lg:self-stretch lg:mb-0 bg-card rounded-3xl p-8 border border-orange"
+      }
+      onSubmit={handleSubmit(doFundPending)}
+    >
+      {!fundCampaignProposalUrl && (
+        <>
+          <p className="text-orange">
+            This campaign is pending and cannot accept funds until the DAO
+            allocates governance tokens ({symbol}) to it.{" "}
+            <span className="underline">
+              If you are part of the DAO, you can create a funding proposal
+              below.
+            </span>
+          </p>
+
+          <div className="flex flex-col items-stretch mt-4 sm:flex-row sm:items-stretch">
+            <FormInput
+              type="number"
+              inputMode="decimal"
+              placeholder="1000000"
+              wrapperClassName="!mb-4 sm:!mb-0 sm:mr-4 sm:flex-1"
+              className="!pr-28 border-light"
+              tail={symbol}
+              error={
+                errors?.tokens?.message ?? fundPendingCampaignError ?? undefined
+              }
+              disabled={!!fundCampaignProposalUrl || !connected}
+              accent={
+                supply
+                  ? `This will allocate ${fundPendingTokens} ${
+                      symbol ?? "governance tokens"
+                    } (${prettyPrintDecimal(
+                      (100 * fundPendingTokens) / supply,
+                      2
+                    )}% of total supply) from the DAO's treasury to the campaign to be distributed among the backers.`
+                  : undefined
+              }
+              accentClassName="text-light"
+              {...register("tokens", {
+                valueAsNumber: true,
+                pattern: numberPattern,
+                min: {
+                  value: 1e-6,
+                  message: `Must be at least 0.000001 ${symbol}.`,
+                },
+                max: {
+                  value: daoBalance ?? 0,
+                  message: `Must be less than or equal to the amount of ${symbol} the DAO has in its treasury: ${prettyPrintDecimal(
+                    daoBalance ?? 0
+                  )} ${symbol}.`,
+                },
+              })}
+            />
+
+            <Button
+              disabled={!!fundCampaignProposalUrl || !connected}
+              className="sm:h-[50px]"
+              submitLabel="Propose"
+            />
+          </div>
+        </>
+      )}
+      {!!fundCampaignProposalUrl && (
+        <>
+          <p className="mb-4 text-green">
+            Proposal successfully created! This campaign will activate once the
+            proposal is approved and executed on DAO DAO.
+          </p>
+          <ButtonLink href={fundCampaignProposalUrl} cardOutline>
+            View Proposal
+          </ButtonLink>
+        </>
+      )}
+    </form>
+  )
+}
