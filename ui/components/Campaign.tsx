@@ -147,7 +147,7 @@ const CampaignCardWrapper: FC<CampaignCardWrapperProps> = ({
       />
       <Link href={`/campaign/${campaign.address}`}>
         <a className="flex flex-col justify-start items-stretch xs:flex-row p-6 sm:p-10">
-          <CampaignImage campaign={campaign} />
+          <CampaignImage imageUrl={campaign.imageUrl} />
           <div
             className={cn(
               "flex flex-col items-stretch flex-1",
@@ -163,16 +163,16 @@ const CampaignCardWrapper: FC<CampaignCardWrapperProps> = ({
   )
 }
 
-interface CampaignImageProps extends CampaignProps {
+interface CampaignImageProps {
   size?: number
+  imageUrl?: string
 }
 export const CampaignImage: FC<CampaignImageProps> = ({
-  campaign: { imageUrl },
-  className,
+  imageUrl,
   size = 135,
 }) => (
   <div
-    className={cn("bg-green shrink-0 overflow-hidden rounded-md", className)}
+    className={cn("bg-green shrink-0 overflow-hidden rounded-md")}
     style={{ width: size, height: size }}
   >
     {!!imageUrl && (
