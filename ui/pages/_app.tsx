@@ -55,6 +55,13 @@ const App: FC<AppProps> = (props) => (
       />
       <link rel="icon" href="/images/logo.svg" />
 
+      {/* Analytics */}
+      <script
+        defer
+        data-domain="daoup.zone"
+        src="https://plausible.io/js/plausible.js"
+      ></script>
+
       {/* SEO */}
       <meta name="description" content={Description} />
       <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
