@@ -9,6 +9,7 @@ import {
   CampaignDetails,
   CampaignInfoCard,
   CenteredColumn,
+  ContributionGraphCard,
   FundPendingCard,
   GovernanceCard,
   Loader,
@@ -152,22 +153,25 @@ const CampaignContent: FC<CampaignContentProps> = ({
           </div>
         </div>
 
-        <h2 className="text-green text-xl mt-8">Activity</h2>
-        {!!campaignActionsError && (
-          <p className="text-orange my-4">{campaignActionsError}</p>
-        )}
+        <div className="w-full lg:w-3/5">
+          <h2 className="text-green text-xl mt-8 mb-4">Activity</h2>
 
-        {!!actions && (
-          <div className="w-full lg:w-3/5">
-            {actions.length ? (
-              actions.map((item, idx) => (
-                <CampaignAction key={idx} action={item} />
-              ))
-            ) : (
-              <p>None yet.</p>
-            )}
-          </div>
-        )}
+          {!!campaignActionsError && (
+            <p className="text-orange my-4">{campaignActionsError}</p>
+          )}
+
+          {actions && actions.length > 1 && (
+            <ContributionGraphCard actions={actions} />
+          )}
+
+          {actions?.length ? (
+            actions.map((item, idx) => (
+              <CampaignAction key={idx} action={item} />
+            ))
+          ) : (
+            <p>None yet.</p>
+          )}
+        </div>
       </CenteredColumn>
     </>
   )

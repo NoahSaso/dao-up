@@ -97,7 +97,7 @@ export const BalanceRefundCard: FC<BalanceRefundCardProps> = ({
       : 0
 
   return (
-    <div className="bg-card rounded-3xl w-full py-8 px-12">
+    <div className="bg-card rounded-3xl w-full p-8">
       <h2 className="text-xl text-green mb-2">Your Balance</h2>
 
       {/* Show funding token balance if funded and has not yet swapped to governance tokens. */}
