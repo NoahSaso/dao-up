@@ -92,7 +92,7 @@ const Campaigns: NextPage = () => {
         className="top-0 right-0 opacity-70"
       />
 
-      <CenteredColumn className="pt-5 pb-10">
+      <CenteredColumn className="pt-5 pb-10 max-w-7xl">
         <div className="flex flex-col justify-start items-start sm:flex-row sm:items-center">
           <h1 className="font-semibold text-4xl">All Campaigns</h1>
 
@@ -207,7 +207,7 @@ const CampaignsContent: FC<CampaignsContentProps> = ({
       )}
       {!!error && <p className="text-orange">{error}</p>}
 
-      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
         {campaigns?.map((campaign) => (
           <AllCampaignsCard key={campaign.address} campaign={campaign} />
         ))}

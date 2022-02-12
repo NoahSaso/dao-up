@@ -380,7 +380,7 @@ export const FormWrapper: FC<FormWrapperProps> = ({
     onClick={onClick}
   >
     {horizontal && children}
-    <div className={cn("flex flex-col items-stretch")}>
+    <div className="flex flex-col items-stretch">
       {!!label && (
         <label
           className={cn(

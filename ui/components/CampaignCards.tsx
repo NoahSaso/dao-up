@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown"
 import { useRecoilValueLoadable } from "recoil"
 
 import { prettyPrintDecimal } from "../helpers/number"
-import { campaignWalletBalance } from "../state/campaigns"
+import { walletTokenBalance } from "../state/campaigns"
 import {
   CampaignFavoriteToggle,
   CampaignImage,
@@ -96,14 +96,19 @@ export const FavoriteCampaignCard: FC<CampaignProps> = ({
   className,
 }) => {
   const {
-    fundingToken: { symbol, supply },
+    fundingToken: {
+      address: fundingTokenAddress,
+      symbol: fundingTokenSymbol,
+      supply: fundingTokenSupply,
+    },
   } = campaign
 
   const { state, contents } = useRecoilValueLoadable(
-    campaignWalletBalance(campaign?.address)
+    walletTokenBalance(fundingTokenAddress)
   )
   const balance = state === "hasValue" ? contents.balance : undefined
-  const balancePercent = balance && supply && (100 * balance) / supply
+  const balancePercent =
+    balance && fundingTokenSupply && (100 * balance) / fundingTokenSupply
 
   return (
     <CampaignCardWrapper campaign={campaign} className={className}>
@@ -117,7 +122,7 @@ export const FavoriteCampaignCard: FC<CampaignProps> = ({
               <span className="text-xl font-medium mr-1">
                 {prettyPrintDecimal(balance)}
               </span>
-              <span className="text-base font-light">{symbol}</span>
+              <span className="text-base font-light">{fundingTokenSymbol}</span>
             </p>
             <p className="text-placeholder font-sm text-right">
               {prettyPrintDecimal(balancePercent, 2)}% of total supply

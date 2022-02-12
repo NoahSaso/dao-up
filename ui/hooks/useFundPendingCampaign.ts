@@ -41,7 +41,7 @@ export const useFundPendingCampaign = (campaign: Campaign | null) => {
       const cosmMsg = {
         wasm: {
           execute: {
-            contract_addr: campaign.dao.govToken.address,
+            contract_addr: campaign.govToken.address,
             msg: toBase64(
               toAscii(
                 JSON.stringify({
@@ -63,7 +63,7 @@ export const useFundPendingCampaign = (campaign: Campaign | null) => {
           propose: {
             title: `Activate DAO Up! campaign`,
             description: `Send ${prettyPrintDecimal(amount)} ${
-              campaign.dao.govToken.symbol
+              campaign.govToken.symbol
             } to the [${campaign.name}](https://daoup.zone/campaign/${
               campaign.address
             }) campaign on DAO Up! in order to launch it.`,

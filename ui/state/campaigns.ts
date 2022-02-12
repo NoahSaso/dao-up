@@ -232,15 +232,15 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
             dao: {
               address: state.dao_addr,
               url: daoUrlPrefix + state.dao_addr,
+            },
 
-              govToken: {
-                address: state.gov_token_addr,
-                name: govTokenInfo.name,
-                symbol: govTokenInfo.symbol,
-                campaignBalance: campaignGovTokenBalance,
-                daoBalance: daoGovTokenBalance,
-                supply: Number(govTokenInfo.total_supply) / 1e6,
-              },
+            govToken: {
+              address: state.gov_token_addr,
+              name: govTokenInfo.name,
+              symbol: govTokenInfo.symbol,
+              campaignBalance: campaignGovTokenBalance,
+              daoBalance: daoGovTokenBalance,
+              supply: Number(govTokenInfo.total_supply) / 1e6,
             },
 
             fundingToken: {
@@ -339,29 +339,21 @@ export const tokenBalance = selectorFamily<
     },
 })
 
-export const campaignWalletBalance = selectorFamily<
+export const walletTokenBalance = selectorFamily<
   TokenBalanceResponse,
   string | undefined | null
 >({
-  key: "campaignWalletBalance",
+  key: "walletTokenBalance",
   get:
-    (campaignAddress) =>
+    (tokenAddress) =>
     async ({ get }) => {
-      if (!campaignAddress) return { balance: null, error: null }
-
       const address = get(walletAddress)
 
       if (!address) return { balance: null, error: null }
 
-      const { campaign, error: campaignError } = get(
-        fetchCampaign(campaignAddress)
-      )
-      if (campaignError || campaign === null)
-        return { balance: null, error: null }
-
       const { balance, error: tokenBalanceError } = get(
         tokenBalance({
-          tokenAddress: campaign.fundingToken.address,
+          tokenAddress,
           walletAddress: address,
         })
       )

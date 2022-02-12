@@ -57,12 +57,7 @@ export const Select: FC<SelectProps> = ({
         {items.map(({ label: itemLabel, onClick, selected }) => (
           <div
             key={itemLabel}
-            className={cn(
-              "flex flex-row justify-between items-center",
-              "w-full h-full py-1.5 px-3",
-              "cursor-pointer hover:text-dark/50",
-              "border-b border-dark/20 last:border-b-0"
-            )}
+            className="flex flex-row justify-between items-center w-full h-full py-1.5 px-3 cursor-pointer hover:text-dark/50 border-b border-dark/20 last:border-b-0"
             onClick={() => onClick(!selected)}
           >
             {itemLabel}
