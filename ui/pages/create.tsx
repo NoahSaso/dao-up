@@ -253,7 +253,7 @@ const CreateContent: FC = () => {
           </div>
 
           {showCampaignDescriptionPreview ? (
-            <div className="w-full max-w-prose self-center mb-8 border border-light p-8 rounded-3xl">
+            <div className="w-full self-center mb-8 border border-light p-8 rounded-3xl">
               <CampaignDetails
                 name={campaignName || "Your campaign"}
                 description={campaignDescription || "Your campaign description"}
