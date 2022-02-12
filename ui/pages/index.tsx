@@ -177,7 +177,8 @@ const faqQAs = [
       <p>
         DAO Up! takes a 3% fee from all successfully-funded campaigns. If a
         campaign doesn&apos;t succeed, backers will be able to refund their
-        money in full, and neither DAO Up! nor the campaign receives any money.
+        money in full, and neither DAO Up! nor the campaign receives any money.{" "}
+        <i>We only succeed if you do.</i>
       </p>
     ),
   },
