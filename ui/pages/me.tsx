@@ -1,20 +1,20 @@
 import type { NextPage } from "next"
 import { FC } from "react"
+import { useRecoilValue } from "recoil"
 
 import {
   Button,
   ButtonLink,
   CenteredColumn,
-  // ContributorCampaignCard,
+  ContributorCampaignCard,
   CreatorCampaignCard,
   ResponsiveDecoration,
   StatusIndicator,
   Suspense,
   TooltipInfo,
 } from "../components"
-import { useGetCampaigns } from "../hooks/useGetCampaigns"
 import { useWallet } from "../hooks/useWallet"
-import { categorizedWalletCampaigns } from "../services/campaigns"
+import { allCampaigns, favoriteCampaigns } from "../state/campaigns"
 
 const Me: NextPage = () => {
   const { walletAddress, connect, connected, connectError } = useWallet()
@@ -72,13 +72,15 @@ interface MeContentProps {
   connected: boolean
 }
 const MeContent: FC<MeContentProps> = ({ walletAddress, connected }) => {
-  const { campaigns, error } = useGetCampaigns(undefined, true, true)
-  const { creatorCampaigns, contributorCampaigns } = categorizedWalletCampaigns(
-    campaigns,
-    walletAddress ?? ""
-  )
+  const { campaigns, error } = useRecoilValue(allCampaigns)
+  const { campaigns: favorites, error: favoriteCampaignsError } =
+    useRecoilValue(favoriteCampaigns)
+  const creatorCampaigns =
+    campaigns && walletAddress
+      ? campaigns.filter((campaign) => campaign.creator === walletAddress)
+      : []
 
-  const campaignsBlock = (
+  const creatorBlock = (
     <>
       <h1 className="font-semibold text-4xl mt-16">Your Campaigns</h1>
       {creatorCampaigns.length ? (
@@ -96,43 +98,44 @@ const MeContent: FC<MeContentProps> = ({ walletAddress, connected }) => {
     </>
   )
 
-  // TODO: Get contributions from this wallet.
-  // const contributionsBlock = (
-  //   <>
-  //     <h1 className="font-semibold text-4xl mt-16">Your Contributions</h1>
-  //     {contributorCampaigns.length ? (
-  //       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 mt-8">
-  //         {contributorCampaigns.map((campaign) => (
-  //           <ContributorCampaignCard
-  //             key={campaign.address}
-  //             campaign={campaign}
-  //           />
-  //         ))}
-  //       </div>
-  //     ) : (
-  //       <>
-  //         <p className="mt-2 mb-8">
-  //           You haven&apos;t made any contributions to campaigns.
-  //         </p>
-  //         <ButtonLink href="/campaigns">View all campaigns</ButtonLink>
-  //       </>
-  //     )}
-  //   </>
-  // )
+  // TODO: Get contributions from this wallet by scanning contract executions for wallet? Favorites is a good replacement for this behavior, but both would be nice.
+  const favoritesBlock = (
+    <>
+      <h1 className="font-semibold text-4xl mt-16">Your Favorites</h1>
+      {favorites?.length ? (
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 mt-8">
+          {favorites.map((campaign) => (
+            <ContributorCampaignCard
+              key={campaign.address}
+              campaign={campaign}
+            />
+          ))}
+        </div>
+      ) : (
+        <>
+          <p className="mt-2 mb-8">
+            You haven&apos;t saved any favorite campaigns.
+          </p>
+          <ButtonLink href="/campaigns">View all campaigns</ButtonLink>
+        </>
+      )}
+    </>
+  )
 
   return (
     <>
+      {!!error && <p className="text-orange">{error}</p>}
       {connected &&
-        // If no user campaigns but user has contributed, show contributions first. Otherwise, default to campaigns on top.
-        (contributorCampaigns.length && !creatorCampaigns.length ? (
+        // If no user campaigns but user has favorites, show favorites first. Otherwise, default to self-created on top.
+        (favorites?.length && !creatorCampaigns.length ? (
           <>
-            {/* {contributionsBlock} */}
-            {campaignsBlock}
+            {favoritesBlock}
+            {creatorBlock}
           </>
         ) : (
           <>
-            {campaignsBlock}
-            {/* {contributionsBlock} */}
+            {creatorBlock}
+            {favoritesBlock}
           </>
         ))}
     </>

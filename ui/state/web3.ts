@@ -2,6 +2,8 @@ import {
   CosmWasmClient,
   SigningCosmWasmClient,
 } from "@cosmjs/cosmwasm-stargate"
+import { WasmExtension } from "@cosmjs/cosmwasm-stargate"
+import { QueryClient } from "@cosmjs/stargate"
 import { Keplr } from "@keplr-wallet/types"
 import { atom, selector } from "recoil"
 
@@ -78,6 +80,15 @@ export const cosmWasmClient = selector({
       console.error(error)
       // TODO: Display error.
     }
+  },
+})
+
+export const cosmWasmQueryClient = selector({
+  key: "cosmWasmQueryClient",
+  get: async ({ get }) => {
+    const client = get(cosmWasmClient)
+    if (!client) return
+    return (client as any).forceGetQueryClient() as QueryClient & WasmExtension
   },
 })
 
