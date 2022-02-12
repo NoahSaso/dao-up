@@ -88,7 +88,7 @@ export const BalanceRefundCard: FC<BalanceRefundCardProps> = ({
       : 0
 
   return (
-    <div className={cn("bg-card rounded-3xl", "w-full lg:w-3/5", "py-8 px-12")}>
+    <div className="bg-card rounded-3xl w-full lg:w-3/5 py-8 px-12">
       <h2 className="text-xl text-green mb-2">Your Balance</h2>
 
       <p className="text-light">

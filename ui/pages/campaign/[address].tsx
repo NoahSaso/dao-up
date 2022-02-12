@@ -118,17 +118,8 @@ const CampaignContent: FC<CampaignContentProps> = ({
       )}
 
       <CenteredColumn className="pt-10 pb-12 sm:pt-20 xl:w-8/12">
-        <div
-          className={cn(
-            "flex flex-col justify-start items-center",
-            "lg:flex-row lg:justify-between lg:items-stretch"
-          )}
-        >
-          <div
-            className={cn(
-              "flex flex-col justify-between items-stretch w-full lg:w-3/5 lg:shrink-0 lg:mr-10"
-            )}
-          >
+        <div className="flex flex-col justify-start items-center lg:flex-row lg:justify-between lg:items-stretch">
+          <div className="flex flex-col justify-between items-stretch w-full lg:w-3/5 lg:shrink-0 lg:mr-10">
             <CampaignDetails {...campaign} />
 
             {!connected && <WalletMessage />}

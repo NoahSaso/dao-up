@@ -168,11 +168,7 @@ export const CampaignPlatformLink: FC<CampaignPlatformLinkProps> = ({
     href={href}
     target="_blank"
     rel="noopener noreferrer"
-    className={cn(
-      "mr-4 last:mr-0",
-      "flex flex-row items-center",
-      "hover:opacity-70"
-    )}
+    className="mr-4 last:mr-0 flex flex-row items-center hover:opacity-70"
   >
     {!!Icon && <Icon className="mr-1" size={18} />}
     {label}
@@ -185,7 +181,7 @@ interface CampaignActionProps {
 export const CampaignAction: FC<CampaignActionProps> = ({
   action: { when, address, amount, type },
 }) => (
-  <div className={cn("py-5", "border-b border-light")}>
+  <div className="py-5 border-b border-light">
     <div className="flex flex-row justify-between items-center">
       <p
         className={cn("font-semibold pr-2", {

@@ -22,14 +22,7 @@ export const CampaignStateCard: FC<CampaignStateCardProps> = ({ campaign }) => {
   } = campaign
 
   return (
-    <div
-      className={cn(
-        "bg-card rounded-3xl p-8",
-        "flex flex-col items-start",
-        "max-w-full",
-        "relative"
-      )}
-    >
+    <div className="bg-card rounded-3xl p-8 flex flex-col items-start max-w-full relative">
       <div className="flex flex-row justify-between items-center self-stretch mb-4">
         <CampaignStatus campaign={campaign} />
         <CampaignFavoriteToggle campaign={campaign} />

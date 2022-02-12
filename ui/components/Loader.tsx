@@ -20,9 +20,7 @@ export const Loader: FC<LoaderProps> = ({
       containerClassName
     )}
   >
-    <div
-      className={cn("pointer-events-none", "flex justify-center items-center")}
-    >
+    <div className="pointer-events-none flex justify-center items-center">
       <Image
         src="/images/logo.svg"
         alt="logo"

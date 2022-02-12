@@ -46,7 +46,7 @@ export const Header: FC = () => (
       <Link href="/">
         <a className="flex flex-row items-center">
           <Image src="/images/logo.svg" alt="logo" width={52} height={30} />
-          <h1 className={cn("text-2xl ml-4", "hidden md:inline-block")}>
+          <h1 className="text-2xl ml-4 hidden md:inline-block">
             DAO Up!
           </h1>
         </a>

@@ -20,7 +20,7 @@ const PieLegend: FC<PieLegendProps> = ({ items, className }) => (
     {items.map(({ label, color: backgroundColor }) => (
       <div key={label} className="flex flex-row items-center mt-1 first:mt-0">
         <div
-          className={cn("w-10 h-5 mr-2 shrink-0")}
+          className="w-10 h-5 mr-2 shrink-0"
           style={{ backgroundColor }}
         ></div>
         <p className="text-light">{label}</p>
@@ -54,13 +54,7 @@ export const GovernanceCard: FC<GovernanceCardProps> = ({ campaign }) => {
     govTokenSupply - govTokenDAOTreasuryBalance - govTokenCampaignBalance
 
   return (
-    <div
-      className={cn(
-        "bg-card rounded-3xl p-8",
-        "flex flex-col items-start",
-        "max-w-full"
-      )}
-    >
+    <div className="bg-card rounded-3xl p-8 flex flex-col items-start max-w-full">
       <h3 className="text-green text-3xl">
         {prettyPrintDecimal(campaignVotingPower, 2)}% governance
       </h3>
