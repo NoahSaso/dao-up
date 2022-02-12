@@ -6,12 +6,9 @@ import { useRecoilValue } from "recoil"
 
 import {
   BalanceRefundCard,
-  ButtonLink,
   CampaignAction,
   CampaignDetails,
-  CampaignFavoriteToggle,
-  CampaignProgress,
-  CampaignStatus,
+  CampaignStateCard,
   CenteredColumn,
   FundPendingCard,
   GovernanceCard,
@@ -21,8 +18,6 @@ import {
   WalletMessage,
 } from "../../components"
 import { ContributeCard } from "../../components/ContributeCard"
-import { payTokenSymbol, theme } from "../../helpers/config"
-import { prettyPrintDecimal } from "../../helpers/number"
 import { useWallet } from "../../hooks/useWallet"
 import { suggestToken } from "../../services/keplr"
 import { fetchCampaign, fetchCampaignActions } from "../../state/campaigns"
@@ -92,9 +87,6 @@ const CampaignContent: FC<CampaignContentProps> = ({
     name,
     status,
 
-    goal,
-    pledged,
-
     dao: {
       url: daoUrl,
       govToken: { address: govTokenAddress },
@@ -151,43 +143,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
             ) : undefined}
           </div>
           <div className="flex flex-col flex-wrap self-stretch">
-            <div
-              className={cn(
-                "bg-card rounded-3xl p-8 mt-4 lg:mt-8",
-                "flex flex-col items-start",
-                "max-w-full",
-                "relative"
-              )}
-            >
-              <div className="flex flex-row justify-between items-center self-stretch mb-4">
-                <CampaignStatus campaign={campaign} />
-                <CampaignFavoriteToggle campaign={campaign} />
-              </div>
-
-              {!!daoUrl && (
-                <ButtonLink
-                  href={daoUrl}
-                  className="self-stretch my-2"
-                  cardOutline
-                >
-                  Visit the DAO
-                </ButtonLink>
-              )}
-
-              <CampaignProgress campaign={campaign} className="mt-2 text-md" />
-
-              <h3 className="mt-2 text-green text-3xl">
-                {prettyPrintDecimal(pledged)} {payTokenSymbol}
-              </h3>
-              <p className="text-light text-sm">
-                pledged out of {goal.toLocaleString()} {payTokenSymbol} goal.
-              </p>
-              {/* TODO: Display backers. */}
-              {/* <h3 className="mt-6 text-green text-3xl">
-                {backers.toLocaleString()}
-                </h3>
-                <p className="text-light text-sm">Backers</p> */}
-            </div>
+            <CampaignStateCard campaign={campaign} />
 
             {/* TODO: Show for funded campaigns by storing initial fund amount in contract state and use that instead (since govTokenCampaignBalance won't remain constant). */}
             {status === Status.Open && <GovernanceCard campaign={campaign} />}
