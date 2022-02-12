@@ -114,15 +114,6 @@ export const campaignsFromResponses = (
     )
     .map(({ campaign }) => campaign!)
 
-export const categorizedWalletCampaigns = (
-  campaigns: Campaign[],
-  address: string
-) => ({
-  creatorCampaigns: campaigns.filter((c) => c.creator === address),
-  // TODO: Somehow figure out if this wallet is a backer.
-  contributorCampaigns: [],
-})
-
 export const filterCampaigns = async (
   campaigns: Campaign[],
   filter?: string

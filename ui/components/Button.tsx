@@ -25,15 +25,18 @@ const buttonBorderClasses: Record<ColorType, Record<BoolString, string>> = {
 }
 
 interface ButtonProps
-  extends DetailedHTMLProps<
-    ButtonHTMLAttributes<HTMLButtonElement>,
-    HTMLButtonElement
+  extends Omit<
+    DetailedHTMLProps<
+      ButtonHTMLAttributes<HTMLButtonElement>,
+      HTMLButtonElement
+    >,
+    "onClick"
   > {
   color?: ColorType
   outline?: boolean
   cardOutline?: boolean
+  bare?: boolean
   submitLabel?: string
-  simple?: boolean
   // Manually add to both types of element (input and button)
   onClick?: () => void
 }
@@ -44,7 +47,7 @@ export const Button: FC<ButtonProps> = ({
   cardOutline,
   className,
   submitLabel,
-  simple,
+  bare,
   onClick,
   disabled,
   ...props
@@ -52,19 +55,19 @@ export const Button: FC<ButtonProps> = ({
   const classNames = classnames(
     "block text-center cursor-pointer",
     "transition",
-    { "py-2 px-4 rounded-full": !simple },
-    { border: !simple },
+    { "py-2 px-4 rounded-full": !bare },
+    { border: !bare },
     {
       [buttonBorderClasses[color][
         (outline ?? cardOutline ?? false).toString() as BoolString
-      ]]: !simple,
+      ]]: !bare,
     },
     {
-      "bg-dark hover:text-dark": !simple && outline,
-      "bg-card hover:text-card": !simple && cardOutline,
-      "text-dark hover:bg-[transparent]": !simple && !outline && !cardOutline,
+      "bg-dark hover:text-dark": !bare && outline,
+      "bg-card hover:text-card": !bare && cardOutline,
+      "text-dark hover:bg-[transparent]": !bare && !outline && !cardOutline,
     },
-    { "hover:opacity-50": simple },
+    { "hover:opacity-50": bare },
     { "opacity-40 pointer-events-none cursor-not-allowed": disabled },
     className
   )

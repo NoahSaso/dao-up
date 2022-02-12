@@ -1,15 +1,16 @@
 import cn from "classnames"
 import type { NextPage } from "next"
 import { NextRouter, useRouter } from "next/router"
-import { FC, useEffect, useState } from "react"
+import { FC, useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
-import { useRecoilValue } from "recoil"
+import { useRecoilValue, useSetRecoilState } from "recoil"
 
 import {
   Button,
   ButtonLink,
   CampaignAction,
+  CampaignFavoriteToggle,
   CampaignImage,
   CampaignLink,
   CampaignProgress,
@@ -32,6 +33,7 @@ import { useWallet } from "../../hooks/useWallet"
 import { InstallWalletMessage, suggestToken } from "../../services/keplr"
 import {
   campaignWalletBalance,
+  favoriteCampaignAddressesAtom,
   fetchCampaign,
   fetchCampaignActions,
 } from "../../state/campaigns"
@@ -170,6 +172,16 @@ const CampaignContent: FC<CampaignContentProps> = ({
   const [showAddFundingToken, setShowAddFundingToken] = useState(false)
   const [showAddGovToken, setShowAddGovToken] = useState(false)
 
+  // Add campaign to favorites if funding.
+  const setFavoriteAddresses = useSetRecoilState(favoriteCampaignAddressesAtom)
+  const addFavorite = useCallback(
+    (address: string) =>
+      setFavoriteAddresses((addresses) =>
+        addresses.includes(address) ? addresses : [...addresses, address]
+      ),
+    [setFavoriteAddresses]
+  )
+
   // If page not ready, display loader.
   if (!isReady) return <Loader overlay />
   // Display nothing (redirecting to campaigns list, so this is just a type check).
@@ -242,6 +254,9 @@ const CampaignContent: FC<CampaignContentProps> = ({
     if (await contributeCampaign(contribution)) {
       // Attempt to add token to Keplr.
       await suggestFundingToken()
+
+      // Add campaign to favorites.
+      addFavorite(campaignAddress)
 
       // Empty form fields.
       contributionReset()
@@ -532,10 +547,14 @@ const CampaignContent: FC<CampaignContentProps> = ({
               className={cn(
                 "bg-card rounded-3xl p-8 mt-4 lg:mt-8",
                 "flex flex-col items-start",
-                "max-w-full"
+                "max-w-full",
+                "relative"
               )}
             >
-              <CampaignStatus campaign={campaign} className="mb-2" />
+              <div className="flex flex-row justify-between items-center self-stretch mb-4">
+                <CampaignStatus campaign={campaign} />
+                <CampaignFavoriteToggle campaign={campaign} />
+              </div>
 
               {!!daoUrl && (
                 <ButtonLink

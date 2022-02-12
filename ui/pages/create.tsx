@@ -282,7 +282,7 @@ const CreateContent: FC = () => {
                   </span>
                   .{" "}
                   <Button
-                    simple
+                    bare
                     className="inline underline"
                     onClick={() => setValue("goal", raiseToGoal)}
                   >
