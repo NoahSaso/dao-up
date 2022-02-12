@@ -62,9 +62,7 @@ export const FundPendingCard: FC<FundPendingCardProps> = ({ campaign }) => {
 
   return (
     <form
-      className={
-        "mt-8 lg:self-stretch lg:mb-0 bg-card rounded-3xl p-8 border border-orange"
-      }
+      className="lg:self-stretch bg-card rounded-3xl p-8 border border-orange"
       onSubmit={handleSubmit(doFundPending)}
     >
       {fundCampaignProposalUrl ? (

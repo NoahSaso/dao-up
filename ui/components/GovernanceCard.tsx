@@ -56,7 +56,7 @@ export const GovernanceCard: FC<GovernanceCardProps> = ({ campaign }) => {
   return (
     <div
       className={cn(
-        "bg-card rounded-3xl p-8 mt-4 lg:mt-8",
+        "bg-card rounded-3xl p-8",
         "flex flex-col items-start",
         "max-w-full"
       )}

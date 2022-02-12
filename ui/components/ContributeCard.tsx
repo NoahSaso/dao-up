@@ -86,7 +86,7 @@ export const ContributeCard: FC<ContributeCardProps> = ({
   return (
     <form
       onSubmit={handleSubmit(doContribution)}
-      className="flex flex-col items-stretch mt-8 sm:flex-row sm:items-start lg:self-stretch lg:mb-0"
+      className="flex flex-col items-stretch sm:flex-row sm:items-start lg:self-stretch"
     >
       <FormInput
         type="number"
