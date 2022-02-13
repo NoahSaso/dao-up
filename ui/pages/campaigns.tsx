@@ -101,8 +101,8 @@ const Campaigns: NextPage = () => {
       />
 
       <CenteredColumn className="pt-5 pb-10 max-w-7xl">
-        <div className="flex flex-row justify-between items-start mb-8">
-          <h1 className="font-semibold text-4xl">
+        <div className="flex flex-row justify-between items-center mb-8">
+          <h1 className="font-semibold text-2xl sm:text-3xl lg:text-4xl">
             {showFeatured ? "Featured" : "All"} Campaigns
           </h1>
 
