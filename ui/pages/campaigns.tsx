@@ -272,7 +272,7 @@ const CampaignsContent: FC<CampaignsContentProps> = ({
 
       <CampaignsList campaigns={showingCampaigns ?? []} />
 
-      {(canGoBack || canGoForward) && !showingCampaigns && (
+      {(canGoBack || canGoForward) && !!showingCampaigns && (
         <Pagination
           className="my-6"
           canGoBack={canGoBack}
