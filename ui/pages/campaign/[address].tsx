@@ -4,6 +4,7 @@ import { FC, useEffect, useState } from "react"
 import { useRecoilValue } from "recoil"
 
 import {
+  Alert,
   BalanceRefundCard,
   CampaignAction,
   CampaignDetails,
@@ -77,6 +78,10 @@ const CampaignContent: FC<CampaignContentProps> = ({
   const [showAddFundingToken, setShowAddFundingToken] = useState(false)
   const [showAddGovToken, setShowAddGovToken] = useState(false)
 
+  // Display successful contribution alert.
+  const [showContributionSuccessAlert, setShowContributionSuccessAlert] =
+    useState(false)
+
   // If page not ready, display loader.
   if (!isReady) return <Loader overlay />
   // Display nothing (redirecting to campaigns list, so this is just a type check).
@@ -88,7 +93,8 @@ const CampaignContent: FC<CampaignContentProps> = ({
 
     dao: { url: daoUrl },
 
-    govToken: { address: govTokenAddress },
+    fundingToken: { symbol: fundingTokenSymbol },
+    govToken: { address: govTokenAddress, symbol: govTokenSymbol },
   } = campaign ?? {}
 
   const suggestFundingToken = async () =>
@@ -127,7 +133,13 @@ const CampaignContent: FC<CampaignContentProps> = ({
             ) : status === Status.Open ? (
               <ContributeCard
                 campaign={campaign}
-                suggestFundingToken={suggestFundingToken}
+                onFundSuccess={async () => {
+                  // Attempt to add token to Keplr.
+                  await suggestFundingToken()
+
+                  // Show success message.
+                  setShowContributionSuccessAlert(true)
+                }}
               />
             ) : undefined}
 
@@ -169,6 +181,29 @@ const CampaignContent: FC<CampaignContentProps> = ({
           </div>
         )}
       </CenteredColumn>
+
+      <Alert
+        visible={showContributionSuccessAlert}
+        hide={() => setShowContributionSuccessAlert(false)}
+        title="Contribution successful!"
+      >
+        <p>
+          Once the campaign is fully funded, return to this page to join the{" "}
+          {daoUrl ? (
+            <a
+              href={daoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:no-underline"
+            >
+              DAO
+            </a>
+          ) : (
+            "DAO"
+          )}
+          .
+        </p>
+      </Alert>
     </>
   )
 }
