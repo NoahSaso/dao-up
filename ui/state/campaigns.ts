@@ -477,19 +477,57 @@ export const featuredCampaignAddressList = selector<string[]>({
   },
 })
 
-export const featuredCampaigns = selector<Campaign[]>({
+export const featuredCampaigns = selectorFamily<
+  CampaignsResponse,
+  {
+    page: number
+    size: number
+  }
+>({
   key: "featuredCampaigns",
-  get: async ({ get }) => {
-    const featuredAddresses = get(featuredCampaignAddressList)
+  get:
+    ({ page, size }) =>
+    async ({ get }) => {
+      const featuredAddresses = get(featuredCampaignAddressList)
+      const pageInfo = extractPageInfo(page, size)
 
-    return campaignsFromResponses(
-      get(
-        waitForAll(featuredAddresses.map((address) => fetchCampaign(address)))
-      ),
-      true,
-      true
-    )
-  },
+      const allCampaigns: Campaign[] = []
+
+      let addressPage = 1
+      const addressPageSize = 50
+      let addressesLeft = true
+      do {
+        const addressPageInfo = extractPageInfo(addressPage, addressPageSize)
+
+        const pageAddresses = featuredAddresses.slice(
+          addressPageInfo.startIndex,
+          addressPageInfo.endIndex
+        )
+
+        // If we got the asked-for page size, we might still have addresses left.
+        addressesLeft = pageAddresses.length === addressPageSize
+
+        const campaigns = campaignsFromResponses(
+          get(
+            waitForAll(pageAddresses.map((address) => fetchCampaign(address)))
+          ),
+          true,
+          true
+        )
+
+        allCampaigns.unshift(...campaigns)
+        addressPage++
+
+        // Stop once 2 more addresses have been loaded after endIndex, since end is an index (+1 to get count) AND we want to see if there are any addresses left (+1 to check existence of address on next page).
+      } while (allCampaigns.length < pageInfo.endIndex + 2 && addressesLeft)
+
+      return {
+        campaigns: allCampaigns.slice(pageInfo.startIndex, pageInfo.endIndex),
+        // More pages if more campaigns exist beyond this page's end.
+        hasMore: allCampaigns.length > pageInfo.endIndex,
+        error: null,
+      }
+    },
 })
 
 export const filteredCampaigns = selectorFamily<
