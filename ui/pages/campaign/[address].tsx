@@ -161,7 +161,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
           </p>
         )}
 
-        <div className="flex flex-col-reverse justify-start items-stretch lg:flex-row lg:justify-between lg:items-start gap-8">
+        <div className="flex flex-col-reverse justify-start items-stretch gap-8">
           <div className="w-full lg:w-3/5 lg:shrink-0">
             {actions?.length ? (
               actions.map((item, idx) => (
@@ -173,7 +173,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
           </div>
 
           {actions && actions.length > 1 && (
-            <ContributionGraphCard actions={actions} />
+            <ContributionGraphCard actions={actions} className="max-w-sm" />
           )}
         </div>
       </CenteredColumn>

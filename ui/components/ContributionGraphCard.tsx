@@ -41,14 +41,7 @@ export const ContributionGraphCard: FC<ContributionGraphCardProps> = ({
   ]
 
   return (
-    <div
-      className={cn(
-        "bg-card rounded-3xl p-8 overflow-hidden flex-1",
-        className
-      )}
-    >
-      <p className="text-green mb-2">Contributions</p>
-
+    <div className={cn("flex-1", className)}>
       <Line
         options={{
           // Disable all events (hover, tooltip, etc.)
@@ -68,14 +61,14 @@ export const ContributionGraphCard: FC<ContributionGraphCardProps> = ({
               title: {
                 text: payTokenSymbol,
                 display: true,
-                color: theme.colors.darkish,
+                color: theme.colors.placeholder,
               },
               ticks: {
-                color: theme.colors.darkish,
+                color: theme.colors.placeholder,
               },
               grid: {
-                borderColor: theme.colors.darkish,
-                color: theme.colors.darkish,
+                borderColor: theme.colors.placeholder,
+                color: theme.colors.placeholder,
               },
             },
           },
