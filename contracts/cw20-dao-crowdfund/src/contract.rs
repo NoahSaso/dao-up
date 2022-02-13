@@ -27,14 +27,15 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
-    let dao_addr = deps.api.addr_validate(&msg.dao_address.to_string())?;
-    let config: cw3_dao::query::ConfigResponse = deps
+    let dao_addr = deps.api.addr_validate(msg.dao_address.as_str())?;
+    let dao_config: cw3_dao::query::ConfigResponse = deps
         .querier
         .query_wasm_smart(dao_addr.clone(), &cw3_dao::msg::QueryMsg::GetConfig {})?;
-    let gov_token_addr = config.gov_token;
+
+    let gov_token_addr = deps.api.addr_validate(dao_config.gov_token.as_str())?;
     GOV_TOKEN_ADDR.save(deps.storage, &gov_token_addr)?;
 
-    let fee_receiver = deps.api.addr_validate(&msg.fee_receiver.to_string())?;
+    let fee_receiver = deps.api.addr_validate(msg.fee_receiver.as_str())?;
     if msg.fee > Decimal::percent(100) {
         return Err(ContractError::Instantiation(format!(
             "fee ({}) is greater than 100%",
@@ -384,10 +385,9 @@ pub fn query_dump_state(deps: Deps) -> StdResult<Binary> {
         &cw20::Cw20QueryMsg::TokenInfo {},
     )?;
 
-    let gov_token_info: cw20::TokenInfoResponse = deps.querier.query_wasm_smart(
-        gov_token_addr.clone(),
-        &cw20::Cw20QueryMsg::TokenInfo {},
-    )?;
+    let gov_token_info: cw20::TokenInfoResponse = deps
+        .querier
+        .query_wasm_smart(gov_token_addr.clone(), &cw20::Cw20QueryMsg::TokenInfo {})?;
 
     to_binary(&DumpStateResponse {
         status: state.status,
@@ -400,6 +400,8 @@ pub fn query_dump_state(deps: Deps) -> StdResult<Binary> {
         campaign_info: state.campaign_info,
         gov_token_addr,
         funding_token_addr,
+        fee_receiver: state.fee_receiver,
+        fee: state.fee,
     })
 }
 
