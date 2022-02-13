@@ -10,6 +10,7 @@ import {
   CampaignDetails,
   CampaignInfoCard,
   CenteredColumn,
+  ContributeCard,
   FundPendingCard,
   GovernanceCard,
   Loader,
@@ -17,7 +18,6 @@ import {
   Suspense,
   WalletMessage,
 } from "../../components"
-import { ContributeCard } from "../../components/ContributeCard"
 import { useWallet } from "../../hooks/useWallet"
 import { suggestToken } from "../../services/keplr"
 import { fetchCampaign, fetchCampaignActions } from "../../state/campaigns"
