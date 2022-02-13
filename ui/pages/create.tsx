@@ -37,7 +37,7 @@ import { prettyPrintDecimal } from "../helpers/number"
 import { useWallet } from "../hooks/useWallet"
 import { defaultNewCampaign, newCampaignFields } from "../services/campaigns"
 import { daoConfig } from "../state/campaigns"
-import { globalLoadingAtom } from "../state/loading"
+import { globalLoadingAtom } from "../state/global"
 import { signedCosmWasmClient } from "../state/web3"
 import { Color } from "../types"
 
