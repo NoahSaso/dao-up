@@ -61,14 +61,20 @@ const Campaigns: NextPage = () => {
       if (loadedPage < minPage) loadedPage = minPage
       setPage(loadedPage)
     }
-  }, [query, isReady, setFilter, setActiveFilter, setPage])
+
+    if (typeof query?.f === "string") {
+      setShowFeatured(query.f === "1")
+    }
+  }, [query, isReady, setFilter, setActiveFilter, setPage, setShowFeatured])
 
   // Save data to query.
   useEffect(() => {
     // Only save data once ready and when the data changes.
     if (
       !isReady ||
-      (query.q === encodeURIComponent(filter) && query.p === page.toString())
+      (query.q === encodeURIComponent(filter) &&
+        query.p === page.toString() &&
+        query.f === (showFeatured ? "1" : "0"))
     )
       return
 
@@ -78,12 +84,13 @@ const Campaigns: NextPage = () => {
         query: {
           q: encodeURIComponent(filter),
           p: page,
+          f: showFeatured ? "1" : "0",
         },
       },
       undefined,
       { shallow: true }
     )
-  }, [query, page, isReady, filter, routerPush])
+  }, [query, page, isReady, filter, routerPush, showFeatured])
 
   // Debounce filter input: wait until filter stops changing before refiltering campaigns.
   useEffect(() => {
