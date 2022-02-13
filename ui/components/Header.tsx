@@ -17,14 +17,14 @@ const NavItem: FC<NavItemProps> = ({ href, children, action, className }) => {
   const { pathname } = useRouter()
 
   return action ? (
-    <ButtonLink href={href} outline className={cn("ml-6 sm:ml-8", className)}>
+    <ButtonLink href={href} outline className={cn("ml-4 xs:ml-6", className)}>
       {children}
     </ButtonLink>
   ) : (
     <Link href={href}>
       <a
         className={cn(
-          "ml-6 sm:ml-8",
+          "ml-4 xs:ml-6",
           "hover:text-green",
           "transition",
           {
@@ -41,12 +41,16 @@ const NavItem: FC<NavItemProps> = ({ href, children, action, className }) => {
 }
 
 export const Header: FC = () => (
-  <header className="p-8 sm:p-10">
-    <nav className="flex flex-row justify-between items-center">
+  <header className="p-5 xs:p-8 sm:p-10">
+    <nav className="flex flex-row justify-between items-center gap-4">
       <Link href="/">
         <a className="flex flex-row items-center">
           <Image src="/images/logo.svg" alt="logo" width={52} height={30} />
+
           <h1 className="text-2xl ml-4 hidden md:inline-block">DAO Up!</h1>
+          <p className="text-green ml-2 text-base xs:text-lg md:ml-1 md:text-2xl">
+            Beta
+          </p>
         </a>
       </Link>
 
