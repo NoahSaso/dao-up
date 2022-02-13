@@ -145,7 +145,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
             )}
           </div>
 
-          <div className="flex flex-col flex-wrap self-stretch gap-8 flex-1">
+          <div className="flex flex-col self-stretch gap-8 flex-1">
             <CampaignInfoCard campaign={campaign} className="hidden lg:block" />
 
             {/* TODO: Show for funded campaigns by storing initial fund amount in contract state and use that instead (since govTokenCampaignBalance won't remain constant). */}
@@ -153,23 +153,27 @@ const CampaignContent: FC<CampaignContentProps> = ({
           </div>
         </div>
 
-        <div className="w-full lg:w-3/5">
-          <h2 className="text-green text-xl mt-8 mb-4">Activity</h2>
+        <h2 className="text-green text-xl mt-8 mb-4">Activity</h2>
 
-          {!!campaignActionsError && (
-            <p className="text-orange my-4">{campaignActionsError}</p>
-          )}
+        {!!campaignActionsError && (
+          <p className="text-orange my-4 w-full lg:w-3/5">
+            {campaignActionsError}
+          </p>
+        )}
+
+        <div className="flex flex-col-reverse justify-start items-stretch lg:flex-row lg:justify-between lg:items-start gap-8">
+          <div className="w-full lg:w-3/5 lg:shrink-0">
+            {actions?.length ? (
+              actions.map((item, idx) => (
+                <CampaignAction key={idx} action={item} />
+              ))
+            ) : (
+              <p>None yet.</p>
+            )}
+          </div>
 
           {actions && actions.length > 1 && (
             <ContributionGraphCard actions={actions} />
-          )}
-
-          {actions?.length ? (
-            actions.map((item, idx) => (
-              <CampaignAction key={idx} action={item} />
-            ))
-          ) : (
-            <p>None yet.</p>
           )}
         </div>
       </CenteredColumn>

@@ -5,6 +5,7 @@ import {
   LineElement,
   PointElement,
 } from "chart.js"
+import cn from "classnames"
 import { FC } from "react"
 import { Line } from "react-chartjs-2"
 
@@ -14,10 +15,12 @@ ChartJS.register(LinearScale, LineElement, CategoryScale, PointElement)
 
 interface ContributionGraphCardProps {
   actions: CampaignAction[]
+  className?: string
 }
 
 export const ContributionGraphCard: FC<ContributionGraphCardProps> = ({
   actions,
+  className,
 }) => {
   const cumSum = (
     (sum: number) => (x: number) =>
@@ -25,7 +28,12 @@ export const ContributionGraphCard: FC<ContributionGraphCardProps> = ({
   )(0)
 
   return (
-    <div className="bg-card rounded-3xl p-8 flex flex-col items-start max-w-full">
+    <div
+      className={cn(
+        "bg-card rounded-3xl p-8 overflow-hidden flex-1",
+        className
+      )}
+    >
       <Line
         options={{
           // Disable all events (hover, tooltip, etc.)
