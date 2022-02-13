@@ -75,7 +75,8 @@ export const AllCampaignsCard: FC<CampaignProps> = ({
     <ReactMarkdown
       children={campaign.description}
       linkTarget="_blank"
-      className="mt-2 line-clamp-2"
+      // line-clamp is weird on Safari, so just set max height to twice the line height and hide overflow.
+      className="mt-2 line-clamp-2 leading-6 max-h-12 overflow-hidden"
     />
   </CampaignCardWrapper>
 )
