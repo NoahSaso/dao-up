@@ -17,12 +17,12 @@ interface ContributionForm {
 
 interface ContributeCardProps {
   campaign: Campaign
-  suggestFundingToken: () => Promise<void>
+  onFundSuccess?: () => void | Promise<void>
 }
 
 export const ContributeCard: FC<ContributeCardProps> = ({
   campaign,
-  suggestFundingToken,
+  onFundSuccess,
 }) => {
   const {
     goal,
@@ -72,15 +72,14 @@ export const ContributeCard: FC<ContributeCardProps> = ({
   const doContribution = async ({ contribution }: ContributionForm) => {
     if (!contribution) return
 
-    // TODO: Add success display.
     if (await contributeCampaign(contribution)) {
-      // Attempt to add token to Keplr.
-      await suggestFundingToken()
-
+      // Add to favorites so user can access it quickly.
       addFavorite(campaign.address)
 
       // Empty form fields.
       reset()
+
+      await onFundSuccess?.()
     }
   }
 
