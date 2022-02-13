@@ -114,7 +114,6 @@ export const GovernanceCard: FC<GovernanceCardProps> = ({ campaign }) => {
           },
         ]}
       />
-      <div className="flex flex-col"></div>
     </div>
   )
 }
