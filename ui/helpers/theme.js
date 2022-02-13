@@ -3,6 +3,7 @@ const green = "#c1eb7c"
 module.exports = {
   colors: {
     light: "#f4f4f4",
+    darkish: "#141414",
     dark: "#0e0e0e",
     green,
     orange: "#daa27a",
