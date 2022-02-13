@@ -30,7 +30,7 @@ export const Alert: FC<PropsWithChildren<AlertProps>> = ({
           : undefined
       }
     >
-      <div className="flex flex-col bg-card rounded-3xl relative p-8 m-8 max-w-xl cursor-auto">
+      <div className="flex flex-col bg-card rounded-3xl relative p-8 m-8 max-w-xl max-h-[90vh] overflow-y-auto cursor-auto">
         {!!hide && (
           <Button
             onClick={hide}
