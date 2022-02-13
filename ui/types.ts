@@ -25,6 +25,7 @@ declare global {
     status: Status
     creator: string
     hidden: boolean
+    featured: boolean
 
     goal: number
     pledged: number

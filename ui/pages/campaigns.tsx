@@ -21,8 +21,19 @@ import {
   Suspense,
 } from "../components"
 import { addFilter, filterExists, removeFilter } from "../helpers/filter"
-import { filteredCampaigns } from "../state/campaigns"
+import { featuredCampaigns, filteredCampaigns } from "../state/campaigns"
 import { Status } from "../types"
+
+interface CampaignsListProps {
+  campaigns: Campaign[]
+}
+const CampaignsList: FC<CampaignsListProps> = ({ campaigns }) => (
+  <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+    {campaigns.map((campaign) => (
+      <AllCampaignsCard key={campaign.address} campaign={campaign} />
+    ))}
+  </div>
+)
 
 const minPage = 1
 const pageSize = 20
@@ -93,8 +104,16 @@ const Campaigns: NextPage = () => {
       />
 
       <CenteredColumn className="pt-5 pb-10 max-w-7xl">
+        <div className="mb-16">
+          <h1 className="font-semibold text-3xl mb-6">Featured Campaigns</h1>
+
+          <Suspense>
+            <FeaturedCampaignsContent />
+          </Suspense>
+        </div>
+
         <div className="flex flex-col justify-start items-start sm:flex-row sm:items-center">
-          <h1 className="font-semibold text-4xl">All Campaigns</h1>
+          <h1 className="font-semibold text-3xl">All Campaigns</h1>
 
           <div className="flex flex-wrap flex-row justify-start items-center ml-0 mt-4 sm:ml-10 sm:mt-0">
             <Select
@@ -132,6 +151,15 @@ const Campaigns: NextPage = () => {
         </Suspense>
       </CenteredColumn>
     </>
+  )
+}
+
+const FeaturedCampaignsContent: FC = () => {
+  const featured = useRecoilValue(featuredCampaigns)
+  return featured.length ? (
+    <CampaignsList campaigns={featured} />
+  ) : (
+    <p className="text-orange">No featured campaigns.</p>
   )
 }
 
@@ -178,6 +206,7 @@ const CampaignsContent: FC<CampaignsContentProps> = ({
 
   // Pagination state
   const canGoBack = page > minPage
+
   const {
     campaigns,
     hasMore: canGoForward,
@@ -207,11 +236,7 @@ const CampaignsContent: FC<CampaignsContentProps> = ({
       )}
       {!!error && <p className="text-orange">{error}</p>}
 
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-        {campaigns?.map((campaign) => (
-          <AllCampaignsCard key={campaign.address} campaign={campaign} />
-        ))}
-      </div>
+      <CampaignsList campaigns={campaigns ?? []} />
 
       {(canGoBack || canGoForward) && !campaigns && (
         <Pagination

@@ -5,6 +5,7 @@ import {
   daoUrlPrefix,
   denyListContractAddress,
   escrowContractCodeId,
+  featuredListContractAddress,
 } from "../helpers/config"
 import { extractPageInfo } from "../helpers/filter"
 import { campaignsFromResponses, filterCampaigns } from "../services/campaigns"
@@ -175,6 +176,8 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
       if (campaignStateError || cState === null)
         return { campaign: null, error: campaignStateError ?? "Unknown error." }
 
+      const featuredAddresses = get(featuredCampaignAddressList)
+
       const {
         campaign_info: campaignInfo,
         funding_token_info: fundingTokenInfo,
@@ -224,6 +227,7 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
             status,
             creator: state.creator,
             hidden: campaignInfo.hidden,
+            featured: featuredAddresses.includes(address),
 
             goal: Number(state.funding_goal.amount) / 1e6,
             pledged: Number(state.funds_raised.amount) / 1e6,
@@ -435,10 +439,9 @@ export const campaignDenyList = selector<string[]>({
   key: "campaignDenyList",
   get: async ({ get }) => {
     const client = get(cosmWasmClient)
+    if (!client) return []
+
     try {
-      if (!client) {
-        return []
-      }
       const addresses = (
         (await client.queryContractSmart(denyListContractAddress, {
           get_addresses: {},
@@ -450,6 +453,42 @@ export const campaignDenyList = selector<string[]>({
       console.error(e)
       return []
     }
+  },
+})
+
+export const featuredCampaignAddressList = selector<string[]>({
+  key: "featuredCampaignAddressList",
+  get: async ({ get }) => {
+    const client = get(cosmWasmClient)
+    if (!client) return []
+
+    try {
+      const addresses = (
+        (await client.queryContractSmart(featuredListContractAddress, {
+          get_addresses: {},
+        })) as AddressPriorityListResponse
+      ).map(({ addr }) => addr)
+
+      return addresses
+    } catch (e) {
+      console.error(e)
+      return []
+    }
+  },
+})
+
+export const featuredCampaigns = selector<Campaign[]>({
+  key: "featuredCampaigns",
+  get: async ({ get }) => {
+    const featuredAddresses = get(featuredCampaignAddressList)
+
+    return campaignsFromResponses(
+      get(
+        waitForAll(featuredAddresses.map((address) => fetchCampaign(address)))
+      ),
+      true,
+      true
+    )
   },
 })
 

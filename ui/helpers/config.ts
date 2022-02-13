@@ -20,6 +20,8 @@ export const chainPrefix = process.env.NEXT_PUBLIC_CHAIN_BECH32_PREFIX!
 
 export const denyListContractAddress =
   process.env.NEXT_PUBLIC_DENY_LIST_ADDRESS!
+export const featuredListContractAddress =
+  process.env.NEXT_PUBLIC_FEATURED_LIST_ADDRESS!
 
 export const defaultExecuteFee: StdFee = {
   amount: coins(100000, feeDenom),
