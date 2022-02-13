@@ -9,7 +9,9 @@ import cn from "classnames"
 import { FC } from "react"
 import { Line } from "react-chartjs-2"
 
+import { payTokenSymbol } from "../helpers/config"
 import theme from "../helpers/theme"
+import { CampaignActionType } from "../types"
 
 ChartJS.register(LinearScale, LineElement, CategoryScale, PointElement)
 
@@ -27,6 +29,17 @@ export const ContributionGraphCard: FC<ContributionGraphCardProps> = ({
       (sum += x)
   )(0)
 
+  // Start at 0, and reverse actions since they're originally in descending order.
+  const data = [
+    0,
+    // Reverse mutates, so spready into a new array before reversing.
+    ...[...actions]
+      .reverse()
+      .map(({ type, amount }) =>
+        cumSum(type === CampaignActionType.Refund ? -amount : amount)
+      ),
+  ]
+
   return (
     <div
       className={cn(
@@ -34,12 +47,13 @@ export const ContributionGraphCard: FC<ContributionGraphCardProps> = ({
         className
       )}
     >
+      <p className="text-green mb-2">Contributions</p>
+
       <Line
         options={{
           // Disable all events (hover, tooltip, etc.)
           events: [],
           animation: false,
-          backgroundColor: theme.colors.dark,
           elements: {
             point: {
               radius: 0,
@@ -50,15 +64,27 @@ export const ContributionGraphCard: FC<ContributionGraphCardProps> = ({
               display: false,
             },
             y: {
-              display: false,
+              display: true,
+              title: {
+                text: payTokenSymbol,
+                display: true,
+                color: theme.colors.dark,
+              },
+              ticks: {
+                color: theme.colors.dark,
+              },
+              grid: {
+                borderColor: theme.colors.dark,
+                color: theme.colors.dark,
+              },
             },
           },
         }}
         data={{
-          labels: actions.map(() => ""),
+          labels: data.map(() => ""),
           datasets: [
             {
-              data: actions.map(({ amount }) => cumSum(amount)),
+              data,
               borderColor: theme.colors.green,
             },
           ],
