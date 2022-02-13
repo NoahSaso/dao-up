@@ -1,7 +1,9 @@
 import cn from "classnames"
 import { FC, PropsWithChildren } from "react"
 import { IoClose } from "react-icons/io5"
+import { useRecoilState } from "recoil"
 
+import { betaAlertAcceptedAtom } from "../state/global"
 import { Button } from "."
 
 interface AlertProps {
@@ -45,3 +47,29 @@ export const Alert: FC<PropsWithChildren<AlertProps>> = ({
       </div>
     </div>
   ) : null
+
+export const BetaAlert: FC<Partial<AlertProps>> = (props) => {
+  const [betaAlertAccepted, setBetaAlertAccepted] = useRecoilState(
+    betaAlertAcceptedAtom
+  )
+
+  return (
+    <Alert {...props} visible={!betaAlertAccepted} title="We are in beta">
+      <p className="mb-4">DAO Up! is in beta and has not yet been audited.</p>
+
+      <p>
+        DAO UP! IS PROVIDED &ldquo;AS IS&rdquo;, AT YOUR OWN RISK, AND WITHOUT
+        WARRANTIES OF ANY KIND. No developer or entity involved in creating the
+        DAO UP! UI or smart contracts will be liable for any claims or damages
+        whatsoever associated with your use, inability to use, or your
+        interaction with other users of DAO UP!, including any direct, indirect,
+        incidental, special, exemplary, punitive or consequential damages, or
+        loss of profits, cryptocurrencies, tokens, or anything else of value.
+      </p>
+
+      <Button className="mt-6" onClick={() => setBetaAlertAccepted(true)}>
+        I understand and accept.
+      </Button>
+    </Alert>
+  )
+}

@@ -5,7 +5,7 @@ import { useRecoilValue, useSetRecoilState } from "recoil"
 
 import { defaultExecuteFee } from "../helpers/config"
 import { prettyPrintDecimal } from "../helpers/number"
-import { globalLoadingAtom } from "../state/loading"
+import { globalLoadingAtom } from "../state/global"
 import { signedCosmWasmClient } from "../state/web3"
 import { useRefreshCampaign } from "./useRefreshCampaign"
 import { useWallet } from "./useWallet"
