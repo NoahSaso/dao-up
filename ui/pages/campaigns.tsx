@@ -25,17 +25,6 @@ import { addFilter, filterExists, removeFilter } from "../helpers/filter"
 import { featuredCampaigns, filteredCampaigns } from "../state/campaigns"
 import { Color, Status } from "../types"
 
-interface CampaignsListProps {
-  campaigns: Campaign[]
-}
-const CampaignsList: FC<CampaignsListProps> = ({ campaigns }) => (
-  <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-    {campaigns.map((campaign) => (
-      <AllCampaignsCard key={campaign.address} campaign={campaign} />
-    ))}
-  </div>
-)
-
 const minPage = 1
 const pageSize = 20
 
@@ -270,7 +259,11 @@ const CampaignsContent: FC<CampaignsContentProps> = ({
       )}
       {!!showingError && <p className="text-orange">{showingError}</p>}
 
-      <CampaignsList campaigns={showingCampaigns ?? []} />
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+        {showingCampaigns?.map((campaign) => (
+          <AllCampaignsCard key={campaign.address} campaign={campaign} />
+        ))}
+      </div>
 
       {(canGoBack || canGoForward) && !!showingCampaigns && (
         <Pagination
