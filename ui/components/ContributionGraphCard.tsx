@@ -61,14 +61,14 @@ export const ContributionGraphCard: FC<ContributionGraphCardProps> = ({
               title: {
                 text: payTokenSymbol,
                 display: true,
-                color: theme.colors.card,
+                color: theme.colors.gray,
               },
               ticks: {
-                color: theme.colors.card,
+                color: theme.colors.gray,
               },
               grid: {
-                borderColor: theme.colors.card,
-                color: theme.colors.card,
+                borderColor: theme.colors.gray,
+                color: theme.colors.gray,
               },
             },
           },
