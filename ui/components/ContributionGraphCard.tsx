@@ -32,7 +32,7 @@ export const ContributionGraphCard: FC<ContributionGraphCardProps> = ({
   // Start at 0, and reverse actions since they're originally in descending order.
   const data = [
     0,
-    // Reverse mutates, so spready into a new array before reversing.
+    // Reverse mutates, so spread into a new array before reversing.
     ...[...actions]
       .reverse()
       .map(({ type, amount }) =>
