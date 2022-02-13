@@ -5,7 +5,6 @@ import { Button } from "."
 
 interface AlertProps {
   title: string
-  okLabel: string
   visible: boolean
   hide: () => void
 }
@@ -13,7 +12,6 @@ interface AlertProps {
 export const Alert: FC<PropsWithChildren<AlertProps>> = ({
   children,
   title,
-  okLabel,
   visible,
   hide,
 }) =>
@@ -33,13 +31,9 @@ export const Alert: FC<PropsWithChildren<AlertProps>> = ({
           <IoClose size={22} />
         </Button>
 
-        <h1 className="text-3xl mb-4 font-medium">{title}</h1>
+        <h1 className="text-3xl mb-4 font-medium text-green">{title}</h1>
 
         {children}
-
-        <Button onClick={hide} className="mt-8" cardOutline>
-          {okLabel}
-        </Button>
       </div>
     </div>
   ) : null

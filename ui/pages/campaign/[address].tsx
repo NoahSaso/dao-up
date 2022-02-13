@@ -185,28 +185,23 @@ const CampaignContent: FC<CampaignContentProps> = ({
       <Alert
         visible={showContributionSuccessAlert}
         hide={() => setShowContributionSuccessAlert(false)}
-        title="Contribution successful"
-        okLabel="I will regularly check on the campaign's status."
+        title="Contribution successful!"
       >
         <p>
-          If {name} gets funded,{" "}
-          <span className="text-green">
-            you must return to this page and join the{" "}
-            {daoUrl ? (
-              <a
-                href={daoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:no-underline"
-              >
-                DAO
-              </a>
-            ) : (
-              "DAO"
-            )}
-          </span>{" "}
-          in order to <i>send your contribution</i> and <i>vote</i>. Failure to
-          do so will result in the DAO not receiving your contribution.
+          Once the campaign is fully funded, return to this page to join the{" "}
+          {daoUrl ? (
+            <a
+              href={daoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:no-underline"
+            >
+              DAO
+            </a>
+          ) : (
+            "DAO"
+          )}
+          .
         </p>
       </Alert>
     </>
