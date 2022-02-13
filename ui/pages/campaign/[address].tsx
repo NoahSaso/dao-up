@@ -165,15 +165,15 @@ const CampaignContent: FC<CampaignContentProps> = ({
           </div>
         </div>
 
-        <h2 className="text-green text-xl mt-8 mb-4">Activity</h2>
+        <h2 className="text-green text-xl mt-8 mb-2">Activity</h2>
 
         {!!campaignActionsError && (
-          <p className="text-orange my-4 w-full lg:w-3/5">
+          <p className="text-orange mt-2 mb-4 w-full lg:w-3/5">
             {campaignActionsError}
           </p>
         )}
 
-        <div className="flex flex-col-reverse justify-start items-stretch gap-8">
+        <div className="flex flex-col-reverse justify-start items-stretch gap-8 mb-4">
           <div className="w-full lg:w-3/5 lg:shrink-0">
             {actions?.length ? (
               actions.map((item, idx) => (
