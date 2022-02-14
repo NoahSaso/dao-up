@@ -7,7 +7,7 @@ import { prettyPrintDecimal } from "../../helpers/number"
 import { useRefundCampaign } from "../../hooks/useRefundCampaign"
 import { walletTokenBalance } from "../../state/campaigns"
 import { Status } from "../../types"
-import { Button, ControlledFormPercentTokenDoubleInput } from ".."
+import { Button, CardWrapper, ControlledFormPercentTokenDoubleInput } from ".."
 
 interface RefundForm {
   refund?: number
@@ -96,7 +96,7 @@ export const BalanceRefundCard: FC<BalanceRefundCardProps> = ({
       : 0
 
   return (
-    <div className="bg-card rounded-3xl w-full p-8">
+    <CardWrapper className="w-full">
       <h2 className="text-xl text-green mb-2">Your Balance</h2>
 
       {/* Show funding token balance if funded and has not yet swapped to governance tokens. */}
@@ -205,6 +205,6 @@ export const BalanceRefundCard: FC<BalanceRefundCardProps> = ({
             </form>
           </>
         )}
-    </div>
+    </CardWrapper>
   )
 }

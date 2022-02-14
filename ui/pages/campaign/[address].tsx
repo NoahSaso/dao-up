@@ -10,8 +10,8 @@ import {
   CampaignDetails,
   CampaignInfoCard,
   CenteredColumn,
-  ContributeCard,
-  ContributionGraphCard,
+  ContributeForm,
+  ContributionGraph,
   FundPendingCard,
   GovernanceCard,
   Loader,
@@ -132,7 +132,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
             {status === Status.Pending ? (
               <FundPendingCard campaign={campaign} />
             ) : status === Status.Open ? (
-              <ContributeCard
+              <ContributeForm
                 campaign={campaign}
                 onFundSuccess={async () => {
                   // Attempt to add token to Keplr.
@@ -174,7 +174,9 @@ const CampaignContent: FC<CampaignContentProps> = ({
         )}
 
         {actions && actions.length > 1 && (
-          <ContributionGraphCard actions={actions} className="max-w-sm my-4" />
+          <div className="flex-1 max-w-sm my-4">
+            <ContributionGraph actions={actions} />
+          </div>
         )}
 
         <div className="w-full lg:w-3/5">

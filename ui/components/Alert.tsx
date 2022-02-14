@@ -4,7 +4,7 @@ import { IoClose } from "react-icons/io5"
 import { useRecoilState } from "recoil"
 
 import { betaAlertAcceptedAtom } from "../state/global"
-import { Button } from "."
+import { Button, CardWrapper } from "."
 
 interface AlertProps {
   title: string
@@ -30,7 +30,7 @@ export const Alert: FC<PropsWithChildren<AlertProps>> = ({
           : undefined
       }
     >
-      <div className="flex flex-col bg-card rounded-3xl relative p-8 m-8 max-w-xl max-h-[90vh] overflow-y-auto cursor-auto">
+      <CardWrapper className="flex flex-col relative m-8 max-w-xl max-h-[90vh] overflow-y-auto cursor-auto">
         {!!hide && (
           <Button
             onClick={hide}
@@ -44,7 +44,7 @@ export const Alert: FC<PropsWithChildren<AlertProps>> = ({
         <h1 className="text-3xl mb-4 font-medium text-green">{title}</h1>
 
         {children}
-      </div>
+      </CardWrapper>
     </div>
   ) : null
 

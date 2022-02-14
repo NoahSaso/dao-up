@@ -4,48 +4,12 @@ import Image from "next/image"
 import { FC, ReactNode, useState } from "react"
 import { GoTriangleDown } from "react-icons/go"
 
-import { ButtonLink, CenteredColumn, ResponsiveDecoration } from "../components"
-
-interface CardProps {
-  title: string
-  subtitle: string
-  listItems: string[]
-  button: ReactNode
-  className?: string
-  borderAccent?: boolean
-}
-const Card: FC<CardProps> = ({
-  className,
-  title,
-  subtitle,
-  listItems,
-  button,
-  borderAccent,
-}) => (
-  <div
-    className={cn(
-      "p-[1px]",
-      "rounded-3xl",
-      "max-w-lg",
-      {
-        "bg-card": !borderAccent,
-        "bg-gradient-to-b from-green": borderAccent,
-      },
-      className
-    )}
-  >
-    <div className="bg-card rounded-3xl flex flex-col justify-between items-center py-8 px-12">
-      <h3 className="font-semibold text-xl">{title}</h3>
-      <p className="my-4">{subtitle}</p>
-      <ul className="green-list w-full pl-2 mb-10">
-        {listItems.map((item) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
-      {button}
-    </div>
-  </div>
-)
+import {
+  ButtonLink,
+  CenteredColumn,
+  CTACard,
+  ResponsiveDecoration,
+} from "../components"
 
 interface FAQQuestionProps {
   question: string
@@ -282,7 +246,7 @@ const Home: NextPage = () => (
       </h2>
 
       <div className="flex flex-col justify-start items-center md:flex-row md:justify-between md:items-stretch xl:justify-evenly mt-4 w-full">
-        <Card
+        <CTACard
           title="Creators"
           subtitle="Show your community you mean business by using a platform that guarantees refundability and democratized control over your funds."
           listItems={[
@@ -296,7 +260,7 @@ const Home: NextPage = () => (
           borderAccent
         />
 
-        <Card
+        <CTACard
           title="Backers"
           subtitle="Know that your contribution is safe. DAO Up! smart contracts make funding transparent and guarantee democratized control over all funds raised."
           listItems={[

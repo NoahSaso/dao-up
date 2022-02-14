@@ -2,24 +2,24 @@ import { FC, useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { useSetRecoilState } from "recoil"
 
-import { payTokenSymbol } from "../../helpers/config"
-import { numberPattern } from "../../helpers/form"
-import { prettyPrintDecimal } from "../../helpers/number"
-import { useContributeCampaign } from "../../hooks/useContributeCampaign"
-import { useWallet } from "../../hooks/useWallet"
-import { favoriteCampaignAddressesAtom } from "../../state/campaigns"
-import { Button, FormInput } from ".."
+import { payTokenSymbol } from "../helpers/config"
+import { numberPattern } from "../helpers/form"
+import { prettyPrintDecimal } from "../helpers/number"
+import { useContributeCampaign } from "../hooks/useContributeCampaign"
+import { useWallet } from "../hooks/useWallet"
+import { favoriteCampaignAddressesAtom } from "../state/campaigns"
+import { Button, FormInput } from "."
 
 interface ContributionForm {
   contribution?: number
 }
 
-interface ContributeCardProps {
+interface ContributeFormProps {
   campaign: Campaign
   onFundSuccess?: () => void | Promise<void>
 }
 
-export const ContributeCard: FC<ContributeCardProps> = ({
+export const ContributeForm: FC<ContributeFormProps> = ({
   campaign,
   onFundSuccess,
 }) => {

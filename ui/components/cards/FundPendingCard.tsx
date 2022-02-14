@@ -6,7 +6,7 @@ import { numberPattern } from "../../helpers/form"
 import { prettyPrintDecimal } from "../../helpers/number"
 import { useFundPendingCampaign } from "../../hooks/useFundPendingCampaign"
 import { useWallet } from "../../hooks/useWallet"
-import { Button, ButtonLink, FormInput } from ".."
+import { Button, ButtonLink, CardWrapper, FormInput } from ".."
 
 interface FundPendingForm {
   tokens?: number
@@ -57,78 +57,79 @@ export const FundPendingCard: FC<FundPendingCardProps> = ({ campaign }) => {
   }
 
   return (
-    <form
-      className="lg:self-stretch bg-card rounded-3xl p-8 border border-orange"
-      onSubmit={handleSubmit(doFundPending)}
-    >
-      {fundCampaignProposalUrl ? (
-        <>
-          <p className="mb-4 text-green">
-            Proposal successfully created! This campaign will activate once the
-            proposal is approved and executed on DAO DAO.
-          </p>
-          <ButtonLink href={fundCampaignProposalUrl} cardOutline>
-            View Proposal
-          </ButtonLink>
-        </>
-      ) : (
-        <>
-          <p className="text-orange">
-            This campaign is pending and cannot accept funds until the DAO
-            allocates governance tokens ({govTokenSymbol}) to it.{" "}
-            <span className="underline">
-              If you are part of the DAO, you can create a funding proposal
-              below.
-            </span>
-          </p>
+    <CardWrapper className="lg:self-stretch border border-orange">
+      <form onSubmit={handleSubmit(doFundPending)}>
+        {fundCampaignProposalUrl ? (
+          <>
+            <p className="mb-4 text-green">
+              Proposal successfully created! This campaign will activate once
+              the proposal is approved and executed on DAO DAO.
+            </p>
+            <ButtonLink href={fundCampaignProposalUrl} cardOutline>
+              View Proposal
+            </ButtonLink>
+          </>
+        ) : (
+          <>
+            <p className="text-orange">
+              This campaign is pending and cannot accept funds until the DAO
+              allocates governance tokens ({govTokenSymbol}) to it.{" "}
+              <span className="underline">
+                If you are part of the DAO, you can create a funding proposal
+                below.
+              </span>
+            </p>
 
-          <div className="flex flex-col items-stretch mt-4 sm:flex-row sm:items-stretch">
-            <FormInput
-              type="number"
-              inputMode="decimal"
-              placeholder="1000000"
-              wrapperClassName="!mb-4 sm:!mb-0 sm:mr-4 sm:flex-1"
-              className="!pr-28 border-light"
-              tail={govTokenSymbol}
-              error={
-                errors?.tokens?.message ?? fundPendingCampaignError ?? undefined
-              }
-              disabled={!!fundCampaignProposalUrl || !connected}
-              accent={
-                govTokenSupply
-                  ? `This will allocate ${fundPendingTokens} ${
-                      govTokenSymbol ?? "governance tokens"
-                    } (${prettyPrintDecimal(
-                      (100 * fundPendingTokens) / govTokenSupply,
-                      2
-                    )}% of total supply) from the DAO's treasury to the campaign to be distributed among the backers.`
-                  : undefined
-              }
-              accentClassName="text-light"
-              {...register("tokens", {
-                valueAsNumber: true,
-                pattern: numberPattern,
-                min: {
-                  value: 1e-6,
-                  message: `Must be at least 0.000001 ${govTokenSymbol}.`,
-                },
-                max: {
-                  value: govTokenDAOBalance ?? 0,
-                  message: `Must be less than or equal to the amount of ${govTokenSymbol} the DAO has in its treasury: ${prettyPrintDecimal(
-                    govTokenDAOBalance ?? 0
-                  )} ${govTokenSymbol}.`,
-                },
-              })}
-            />
+            <div className="flex flex-col items-stretch mt-4 sm:flex-row sm:items-stretch">
+              <FormInput
+                type="number"
+                inputMode="decimal"
+                placeholder="1000000"
+                wrapperClassName="!mb-4 sm:!mb-0 sm:mr-4 sm:flex-1"
+                className="!pr-28 border-light"
+                tail={govTokenSymbol}
+                error={
+                  errors?.tokens?.message ??
+                  fundPendingCampaignError ??
+                  undefined
+                }
+                disabled={!!fundCampaignProposalUrl || !connected}
+                accent={
+                  govTokenSupply
+                    ? `This will allocate ${fundPendingTokens} ${
+                        govTokenSymbol ?? "governance tokens"
+                      } (${prettyPrintDecimal(
+                        (100 * fundPendingTokens) / govTokenSupply,
+                        2
+                      )}% of total supply) from the DAO's treasury to the campaign to be distributed among the backers.`
+                    : undefined
+                }
+                accentClassName="text-light"
+                {...register("tokens", {
+                  valueAsNumber: true,
+                  pattern: numberPattern,
+                  min: {
+                    value: 1e-6,
+                    message: `Must be at least 0.000001 ${govTokenSymbol}.`,
+                  },
+                  max: {
+                    value: govTokenDAOBalance ?? 0,
+                    message: `Must be less than or equal to the amount of ${govTokenSymbol} the DAO has in its treasury: ${prettyPrintDecimal(
+                      govTokenDAOBalance ?? 0
+                    )} ${govTokenSymbol}.`,
+                  },
+                })}
+              />
 
-            <Button
-              disabled={!!fundCampaignProposalUrl || !connected}
-              className="sm:h-[50px]"
-              submitLabel="Propose"
-            />
-          </div>
-        </>
-      )}
-    </form>
+              <Button
+                disabled={!!fundCampaignProposalUrl || !connected}
+                className="sm:h-[50px]"
+                submitLabel="Propose"
+              />
+            </div>
+          </>
+        )}
+      </form>
+    </CardWrapper>
   )
 }

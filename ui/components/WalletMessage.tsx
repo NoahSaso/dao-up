@@ -2,13 +2,14 @@ import { FC } from "react"
 
 import { useWallet } from "../hooks/useWallet"
 import { InstallWalletMessage } from "../services/keplr"
+import { CardWrapper } from "."
 import { Button } from "./Button"
 
 export const WalletMessage: FC = () => {
   const { connect, connectError, installed } = useWallet()
 
   return (
-    <div className="self-stretch bg-card rounded-3xl p-8 border border-orange">
+    <CardWrapper className="self-stretch border border-orange">
       {installed ? (
         <>
           <p className="text-orange">
@@ -25,6 +26,6 @@ export const WalletMessage: FC = () => {
           <InstallWalletMessage />
         </p>
       )}
-    </div>
+    </CardWrapper>
   )
 }
