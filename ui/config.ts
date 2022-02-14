@@ -15,6 +15,7 @@ export const daoUpFee = process.env.NEXT_PUBLIC_DAO_UP_FEE!
 export const daoUpFeeNum = Number(daoUpFee)
 export const daoUpDAOAddress = process.env.NEXT_PUBLIC_DAO_UP_DAO_ADDRESS!
 export const chainPrefix = process.env.NEXT_PUBLIC_CHAIN_BECH32_PREFIX!
+export const chainName = process.env.NEXT_PUBLIC_CHAIN_NAME!
 
 export const denyListContractAddress =
   process.env.NEXT_PUBLIC_DENY_LIST_ADDRESS!

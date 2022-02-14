@@ -56,8 +56,17 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
         return true
       } catch (error) {
         console.error(error)
-        // TODO: Set better error messages.
-        setContributeCampaignError(`${error}`)
+
+        // Detect certain types of errors.
+        if (
+          error instanceof Error &&
+          error.message.includes("insufficient funds")
+        ) {
+          setContributeCampaignError("Insufficient funds.")
+        } else {
+          setContributeCampaignError(`${error}`)
+        }
+
         return false
       } finally {
         setLoading(false)
