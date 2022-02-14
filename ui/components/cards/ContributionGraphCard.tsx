@@ -9,9 +9,9 @@ import cn from "classnames"
 import { FC } from "react"
 import { Line } from "react-chartjs-2"
 
-import { payTokenSymbol } from "../helpers/config"
-import theme from "../helpers/theme"
-import { CampaignActionType } from "../types"
+import { payTokenSymbol } from "../../helpers/config"
+import theme from "../../helpers/theme"
+import { CampaignActionType } from "../../types"
 
 ChartJS.register(LinearScale, LineElement, CategoryScale, PointElement)
 

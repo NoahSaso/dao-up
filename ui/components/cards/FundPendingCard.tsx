@@ -1,14 +1,12 @@
 import { FC, useState } from "react"
 import { useForm } from "react-hook-form"
 
-import { daoUrlPrefix } from "../helpers/config"
-import { numberPattern } from "../helpers/form"
-import { prettyPrintDecimal } from "../helpers/number"
-import { useFundPendingCampaign } from "../hooks/useFundPendingCampaign"
-import { useWallet } from "../hooks/useWallet"
-import { Button } from "./Button"
-import { ButtonLink } from "./ButtonLink"
-import { FormInput } from "./Input"
+import { daoUrlPrefix } from "../../helpers/config"
+import { numberPattern } from "../../helpers/form"
+import { prettyPrintDecimal } from "../../helpers/number"
+import { useFundPendingCampaign } from "../../hooks/useFundPendingCampaign"
+import { useWallet } from "../../hooks/useWallet"
+import { Button, ButtonLink, FormInput } from ".."
 
 interface FundPendingForm {
   tokens?: number

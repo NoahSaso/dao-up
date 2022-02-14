@@ -1,14 +1,14 @@
 import cn from "classnames"
 import { FC } from "react"
 
-import { payTokenSymbol } from "../helpers/config"
-import { prettyPrintDecimal } from "../helpers/number"
+import { payTokenSymbol } from "../../helpers/config"
+import { prettyPrintDecimal } from "../../helpers/number"
 import {
   ButtonLink,
   CampaignFavoriteToggle,
   CampaignProgress,
   CampaignStatus,
-} from "."
+} from ".."
 
 interface CampaignInfoCardProps {
   campaign: Campaign

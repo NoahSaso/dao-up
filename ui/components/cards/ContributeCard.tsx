@@ -2,14 +2,13 @@ import { FC, useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { useSetRecoilState } from "recoil"
 
-import { payTokenSymbol } from "../helpers/config"
-import { numberPattern } from "../helpers/form"
-import { prettyPrintDecimal } from "../helpers/number"
-import { useContributeCampaign } from "../hooks/useContributeCampaign"
-import { useWallet } from "../hooks/useWallet"
-import { favoriteCampaignAddressesAtom } from "../state/campaigns"
-import { Button } from "./Button"
-import { FormInput } from "./Input"
+import { payTokenSymbol } from "../../helpers/config"
+import { numberPattern } from "../../helpers/form"
+import { prettyPrintDecimal } from "../../helpers/number"
+import { useContributeCampaign } from "../../hooks/useContributeCampaign"
+import { useWallet } from "../../hooks/useWallet"
+import { favoriteCampaignAddressesAtom } from "../../state/campaigns"
+import { Button, FormInput } from ".."
 
 interface ContributionForm {
   contribution?: number

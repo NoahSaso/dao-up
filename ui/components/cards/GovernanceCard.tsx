@@ -3,8 +3,8 @@ import cn from "classnames"
 import { FC } from "react"
 import { Pie } from "react-chartjs-2"
 
-import { prettyPrintDecimal } from "../helpers/number"
-import theme from "../helpers/theme"
+import { prettyPrintDecimal } from "../../helpers/number"
+import theme from "../../helpers/theme"
 
 ChartJS.register(ArcElement)
 
