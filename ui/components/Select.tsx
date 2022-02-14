@@ -1,5 +1,5 @@
 import cn from "classnames"
-import { FC, useState } from "react"
+import { FunctionComponent, useState } from "react"
 import { IoCaretDownSharp, IoCheckmark } from "react-icons/io5"
 
 import { Button } from "@/components"
@@ -17,7 +17,7 @@ interface SelectProps {
   className?: string
 }
 
-export const Select: FC<SelectProps> = ({
+export const Select: FunctionComponent<SelectProps> = ({
   label,
   noneSelectedSublabel,
   items,

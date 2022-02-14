@@ -1,5 +1,9 @@
 import classnames from "classnames"
-import { ButtonHTMLAttributes, DetailedHTMLProps, FC } from "react"
+import {
+  ButtonHTMLAttributes,
+  DetailedHTMLProps,
+  FunctionComponent,
+} from "react"
 
 import { Color, ColorType } from "@/types"
 
@@ -40,7 +44,7 @@ interface ButtonProps
   // Manually add to both types of element (input and button)
   onClick?: () => void
 }
-export const Button: FC<ButtonProps> = ({
+export const Button: FunctionComponent<ButtonProps> = ({
   children,
   color = Color.Green,
   outline,

@@ -1,5 +1,5 @@
 import cn from "classnames"
-import { FC } from "react"
+import { FunctionComponent } from "react"
 
 import {
   ButtonLink,
@@ -16,7 +16,7 @@ interface CampaignInfoCardProps {
   className?: string
 }
 
-export const CampaignInfoCard: FC<CampaignInfoCardProps> = ({
+export const CampaignInfoCard: FunctionComponent<CampaignInfoCardProps> = ({
   campaign,
   className,
 }) => {

@@ -1,6 +1,6 @@
 import cn from "classnames"
 import Image from "next/image"
-import { FC } from "react"
+import { FunctionComponent } from "react"
 
 interface ResponsiveDecorationProps {
   name: string
@@ -8,12 +8,9 @@ interface ResponsiveDecorationProps {
   height: number
   className?: string
 }
-export const ResponsiveDecoration: FC<ResponsiveDecorationProps> = ({
-  name,
-  width,
-  height,
-  className,
-}) => (
+export const ResponsiveDecoration: FunctionComponent<
+  ResponsiveDecorationProps
+> = ({ name, width, height, className }) => (
   <div
     className={cn(
       "absolute pointer-events-none",

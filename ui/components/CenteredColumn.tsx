@@ -1,12 +1,12 @@
 import cn from "classnames"
-import { FC, HTMLAttributes, ReactNode } from "react"
+import { FunctionComponent, HTMLAttributes, ReactNode } from "react"
 
 interface CenteredColumnProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode | ReactNode[]
   className?: string
   topSpace?: boolean
 }
-export const CenteredColumn: FC<CenteredColumnProps> = ({
+export const CenteredColumn: FunctionComponent<CenteredColumnProps> = ({
   children,
   className,
   topSpace,

@@ -1,6 +1,4 @@
-import { FC } from "react"
-
-export const InstallWalletMessage: FC = () => (
+export const InstallWalletMessage = () => (
   <>
     Install the{" "}
     <a

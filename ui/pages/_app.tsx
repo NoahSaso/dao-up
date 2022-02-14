@@ -3,7 +3,7 @@ import "../styles/globals.scss"
 import cn from "classnames"
 import type { AppProps } from "next/app"
 import Head from "next/head"
-import { FC } from "react"
+import { FunctionComponent } from "react"
 import { RecoilRoot, useRecoilValue } from "recoil"
 
 import { BetaAlert, Footer, Header, Loader, Suspense } from "@/components"
@@ -15,7 +15,7 @@ const Description =
 const Domain = "https://daoup.zone"
 const ImageUrl = "https://daoup.zone/images/banner.jpg"
 
-const DAOUp: FC<AppProps> = ({ Component, pageProps }) => {
+const DAOUp: FunctionComponent<AppProps> = ({ Component, pageProps }) => {
   const loading = useRecoilValue(globalLoadingAtom)
 
   return (
@@ -45,7 +45,7 @@ const DAOUp: FC<AppProps> = ({ Component, pageProps }) => {
   )
 }
 
-const App: FC<AppProps> = (props) => (
+const App: FunctionComponent<AppProps> = (props) => (
   <>
     <Head>
       <title>{Title}</title>

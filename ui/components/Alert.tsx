@@ -1,5 +1,5 @@
 import cn from "classnames"
-import { FC, PropsWithChildren } from "react"
+import { FunctionComponent, PropsWithChildren } from "react"
 import { IoClose } from "react-icons/io5"
 import { useRecoilState } from "recoil"
 
@@ -12,7 +12,7 @@ interface AlertProps {
   hide?: () => void
 }
 
-export const Alert: FC<PropsWithChildren<AlertProps>> = ({
+export const Alert: FunctionComponent<PropsWithChildren<AlertProps>> = ({
   children,
   title,
   visible,
@@ -48,7 +48,7 @@ export const Alert: FC<PropsWithChildren<AlertProps>> = ({
     </div>
   ) : null
 
-export const BetaAlert: FC<Partial<AlertProps>> = (props) => {
+export const BetaAlert: FunctionComponent<Partial<AlertProps>> = (props) => {
   const [betaAlertAccepted, setBetaAlertAccepted] = useRecoilState(
     betaAlertAcceptedAtom
   )

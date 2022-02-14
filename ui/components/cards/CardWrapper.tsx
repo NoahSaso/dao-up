@@ -1,7 +1,7 @@
 import cn from "classnames"
-import { DetailedHTMLProps, FC, HTMLAttributes } from "react"
+import { DetailedHTMLProps, FunctionComponent, HTMLAttributes } from "react"
 
-export const CardWrapper: FC<
+export const CardWrapper: FunctionComponent<
   DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>
 > = ({ className, children, ...props }) => (
   <div

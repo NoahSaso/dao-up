@@ -1,5 +1,5 @@
 import cn from "classnames"
-import { FC, ReactNode, useState } from "react"
+import { FunctionComponent, ReactNode, useState } from "react"
 import { GoTriangleDown } from "react-icons/go"
 
 interface FAQQuestionProps {
@@ -7,7 +7,10 @@ interface FAQQuestionProps {
   answer: ReactNode
 }
 
-export const FAQQuestion: FC<FAQQuestionProps> = ({ question, answer }) => {
+export const FAQQuestion: FunctionComponent<FAQQuestionProps> = ({
+  question,
+  answer,
+}) => {
   const [open, setOpen] = useState(false)
 
   return (
