@@ -27,14 +27,11 @@ export const useWallet = () => {
       // If connection succeeds, propagate client to selector dependency chain.
       setKeplrKeystoreId((id) => id + 1)
     } catch (error) {
-      // Otherwise set disconnected so we don't try to connect again without manual action.
-      setKeplrKeystoreId(-1)
+      console.error(error)
+      setConnectError(parseError(error))
 
-      // Ignore rejected requests since the user knows they rejected.
-      if (!(error instanceof Error) || error.message !== "Request rejected") {
-        console.error(error)
-        setConnectError(parseError(error))
-      }
+      // Set disconnected so we don't try to connect again without manual action.
+      setKeplrKeystoreId(-1)
     }
   }, [setKeplrKeystoreId, setConnectError, keplr])
 
