@@ -1,6 +1,6 @@
 import { ArcElement, Chart as ChartJS } from "chart.js"
 import cn from "classnames"
-import { FC } from "react"
+import { FunctionComponent } from "react"
 import { Pie } from "react-chartjs-2"
 
 import { CardWrapper } from "@/components"
@@ -16,7 +16,7 @@ interface PieLegendProps {
   }[]
   className?: string
 }
-const PieLegend: FC<PieLegendProps> = ({ items, className }) => (
+const PieLegend: FunctionComponent<PieLegendProps> = ({ items, className }) => (
   <div className={cn("flex flex-col", className)}>
     {items.map(({ label, color: backgroundColor }) => (
       <div key={label} className="flex flex-row items-center mt-1 first:mt-0">
@@ -34,7 +34,9 @@ interface GovernanceCardProps {
   campaign: Campaign
 }
 
-export const GovernanceCard: FC<GovernanceCardProps> = ({ campaign }) => {
+export const GovernanceCard: FunctionComponent<GovernanceCardProps> = ({
+  campaign,
+}) => {
   const {
     govToken: {
       campaignBalance: govTokenCampaignBalance,

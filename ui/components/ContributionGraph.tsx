@@ -5,7 +5,7 @@ import {
   LineElement,
   PointElement,
 } from "chart.js"
-import { FC } from "react"
+import { FunctionComponent } from "react"
 import { Line } from "react-chartjs-2"
 
 import { payTokenSymbol } from "@/config"
@@ -18,7 +18,9 @@ interface ContributionGraphProps {
   actions: CampaignAction[]
 }
 
-export const ContributionGraph: FC<ContributionGraphProps> = ({ actions }) => {
+export const ContributionGraph: FunctionComponent<ContributionGraphProps> = ({
+  actions,
+}) => {
   const cumSum = (
     (sum: number) => (x: number) =>
       (sum += x)

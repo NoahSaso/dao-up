@@ -1,6 +1,6 @@
 import cn from "classnames"
 import Image from "next/image"
-import { FC } from "react"
+import { FunctionComponent } from "react"
 
 export interface LoaderProps {
   size?: number
@@ -8,7 +8,7 @@ export interface LoaderProps {
   overlay?: boolean
   fill?: boolean
 }
-export const Loader: FC<LoaderProps> = ({
+export const Loader: FunctionComponent<LoaderProps> = ({
   size = 80,
   containerClassName,
   overlay,

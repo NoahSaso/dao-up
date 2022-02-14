@@ -1,5 +1,5 @@
 import cn from "classnames"
-import { FC } from "react"
+import { FunctionComponent } from "react"
 import { AiOutlineExclamationCircle } from "react-icons/ai"
 
 interface TooltipInfoProps {
@@ -7,7 +7,7 @@ interface TooltipInfoProps {
   size?: number
   className?: string
 }
-export const TooltipInfo: FC<TooltipInfoProps> = ({
+export const TooltipInfo: FunctionComponent<TooltipInfoProps> = ({
   text,
   size,
   className,

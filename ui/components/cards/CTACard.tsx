@@ -1,5 +1,5 @@
 import cn from "classnames"
-import { FC, ReactNode } from "react"
+import { FunctionComponent, ReactNode } from "react"
 
 import { CardWrapper } from "@/components"
 
@@ -12,7 +12,7 @@ interface CTACardProps {
   borderAccent?: boolean
 }
 
-export const CTACard: FC<CTACardProps> = ({
+export const CTACard: FunctionComponent<CTACardProps> = ({
   className,
   title,
   subtitle,

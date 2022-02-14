@@ -1,4 +1,4 @@
-import { FC } from "react"
+import { FunctionComponent } from "react"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
 import ReactMarkdown from "react-markdown"
 
@@ -13,7 +13,7 @@ interface CampaignDetailsProps {
   name: string
 }
 
-export const CampaignDetails: FC<CampaignDetailsProps> = ({
+export const CampaignDetails: FunctionComponent<CampaignDetailsProps> = ({
   website,
   twitter,
   discord,

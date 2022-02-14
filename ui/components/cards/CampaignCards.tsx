@@ -1,6 +1,6 @@
 import cn from "classnames"
 import Link from "next/link"
-import { FC, PropsWithChildren } from "react"
+import { FunctionComponent, PropsWithChildren } from "react"
 import ReactMarkdown from "react-markdown"
 import { useRecoilValueLoadable } from "recoil"
 
@@ -18,7 +18,7 @@ import { walletTokenBalance } from "@/state"
 interface CampaignCardWrapperProps extends PropsWithChildren<CampaignProps> {
   contentClassName?: string
 }
-const CampaignCardWrapper: FC<CampaignCardWrapperProps> = ({
+const CampaignCardWrapper: FunctionComponent<CampaignCardWrapperProps> = ({
   campaign,
   className,
   children,
@@ -58,7 +58,7 @@ const CampaignCardWrapper: FC<CampaignCardWrapperProps> = ({
   )
 }
 
-export const AllCampaignsCard: FC<CampaignProps> = ({
+export const AllCampaignsCard: FunctionComponent<CampaignProps> = ({
   campaign,
   className,
 }) => (
@@ -78,7 +78,7 @@ export const AllCampaignsCard: FC<CampaignProps> = ({
   </CampaignCardWrapper>
 )
 
-export const CreatorCampaignCard: FC<CampaignProps> = ({
+export const CreatorCampaignCard: FunctionComponent<CampaignProps> = ({
   campaign,
   className,
 }) => (
@@ -89,7 +89,7 @@ export const CreatorCampaignCard: FC<CampaignProps> = ({
   </CampaignCardWrapper>
 )
 
-export const FavoriteCampaignCard: FC<CampaignProps> = ({
+export const FavoriteCampaignCard: FunctionComponent<CampaignProps> = ({
   campaign,
   className,
 }) => {

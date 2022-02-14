@@ -1,4 +1,4 @@
-import { FC, useCallback } from "react"
+import { FunctionComponent, useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { useSetRecoilState } from "recoil"
 
@@ -17,7 +17,7 @@ interface ContributeFormProps {
   onFundSuccess?: () => void | Promise<void>
 }
 
-export const ContributeForm: FC<ContributeFormProps> = ({
+export const ContributeForm: FunctionComponent<ContributeFormProps> = ({
   campaign,
   onFundSuccess,
 }) => {

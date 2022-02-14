@@ -1,5 +1,5 @@
 import cn from "classnames"
-import { FC, useCallback } from "react"
+import { FunctionComponent, useCallback } from "react"
 import { IconType } from "react-icons"
 import { IoHeart, IoHeartOutline } from "react-icons/io5"
 import TimeAgo from "react-timeago"
@@ -11,7 +11,7 @@ import { prettyPrintDecimal } from "@/helpers"
 import { favoriteCampaignAddressesAtom } from "@/state"
 import { CampaignActionType, Color, Status } from "@/types"
 
-export const CampaignStatus: FC<CampaignProps> = ({
+export const CampaignStatus: FunctionComponent<CampaignProps> = ({
   campaign: { status },
   className,
 }) => {
@@ -51,7 +51,7 @@ interface CampaignProgressProps extends CampaignProps {
   showPledged?: boolean
   hidePercent?: boolean
 }
-export const CampaignProgress: FC<CampaignProgressProps> = ({
+export const CampaignProgress: FunctionComponent<CampaignProgressProps> = ({
   campaign: { status, pledged, goal },
   className,
   thin,
@@ -104,7 +104,7 @@ export const CampaignProgress: FC<CampaignProgressProps> = ({
   )
 }
 
-export const CampaignFavoriteToggle: FC<CampaignProps> = ({
+export const CampaignFavoriteToggle: FunctionComponent<CampaignProps> = ({
   campaign,
   className,
 }) => {
@@ -139,7 +139,7 @@ interface CampaignImageProps {
   imageUrl?: string
   className?: string
 }
-export const CampaignImage: FC<CampaignImageProps> = ({
+export const CampaignImage: FunctionComponent<CampaignImageProps> = ({
   imageUrl,
   className,
   size = 135,
@@ -160,11 +160,9 @@ interface CampaignPlatformLinkProps {
   label: string
   Icon?: IconType
 }
-export const CampaignPlatformLink: FC<CampaignPlatformLinkProps> = ({
-  href,
-  label,
-  Icon,
-}) => (
+export const CampaignPlatformLink: FunctionComponent<
+  CampaignPlatformLinkProps
+> = ({ href, label, Icon }) => (
   <a
     href={href}
     target="_blank"
@@ -179,7 +177,7 @@ export const CampaignPlatformLink: FC<CampaignPlatformLinkProps> = ({
 interface CampaignActionProps {
   action: CampaignAction
 }
-export const CampaignAction: FC<CampaignActionProps> = ({
+export const CampaignAction: FunctionComponent<CampaignActionProps> = ({
   action: { when, address, amount, type },
 }) => (
   <div className="py-5 border-b border-light">

@@ -1,5 +1,5 @@
 import cn from "classnames"
-import { FC } from "react"
+import { FunctionComponent } from "react"
 
 import { Color, ColorType } from "@/types"
 
@@ -11,7 +11,7 @@ interface StatusIndicatorProps {
   labelClassName?: string
 }
 
-export const StatusIndicator: FC<StatusIndicatorProps> = ({
+export const StatusIndicator: FunctionComponent<StatusIndicatorProps> = ({
   color,
   label,
   containerClassName,

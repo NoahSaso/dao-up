@@ -1,4 +1,4 @@
-import { FC, useState } from "react"
+import { FunctionComponent, useState } from "react"
 import { useForm } from "react-hook-form"
 
 import { Button, ButtonLink, CardWrapper, FormInput } from "@/components"
@@ -14,7 +14,9 @@ interface FundPendingCardProps {
   campaign: Campaign
 }
 
-export const FundPendingCard: FC<FundPendingCardProps> = ({ campaign }) => {
+export const FundPendingCard: FunctionComponent<FundPendingCardProps> = ({
+  campaign,
+}) => {
   const {
     govToken: {
       daoBalance: govTokenDAOBalance,

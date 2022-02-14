@@ -1,8 +1,8 @@
 import cn from "classnames"
 import {
   DetailedHTMLProps,
-  FC,
   forwardRef,
+  FunctionComponent,
   InputHTMLAttributes,
   PropsWithChildren,
   ReactNode,
@@ -111,7 +111,11 @@ interface SwitchProps {
   onClick?: () => void
   className?: string
 }
-export const Switch: FC<SwitchProps> = ({ on, onClick, className }) => (
+export const Switch: FunctionComponent<SwitchProps> = ({
+  on,
+  onClick,
+  className,
+}) => (
   <div
     className={cn(
       "relative cursor-pointer hover:opacity-70",
@@ -356,7 +360,7 @@ interface FormItemProps {
 
 type FormWrapperProps = PropsWithChildren<FormItemProps>
 
-export const FormWrapper: FC<FormWrapperProps> = ({
+export const FormWrapper: FunctionComponent<FormWrapperProps> = ({
   children,
   label,
   description,
@@ -522,7 +526,7 @@ FormTextArea.displayName = "FormTextArea"
 
 type FormSwitchProps = SwitchProps & FormItemProps
 
-export const FormSwitch: FC<FormSwitchProps> = ({
+export const FormSwitch: FunctionComponent<FormSwitchProps> = ({
   label,
   description,
   accent,
@@ -596,7 +600,7 @@ interface ControlledFormPercentTokenDoubleInputProps
   required?: boolean
 }
 
-export const ControlledFormPercentTokenDoubleInput: FC<
+export const ControlledFormPercentTokenDoubleInput: FunctionComponent<
   ControlledFormPercentTokenDoubleInputProps
 > = ({
   control,

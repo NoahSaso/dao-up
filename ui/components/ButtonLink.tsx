@@ -1,6 +1,6 @@
 import classnames from "classnames"
 import Link from "next/link"
-import { FC, ReactNode } from "react"
+import { FunctionComponent, ReactNode } from "react"
 
 interface ButtonLinkProps {
   href: string
@@ -9,7 +9,7 @@ interface ButtonLinkProps {
   cardOutline?: boolean
   className?: string
 }
-export const ButtonLink: FC<ButtonLinkProps> = ({
+export const ButtonLink: FunctionComponent<ButtonLinkProps> = ({
   href,
   children,
   outline,

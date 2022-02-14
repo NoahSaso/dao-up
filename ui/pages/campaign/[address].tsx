@@ -1,6 +1,6 @@
 import type { NextPage } from "next"
 import { NextRouter, useRouter } from "next/router"
-import { FC, useEffect, useState } from "react"
+import { FunctionComponent, useEffect, useState } from "react"
 import { useRecoilValue } from "recoil"
 
 import {
@@ -54,7 +54,7 @@ export const Campaign: NextPage = () => {
 interface CampaignContentProps {
   router: NextRouter
 }
-const CampaignContent: FC<CampaignContentProps> = ({
+const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   router: { isReady, query, push: routerPush },
 }) => {
   const campaignAddress =

@@ -1,4 +1,4 @@
-import { FC } from "react"
+import { FunctionComponent } from "react"
 import { useForm } from "react-hook-form"
 import { useRecoilValue } from "recoil"
 
@@ -25,7 +25,7 @@ interface BalanceRefundCardProps {
   suggestFundingToken: () => Promise<void>
 }
 
-export const BalanceRefundCard: FC<BalanceRefundCardProps> = ({
+export const BalanceRefundCard: FunctionComponent<BalanceRefundCardProps> = ({
   campaign,
   showAddGovToken,
   suggestGovToken,

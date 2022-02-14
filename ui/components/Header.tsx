@@ -2,7 +2,7 @@ import cn from "classnames"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import { FC, ReactNode } from "react"
+import { FunctionComponent, ReactNode } from "react"
 import { RiAccountCircleLine } from "react-icons/ri"
 
 import { ButtonLink } from "@/components"
@@ -13,7 +13,12 @@ interface NavItemProps {
   action?: boolean
   className?: string
 }
-const NavItem: FC<NavItemProps> = ({ href, children, action, className }) => {
+const NavItem: FunctionComponent<NavItemProps> = ({
+  href,
+  children,
+  action,
+  className,
+}) => {
   const { pathname } = useRouter()
 
   return action ? (

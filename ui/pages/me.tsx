@@ -1,5 +1,5 @@
 import type { NextPage } from "next"
-import { FC } from "react"
+import { FunctionComponent } from "react"
 import { useRecoilValue } from "recoil"
 
 import {
@@ -71,7 +71,10 @@ interface MeContentProps {
   walletAddress: string | undefined
   connected: boolean
 }
-const MeContent: FC<MeContentProps> = ({ walletAddress, connected }) => {
+const MeContent: FunctionComponent<MeContentProps> = ({
+  walletAddress,
+  connected,
+}) => {
   const { campaigns, error } = useRecoilValue(allCampaigns)
   const { campaigns: favorites, error: favoriteCampaignsError } =
     useRecoilValue(favoriteCampaigns)

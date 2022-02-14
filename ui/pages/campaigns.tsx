@@ -2,7 +2,7 @@ import type { NextPage } from "next"
 import { useRouter } from "next/router"
 import {
   Dispatch,
-  FC,
+  FunctionComponent,
   SetStateAction,
   useCallback,
   useEffect,
@@ -140,7 +140,7 @@ interface CampaignsContentProps {
   setPage: Dispatch<SetStateAction<number>>
 }
 
-const CampaignsContent: FC<CampaignsContentProps> = ({
+const CampaignsContent: FunctionComponent<CampaignsContentProps> = ({
   filter,
   page,
   setPage,

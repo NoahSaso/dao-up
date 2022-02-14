@@ -1,5 +1,5 @@
 import cn from "classnames"
-import { FC } from "react"
+import { FunctionComponent } from "react"
 
 import { Button } from "@/components"
 
@@ -10,13 +10,9 @@ interface CampaignsListPaginationProps {
   goForward: () => void
   className?: string
 }
-export const CampaignsListPagination: FC<CampaignsListPaginationProps> = ({
-  canGoBack,
-  canGoForward,
-  goBack,
-  goForward,
-  className,
-}) => (
+export const CampaignsListPagination: FunctionComponent<
+  CampaignsListPaginationProps
+> = ({ canGoBack, canGoForward, goBack, goForward, className }) => (
   <div className={cn("flex flex-row justify-between items-center", className)}>
     <Button onClick={goBack} disabled={!canGoBack}>
       Back
