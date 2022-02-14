@@ -37,11 +37,11 @@ const Me: NextPage = () => {
               label="Wallet connected."
               containerClassName="mt-5"
             />
-            <p className="my-2">{walletAddress}</p>
+            <p className="mt-2">{walletAddress}</p>
           </>
         ) : (
           <>
-            <p className="my-2">
+            <p className="mt-3">
               You haven&apos;t connected a wallet. Connect one to start making
               contributions.
             </p>
@@ -50,7 +50,7 @@ const Me: NextPage = () => {
               What&apos;s a wallet?
               <TooltipInfo text="" />
             </p> */}
-            <Button className="mt-8" onClick={connect}>
+            <Button className="mt-6" onClick={connect}>
               Connect a wallet
             </Button>
             {!!connectError && (

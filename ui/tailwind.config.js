@@ -25,6 +25,25 @@ module.exports = {
       height: {
         footer: "9rem",
       },
+
+      typography: {
+        DEFAULT: {
+          css: {
+            '.prose :where(blockquote):not(:where([class~="not-prose"] *))': {
+              fontStyle: "normal",
+              fontWeight: 400,
+            },
+            '.prose :where(blockquote p:first-of-type):not(:where([class~="not-prose"] *))::before':
+              {
+                content: "''",
+              },
+            '.prose :where(blockquote p:first-of-type):not(:where([class~="not-prose"] *))::after':
+              {
+                content: "''",
+              },
+          },
+        },
+      },
     },
   },
   plugins: [
