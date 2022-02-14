@@ -3,7 +3,7 @@ import { findAttribute } from "@cosmjs/stargate/build/logs"
 import { useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
-import { prettyPrintDecimal } from "@/helpers"
+import { parseError, prettyPrintDecimal } from "@/helpers"
 import { useRefreshCampaign, useWallet } from "@/hooks"
 import { globalLoadingAtom, signedCosmWasmClient } from "@/state"
 
@@ -87,7 +87,7 @@ export const useFundPendingCampaign = (campaign: Campaign | null) => {
         return proposalId
       } catch (error) {
         console.error(error)
-        setFundPendingCampaignError(`${error}`)
+        setFundPendingCampaignError(parseError(error))
       } finally {
         setLoading(false)
       }

@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
+import { parseError } from "@/helpers"
 import { useRefreshCampaign, useWallet } from "@/hooks"
 import { globalLoadingAtom, signedCosmWasmClient } from "@/state"
 
@@ -57,7 +58,7 @@ export const useRefundCampaign = (campaign: Campaign | null) => {
         return true
       } catch (error) {
         console.error(error)
-        setRefundCampaignError(`${error}`)
+        setRefundCampaignError(parseError(error))
         return false
       } finally {
         setLoading(false)

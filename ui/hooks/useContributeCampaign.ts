@@ -58,7 +58,6 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
       } catch (error) {
         console.error(error)
         setContributeCampaignError(parseError(error))
-
         return false
       } finally {
         setLoading(false)
