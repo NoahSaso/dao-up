@@ -2,12 +2,16 @@ import { FC } from "react"
 import { useForm } from "react-hook-form"
 import { useRecoilValue } from "recoil"
 
-import { payTokenSymbol } from "../../config"
-import { prettyPrintDecimal } from "../../helpers"
-import { useRefundCampaign } from "../../hooks"
-import { walletTokenBalance } from "../../state"
-import { Status } from "../../types"
-import { Button, CardWrapper, ControlledFormPercentTokenDoubleInput } from ".."
+import {
+  Button,
+  CardWrapper,
+  ControlledFormPercentTokenDoubleInput,
+} from "@/components"
+import { payTokenSymbol } from "@/config"
+import { prettyPrintDecimal } from "@/helpers"
+import { useRefundCampaign } from "@/hooks"
+import { walletTokenBalance } from "@/state"
+import { Status } from "@/types"
 
 interface RefundForm {
   refund?: number

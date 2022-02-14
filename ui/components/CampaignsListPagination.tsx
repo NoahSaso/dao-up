@@ -1,7 +1,7 @@
 import cn from "classnames"
 import { FC } from "react"
 
-import { Button } from "."
+import { Button } from "@/components"
 
 interface CampaignsListPaginationProps {
   canGoBack: boolean

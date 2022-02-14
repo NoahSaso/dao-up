@@ -3,10 +3,10 @@ import { findAttribute } from "@cosmjs/stargate/build/logs"
 import { useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
-import { defaultExecuteFee } from "../config"
-import { prettyPrintDecimal } from "../helpers"
-import { globalLoadingAtom, signedCosmWasmClient } from "../state"
-import { useRefreshCampaign, useWallet } from "."
+import { defaultExecuteFee } from "@/config"
+import { prettyPrintDecimal } from "@/helpers"
+import { useRefreshCampaign, useWallet } from "@/hooks"
+import { globalLoadingAtom, signedCosmWasmClient } from "@/state"
 
 export const useFundPendingCampaign = (campaign: Campaign | null) => {
   const client = useRecoilValue(signedCosmWasmClient)

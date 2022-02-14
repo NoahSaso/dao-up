@@ -12,9 +12,9 @@ import {
   StatusIndicator,
   Suspense,
   TooltipInfo,
-} from "../components"
-import { useWallet } from "../hooks"
-import { allCampaigns, favoriteCampaigns } from "../state"
+} from "@/components"
+import { useWallet } from "@/hooks"
+import { allCampaigns, favoriteCampaigns } from "@/state"
 
 const Me: NextPage = () => {
   const { walletAddress, connect, connected, connectError } = useWallet()

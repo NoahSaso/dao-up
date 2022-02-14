@@ -3,9 +3,9 @@ import cn from "classnames"
 import { FC } from "react"
 import { Pie } from "react-chartjs-2"
 
-import { prettyPrintDecimal } from "../../helpers"
-import theme from "../../theme"
-import { CardWrapper } from ".."
+import { CardWrapper } from "@/components"
+import { prettyPrintDecimal } from "@/helpers"
+import theme from "@/theme"
 
 ChartJS.register(ArcElement)
 

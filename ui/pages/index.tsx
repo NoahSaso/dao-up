@@ -7,7 +7,7 @@ import {
   CTACard,
   FAQQuestion,
   ResponsiveDecoration,
-} from "../components"
+} from "@/components"
 
 const Home: NextPage = () => (
   <>

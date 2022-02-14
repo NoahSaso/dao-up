@@ -6,8 +6,8 @@ import Head from "next/head"
 import { FC } from "react"
 import { RecoilRoot, useRecoilValue } from "recoil"
 
-import { BetaAlert, Footer, Header, Loader, Suspense } from "../components"
-import { globalLoadingAtom } from "../state"
+import { BetaAlert, Footer, Header, Loader, Suspense } from "@/components"
+import { globalLoadingAtom } from "@/state"
 
 const Title = "DAO Up!"
 const Description =

@@ -1,10 +1,10 @@
 import { FC, useState } from "react"
 import { useForm } from "react-hook-form"
 
-import { daoUrlPrefix } from "../../config"
-import { numberPattern, prettyPrintDecimal } from "../../helpers"
-import { useFundPendingCampaign, useWallet } from "../../hooks"
-import { Button, ButtonLink, CardWrapper, FormInput } from ".."
+import { Button, ButtonLink, CardWrapper, FormInput } from "@/components"
+import { daoUrlPrefix } from "@/config"
+import { numberPattern, prettyPrintDecimal } from "@/helpers"
+import { useFundPendingCampaign, useWallet } from "@/hooks"
 
 interface FundPendingForm {
   tokens?: number

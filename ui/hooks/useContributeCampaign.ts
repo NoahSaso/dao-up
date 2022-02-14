@@ -2,9 +2,9 @@ import { coins } from "@cosmjs/stargate"
 import { useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
-import { defaultExecuteFee, fundingTokenDenom } from "../config"
-import { globalLoadingAtom, signedCosmWasmClient } from "../state"
-import { useRefreshCampaign, useWallet } from "."
+import { defaultExecuteFee, fundingTokenDenom } from "@/config"
+import { useRefreshCampaign, useWallet } from "@/hooks"
+import { globalLoadingAtom, signedCosmWasmClient } from "@/state"
 
 export const useContributeCampaign = (campaign: Campaign | null) => {
   const client = useRecoilValue(signedCosmWasmClient)

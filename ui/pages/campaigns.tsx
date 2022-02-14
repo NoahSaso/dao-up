@@ -18,10 +18,10 @@ import {
   ResponsiveDecoration,
   Select,
   Suspense,
-} from "../components"
-import { addFilter, filterExists, removeFilter } from "../helpers"
-import { filteredCampaigns } from "../state"
-import { Status } from "../types"
+} from "@/components"
+import { addFilter, filterExists, removeFilter } from "@/helpers"
+import { filteredCampaigns } from "@/state"
+import { Status } from "@/types"
 
 const minPage = 1
 const pageSize = 20

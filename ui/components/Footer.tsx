@@ -1,4 +1,4 @@
-import { SvgDiscord, SvgGitHub, SvgTwitter } from "."
+import { SvgDiscord, SvgGitHub, SvgTwitter } from "@/components"
 
 export const Footer = () => (
   <div

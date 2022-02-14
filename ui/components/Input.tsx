@@ -12,8 +12,8 @@ import {
 import { Control, Controller, FieldValues } from "react-hook-form"
 import { IoCaretDownSharp } from "react-icons/io5"
 
-import { numberPattern, prettyPrintDecimal } from "../helpers"
-import { Button } from "."
+import { Button } from "@/components"
+import { numberPattern, prettyPrintDecimal } from "@/helpers"
 
 // Input
 

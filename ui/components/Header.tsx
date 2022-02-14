@@ -5,7 +5,7 @@ import { useRouter } from "next/router"
 import { FC, ReactNode } from "react"
 import { RiAccountCircleLine } from "react-icons/ri"
 
-import { ButtonLink } from "."
+import { ButtonLink } from "@/components"
 
 interface NavItemProps {
   href: string

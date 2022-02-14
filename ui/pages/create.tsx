@@ -21,7 +21,7 @@ import {
   Loader,
   ResponsiveDecoration,
   Suspense,
-} from "../components"
+} from "@/components"
 import {
   cw20CodeId,
   daoUpDAOAddress,
@@ -31,17 +31,17 @@ import {
   escrowContractCodeId,
   fundingTokenDenom,
   payTokenSymbol,
-} from "../config"
+} from "@/config"
 import {
   daoAddressPattern,
   numberPattern,
   prettyPrintDecimal,
   urlPattern,
-} from "../helpers"
-import { useWallet } from "../hooks"
-import { defaultNewCampaign, newCampaignFields } from "../services"
-import { daoConfig, globalLoadingAtom, signedCosmWasmClient } from "../state"
-import { Color } from "../types"
+} from "@/helpers"
+import { useWallet } from "@/hooks"
+import { defaultNewCampaign, newCampaignFields } from "@/services"
+import { daoConfig, globalLoadingAtom, signedCosmWasmClient } from "@/state"
+import { Color } from "@/types"
 
 const validUrlOrUndefined = (u: string | undefined) =>
   u && u.match(urlPattern.value) ? u : undefined

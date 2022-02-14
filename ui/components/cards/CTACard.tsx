@@ -1,7 +1,7 @@
 import cn from "classnames"
 import { FC, ReactNode } from "react"
 
-import { CardWrapper } from ".."
+import { CardWrapper } from "@/components"
 
 interface CTACardProps {
   title: string

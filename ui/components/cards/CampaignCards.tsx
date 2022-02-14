@@ -4,8 +4,6 @@ import { FC, PropsWithChildren } from "react"
 import ReactMarkdown from "react-markdown"
 import { useRecoilValueLoadable } from "recoil"
 
-import { prettyPrintDecimal } from "../../helpers"
-import { walletTokenBalance } from "../../state"
 import {
   CampaignFavoriteToggle,
   CampaignImage,
@@ -13,7 +11,9 @@ import {
   CampaignStatus,
   CardWrapper,
   Loader,
-} from ".."
+} from "@/components"
+import { prettyPrintDecimal } from "@/helpers"
+import { walletTokenBalance } from "@/state"
 
 interface CampaignCardWrapperProps extends PropsWithChildren<CampaignProps> {
   contentClassName?: string

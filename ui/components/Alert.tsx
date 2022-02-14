@@ -3,8 +3,8 @@ import { FC, PropsWithChildren } from "react"
 import { IoClose } from "react-icons/io5"
 import { useRecoilState } from "recoil"
 
-import { betaAlertAcceptedAtom } from "../state"
-import { Button, CardWrapper } from "."
+import { Button, CardWrapper } from "@/components"
+import { betaAlertAcceptedAtom } from "@/state"
 
 interface AlertProps {
   title: string

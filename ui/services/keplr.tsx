@@ -1,6 +1,6 @@
 import { Keplr } from "@keplr-wallet/types"
 
-import { chainId } from "../config"
+import { chainId } from "@/config"
 
 export const suggestToken = async (keplr: Keplr, address: string) =>
   keplr
