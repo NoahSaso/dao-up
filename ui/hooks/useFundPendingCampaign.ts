@@ -3,7 +3,6 @@ import { findAttribute } from "@cosmjs/stargate/build/logs"
 import { useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
-import { defaultExecuteFee } from "@/config"
 import { prettyPrintDecimal } from "@/helpers"
 import { useRefreshCampaign, useWallet } from "@/hooks"
 import { globalLoadingAtom, signedCosmWasmClient } from "@/state"
@@ -73,7 +72,7 @@ export const useFundPendingCampaign = (campaign: Campaign | null) => {
           walletAddress,
           campaign.dao.address,
           msg,
-          defaultExecuteFee
+          "auto"
         )
 
         const proposalId = findAttribute(

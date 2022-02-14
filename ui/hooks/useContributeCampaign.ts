@@ -2,7 +2,7 @@ import { coins } from "@cosmjs/stargate"
 import { useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
-import { defaultExecuteFee, fundingTokenDenom } from "@/config"
+import { fundingTokenDenom } from "@/config"
 import { parseError } from "@/helpers"
 import { useRefreshCampaign, useWallet } from "@/hooks"
 import { globalLoadingAtom, signedCosmWasmClient } from "@/state"
@@ -45,7 +45,7 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
           walletAddress,
           campaign.address,
           msg,
-          defaultExecuteFee,
+          "auto",
           undefined,
           coins(amount * 1e6, fundingTokenDenom)
         )

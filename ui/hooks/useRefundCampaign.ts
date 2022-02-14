@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
-import { defaultExecuteFee } from "@/config"
 import { useRefreshCampaign, useWallet } from "@/hooks"
 import { globalLoadingAtom, signedCosmWasmClient } from "@/state"
 
@@ -47,7 +46,7 @@ export const useRefundCampaign = (campaign: Campaign | null) => {
           walletAddress,
           campaign.fundingToken.address,
           msg,
-          defaultExecuteFee,
+          "auto",
           undefined
         )
         console.log(response)

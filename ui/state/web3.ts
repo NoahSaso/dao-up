@@ -3,11 +3,11 @@ import {
   SigningCosmWasmClient,
 } from "@cosmjs/cosmwasm-stargate"
 import { WasmExtension } from "@cosmjs/cosmwasm-stargate"
-import { QueryClient } from "@cosmjs/stargate"
+import { GasPrice, QueryClient } from "@cosmjs/stargate"
 import { Keplr } from "@keplr-wallet/types"
 import { atom, selector } from "recoil"
 
-import { chainId, endpoint } from "@/config"
+import { chainId, endpoint, gasPrice } from "@/config"
 import { localStorageEffect } from "@/state/effects"
 
 export const fetchKeplr = selector({
@@ -98,7 +98,9 @@ export const signedCosmWasmClient = selector({
     if (!signer) return
 
     try {
-      return await SigningCosmWasmClient.connectWithSigner(endpoint, signer)
+      return await SigningCosmWasmClient.connectWithSigner(endpoint, signer, {
+        gasPrice: GasPrice.fromString(gasPrice),
+      })
     } catch (error) {
       console.error(error)
     }

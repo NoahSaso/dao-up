@@ -27,7 +27,6 @@ import {
   daoUpDAOAddress,
   daoUpFee,
   daoUpFeeNum,
-  defaultExecuteFee,
   escrowContractCodeId,
   fundingTokenDenom,
   payTokenSymbol,
@@ -173,7 +172,7 @@ const CreateContent = () => {
           escrowContractCodeId,
           msg,
           `[DAO Up!] ${newCampaign.name}`,
-          defaultExecuteFee
+          "auto"
         )
 
         return contractAddress

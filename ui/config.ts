@@ -25,9 +25,4 @@ export const denyListContractAddress =
 
 export const sentryDSN = process.env.NEXT_PUBLIC_SENTRY_DSN!
 
-const feeDenom = process.env.NEXT_PUBLIC_FEE_DENOM!
-export const defaultExecuteFee: StdFee = {
-  amount: coins(100000, feeDenom),
-  // TODO: Calibrate.
-  gas: "666666",
-}
+export const gasPrice = process.env.NEXT_PUBLIC_GAS_PRICE!
