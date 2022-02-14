@@ -1,7 +1,7 @@
 import { coin } from "@cosmjs/stargate"
 import type { NextPage } from "next"
 import { useRouter } from "next/router"
-import { FC, useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { FaEye, FaEyeSlash } from "react-icons/fa"
 import { IoCheckmark, IoWarning } from "react-icons/io5"
@@ -61,7 +61,7 @@ const Create: NextPage = () => (
   </>
 )
 
-const CreateContent: FC = () => {
+const CreateContent = () => {
   const { push: routerPush } = useRouter()
   const { walletAddress, connect, connected, connectError } = useWallet()
   const client = useRecoilValue(signedCosmWasmClient)

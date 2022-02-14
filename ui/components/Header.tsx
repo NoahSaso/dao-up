@@ -40,7 +40,7 @@ const NavItem: FC<NavItemProps> = ({ href, children, action, className }) => {
   )
 }
 
-export const Header: FC = () => (
+export const Header = () => (
   <header className="p-5 xs:p-8 sm:p-10">
     <nav className="flex flex-row justify-between items-center gap-4">
       <Link href="/">
