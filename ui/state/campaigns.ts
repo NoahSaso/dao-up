@@ -2,6 +2,7 @@ import { QueryContractsByCodeResponse } from "cosmjs-types/cosmwasm/wasm/v1/quer
 import { atom, atomFamily, selector, selectorFamily, waitForAll } from "recoil"
 
 import {
+  chainName,
   daoUrlPrefix,
   denyListContractAddress,
   escrowContractCodeId,
@@ -560,8 +561,7 @@ export const daoConfig = selectorFamily<DAOConfigResponse, string | undefined>({
         )
           return {
             config: null,
-            error:
-              "DAO does not exist on chain (ensure your DAO exists on the Juno Testnet chain).",
+            error: `DAO does not exist on chain (ensure your DAO exists on the ${chainName} chain).`,
           }
 
         return { config: null, error: `${error}` }
