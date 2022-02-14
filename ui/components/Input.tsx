@@ -111,6 +111,7 @@ interface SwitchProps {
   onClick?: () => void
   className?: string
 }
+
 export const Switch: FunctionComponent<SwitchProps> = ({
   on,
   onClick,

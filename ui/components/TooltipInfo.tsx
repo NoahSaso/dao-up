@@ -7,6 +7,7 @@ interface TooltipInfoProps {
   size?: number
   className?: string
 }
+
 export const TooltipInfo: FunctionComponent<TooltipInfoProps> = ({
   text,
   size,

@@ -13,6 +13,7 @@ interface NavItemProps {
   action?: boolean
   className?: string
 }
+
 const NavItem: FunctionComponent<NavItemProps> = ({
   href,
   children,

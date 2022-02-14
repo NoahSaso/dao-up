@@ -51,6 +51,7 @@ interface CampaignProgressProps extends CampaignProps {
   showPledged?: boolean
   hidePercent?: boolean
 }
+
 export const CampaignProgress: FunctionComponent<CampaignProgressProps> = ({
   campaign: { status, pledged, goal },
   className,
@@ -139,6 +140,7 @@ interface CampaignImageProps {
   imageUrl?: string
   className?: string
 }
+
 export const CampaignImage: FunctionComponent<CampaignImageProps> = ({
   imageUrl,
   className,
@@ -160,6 +162,7 @@ interface CampaignPlatformLinkProps {
   label: string
   Icon?: IconType
 }
+
 export const CampaignPlatformLink: FunctionComponent<
   CampaignPlatformLinkProps
 > = ({ href, label, Icon }) => (
@@ -177,6 +180,7 @@ export const CampaignPlatformLink: FunctionComponent<
 interface CampaignActionProps {
   action: CampaignAction
 }
+
 export const CampaignAction: FunctionComponent<CampaignActionProps> = ({
   action: { when, address, amount, type },
 }) => (

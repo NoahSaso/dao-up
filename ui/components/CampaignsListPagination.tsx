@@ -10,6 +10,7 @@ interface CampaignsListPaginationProps {
   goForward: () => void
   className?: string
 }
+
 export const CampaignsListPagination: FunctionComponent<
   CampaignsListPaginationProps
 > = ({ canGoBack, canGoForward, goBack, goForward, className }) => (
