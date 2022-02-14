@@ -1,14 +1,15 @@
 import cn from "classnames"
 import { FC } from "react"
 
-import { payTokenSymbol } from "../helpers/config"
-import { prettyPrintDecimal } from "../helpers/number"
 import {
   ButtonLink,
   CampaignFavoriteToggle,
   CampaignProgress,
   CampaignStatus,
-} from "."
+  CardWrapper,
+} from "@/components"
+import { payTokenSymbol } from "@/config"
+import { prettyPrintDecimal } from "@/helpers"
 
 interface CampaignInfoCardProps {
   campaign: Campaign
@@ -26,11 +27,8 @@ export const CampaignInfoCard: FC<CampaignInfoCardProps> = ({
   } = campaign
 
   return (
-    <div
-      className={cn(
-        "bg-card rounded-3xl p-8 flex flex-col items-start max-w-full relative",
-        className
-      )}
+    <CardWrapper
+      className={cn("flex flex-col items-start max-w-full relative", className)}
     >
       <div className="flex flex-row justify-between items-center self-stretch mb-4">
         <CampaignStatus campaign={campaign} />
@@ -54,6 +52,6 @@ export const CampaignInfoCard: FC<CampaignInfoCardProps> = ({
       {/* TODO: Display backers. */}
       {/* <h3 className="mt-6 text-green text-3xl">{backers.toLocaleString()}</h3>
       <p className="text-light text-sm">Backers</p> */}
-    </div>
+    </CardWrapper>
   )
 }

@@ -2,27 +2,24 @@ import { FC, useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { useSetRecoilState } from "recoil"
 
-import { payTokenSymbol } from "../helpers/config"
-import { numberPattern } from "../helpers/form"
-import { prettyPrintDecimal } from "../helpers/number"
-import { useContributeCampaign } from "../hooks/useContributeCampaign"
-import { useWallet } from "../hooks/useWallet"
-import { favoriteCampaignAddressesAtom } from "../state/campaigns"
-import { Button } from "./Button"
-import { FormInput } from "./Input"
+import { Button, FormInput } from "@/components"
+import { payTokenSymbol } from "@/config"
+import { numberPattern, prettyPrintDecimal } from "@/helpers"
+import { useContributeCampaign, useWallet } from "@/hooks"
+import { favoriteCampaignAddressesAtom } from "@/state"
 
 interface ContributionForm {
   contribution?: number
 }
 
-interface ContributeCardProps {
+interface ContributeFormProps {
   campaign: Campaign
-  suggestFundingToken: () => Promise<void>
+  onFundSuccess?: () => void | Promise<void>
 }
 
-export const ContributeCard: FC<ContributeCardProps> = ({
+export const ContributeForm: FC<ContributeFormProps> = ({
   campaign,
-  suggestFundingToken,
+  onFundSuccess,
 }) => {
   const {
     goal,
@@ -72,15 +69,14 @@ export const ContributeCard: FC<ContributeCardProps> = ({
   const doContribution = async ({ contribution }: ContributionForm) => {
     if (!contribution) return
 
-    // TODO: Add success display.
     if (await contributeCampaign(contribution)) {
-      // Attempt to add token to Keplr.
-      await suggestFundingToken()
-
+      // Add to favorites so user can access it quickly.
       addFavorite(campaign.address)
 
       // Empty form fields.
       reset()
+
+      await onFundSuccess?.()
     }
   }
 

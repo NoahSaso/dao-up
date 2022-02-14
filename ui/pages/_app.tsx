@@ -6,9 +6,8 @@ import Head from "next/head"
 import { FC } from "react"
 import { RecoilRoot, useRecoilValue } from "recoil"
 
-import { Header, Loader, Suspense } from "../components"
-import { Footer } from "../components/Footer"
-import { globalLoadingAtom } from "../state/loading"
+import { BetaAlert, Footer, Header, Loader, Suspense } from "@/components"
+import { globalLoadingAtom } from "@/state"
 
 const Title = "DAO Up!"
 const Description =
@@ -35,6 +34,9 @@ const DAOUp: FC<AppProps> = ({ Component, pageProps }) => {
       <Suspense loader={{ overlay: true }}>
         <main>
           <Component {...pageProps} />
+
+          {/* Manages its own visibility and state localStorage. */}
+          <BetaAlert />
         </main>
       </Suspense>
 

@@ -4,23 +4,25 @@ import { FC, useEffect, useState } from "react"
 import { useRecoilValue } from "recoil"
 
 import {
+  Alert,
   BalanceRefundCard,
   CampaignAction,
   CampaignDetails,
   CampaignInfoCard,
   CenteredColumn,
+  ContributeForm,
+  ContributionGraph,
   FundPendingCard,
   GovernanceCard,
   Loader,
   ResponsiveDecoration,
   Suspense,
   WalletMessage,
-} from "../../components"
-import { ContributeCard } from "../../components/ContributeCard"
-import { useWallet } from "../../hooks/useWallet"
-import { suggestToken } from "../../services/keplr"
-import { fetchCampaign, fetchCampaignActions } from "../../state/campaigns"
-import { Status } from "../../types"
+} from "@/components"
+import { useWallet } from "@/hooks"
+import { suggestToken } from "@/services"
+import { fetchCampaign, fetchCampaignActions } from "@/state"
+import { Status } from "@/types"
 
 export const Campaign: NextPage = () => {
   const router = useRouter()
@@ -77,6 +79,10 @@ const CampaignContent: FC<CampaignContentProps> = ({
   const [showAddFundingToken, setShowAddFundingToken] = useState(false)
   const [showAddGovToken, setShowAddGovToken] = useState(false)
 
+  // Display successful contribution alert.
+  const [showContributionSuccessAlert, setShowContributionSuccessAlert] =
+    useState(false)
+
   // If page not ready, display loader.
   if (!isReady) return <Loader overlay />
   // Display nothing (redirecting to campaigns list, so this is just a type check).
@@ -88,7 +94,8 @@ const CampaignContent: FC<CampaignContentProps> = ({
 
     dao: { url: daoUrl },
 
-    govToken: { address: govTokenAddress },
+    fundingToken: { symbol: fundingTokenSymbol },
+    govToken: { address: govTokenAddress, symbol: govTokenSymbol },
   } = campaign ?? {}
 
   const suggestFundingToken = async () =>
@@ -125,9 +132,15 @@ const CampaignContent: FC<CampaignContentProps> = ({
             {status === Status.Pending ? (
               <FundPendingCard campaign={campaign} />
             ) : status === Status.Open ? (
-              <ContributeCard
+              <ContributeForm
                 campaign={campaign}
-                suggestFundingToken={suggestFundingToken}
+                onFundSuccess={async () => {
+                  // Attempt to add token to Keplr.
+                  await suggestFundingToken()
+
+                  // Show success message.
+                  setShowContributionSuccessAlert(true)
+                }}
               />
             ) : undefined}
 
@@ -144,7 +157,7 @@ const CampaignContent: FC<CampaignContentProps> = ({
             )}
           </div>
 
-          <div className="flex flex-col flex-wrap self-stretch gap-8 flex-1">
+          <div className="flex flex-col self-stretch gap-8 flex-1">
             <CampaignInfoCard campaign={campaign} className="hidden lg:block" />
 
             {/* TODO: Show for funded campaigns by storing initial fund amount in contract state and use that instead (since govTokenCampaignBalance won't remain constant). */}
@@ -152,23 +165,53 @@ const CampaignContent: FC<CampaignContentProps> = ({
           </div>
         </div>
 
-        <h2 className="text-green text-xl mt-8">Activity</h2>
+        <h2 className="text-green text-xl mt-8 mb-2">Activity</h2>
+
         {!!campaignActionsError && (
-          <p className="text-orange my-4">{campaignActionsError}</p>
+          <p className="text-orange my-4 w-full lg:w-3/5">
+            {campaignActionsError}
+          </p>
         )}
 
-        {!!actions && (
-          <div className="w-full lg:w-3/5">
-            {actions.length ? (
-              actions.map((item, idx) => (
-                <CampaignAction key={idx} action={item} />
-              ))
-            ) : (
-              <p>None yet.</p>
-            )}
+        {actions && actions.length > 1 && (
+          <div className="flex-1 max-w-sm my-4">
+            <ContributionGraph actions={actions} />
           </div>
         )}
+
+        <div className="w-full lg:w-3/5">
+          {actions?.length ? (
+            actions.map((item, idx) => (
+              <CampaignAction key={idx} action={item} />
+            ))
+          ) : (
+            <p>None yet.</p>
+          )}
+        </div>
       </CenteredColumn>
+
+      <Alert
+        visible={showContributionSuccessAlert}
+        hide={() => setShowContributionSuccessAlert(false)}
+        title="Contribution successful!"
+      >
+        <p>
+          Once the campaign is fully funded, return to this page to join the{" "}
+          {daoUrl ? (
+            <a
+              href={daoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:no-underline"
+            >
+              DAO
+            </a>
+          ) : (
+            "DAO"
+          )}
+          .
+        </p>
+      </Alert>
     </>
   )
 }

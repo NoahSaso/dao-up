@@ -1,7 +1,7 @@
 import cn from "classnames"
 import { FC } from "react"
 
-import { Color, ColorType } from "../types"
+import { Color, ColorType } from "@/types"
 
 interface StatusIndicatorProps {
   color: ColorType

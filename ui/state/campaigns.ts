@@ -6,12 +6,12 @@ import {
   denyListContractAddress,
   escrowContractCodeId,
   featuredListContractAddress,
-} from "../helpers/config"
-import { extractPageInfo } from "../helpers/filter"
-import { campaignsFromResponses, filterCampaigns } from "../services/campaigns"
-import { CampaignActionType, Status } from "../types"
-import { localStorageEffectJSON } from "./effects"
-import { cosmWasmClient, cosmWasmQueryClient, walletAddress } from "./web3"
+} from "@/config"
+import { extractPageInfo } from "@/helpers"
+import { campaignsFromResponses, filterCampaigns } from "@/services"
+import { cosmWasmClient, cosmWasmQueryClient, walletAddress } from "@/state"
+import { localStorageEffectJSON } from "@/state/effects"
+import { CampaignActionType, Status } from "@/types"
 
 export const campaignStateId = atomFamily<number, string | undefined>({
   key: "campaignStateId",

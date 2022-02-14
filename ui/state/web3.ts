@@ -7,8 +7,8 @@ import { QueryClient } from "@cosmjs/stargate"
 import { Keplr } from "@keplr-wallet/types"
 import { atom, selector } from "recoil"
 
-import { chainId, endpoint } from "../helpers/config"
-import { localStorageEffect } from "./effects"
+import { chainId, endpoint } from "@/config"
+import { localStorageEffect } from "@/state/effects"
 
 export const fetchKeplr = selector({
   key: "fetchKeplr",

@@ -2,7 +2,7 @@ import cn from "classnames"
 import { FC, useState } from "react"
 import { IoCaretDownSharp, IoCheckmark } from "react-icons/io5"
 
-import { Button } from "."
+import { Button } from "@/components"
 
 interface SelectItem {
   label: string

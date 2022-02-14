@@ -1,4 +1,3 @@
-import cn from "classnames"
 import type { NextPage } from "next"
 import { useRouter } from "next/router"
 import {
@@ -15,15 +14,16 @@ import { useRecoilValue } from "recoil"
 import {
   AllCampaignsCard,
   Button,
+  CampaignsListPagination,
   CenteredColumn,
   Input,
   ResponsiveDecoration,
   Select,
   Suspense,
-} from "../components"
-import { addFilter, filterExists, removeFilter } from "../helpers/filter"
-import { featuredCampaigns, filteredCampaigns } from "../state/campaigns"
-import { Color, Status } from "../types"
+} from "@/components"
+import { addFilter, filterExists, removeFilter } from "@/helpers"
+import { featuredCampaigns, filteredCampaigns } from "@/state"
+import { Color, Status } from "@/types"
 
 const minPage = 1
 const pageSize = 20
@@ -166,30 +166,6 @@ const Campaigns: NextPage = () => {
   )
 }
 
-interface PaginationProps {
-  canGoBack: boolean
-  canGoForward: boolean
-  goBack: () => void
-  goForward: () => void
-  className?: string
-}
-const Pagination: FC<PaginationProps> = ({
-  canGoBack,
-  canGoForward,
-  goBack,
-  goForward,
-  className,
-}) => (
-  <div className={cn("flex flex-row justify-between items-center", className)}>
-    <Button onClick={goBack} disabled={!canGoBack}>
-      Back
-    </Button>
-    <Button onClick={goForward} disabled={!canGoForward}>
-      Next
-    </Button>
-  </div>
-)
-
 interface CampaignsContentProps {
   filter: string
   page: number
@@ -252,7 +228,7 @@ const CampaignsContent: FC<CampaignsContentProps> = ({
   return (
     <>
       {(canGoBack || canGoForward) && !!showingCampaigns && (
-        <Pagination
+        <CampaignsListPagination
           className="-mt-2 mb-6"
           canGoBack={canGoBack}
           canGoForward={canGoForward}
@@ -273,7 +249,7 @@ const CampaignsContent: FC<CampaignsContentProps> = ({
       </div>
 
       {(canGoBack || canGoForward) && !!showingCampaigns && (
-        <Pagination
+        <CampaignsListPagination
           className="my-6"
           canGoBack={canGoBack}
           canGoForward={canGoForward}

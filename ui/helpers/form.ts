@@ -1,4 +1,4 @@
-import { chainPrefix } from "./config"
+import { chainPrefix } from "@/config"
 
 export const walletAddressPattern = {
   value: new RegExp(`^${chainPrefix}[a-km-zA-HJ-NP-Z0-9]{39}$`, "i"),

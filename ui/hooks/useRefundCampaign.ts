@@ -1,11 +1,9 @@
 import { useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
-import { defaultExecuteFee } from "../helpers/config"
-import { globalLoadingAtom } from "../state/loading"
-import { signedCosmWasmClient } from "../state/web3"
-import { useRefreshCampaign } from "./useRefreshCampaign"
-import { useWallet } from "./useWallet"
+import { defaultExecuteFee } from "@/config"
+import { useRefreshCampaign, useWallet } from "@/hooks"
+import { globalLoadingAtom, signedCosmWasmClient } from "@/state"
 
 export const useRefundCampaign = (campaign: Campaign | null) => {
   const client = useRecoilValue(signedCosmWasmClient)

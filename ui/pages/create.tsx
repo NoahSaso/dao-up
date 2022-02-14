@@ -21,7 +21,7 @@ import {
   Loader,
   ResponsiveDecoration,
   Suspense,
-} from "../components"
+} from "@/components"
 import {
   cw20CodeId,
   daoUpDAOAddress,
@@ -31,15 +31,17 @@ import {
   escrowContractCodeId,
   fundingTokenDenom,
   payTokenSymbol,
-} from "../helpers/config"
-import { daoAddressPattern, numberPattern, urlPattern } from "../helpers/form"
-import { prettyPrintDecimal } from "../helpers/number"
-import { useWallet } from "../hooks/useWallet"
-import { defaultNewCampaign, newCampaignFields } from "../services/campaigns"
-import { daoConfig } from "../state/campaigns"
-import { globalLoadingAtom } from "../state/loading"
-import { signedCosmWasmClient } from "../state/web3"
-import { Color } from "../types"
+} from "@/config"
+import {
+  daoAddressPattern,
+  numberPattern,
+  prettyPrintDecimal,
+  urlPattern,
+} from "@/helpers"
+import { useWallet } from "@/hooks"
+import { defaultNewCampaign, newCampaignFields } from "@/services"
+import { daoConfig, globalLoadingAtom, signedCosmWasmClient } from "@/state"
+import { Color } from "@/types"
 
 const validUrlOrUndefined = (u: string | undefined) =>
   u && u.match(urlPattern.value) ? u : undefined
@@ -193,7 +195,6 @@ const CreateContent: FC = () => {
         return
       }
 
-      // TODO: Perform final validation here?
       const address = await createCampaign(values as unknown as NewCampaign)
 
       // If the campaign was created successfully, redirect to the campaign page.

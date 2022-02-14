@@ -3,8 +3,9 @@ import cn from "classnames"
 import { FC } from "react"
 import { Pie } from "react-chartjs-2"
 
-import { prettyPrintDecimal } from "../helpers/number"
-import theme from "../helpers/theme"
+import { CardWrapper } from "@/components"
+import { prettyPrintDecimal } from "@/helpers"
+import theme from "@/theme"
 
 ChartJS.register(ArcElement)
 
@@ -52,7 +53,7 @@ export const GovernanceCard: FC<GovernanceCardProps> = ({ campaign }) => {
     govTokenSupply - govTokenDAOTreasuryBalance - govTokenCampaignBalance
 
   return (
-    <div className="bg-card rounded-3xl p-8 flex flex-col items-start max-w-full">
+    <CardWrapper className="flex flex-col items-start max-w-full">
       <h3 className="text-green text-3xl">
         {prettyPrintDecimal(campaignVotingPower, 2)}% governance
       </h3>
@@ -114,7 +115,6 @@ export const GovernanceCard: FC<GovernanceCardProps> = ({ campaign }) => {
           },
         ]}
       />
-      <div className="flex flex-col"></div>
-    </div>
+    </CardWrapper>
   )
 }

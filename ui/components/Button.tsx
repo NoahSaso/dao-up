@@ -1,7 +1,7 @@
 import classnames from "classnames"
 import { ButtonHTMLAttributes, DetailedHTMLProps, FC } from "react"
 
-import { Color, ColorType } from "../types"
+import { Color, ColorType } from "@/types"
 
 type BoolString = "true" | "false"
 

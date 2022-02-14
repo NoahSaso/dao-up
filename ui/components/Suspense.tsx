@@ -4,7 +4,7 @@ import {
   SuspenseProps as OldSuspenseProps,
 } from "react"
 
-import { Loader, LoaderProps } from "."
+import { Loader, LoaderProps } from "@/components"
 
 interface SuspenseProps extends Partial<OldSuspenseProps> {
   loader?: LoaderProps

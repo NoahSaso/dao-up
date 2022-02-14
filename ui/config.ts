@@ -1,7 +1,5 @@
 import { coins, StdFee } from "@cosmjs/stargate"
 
-import * as theme from "./theme"
-
 export const endpoint = process.env.NEXT_PUBLIC_RPC_ENDPOINT!
 
 export const chainId = process.env.NEXT_PUBLIC_CHAIN_ID!
@@ -28,5 +26,3 @@ export const defaultExecuteFee: StdFee = {
   // TODO: Calibrate.
   gas: "666666",
 }
-
-export { theme }

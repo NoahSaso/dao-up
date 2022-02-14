@@ -4,15 +4,16 @@ import { FC, PropsWithChildren } from "react"
 import ReactMarkdown from "react-markdown"
 import { useRecoilValueLoadable } from "recoil"
 
-import { prettyPrintDecimal } from "../helpers/number"
-import { walletTokenBalance } from "../state/campaigns"
 import {
   CampaignFavoriteToggle,
   CampaignImage,
   CampaignProgress,
   CampaignStatus,
+  CardWrapper,
   Loader,
-} from "."
+} from "@/components"
+import { prettyPrintDecimal } from "@/helpers"
+import { walletTokenBalance } from "@/state"
 
 interface CampaignCardWrapperProps extends PropsWithChildren<CampaignProps> {
   contentClassName?: string
@@ -24,13 +25,9 @@ const CampaignCardWrapper: FC<CampaignCardWrapperProps> = ({
   contentClassName,
 }) => {
   return (
-    <div
+    <CardWrapper
       className={cn(
-        "bg-card rounded-3xl",
-        "border border-card hover:border-green",
-        "transition",
-        "cursor-pointer",
-        "relative",
+        "border border-card hover:border-green transition cursor-pointer relative lg:p-6 2xl:p-8",
         className
       )}
     >
@@ -40,7 +37,7 @@ const CampaignCardWrapper: FC<CampaignCardWrapperProps> = ({
       />
       <Link href={`/campaign/${campaign.address}`}>
         {/* The campaigns list splits into two columns at lg, and these cards become narrow again, so reduce padding and then increase again. */}
-        <a className="flex flex-col justify-start items-stretch sm:flex-row p-6 sm:p-8 lg:p-6 2xl:p-8">
+        <a className="flex flex-col justify-start items-stretch sm:flex-row">
           <CampaignImage imageUrl={campaign.imageUrl} />
           <div
             className={cn(
@@ -57,7 +54,7 @@ const CampaignCardWrapper: FC<CampaignCardWrapperProps> = ({
           </div>
         </a>
       </Link>
-    </div>
+    </CardWrapper>
   )
 }
 
@@ -75,7 +72,8 @@ export const AllCampaignsCard: FC<CampaignProps> = ({
     <ReactMarkdown
       children={campaign.description}
       linkTarget="_blank"
-      className="mt-2 line-clamp-2"
+      // line-clamp is weird on Safari, so just set max height to twice the line height and hide overflow.
+      className="mt-2 line-clamp-2 leading-6 max-h-12 overflow-hidden"
     />
   </CampaignCardWrapper>
 )

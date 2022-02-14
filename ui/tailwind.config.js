@@ -1,5 +1,5 @@
 const { fontFamily, screens } = require("tailwindcss/defaultTheme")
-const { colors } = require("./helpers/theme")
+const { colors } = require("./theme")
 
 module.exports = {
   content: [
