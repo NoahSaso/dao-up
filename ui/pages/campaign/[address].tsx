@@ -5,7 +5,9 @@ import { useRecoilValue } from "recoil"
 
 import {
   Alert,
-  BalanceRefundCard,
+  BalanceRefundJoinCard,
+  Button,
+  ButtonLink,
   CampaignAction,
   CampaignDetails,
   CampaignInfoCard,
@@ -19,7 +21,8 @@ import {
   Suspense,
   WalletMessage,
 } from "@/components"
-import { useWallet } from "@/hooks"
+import { daoUrlPrefix } from "@/config"
+import { useRefundJoinDAOForm, useWallet } from "@/hooks"
 import { suggestToken } from "@/services"
 import { fetchCampaign, fetchCampaignActions } from "@/state"
 import { Status } from "@/types"
@@ -80,9 +83,42 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   const [showAddFundingToken, setShowAddFundingToken] = useState(false)
   const [showAddGovToken, setShowAddGovToken] = useState(false)
 
+  // Display successful fund pending alert by setting the URL to the proposal.
+  const [fundCampaignProposalUrl, setFundCampaignProposalUrl] = useState("")
   // Display successful contribution alert.
   const [showContributionSuccessAlert, setShowContributionSuccessAlert] =
     useState(false)
+  // Display successful join DAO alert.
+  const [showJoinDAOSuccessAlert, setShowJoinDAOSuccessAlert] = useState(false)
+
+  const suggestFundingToken = async () =>
+    keplr &&
+    campaign?.fundingToken?.address &&
+    setShowAddFundingToken(
+      !(await suggestToken(keplr, campaign.fundingToken.address))
+    )
+  const suggestGovToken = async () =>
+    keplr &&
+    campaign?.govToken?.address &&
+    setShowAddGovToken(!(await suggestToken(keplr, campaign.govToken.address)))
+
+  // Refund / Join DAO Form for campaign funded pop up.
+  const onRefundJoinDAOSuccess = async () => {
+    if (status === Status.Funded) {
+      // Hide contribution success message in case user joins the DAO from there.
+      setShowContributionSuccessAlert(false)
+
+      // Show success message.
+      setShowJoinDAOSuccessAlert(true)
+
+      // Attempt to add token to Keplr if receiving governance tokens.
+      await suggestGovToken()
+    }
+  }
+  const { onSubmit: onSubmitRefundJoinDAO } = useRefundJoinDAOForm(
+    campaign,
+    onRefundJoinDAOSuccess
+  )
 
   // If page not ready, display loader.
   if (!isReady) return <Loader overlay />
@@ -93,19 +129,8 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
     name,
     status,
 
-    dao: { url: daoUrl },
-
-    fundingToken: { symbol: fundingTokenSymbol },
-    govToken: { address: govTokenAddress, symbol: govTokenSymbol },
-  } = campaign ?? {}
-
-  const suggestFundingToken = async () =>
-    keplr &&
-    setShowAddFundingToken(
-      !(await suggestToken(keplr, campaign.fundingToken.address))
-    )
-  const suggestGovToken = async () =>
-    keplr && setShowAddGovToken(!(await suggestToken(keplr, govTokenAddress)))
+    dao: { address: daoAddress, url: daoUrl },
+  } = campaign
 
   return (
     <>
@@ -131,16 +156,24 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
             {!connected && <WalletMessage />}
 
             {status === Status.Pending ? (
-              <FundPendingCard campaign={campaign} />
+              <FundPendingCard
+                campaign={campaign}
+                onSuccess={(proposalId: string) =>
+                  // Show success message with proposal URL.
+                  setFundCampaignProposalUrl(
+                    `${daoUrlPrefix}${daoAddress}/proposals/${proposalId}`
+                  )
+                }
+              />
             ) : status === Status.Open ? (
               <ContributeForm
                 campaign={campaign}
-                onFundSuccess={async () => {
-                  // Attempt to add token to Keplr.
-                  await suggestFundingToken()
-
+                onSuccess={async () => {
                   // Show success message.
                   setShowContributionSuccessAlert(true)
+
+                  // Attempt to add token to Keplr.
+                  await suggestFundingToken()
                 }}
               />
             ) : undefined}
@@ -148,12 +181,13 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
             <CampaignInfoCard campaign={campaign} className="lg:hidden" />
 
             {connected && (
-              <BalanceRefundCard
+              <BalanceRefundJoinCard
                 campaign={campaign}
                 showAddGovToken={showAddGovToken}
                 suggestGovToken={suggestGovToken}
                 showAddFundingToken={showAddFundingToken}
                 suggestFundingToken={suggestFundingToken}
+                onSuccess={onRefundJoinDAOSuccess}
               />
             )}
           </div>
@@ -191,13 +225,79 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
         </div>
       </CenteredColumn>
 
+      {/* Fund pending success alert. */}
+      <Alert
+        visible={!!fundCampaignProposalUrl}
+        hide={() => setFundCampaignProposalUrl("")}
+        title="Proposal created!"
+      >
+        <p>
+          This campaign will activate once the proposal is approved and executed
+          on DAO DAO. Refresh this page after the proposal executes.
+        </p>
+
+        <ButtonLink href={fundCampaignProposalUrl} className="mt-5" cardOutline>
+          View Proposal
+        </ButtonLink>
+      </Alert>
+
+      {/* Contribution success alert. */}
       <Alert
         visible={showContributionSuccessAlert}
         hide={() => setShowContributionSuccessAlert(false)}
         title="Contribution successful!"
       >
+        {status === Status.Funded ? (
+          <>
+            <p>
+              The campaign is now funded and you can join the{" "}
+              {daoUrl ? (
+                <a
+                  href={daoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:no-underline"
+                >
+                  DAO
+                </a>
+              ) : (
+                "DAO"
+              )}
+              ! Join by clicking the button below.
+            </p>
+
+            <form onSubmit={onSubmitRefundJoinDAO}>
+              <Button submitLabel="Join DAO" className="mt-5" cardOutline />
+            </form>
+          </>
+        ) : (
+          <p>
+            Once the campaign is fully funded, return to this page to join the{" "}
+            {daoUrl ? (
+              <a
+                href={daoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:no-underline"
+              >
+                DAO
+              </a>
+            ) : (
+              "DAO"
+            )}
+            .
+          </p>
+        )}
+      </Alert>
+
+      {/* Join DAO success alert. */}
+      <Alert
+        visible={showJoinDAOSuccessAlert}
+        hide={() => setShowJoinDAOSuccessAlert(false)}
+        title="You've joined the DAO!"
+      >
         <p>
-          Once the campaign is fully funded, return to this page to join the{" "}
+          You will vote in the{" "}
           {daoUrl ? (
             <a
               href={daoUrl}
@@ -209,9 +309,13 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
             </a>
           ) : (
             "DAO"
-          )}
-          .
+          )}{" "}
+          on DAO DAO going forward.
         </p>
+
+        <ButtonLink href={daoUrl} className="mt-5" cardOutline>
+          Visit the DAO
+        </ButtonLink>
       </Alert>
     </>
   )
