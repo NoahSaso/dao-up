@@ -14,12 +14,12 @@ interface ContributionForm {
 
 interface ContributeFormProps {
   campaign: Campaign
-  onFundSuccess?: () => void | Promise<void>
+  onSuccess?: () => void | Promise<void>
 }
 
 export const ContributeForm: FunctionComponent<ContributeFormProps> = ({
   campaign,
-  onFundSuccess,
+  onSuccess,
 }) => {
   const {
     goal,
@@ -76,7 +76,7 @@ export const ContributeForm: FunctionComponent<ContributeFormProps> = ({
       // Empty form fields.
       reset()
 
-      await onFundSuccess?.()
+      await onSuccess?.()
     }
   }
 
