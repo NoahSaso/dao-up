@@ -1,9 +1,7 @@
 import { FC } from "react"
 
-import { useWallet } from "../hooks/useWallet"
-import { InstallWalletMessage } from "../services/keplr"
-import { CardWrapper } from "."
-import { Button } from "./Button"
+import { useWallet } from "../hooks"
+import { Button, CardWrapper, InstallWalletMessage } from "."
 
 export const WalletMessage: FC = () => {
   const { connect, connectError, installed } = useWallet()

@@ -1,9 +1,9 @@
 import { ReactNode, useCallback, useEffect, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
-import { chainId } from "../helpers/config"
-import { InstallWalletMessage } from "../services/keplr"
-import { fetchKeplr, keplrKeystoreIdAtom, walletAddress } from "../state/web3"
+import { InstallWalletMessage } from "../components"
+import { chainId } from "../config"
+import { fetchKeplr, keplrKeystoreIdAtom, walletAddress } from "../state"
 
 export const useWallet = () => {
   const keplr = useRecoilValue(fetchKeplr)

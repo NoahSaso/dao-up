@@ -5,9 +5,9 @@ import { IoHeart, IoHeartOutline } from "react-icons/io5"
 import TimeAgo from "react-timeago"
 import { useRecoilState } from "recoil"
 
-import { payTokenSymbol } from "../helpers/config"
-import { prettyPrintDecimal } from "../helpers/number"
-import { favoriteCampaignAddressesAtom } from "../state/campaigns"
+import { payTokenSymbol } from "../config"
+import { prettyPrintDecimal } from "../helpers"
+import { favoriteCampaignAddressesAtom } from "../state"
 import { CampaignActionType, Color, Status } from "../types"
 import { Button, StatusIndicator } from "."
 

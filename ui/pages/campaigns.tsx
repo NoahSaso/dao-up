@@ -19,8 +19,8 @@ import {
   Select,
   Suspense,
 } from "../components"
-import { addFilter, filterExists, removeFilter } from "../helpers/filter"
-import { filteredCampaigns } from "../state/campaigns"
+import { addFilter, filterExists, removeFilter } from "../helpers"
+import { filteredCampaigns } from "../state"
 import { Status } from "../types"
 
 const minPage = 1

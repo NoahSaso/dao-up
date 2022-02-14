@@ -1,8 +1,8 @@
 import cn from "classnames"
 import { FC } from "react"
 
-import { payTokenSymbol } from "../../helpers/config"
-import { prettyPrintDecimal } from "../../helpers/number"
+import { payTokenSymbol } from "../../config"
+import { prettyPrintDecimal } from "../../helpers"
 import {
   ButtonLink,
   CampaignFavoriteToggle,

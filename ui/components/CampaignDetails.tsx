@@ -2,7 +2,7 @@ import { FC } from "react"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
 import ReactMarkdown from "react-markdown"
 
-import { CampaignImage, CampaignPlatformLink } from "./CampaignUtils"
+import { CampaignImage, CampaignPlatformLink } from "."
 
 interface CampaignDetailsProps {
   website?: string

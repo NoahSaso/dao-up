@@ -1,6 +1,6 @@
 import { SVGProps } from "react"
 
-const SvgTwitter = (props: SVGProps<SVGSVGElement>) => (
+export const SvgTwitter = (props: SVGProps<SVGSVGElement>) => (
   <svg
     width="1em"
     height="1em"
@@ -18,5 +18,3 @@ const SvgTwitter = (props: SVGProps<SVGSVGElement>) => (
     />
   </svg>
 )
-
-export default SvgTwitter

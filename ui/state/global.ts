@@ -1,6 +1,6 @@
 import { atom } from "recoil"
 
-import { localStorageEffectJSON } from "./effects"
+import { localStorageEffectJSON } from "."
 
 export const globalLoadingAtom = atom({
   key: "globalLoading",

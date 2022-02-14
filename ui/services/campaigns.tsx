@@ -1,7 +1,6 @@
 import fuzzysort from "fuzzysort"
 
-import { getFilterFns } from "../helpers/filter"
-import { prettyPrintDecimal } from "../helpers/number"
+import { getFilterFns, prettyPrintDecimal } from "../helpers"
 import { Status } from "../types"
 
 const renderString = (v: string) => v

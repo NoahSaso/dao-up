@@ -19,9 +19,9 @@ import {
   Suspense,
   WalletMessage,
 } from "../../components"
-import { useWallet } from "../../hooks/useWallet"
-import { suggestToken } from "../../services/keplr"
-import { fetchCampaign, fetchCampaignActions } from "../../state/campaigns"
+import { useWallet } from "../../hooks"
+import { suggestToken } from "../../services"
+import { fetchCampaign, fetchCampaignActions } from "../../state"
 import { Status } from "../../types"
 
 export const Campaign: NextPage = () => {

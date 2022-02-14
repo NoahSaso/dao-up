@@ -5,12 +5,16 @@ import {
   daoUrlPrefix,
   denyListContractAddress,
   escrowContractCodeId,
-} from "../helpers/config"
-import { extractPageInfo } from "../helpers/filter"
-import { campaignsFromResponses, filterCampaigns } from "../services/campaigns"
+} from "../config"
+import { extractPageInfo } from "../helpers"
+import { campaignsFromResponses, filterCampaigns } from "../services"
 import { CampaignActionType, Status } from "../types"
-import { localStorageEffectJSON } from "./effects"
-import { cosmWasmClient, cosmWasmQueryClient, walletAddress } from "./web3"
+import {
+  cosmWasmClient,
+  cosmWasmQueryClient,
+  localStorageEffectJSON,
+  walletAddress,
+} from "."
 
 export const campaignStateId = atomFamily<number, string | undefined>({
   key: "campaignStateId",
