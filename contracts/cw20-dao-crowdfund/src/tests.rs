@@ -122,15 +122,13 @@ fn instantiate_escrow(
     dao_addr: Addr,
     escrow_id: u64,
     cw20_id: u64,
-    expected_dao_code_id: u64,
     funding_goal: u64,
 ) -> Addr {
     let instantiate = InstantiateMsg {
         dao_address: dao_addr,
         cw20_code_id: cw20_id,
-        expected_dao_code_id,
-        fee: Decimal::percent(3),
-        fee_receiver: Addr::unchecked(DAO_UP_ADDR),
+	fee: Decimal::percent(3),
+	fee_receiver: Addr::unchecked(DAO_UP_ADDR),
         funding_goal: Coin {
             denom: CHAIN_DENOM.to_string(),
             amount: Uint128::from(funding_goal),
@@ -272,30 +270,6 @@ fn close_escrow_from_dao(app: &mut App, dao_addr: Addr, escrow_addr: Addr, token
 }
 
 #[test]
-#[should_panic(
-    expected = "Instantiation error: (Code ID of `dao_address` (2) does not match expected code ID (3))"
-)]
-fn test_instantiation_with_imposter_dao_fails() {
-    let mut app = App::default();
-
-    let cw20_id = app.store_code(cw20_contract());
-    let dao_id = app.store_code(dao_dao_dao_contract());
-    let imposter_dao_id = app.store_code(dao_dao_dao_contract());
-    let stake_id = app.store_code(stake_cw20_contract());
-    let escrow_id = app.store_code(escrow_contract());
-
-    let imposter_addr = instantiate_dao(&mut app, imposter_dao_id, cw20_id, stake_id);
-    instantiate_escrow(
-        &mut app,
-        imposter_addr,
-        escrow_id,
-        cw20_id,
-        dao_id,
-        100_000_000,
-    );
-}
-
-#[test]
 fn test_campaign_creation() {
     let mut app = App::new(|router, _, storage| {
         router
@@ -317,14 +291,8 @@ fn test_campaign_creation() {
     let escrow_id = app.store_code(escrow_contract());
 
     let dao_addr = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
-    let escrow_addr = instantiate_escrow(
-        &mut app,
-        dao_addr.clone(),
-        escrow_id,
-        cw20_id,
-        dao_id,
-        100_000_000,
-    );
+    let escrow_addr =
+        instantiate_escrow(&mut app, dao_addr.clone(), escrow_id, cw20_id, 100_000_000);
 
     fund_escrow_from_dao(&mut app, dao_addr.clone(), escrow_addr.clone(), 100_000_000);
 
@@ -353,7 +321,7 @@ fn test_campaign_creation() {
         }
     );
     assert_eq!(
-        state.gov_token_info,
+	state.gov_token_info,
         cw20::TokenInfoResponse {
             name: "Bong DAO".to_string(),
             symbol: "BDAO".to_string(),
@@ -435,14 +403,8 @@ fn do_fund_refund(funding_goal: u64, gov_tokens: u64) {
     let escrow_id = app.store_code(escrow_contract());
 
     let dao_addr = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
-    let escrow_addr = instantiate_escrow(
-        &mut app,
-        dao_addr.clone(),
-        escrow_id,
-        cw20_id,
-        dao_id,
-        funding_goal,
-    );
+    let escrow_addr =
+        instantiate_escrow(&mut app, dao_addr.clone(), escrow_id, cw20_id, funding_goal);
 
     fund_escrow_from_dao(&mut app, dao_addr.clone(), escrow_addr.clone(), gov_tokens);
 
@@ -679,14 +641,8 @@ fn test_campaign_completion() {
     let escrow_id = app.store_code(escrow_contract());
 
     let dao_addr = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
-    let escrow_addr = instantiate_escrow(
-        &mut app,
-        dao_addr.clone(),
-        escrow_id,
-        cw20_id,
-        dao_id,
-        funding_goal,
-    );
+    let escrow_addr =
+        instantiate_escrow(&mut app, dao_addr.clone(), escrow_id, cw20_id, funding_goal);
 
     fund_escrow_from_dao(&mut app, dao_addr.clone(), escrow_addr.clone(), gov_tokens);
 
@@ -769,10 +725,7 @@ fn test_campaign_completion() {
         .unwrap();
     assert_eq!(dao_balance.amount, expected_dao);
 
-    let dao_up_balance = app
-        .wrap()
-        .query_balance(Addr::unchecked(DAO_UP_ADDR), CHAIN_DENOM)
-        .unwrap();
+    let dao_up_balance = app.wrap().query_balance(Addr::unchecked(DAO_UP_ADDR), CHAIN_DENOM).unwrap();
     assert_eq!(dao_up_balance.amount, expected_fee);
 }
 
@@ -819,14 +772,8 @@ fn test_campaign_close() {
     let escrow_id = app.store_code(escrow_contract());
 
     let dao_addr = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
-    let escrow_addr = instantiate_escrow(
-        &mut app,
-        dao_addr.clone(),
-        escrow_id,
-        cw20_id,
-        dao_id,
-        funding_goal,
-    );
+    let escrow_addr =
+        instantiate_escrow(&mut app, dao_addr.clone(), escrow_id, cw20_id, funding_goal);
 
     fund_escrow_from_dao(&mut app, dao_addr.clone(), escrow_addr.clone(), gov_tokens);
 

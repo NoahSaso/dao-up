@@ -34,5 +34,5 @@ pub enum ContractError {
     SmallRefund { token_price: Decimal },
 
     #[error("Only open campaigns can be closed.")]
-    InvalidClose {},
+    InvalidClose {}
 }

@@ -1,9 +1,8 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Addr, BankMsg, Binary, Coin, ContractInfoResponse, Decimal, Deps, DepsMut, Env,
-    Fraction, MessageInfo, QueryRequest, Reply, Response, StdResult, SubMsg, Uint128, WasmMsg,
-    WasmQuery,
+    to_binary, Addr, BankMsg, Binary, Coin, Decimal, Deps, DepsMut, Env, Fraction, MessageInfo,
+    Reply, Response, StdResult, SubMsg, Uint128, WasmMsg,
 };
 use cw2::set_contract_version;
 use cw20::Cw20ReceiveMsg;
@@ -29,19 +28,6 @@ pub fn instantiate(
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
     let dao_addr = deps.api.addr_validate(msg.dao_address.as_str())?;
-
-    let dao_contract_info: ContractInfoResponse =
-        deps.querier
-            .query(&QueryRequest::Wasm(WasmQuery::ContractInfo {
-                contract_addr: msg.dao_address.to_string(),
-            }))?;
-    if msg.expected_dao_code_id != dao_contract_info.code_id {
-        return Err(ContractError::Instantiation(format!(
-            "Code ID of `dao_address` ({}) does not match expected code ID ({})",
-            msg.expected_dao_code_id, dao_contract_info.code_id
-        )));
-    }
-
     let dao_config: cw3_dao::query::ConfigResponse = deps
         .querier
         .query_wasm_smart(dao_addr.clone(), &cw3_dao::msg::QueryMsg::GetConfig {})?;
