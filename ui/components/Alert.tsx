@@ -22,7 +22,7 @@ export const Alert: FC<PropsWithChildren<AlertProps>> = ({
     <div
       className={cn(
         "flex justify-center items-center fixed z-50 bg-dark/90 top-0 right-0 bottom-0 left-0",
-        { "cursor-pointer": !hide }
+        { "cursor-pointer": hide }
       )}
       onClick={
         hide
