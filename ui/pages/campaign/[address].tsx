@@ -111,7 +111,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
     campaign?.govToken?.address &&
     setShowAddGovToken(!(await suggestToken(keplr, campaign.govToken.address)))
 
-  // Refund / Join DAO Form for campaign funded pop up.
+  // Handler for successful DAO join, show relevant alerts.
   const onRefundJoinDAOSuccess = async () => {
     if (status === Status.Funded) {
       // Hide contribution success message in case user joins the DAO from there.
@@ -124,6 +124,9 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
       await suggestGovToken()
     }
   }
+  // Refund / Join DAO Form for joining DAO from funded banner and last contributor's contribution alert.
+  // The last contributor to the campaign (the one who causes the change from open to funded)
+  // will receive a special message prompting them to join the DAO immediately.
   const { onSubmit: onSubmitRefundJoinDAO } = useRefundJoinDAOForm(
     campaign,
     onRefundJoinDAOSuccess
