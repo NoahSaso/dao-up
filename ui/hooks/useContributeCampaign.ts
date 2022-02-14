@@ -3,6 +3,7 @@ import { useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
 import { defaultExecuteFee, fundingTokenDenom } from "@/config"
+import { parseError } from "@/helpers"
 import { useRefreshCampaign, useWallet } from "@/hooks"
 import { globalLoadingAtom, signedCosmWasmClient } from "@/state"
 
@@ -56,16 +57,7 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
         return true
       } catch (error) {
         console.error(error)
-
-        // Detect certain types of errors.
-        if (
-          error instanceof Error &&
-          error.message.includes("insufficient funds")
-        ) {
-          setContributeCampaignError("Insufficient funds.")
-        } else {
-          setContributeCampaignError(`${error}`)
-        }
+        setContributeCampaignError(parseError(error))
 
         return false
       } finally {

@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/nextjs"
+
 import { CommonError } from "./../types"
 
 // Passing a map will allow common errors to be mapped to a custom error message for the given context.
@@ -5,7 +7,10 @@ export const parseError = (
   error: Error | any,
   map?: Partial<Record<CommonError, string>>
 ) => {
-  if (!(error instanceof Error)) return `${error}`
+  if (!(error instanceof Error)) {
+    Sentry.captureException(new Error(`${error}`))
+    return `${error}`
+  }
 
   const { message } = error
   let recognizedError
@@ -24,6 +29,9 @@ export const parseError = (
   if (recognizedError) {
     return (map && map[recognizedError]) || recognizedError
   }
+
+  // Send to Sentry since we were not expecting it.
+  Sentry.captureException(error)
 
   // If no recognized error, return default error message.
   return message
