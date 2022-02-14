@@ -1,4 +1,4 @@
-import { SvgDiscord, SvgGitHub, SvgTwitter } from "@/components"
+import { DiscordIcon, GitHubIcon, TwitterIcon } from "@/components"
 
 export const Footer = () => (
   <div
@@ -12,7 +12,7 @@ export const Footer = () => (
         rel="noopener noreferrer"
         className="transition hover:opacity-70"
       >
-        <SvgGitHub fill="currentColor" width="20px" height="20px" />
+        <GitHubIcon fill="currentColor" width="20px" height="20px" />
       </a>
       <a
         href="https://twitter.com/da0_up"
@@ -20,7 +20,7 @@ export const Footer = () => (
         rel="noopener noreferrer"
         className="transition hover:opacity-70"
       >
-        <SvgTwitter fill="currentColor" width="20px" height="20px" />
+        <TwitterIcon fill="currentColor" width="20px" height="20px" />
       </a>
       <a
         href="https://discord.gg/sAaGuyW3D2"
@@ -28,7 +28,7 @@ export const Footer = () => (
         rel="noopener noreferrer"
         className="transition hover:opacity-70"
       >
-        <SvgDiscord fill="currentColor" width="20px" height="20px" />
+        <DiscordIcon fill="currentColor" width="20px" height="20px" />
       </a>
     </div>
     <p className="my-4 flex justify-center text-sm font-mono">
