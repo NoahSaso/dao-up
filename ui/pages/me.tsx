@@ -11,7 +11,6 @@ import {
   ResponsiveDecoration,
   StatusIndicator,
   Suspense,
-  TooltipInfo,
 } from "@/components"
 import { useWallet } from "@/hooks"
 import { allCampaigns, favoriteCampaigns } from "@/state"
@@ -46,10 +45,11 @@ const Me: NextPage = () => {
               You haven&apos;t connected a wallet. Connect one to start making
               contributions.
             </p>
-            <p className="flex flex-row items-center">
+            {/* TODO: Add tooltip explanation. */}
+            {/* <p className="flex flex-row items-center">
               What&apos;s a wallet?
               <TooltipInfo text="" />
-            </p>
+            </p> */}
             <Button className="mt-8" onClick={connect}>
               Connect a wallet
             </Button>
