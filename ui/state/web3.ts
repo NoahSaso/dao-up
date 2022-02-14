@@ -78,7 +78,6 @@ export const cosmWasmClient = selector({
       return await CosmWasmClient.connect(endpoint)
     } catch (error) {
       console.error(error)
-      // TODO: Display error.
     }
   },
 })
@@ -102,7 +101,6 @@ export const signedCosmWasmClient = selector({
       return await SigningCosmWasmClient.connectWithSigner(endpoint, signer)
     } catch (error) {
       console.error(error)
-      // TODO: Display error.
     }
   },
   // DAO DAO:

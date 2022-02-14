@@ -35,6 +35,7 @@ import {
 import {
   daoAddressPattern,
   numberPattern,
+  parseError,
   prettyPrintDecimal,
   urlPattern,
 } from "@/helpers"
@@ -178,8 +179,7 @@ const CreateContent = () => {
         return contractAddress
       } catch (error) {
         console.error(error)
-        // TODO: Set better error messages.
-        setCreateCampaignError(`${error}`)
+        setCreateCampaignError(parseError(error))
       }
       // Don't stop loading until we've redirected or not. Handled elsewhere.
     },

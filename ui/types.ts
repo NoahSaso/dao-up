@@ -156,9 +156,15 @@ export enum Color {
   Placeholder = "placeholder",
 }
 
+export type ColorType = `${Color}`
+
 export enum CampaignActionType {
   Fund = "fund",
   Refund = "refund",
 }
 
-export type ColorType = `${Color}`
+export enum CommonError {
+  InvalidAddress = "Invalid address.",
+  InsufficientFunds = "Insufficient funds.",
+  GetClientFailed = "Failed to get client.",
+}

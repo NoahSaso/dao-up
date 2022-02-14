@@ -88,7 +88,6 @@ export const useFundPendingCampaign = (campaign: Campaign | null) => {
         return proposalId
       } catch (error) {
         console.error(error)
-        // TODO: Set better error messages.
         setFundPendingCampaignError(`${error}`)
       } finally {
         setLoading(false)

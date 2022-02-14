@@ -58,7 +58,6 @@ export const useRefundCampaign = (campaign: Campaign | null) => {
         return true
       } catch (error) {
         console.error(error)
-        // TODO: Set better error messages.
         setRefundCampaignError(`${error}`)
         return false
       } finally {

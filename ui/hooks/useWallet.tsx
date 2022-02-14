@@ -1,3 +1,4 @@
+import { parseError } from "helpers/error"
 import { ReactNode, useCallback, useEffect, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
@@ -31,9 +32,8 @@ export const useWallet = () => {
 
       // Ignore rejected requests since the user knows they rejected.
       if (!(error instanceof Error) || error.message !== "Request rejected") {
-        // TODO: Handle non-rejection errors better.
         console.log(error)
-        setConnectError(`${error}`)
+        setConnectError(parseError(error))
       }
     }
   }, [setKeplrKeystoreId, setConnectError, keplr])
