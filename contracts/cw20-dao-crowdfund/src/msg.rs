@@ -47,7 +47,7 @@ pub enum ExecuteMsg {
     /// Closes the campaign and returns governance tokens to the
     /// DAO. Refunds are still accepted but funding is no longer
     /// possible.
-    Close {}
+    Close {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -79,4 +79,6 @@ pub struct DumpStateResponse {
     pub campaign_info: Campaign,
     pub gov_token_addr: Addr,
     pub funding_token_addr: Addr,
+    pub fee_receiver: Addr,
+    pub fee: Decimal,
 }
