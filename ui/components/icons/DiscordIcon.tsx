@@ -1,6 +1,6 @@
 import { SVGProps } from "react"
 
-export const SvgDiscord = (props: SVGProps<SVGSVGElement>) => (
+export const DiscordIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg
     width="1em"
     height="1em"
