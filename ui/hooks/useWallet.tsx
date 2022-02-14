@@ -32,7 +32,7 @@ export const useWallet = () => {
 
       // Ignore rejected requests since the user knows they rejected.
       if (!(error instanceof Error) || error.message !== "Request rejected") {
-        console.log(error)
+        console.error(error)
         setConnectError(parseError(error))
       }
     }

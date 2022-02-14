@@ -16,7 +16,9 @@ export const parseError = (
   let recognizedError
 
   // Attempt to recognize error.
-  if (message.includes("insufficient funds")) {
+  if (message.includes("Request rejected")) {
+    recognizedError = CommonError.RequestRejected
+  } else if (message.includes("insufficient funds")) {
     recognizedError = CommonError.InsufficientFunds
   } else if (
     message.includes("decoding bech32 failed: invalid checksum") ||

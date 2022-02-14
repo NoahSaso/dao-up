@@ -164,6 +164,7 @@ export enum CampaignActionType {
 }
 
 export enum CommonError {
+  RequestRejected = "Wallet rejected transaction.",
   InvalidAddress = "Invalid address.",
   InsufficientFunds = "Insufficient funds.",
   GetClientFailed = "Failed to get client.",
