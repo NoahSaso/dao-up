@@ -193,7 +193,6 @@ const CreateContent: FC = () => {
         return
       }
 
-      // TODO: Perform final validation here?
       const address = await createCampaign(values as unknown as NewCampaign)
 
       // If the campaign was created successfully, redirect to the campaign page.

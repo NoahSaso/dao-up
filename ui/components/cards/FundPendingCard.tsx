@@ -46,7 +46,6 @@ export const FundPendingCard: FC<FundPendingCardProps> = ({ campaign }) => {
     setFundCampaignProposalUrl("")
     if (!tokens) return
 
-    // TODO: Add success display.
     const proposalId = await fundPendingCampaign(tokens)
     // Open proposal on DAO DAO if created.
     if (proposalId) {
