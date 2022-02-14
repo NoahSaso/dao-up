@@ -7,7 +7,13 @@ use crate::state::{Campaign, Status};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
+    /// The address of the DAO that is fundraising.
     pub dao_address: Addr,
+    /// The code ID that is expected for DAO contract. If
+    /// `dao_address` was not instantiated from this code ID
+    /// instantiation will fail.
+    pub expected_dao_code_id: u64,
+
     /// Code ID for the cw20 contract we should use for the
     /// fundraising token.
     pub cw20_code_id: u64,
