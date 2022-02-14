@@ -71,6 +71,7 @@ interface MeContentProps {
   walletAddress: string | undefined
   connected: boolean
 }
+
 const MeContent: FunctionComponent<MeContentProps> = ({
   walletAddress,
   connected,

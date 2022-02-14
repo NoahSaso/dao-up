@@ -6,6 +6,7 @@ interface CenteredColumnProps extends HTMLAttributes<HTMLDivElement> {
   className?: string
   topSpace?: boolean
 }
+
 export const CenteredColumn: FunctionComponent<CenteredColumnProps> = ({
   children,
   className,

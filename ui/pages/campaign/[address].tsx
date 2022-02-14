@@ -54,6 +54,7 @@ export const Campaign: NextPage = () => {
 interface CampaignContentProps {
   router: NextRouter
 }
+
 const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   router: { isReady, query, push: routerPush },
 }) => {

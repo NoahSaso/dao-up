@@ -8,6 +8,7 @@ export interface LoaderProps {
   overlay?: boolean
   fill?: boolean
 }
+
 export const Loader: FunctionComponent<LoaderProps> = ({
   size = 80,
   containerClassName,

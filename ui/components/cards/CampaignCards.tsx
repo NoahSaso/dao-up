@@ -18,6 +18,7 @@ import { walletTokenBalance } from "@/state"
 interface CampaignCardWrapperProps extends PropsWithChildren<CampaignProps> {
   contentClassName?: string
 }
+
 const CampaignCardWrapper: FunctionComponent<CampaignCardWrapperProps> = ({
   campaign,
   className,

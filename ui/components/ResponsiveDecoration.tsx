@@ -8,6 +8,7 @@ interface ResponsiveDecorationProps {
   height: number
   className?: string
 }
+
 export const ResponsiveDecoration: FunctionComponent<
   ResponsiveDecorationProps
 > = ({ name, width, height, className }) => (
