@@ -73,54 +73,62 @@ export const BalanceRefundJoinCard: FunctionComponent<
 
   return (
     <CardWrapper className="w-full">
-      <h2 className="text-xl text-green mb-2">Your Balance</h2>
-
-      {/* Show funding token balance if funded and has not yet swapped to governance tokens. */}
-      {(status !== Status.Funded ||
-        !!fundingTokenBalance ||
-        !govTokenBalance) && (
-        <p className="text-light">
-          {prettyPrintDecimal(fundingTokenBalance ?? 0)} {fundingTokenSymbol}
-          {fundingTokenBalancePercent && (
-            <span className="text-placeholder ml-2">
-              {prettyPrintDecimal(fundingTokenBalancePercent, 2)}% of total
-              supply
-            </span>
-          )}
-        </p>
-      )}
-
-      {!!fundingTokenBalance && showAddFundingToken && (
-        <div className="mt-4">
-          <Button onClick={suggestFundingToken}>Add token to wallet</Button>
-          <p className="text-sm text-placeholder italic mt-2">
-            This allows you to view your campaign funding token balance (
-            {fundingTokenSymbol}) from your Keplr wallet. If you&apos;ve already
-            done this, it should still be there.
-          </p>
-        </div>
-      )}
+      <h2 className="text-xl text-green">Your Balance</h2>
 
       {!!govTokenBalance && (
         <>
-          <p className="text-light">
+          <p className="text-light mt-2">
             {prettyPrintDecimal(govTokenBalance)} {govTokenSymbol}
           </p>
           <p className="text-placeholder italic">
             You have voting power in the DAO.
           </p>
+
+          {showAddGovToken && (
+            <>
+              <Button onClick={suggestGovToken} className="mt-4">
+                Add DAO token to wallet
+              </Button>
+
+              <p className="text-sm text-placeholder italic mt-2">
+                This allows you to view your DAO governance token balance from
+                your Keplr wallet. If you&apos;ve already done this, it should
+                still be there.
+              </p>
+            </>
+          )}
         </>
       )}
 
-      {status === Status.Funded && showAddGovToken && (
-        <div className="mt-4">
-          <Button onClick={suggestGovToken}>Add DAO token to wallet</Button>
-          <p className="text-sm text-placeholder italic mt-2">
-            This allows you to view your DAO governance token balance from your
-            Keplr wallet. If you&apos;ve already done this, it should still be
-            there.
+      {/* Show funding token balance if funded and has not yet swapped to governance tokens, or if no governance tokens at all so we don't show an empty card. */}
+      {(status !== Status.Funded ||
+        !!fundingTokenBalance ||
+        !govTokenBalance) && (
+        <>
+          <p className="text-light mt-2">
+            {prettyPrintDecimal(fundingTokenBalance ?? 0)} {fundingTokenSymbol}
+            {fundingTokenBalancePercent && (
+              <span className="text-placeholder ml-2">
+                {prettyPrintDecimal(fundingTokenBalancePercent, 2)}% of total
+                supply
+              </span>
+            )}
           </p>
-        </div>
+
+          {showAddFundingToken && (
+            <>
+              <Button onClick={suggestFundingToken} className="mt-4">
+                Add token to wallet
+              </Button>
+
+              <p className="text-sm text-placeholder italic mt-2">
+                This allows you to view your campaign funding token balance (
+                {fundingTokenSymbol}) from your Keplr wallet. If you&apos;ve
+                already done this, it should still be there.
+              </p>
+            </>
+          )}
+        </>
       )}
 
       {(status === Status.Open || status === Status.Funded) &&
@@ -134,11 +142,12 @@ export const BalanceRefundJoinCard: FunctionComponent<
             <form onSubmit={onSubmit}>
               {status === Status.Funded ? (
                 <>
-                  <p className="my-4 text-placeholder italic">
+                  <p className="text-placeholder italic">
                     This campaign has been successfully funded. To join the DAO,
                     click the button below.
                   </p>
-                  <Button submitLabel="Join DAO" />
+
+                  <Button submitLabel="Join DAO" className="mt-4" />
                 </>
               ) : (
                 <div className="flex flex-row items-start gap-4">

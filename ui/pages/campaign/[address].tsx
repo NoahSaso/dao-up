@@ -24,7 +24,11 @@ import {
 import { daoUrlPrefix } from "@/config"
 import { useRefundJoinDAOForm, useWallet } from "@/hooks"
 import { suggestToken } from "@/services"
-import { fetchCampaign, fetchCampaignActions } from "@/state"
+import {
+  fetchCampaign,
+  fetchCampaignActions,
+  walletTokenBalance,
+} from "@/state"
 import { Status } from "@/types"
 
 export const Campaign: NextPage = () => {
@@ -78,6 +82,11 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   useEffect(() => {
     if (isReady && !campaign) routerPush("/campaigns")
   }, [isReady, campaign, routerPush])
+
+  // Funding token balance to add 'Join DAO' message to funded banner on top.
+  const { balance: fundingTokenBalance } = useRecoilValue(
+    walletTokenBalance(campaign?.fundingToken?.address)
+  )
 
   // Display buttons to add tokens to wallet.
   const [showAddFundingToken, setShowAddFundingToken] = useState(false)
@@ -137,14 +146,25 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
       {status === Status.Funded && (
         <p className="bg-green text-dark text-center w-full px-12 py-2">
           {name} has been successfully funded!{" "}
-          <a
-            href={daoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:no-underline"
-          >
-            Click here to visit the DAO.
-          </a>
+          {/* If user has funding tokens and the campaign is funded, make it easy for them to join. */}
+          {fundingTokenBalance ? (
+            <form onSubmit={onSubmitRefundJoinDAO} className="inline-block">
+              <Button
+                submitLabel="Click here to join the DAO."
+                className="underline"
+                bare
+              />
+            </form>
+          ) : (
+            <a
+              href={daoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:no-underline"
+            >
+              Click here to visit the DAO.
+            </a>
+          )}
         </p>
       )}
 
