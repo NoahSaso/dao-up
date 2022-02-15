@@ -168,4 +168,5 @@ export enum CommonError {
   InvalidAddress = "Invalid address.",
   InsufficientFunds = "Insufficient funds.",
   GetClientFailed = "Failed to get client.",
+  Network = "Network error. Ensure you are connected to the internet or try again later.",
 }

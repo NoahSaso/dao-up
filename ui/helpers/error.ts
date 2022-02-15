@@ -32,6 +32,8 @@ export const parseError = (
       message.includes("unknown variant `get_config`"))
   ) {
     recognizedError = CommonError.InvalidAddress
+  } else if (message.includes("Failed to fetch")) {
+    recognizedError = CommonError.Network
   }
 
   // If recognized error, try to find it in the map, or else return the recognized error.
