@@ -6,6 +6,7 @@ import { useRecoilValue, useSetRecoilState } from "recoil"
 import { parseError, prettyPrintDecimal } from "@/helpers"
 import { useRefreshCampaign, useWallet } from "@/hooks"
 import { globalLoadingAtom, signedCosmWasmClient } from "@/state"
+import { CommonError } from "@/types"
 
 export const useFundPendingCampaign = (campaign: Campaign | null) => {
   const client = useRecoilValue(signedCosmWasmClient)
@@ -87,7 +88,12 @@ export const useFundPendingCampaign = (campaign: Campaign | null) => {
         return proposalId
       } catch (error) {
         console.error(error)
-        setFundPendingCampaignError(parseError(error))
+        setFundPendingCampaignError(
+          parseError(error, {
+            [CommonError.Unauthorized]:
+              "Unauthorized. You must stake tokens in the DAO on DAO DAO before you can create a proposal.",
+          })
+        )
       } finally {
         setLoading(false)
       }

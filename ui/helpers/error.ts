@@ -34,6 +34,8 @@ export const parseError = (
     recognizedError = CommonError.InvalidAddress
   } else if (message.includes("Failed to fetch")) {
     recognizedError = CommonError.Network
+  } else if (message.includes("Unauthorized")) {
+    recognizedError = CommonError.Unauthorized
   }
 
   // If recognized error, try to find it in the map, or else return the recognized error.

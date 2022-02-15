@@ -169,4 +169,5 @@ export enum CommonError {
   InsufficientFunds = "Insufficient funds.",
   GetClientFailed = "Failed to get client.",
   Network = "Network error. Ensure you are connected to the internet or try again later.",
+  Unauthorized = "Unauthorized.",
 }
