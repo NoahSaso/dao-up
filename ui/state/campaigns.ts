@@ -572,7 +572,7 @@ export const daoConfig = selectorFamily<DAOConfigResponse, string | undefined>({
           config: null,
           error: parseError(error, {
             // Give more specific error for invalid addresses.
-            [CommonError.InvalidAddress]: `DAO does not exist on chain (ensure your DAO exists on the ${chainName} chain).`,
+            [CommonError.InvalidAddress]: `DAO cannot be found. Ensure you are providing a DAO address (not a token or wallet address) that exists on the ${chainName} chain.`,
           }),
         }
       }

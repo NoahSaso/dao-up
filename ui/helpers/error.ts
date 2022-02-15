@@ -18,11 +18,18 @@ export const parseError = (
   // Attempt to recognize error.
   if (message.includes("Request rejected")) {
     recognizedError = CommonError.RequestRejected
-  } else if (message.includes("insufficient funds")) {
+  } else if (
+    message.includes("insufficient funds") ||
+    // Try to send money with no balance.
+    message.includes("Account does not exist on chain.")
+  ) {
     recognizedError = CommonError.InsufficientFunds
   } else if (
     message.includes("decoding bech32 failed: invalid checksum") ||
-    message.includes("contract: not found")
+    message.includes("contract: not found") ||
+    // Provided token address where a DAO address was expected.
+    (message.includes("cw20_base") &&
+      message.includes("unknown variant `get_config`"))
   ) {
     recognizedError = CommonError.InvalidAddress
   }
