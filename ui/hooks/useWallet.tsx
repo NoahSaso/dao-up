@@ -1,10 +1,10 @@
-import { parseError } from "helpers/error"
 import { ReactNode, useCallback, useEffect, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
-import { suggestChain } from "services/keplr"
 
 import { InstallWalletMessage } from "@/components"
 import { chainId } from "@/config"
+import { parseError } from "@/helpers"
+import { suggestChain } from "@/services"
 import { fetchKeplr, keplrKeystoreIdAtom, walletAddress } from "@/state"
 
 export const useWallet = () => {

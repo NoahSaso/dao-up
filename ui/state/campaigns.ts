@@ -2,14 +2,13 @@ import { QueryContractsByCodeResponse } from "cosmjs-types/cosmwasm/wasm/v1/quer
 import { atom, atomFamily, selector, selectorFamily, waitForAll } from "recoil"
 
 import {
-  chainName,
   daoUrlPrefix,
   denyListContractAddress,
   escrowContractCodeId,
 } from "@/config"
 import { extractPageInfo, parseError } from "@/helpers"
 import { campaignsFromResponses, filterCampaigns } from "@/services"
-import { cosmWasmClient, cosmWasmQueryClient, walletAddress } from "@/state"
+import { cosmWasmClient, cosmWasmQueryClient, tokenBalance } from "@/state"
 import { localStorageEffectJSON } from "@/state/effects"
 import { CampaignActionType, CommonError, Status } from "@/types"
 
@@ -305,76 +304,6 @@ export const tokenInfo = selectorFamily<TokenInfoResponse, string>({
     },
 })
 
-export const tokenAddressBalanceId = atomFamily<number, string | undefined>({
-  key: "tokenAddressBalanceId",
-  default: 0,
-})
-
-export const tokenBalance = selectorFamily<
-  TokenBalanceResponse,
-  {
-    tokenAddress: string | undefined | null
-    walletAddress: string | undefined | null
-  }
->({
-  key: "tokenBalance",
-  get:
-    ({ tokenAddress, walletAddress }) =>
-    async ({ get }) => {
-      if (!tokenAddress || !walletAddress) return { balance: null, error: null }
-
-      // Allow us to manually refresh balance for given token.
-      get(tokenAddressBalanceId(tokenAddress))
-
-      const client = get(cosmWasmClient)
-
-      if (!client)
-        return {
-          balance: null,
-          error: CommonError.GetClientFailed,
-        }
-
-      try {
-        const { balance } = await client.queryContractSmart(tokenAddress, {
-          balance: { address: walletAddress },
-        })
-
-        return {
-          balance: Number(balance) / 1e6,
-          error: null,
-        }
-      } catch (error) {
-        console.error(error)
-        return { balance: null, error: parseError(error) }
-      }
-    },
-})
-
-export const walletTokenBalance = selectorFamily<
-  TokenBalanceResponse,
-  string | undefined | null
->({
-  key: "walletTokenBalance",
-  get:
-    (tokenAddress) =>
-    async ({ get }) => {
-      const address = get(walletAddress)
-
-      if (!address) return { balance: null, error: null }
-
-      const { balance, error: tokenBalanceError } = get(
-        tokenBalance({
-          tokenAddress,
-          walletAddress: address,
-        })
-      )
-      if (tokenBalanceError || balance === null)
-        return { balance: null, error: tokenBalanceError }
-
-      return { balance, error: null }
-    },
-})
-
 export const escrowContractAddresses = selectorFamily<
   QueryContractsByCodeResponse | undefined,
   { startAtKey?: number[] }
@@ -543,43 +472,6 @@ export const allCampaigns = selector<CampaignsResponse>({
 
     return { campaigns, hasMore: false, error: null }
   },
-})
-
-export const daoConfig = selectorFamily<DAOConfigResponse, string | undefined>({
-  key: "daoConfig",
-  get:
-    (address) =>
-    async ({ get }) => {
-      const client = get(cosmWasmClient)
-
-      if (!address)
-        return {
-          config: null,
-          error: CommonError.InvalidAddress,
-        }
-      if (!client)
-        return {
-          config: null,
-          error: CommonError.GetClientFailed,
-        }
-
-      try {
-        const config = await client.queryContractSmart(address, {
-          get_config: {},
-        })
-
-        return { config, error: null }
-      } catch (error) {
-        console.error(error)
-        return {
-          config: null,
-          error: parseError(error, {
-            // Give more specific error for invalid addresses.
-            [CommonError.InvalidAddress]: `DAO cannot be found. Ensure you are providing a DAO address (not a token or wallet address) that exists on the ${chainName} chain.`,
-          }),
-        }
-      }
-    },
 })
 
 export const favoriteCampaignAddressesKey = "favoriteCampaignAddresses"

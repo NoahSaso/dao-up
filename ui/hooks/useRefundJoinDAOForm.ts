@@ -1,8 +1,8 @@
 import { useForm } from "react-hook-form"
 import { useRecoilValue } from "recoil"
-import { walletTokenBalance } from "state/campaigns"
 
 import { useRefundCampaign } from "@/hooks"
+import { walletTokenBalance } from "@/state"
 import { Status } from "@/types"
 
 interface RefundJoinDAOForm {
