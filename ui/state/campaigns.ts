@@ -182,6 +182,9 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
         ...state
       } = cState
 
+      if (!fundingTokenInfo || !govTokenInfo)
+        return { campaign: null, error: "Unknown error." }
+
       const {
         balance: campaignGovTokenBalance,
         error: campaignGovTokenBalanceError,
