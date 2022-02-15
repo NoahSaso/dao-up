@@ -1,6 +1,5 @@
-import { coins, StdFee } from "@cosmjs/stargate"
-
-export const endpoint = process.env.NEXT_PUBLIC_RPC_ENDPOINT!
+export const rpcEndpoint = process.env.NEXT_PUBLIC_RPC_ENDPOINT!
+export const restEndpoint = process.env.NEXT_PUBLIC_REST_ENDPOINT!
 
 export const chainId = process.env.NEXT_PUBLIC_CHAIN_ID!
 export const cw20CodeId = parseInt(process.env.NEXT_PUBLIC_CW20_CODE_ID!)
@@ -8,7 +7,7 @@ export const escrowContractCodeId = parseInt(
   process.env.NEXT_PUBLIC_ESCROW_CONTRACT_CODE_ID!
 )
 
-export const fundingTokenDenom = process.env.NEXT_PUBLIC_FUNDING_TOKEN_DENOM!
+export const minPayTokenSymbol = process.env.NEXT_PUBLIC_MIN_PAY_TOKEN_SYMBOL!
 export const payTokenSymbol = process.env.NEXT_PUBLIC_PAY_TOKEN_SYMBOL!
 
 export const daoUrlPrefix = process.env.NEXT_PUBLIC_DAO_URL_PREFIX!

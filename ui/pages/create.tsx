@@ -28,7 +28,7 @@ import {
   daoUpFee,
   daoUpFeeNum,
   escrowContractCodeId,
-  fundingTokenDenom,
+  minPayTokenSymbol,
   payTokenSymbol,
 } from "@/config"
 import {
@@ -148,7 +148,7 @@ const CreateContent = () => {
           dao_address: newCampaign.daoAddress,
           cw20_code_id: cw20CodeId,
 
-          funding_goal: coin(newCampaign.goal * 1e6, fundingTokenDenom),
+          funding_goal: coin(newCampaign.goal * 1e6, minPayTokenSymbol),
           funding_token_name: newCampaign.tokenName,
           funding_token_symbol: newCampaign.tokenSymbol,
 

@@ -1,6 +1,7 @@
 import { parseError } from "helpers/error"
 import { ReactNode, useCallback, useEffect, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
+import { suggestChain } from "services/keplr"
 
 import { InstallWalletMessage } from "@/components"
 import { chainId } from "@/config"
@@ -23,7 +24,11 @@ export const useWallet = () => {
 
     // Attempt to connect and update keystore accordingly.
     try {
+      // Suggest chain.
+      await suggestChain(keplr)
+
       await keplr.enable(chainId)
+
       // If connection succeeds, propagate client to selector dependency chain.
       setKeplrKeystoreId((id) => id + 1)
     } catch (error) {
