@@ -14,9 +14,9 @@ import {
   CenteredColumn,
   ContributeForm,
   ContributionGraph,
-  FundPendingCard,
   GovernanceCard,
   Loader,
+  ProposeFundPendingCard,
   ResponsiveDecoration,
   Suspense,
   WalletMessage,
@@ -188,7 +188,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
             {!connected && <WalletMessage />}
 
             {status === Status.Pending ? (
-              <FundPendingCard
+              <ProposeFundPendingCard
                 campaign={campaign}
                 onSuccess={(proposalId: string) =>
                   // Show success message with proposal URL.

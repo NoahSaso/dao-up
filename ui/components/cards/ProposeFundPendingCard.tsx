@@ -3,21 +3,20 @@ import { useForm } from "react-hook-form"
 
 import { Button, CardWrapper, FormInput } from "@/components"
 import { numberPattern, prettyPrintDecimal } from "@/helpers"
-import { useFundPendingCampaign, useWallet } from "@/hooks"
+import { useProposeFundPendingCampaign, useWallet } from "@/hooks"
 
-interface FundPendingForm {
+interface ProposeFundPendingForm {
   tokens?: number
 }
 
-interface FundPendingCardProps {
+interface ProposeFundPendingCardProps {
   campaign: Campaign
   onSuccess?: (proposalId: string) => void | Promise<void>
 }
 
-export const FundPendingCard: FunctionComponent<FundPendingCardProps> = ({
-  campaign,
-  onSuccess,
-}) => {
+export const ProposeFundPendingCard: FunctionComponent<
+  ProposeFundPendingCardProps
+> = ({ campaign, onSuccess }) => {
   const {
     govToken: {
       daoBalance: govTokenDAOBalance,
@@ -31,7 +30,7 @@ export const FundPendingCard: FunctionComponent<FundPendingCardProps> = ({
     register,
     formState: { errors },
     watch,
-  } = useForm<FundPendingForm>({
+  } = useForm<ProposeFundPendingForm>({
     mode: "onChange",
     defaultValues: {},
   })
@@ -40,9 +39,9 @@ export const FundPendingCard: FunctionComponent<FundPendingCardProps> = ({
 
   const fundPendingTokens = watch("tokens") || 0
   const { fundPendingCampaign, fundPendingCampaignError } =
-    useFundPendingCampaign(campaign)
+    useProposeFundPendingCampaign(campaign)
 
-  const doFundPending = async ({ tokens }: FundPendingForm) => {
+  const doProposeFundPending = async ({ tokens }: ProposeFundPendingForm) => {
     if (!tokens) return
 
     const proposalId = await fundPendingCampaign(tokens)
@@ -51,7 +50,7 @@ export const FundPendingCard: FunctionComponent<FundPendingCardProps> = ({
 
   return (
     <CardWrapper className="lg:self-stretch border border-orange">
-      <form onSubmit={handleSubmit(doFundPending)}>
+      <form onSubmit={handleSubmit(doProposeFundPending)}>
         <p className="text-orange">
           This campaign is pending and cannot accept funds until the DAO
           allocates governance tokens ({govTokenSymbol}) to it.{" "}

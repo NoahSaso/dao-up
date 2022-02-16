@@ -8,30 +8,29 @@ import { useRefreshCampaign, useWallet } from "@/hooks"
 import { globalLoadingAtom, signedCosmWasmClient } from "@/state"
 import { CommonError } from "@/types"
 
-export const useFundPendingCampaign = (campaign: Campaign | null) => {
+export const useProposeFundPendingCampaign = (campaign: Campaign | null) => {
   const client = useRecoilValue(signedCosmWasmClient)
   const { walletAddress } = useWallet()
 
   const setLoading = useSetRecoilState(globalLoadingAtom)
   const { refreshCampaign } = useRefreshCampaign(campaign)
-  const [fundPendingCampaignError, setFundPendingCampaignError] = useState(
-    null as string | null
-  )
+  const [fundPendingCampaignError, setProposeFundPendingCampaignError] =
+    useState(null as string | null)
 
   const fundPendingCampaign = useCallback(
     async (amount: number) => {
-      setFundPendingCampaignError(null)
+      setProposeFundPendingCampaignError(null)
 
       if (!client) {
-        setFundPendingCampaignError("Failed to get signing client.")
+        setProposeFundPendingCampaignError("Failed to get signing client.")
         return false
       }
       if (!walletAddress) {
-        setFundPendingCampaignError("Wallet not connected.")
+        setProposeFundPendingCampaignError("Wallet not connected.")
         return false
       }
       if (!campaign) {
-        setFundPendingCampaignError("Campaign is not loaded.")
+        setProposeFundPendingCampaignError("Campaign is not loaded.")
         return false
       }
 
@@ -88,7 +87,7 @@ export const useFundPendingCampaign = (campaign: Campaign | null) => {
         return proposalId
       } catch (error) {
         console.error(error)
-        setFundPendingCampaignError(
+        setProposeFundPendingCampaignError(
           parseError(
             error,
             {
@@ -111,7 +110,7 @@ export const useFundPendingCampaign = (campaign: Campaign | null) => {
       setLoading,
       campaign,
       refreshCampaign,
-      setFundPendingCampaignError,
+      setProposeFundPendingCampaignError,
       walletAddress,
       client,
     ]
