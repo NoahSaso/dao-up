@@ -73,6 +73,8 @@ export const AllCampaignsCard: FunctionComponent<CampaignProps> = ({
     <ReactMarkdown
       children={campaign.description}
       linkTarget="_blank"
+      // Campaign card is an A tag, and it's bad practice to nest A tags in the DOM. We only show two lines of this markdown as a preview, no need to allow links here.
+      disallowedElements={["a"]}
       // line-clamp is weird on Safari, so just set max height to twice the line height and hide overflow.
       className="mt-2 line-clamp-2 leading-6 max-h-12 overflow-hidden"
     />
