@@ -148,7 +148,9 @@ declare global {
     priority: number
   }
 
-  type AddressPriorityListResponse = AddressPriorityListItem[]
+  interface AddressPriorityListResponse {
+    members: AddressPriorityListItem[]
+  }
 }
 
 export enum Status {
