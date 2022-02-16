@@ -31,12 +31,20 @@ export const daoConfig = selectorFamily<DAOConfigResponse, string | undefined>({
         return { config, error: null }
       } catch (error) {
         console.error(error)
+
         return {
           config: null,
-          error: parseError(error, {
-            // Give more specific error for invalid addresses.
-            [CommonError.InvalidAddress]: `DAO cannot be found. Ensure you are providing a DAO address (not a token or wallet address) that exists on the ${chainName} chain.`,
-          }),
+          error: parseError(
+            error,
+            {
+              source: "daoConfig",
+              campaign: address,
+            },
+            {
+              // Give more specific error for invalid addresses.
+              [CommonError.InvalidAddress]: `DAO cannot be found. Ensure you are providing a DAO address (not a token or wallet address) that exists on the ${chainName} chain.`,
+            }
+          ),
         }
       }
     },

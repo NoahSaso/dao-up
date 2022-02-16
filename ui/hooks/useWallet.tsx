@@ -33,7 +33,11 @@ export const useWallet = () => {
       setKeplrKeystoreId((id) => id + 1)
     } catch (error) {
       console.error(error)
-      setConnectError(parseError(error))
+      setConnectError(
+        parseError(error, {
+          source: "connect",
+        })
+      )
 
       // Set disconnected so we don't try to connect again without manual action.
       setKeplrKeystoreId(-1)

@@ -93,6 +93,14 @@ declare global {
     [key: string]: number
   }
 
+  interface ErrorContext extends Record<string, unknown> {
+    source: string
+    campaign?: string
+    wallet?: string
+    token?: string
+    amount?: number
+  }
+
   // Selectors
 
   type AsyncSelectorResponse<T> = T & {

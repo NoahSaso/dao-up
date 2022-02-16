@@ -49,7 +49,6 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
           undefined,
           coins(amount * 1e6, minPayTokenSymbol)
         )
-        console.log(response)
 
         // Update campaign state.
         refreshCampaign()
@@ -57,7 +56,14 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
         return true
       } catch (error) {
         console.error(error)
-        setContributeCampaignError(parseError(error))
+        setContributeCampaignError(
+          parseError(error, {
+            source: "contributeCampaign",
+            wallet: walletAddress,
+            campaign: campaign.address,
+            amount,
+          })
+        )
         return false
       } finally {
         setLoading(false)

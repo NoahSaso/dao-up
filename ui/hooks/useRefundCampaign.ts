@@ -58,7 +58,14 @@ export const useRefundCampaign = (campaign: Campaign | null) => {
         return true
       } catch (error) {
         console.error(error)
-        setRefundCampaignError(parseError(error))
+        setRefundCampaignError(
+          parseError(error, {
+            source: "refundCampaign",
+            wallet: walletAddress,
+            campaign: campaign.address,
+            amount,
+          })
+        )
         return false
       } finally {
         setLoading(false)

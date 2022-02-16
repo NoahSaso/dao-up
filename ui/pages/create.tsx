@@ -143,30 +143,30 @@ const CreateContent = () => {
 
       setLoading(true)
 
+      const msg = {
+        dao_address: newCampaign.daoAddress,
+        cw20_code_id: cw20CodeId,
+
+        funding_goal: coin(newCampaign.goal * 1e6, minPayTokenSymbol),
+        funding_token_name: newCampaign.tokenName,
+        funding_token_symbol: newCampaign.tokenSymbol,
+
+        fee: daoUpFee,
+        fee_receiver: daoUpDAOAddress,
+
+        campaign_info: {
+          name: newCampaign.name,
+          description: newCampaign.description,
+          hidden: newCampaign.hidden,
+
+          ...(newCampaign.imageUrl && { image_url: newCampaign.imageUrl }),
+          ...(newCampaign.website && { website: newCampaign.website }),
+          ...(newCampaign.twitter && { twitter: newCampaign.twitter }),
+          ...(newCampaign.discord && { discord: newCampaign.discord }),
+        },
+      }
+
       try {
-        const msg = {
-          dao_address: newCampaign.daoAddress,
-          cw20_code_id: cw20CodeId,
-
-          funding_goal: coin(newCampaign.goal * 1e6, minPayTokenSymbol),
-          funding_token_name: newCampaign.tokenName,
-          funding_token_symbol: newCampaign.tokenSymbol,
-
-          fee: daoUpFee,
-          fee_receiver: daoUpDAOAddress,
-
-          campaign_info: {
-            name: newCampaign.name,
-            description: newCampaign.description,
-            hidden: newCampaign.hidden,
-
-            ...(newCampaign.imageUrl && { image_url: newCampaign.imageUrl }),
-            ...(newCampaign.website && { website: newCampaign.website }),
-            ...(newCampaign.twitter && { twitter: newCampaign.twitter }),
-            ...(newCampaign.discord && { discord: newCampaign.discord }),
-          },
-        }
-
         const { contractAddress } = await client.instantiate(
           walletAddress,
           escrowContractCodeId,
@@ -178,7 +178,13 @@ const CreateContent = () => {
         return contractAddress
       } catch (error) {
         console.error(error)
-        setCreateCampaignError(parseError(error))
+        setCreateCampaignError(
+          parseError(error, {
+            source: "createCampaign",
+            wallet: walletAddress,
+            msg,
+          })
+        )
       }
       // Don't stop loading until we've redirected or not. Handled elsewhere.
     },
