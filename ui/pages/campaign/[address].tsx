@@ -22,6 +22,7 @@ import {
   WalletMessage,
 } from "@/components"
 import { daoUrlPrefix } from "@/config"
+import { escrowAddressPattern } from "@/helpers"
 import { useRefundJoinDAOForm, useWallet } from "@/hooks"
 import { suggestToken } from "@/services"
 import {
@@ -35,7 +36,11 @@ export const Campaign: NextPage = () => {
   const router = useRouter()
   // Redirect to campaigns page if invalid query string.
   useEffect(() => {
-    if (router.isReady && typeof router.query.address !== "string") {
+    if (
+      router.isReady &&
+      (typeof router.query.address !== "string" ||
+        !escrowAddressPattern.value.test(router.query.address))
+    ) {
       console.error("Invalid query address.")
       router.push("/campaigns")
       return
@@ -66,7 +71,11 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   router: { isReady, query, push: routerPush },
 }) => {
   const campaignAddress =
-    isReady && typeof query.address === "string" ? query.address : ""
+    isReady &&
+    typeof query.address === "string" &&
+    escrowAddressPattern.value.test(query.address)
+      ? query.address
+      : ""
 
   const { keplr, connected } = useWallet()
 
