@@ -1,5 +1,7 @@
 import { AtomEffect } from "recoil"
 
+import { chainId } from "@/config"
+
 export const localStorageEffect =
   <T>(
     key: string,
@@ -7,14 +9,17 @@ export const localStorageEffect =
     parse: (saved: string) => T
   ): AtomEffect<T> =>
   ({ setSelf, onSet }) => {
-    const savedValue = localStorage.getItem(key)
+    // Namespace localStorage keys to prevent collisions.
+    const namespacedKey = `${chainId}:${key}`
+
+    const savedValue = localStorage.getItem(namespacedKey)
     if (savedValue != null) setSelf(parse(savedValue))
 
     onSet((newValue: T, _: any, isReset: boolean) => {
       if (isReset) {
-        localStorage.removeItem(key)
+        localStorage.removeItem(namespacedKey)
       } else {
-        localStorage.setItem(key, serialize(newValue))
+        localStorage.setItem(namespacedKey, serialize(newValue))
       }
     })
   }
