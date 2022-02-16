@@ -5,37 +5,42 @@ import { useRecoilValue, useSetRecoilState } from "recoil"
 
 import { parseError, prettyPrintDecimal } from "@/helpers"
 import { useRefreshCampaign, useWallet } from "@/hooks"
-import { globalLoadingAtom, signedCosmWasmClient } from "@/state"
+import { daoConfig, globalLoadingAtom, signedCosmWasmClient } from "@/state"
 import { CommonError } from "@/types"
 
-export const useFundPendingCampaign = (campaign: Campaign | null) => {
+export const useProposeFundPendingCampaign = (campaign: Campaign | null) => {
   const client = useRecoilValue(signedCosmWasmClient)
+  const { config: dao } = useRecoilValue(daoConfig(campaign?.dao.address))
   const { walletAddress } = useWallet()
 
   const setLoading = useSetRecoilState(globalLoadingAtom)
   const { refreshCampaign } = useRefreshCampaign(campaign)
-  const [fundPendingCampaignError, setFundPendingCampaignError] = useState(
-    null as string | null
-  )
+  const [fundPendingCampaignError, setProposeFundPendingCampaignError] =
+    useState(null as string | null)
 
   const fundPendingCampaign = useCallback(
     async (amount: number) => {
-      setFundPendingCampaignError(null)
+      setProposeFundPendingCampaignError(null)
 
       if (!client) {
-        setFundPendingCampaignError("Failed to get signing client.")
+        setProposeFundPendingCampaignError("Failed to get signing client.")
         return false
       }
       if (!walletAddress) {
-        setFundPendingCampaignError("Wallet not connected.")
+        setProposeFundPendingCampaignError("Wallet not connected.")
         return false
       }
       if (!campaign) {
-        setFundPendingCampaignError("Campaign is not loaded.")
+        setProposeFundPendingCampaignError("Campaign is not loaded.")
+        return false
+      }
+      if (!dao?.config) {
+        setProposeFundPendingCampaignError("DAO could not be found.")
         return false
       }
 
       setLoading(true)
+
       const cosmMsg = {
         wasm: {
           execute: {
@@ -56,18 +61,32 @@ export const useFundPendingCampaign = (campaign: Campaign | null) => {
         },
       }
 
+      const msg = {
+        propose: {
+          title: `Activate DAO Up! campaign`,
+          description: `Send ${prettyPrintDecimal(amount)} ${
+            campaign.govToken.symbol
+          } to the [${campaign.name}](https://daoup.zone/campaign/${
+            campaign.address
+          }) campaign on DAO Up! in order to launch it.`,
+          msgs: [cosmMsg],
+        },
+      }
+
       try {
-        const msg = {
-          propose: {
-            title: `Activate DAO Up! campaign`,
-            description: `Send ${prettyPrintDecimal(amount)} ${
-              campaign.govToken.symbol
-            } to the [${campaign.name}](https://daoup.zone/campaign/${
-              campaign.address
-            }) campaign on DAO Up! in order to launch it.`,
-            msgs: [cosmMsg],
-          },
-        }
+        const daoProposalDeposit = Number(dao.config?.proposal_deposit)
+        if (!isNaN(daoProposalDeposit) && daoProposalDeposit > 0)
+          await client.execute(
+            walletAddress,
+            campaign.govToken.address,
+            {
+              increase_allowance: {
+                amount: dao.config.proposal_deposit,
+                spender: campaign.dao.address,
+              },
+            },
+            "auto"
+          )
 
         const response = await client.execute(
           walletAddress,
@@ -88,7 +107,7 @@ export const useFundPendingCampaign = (campaign: Campaign | null) => {
         return proposalId
       } catch (error) {
         console.error(error)
-        setFundPendingCampaignError(
+        setProposeFundPendingCampaignError(
           parseError(
             error,
             {
@@ -110,8 +129,9 @@ export const useFundPendingCampaign = (campaign: Campaign | null) => {
     [
       setLoading,
       campaign,
+      dao,
       refreshCampaign,
-      setFundPendingCampaignError,
+      setProposeFundPendingCampaignError,
       walletAddress,
       client,
     ]
