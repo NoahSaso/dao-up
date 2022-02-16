@@ -40,7 +40,7 @@ import {
 } from "@/helpers"
 import { useWallet } from "@/hooks"
 import { defaultNewCampaign, newCampaignFields } from "@/services"
-import { daoConfig, globalLoadingAtom, signedCosmWasmClient } from "@/state"
+import { globalLoadingAtom, signedCosmWasmClient, validateDAO } from "@/state"
 import { Color } from "@/types"
 
 const validUrlOrUndefined = (u: string | undefined) =>
@@ -88,14 +88,14 @@ const CreateContent = () => {
     daoAddressPattern.value
   )?.length
   const {
-    state: daoConfigState,
-    contents: { config: daoConfigData, error: daoConfigError },
+    state: daoValidateState,
+    contents: { valid: daoValid, error: daoValidateError },
   } = useRecoilValueLoadable(
-    // Only attempt to load DAO address once it matches the regex.
-    daoConfig(daoAddressFormatValid ? watchDAOAddress : undefined)
+    // Only attempt to validate DAO address once it matches the regex.
+    validateDAO(daoAddressFormatValid ? watchDAOAddress : undefined)
   )
-  const checkingDAO = daoConfigState === "loading"
-  const validDAO = daoConfigState === "hasValue" && daoConfigData !== null
+  const checkingDAO = daoValidateState === "loading"
+  const validDAO = daoValidateState === "hasValue" && !!daoValid
   // Only invalid if pattern matches AND has determined invalid address.
   const invalidDAO = daoAddressFormatValid && !validDAO
 
@@ -410,7 +410,7 @@ const CreateContent = () => {
               placeholder="juno..."
               type="text"
               error={
-                (daoAddressFormatValid ? daoConfigError : null) ??
+                (daoAddressFormatValid ? daoValidateError : null) ??
                 errors.daoAddress?.message
               }
               tail={

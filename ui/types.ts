@@ -141,6 +141,7 @@ declare global {
   }>
 
   type DAOConfigResponse = AsyncSelectorResponse<{ config: any | null }>
+  type DAOValidationResponse = AsyncSelectorResponse<{ valid: boolean }>
 
   interface AddressPriorityListItem {
     addr: string
