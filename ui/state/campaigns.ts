@@ -406,9 +406,9 @@ export const campaignDenyList = selector<string[]>({
       }
       const addresses = (
         (await client.queryContractSmart(denyListContractAddress, {
-          get_addresses: {},
+          list_members: {},
         })) as AddressPriorityListResponse
-      ).map(({ addr }) => addr)
+      ).members.map(({ addr }) => addr)
 
       return addresses
     } catch (e) {
