@@ -82,7 +82,7 @@ export const useProposeFundPendingCampaign = (campaign: Campaign | null) => {
             {
               increase_allowance: {
                 amount: dao.config.proposal_deposit,
-                spender: dao.address,
+                spender: campaign.dao.address,
               },
             },
             "auto"
