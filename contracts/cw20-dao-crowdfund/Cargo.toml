@@ -57,3 +57,5 @@ stake-cw20 = { version = "0.2.5", git = "https://github.com/DA0-DA0/dao-contract
 [dev-dependencies]
 cosmwasm-schema = { version = "1.0.0-beta4" }
 cw-multi-test = "0.11"
+cw20-no-instantiate = { version = "0.11", git = "https://github.com/ezekiiel/evil-cw20" }
+cw20-silent-instantiate-fail = { version = "0.11", git = "https://github.com/ezekiiel/evil-cw20" }
