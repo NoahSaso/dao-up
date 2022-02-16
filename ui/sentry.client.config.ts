@@ -15,6 +15,6 @@ Sentry.init({
   // `release` value here - use the environment variable `SENTRY_RELEASE`, so
   // that it will also get attached to your source maps
 
-  // Don't send errors to Sentry in dev environment.
-  enabled: process.env.NODE_ENV !== "development",
+  // Only send errors to Sentry if production environment.
+  enabled: process.env.NODE_ENV === "production",
 })

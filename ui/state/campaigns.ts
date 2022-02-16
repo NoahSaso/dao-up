@@ -38,7 +38,13 @@ export const campaignState = selectorFamily<CampaignStateResponse, string>({
         return { state, error: null }
       } catch (error) {
         console.error(error)
-        return { state: null, error: parseError(error) }
+        return {
+          state: null,
+          error: parseError(error, {
+            source: "campaignState",
+            campaign: address,
+          }),
+        }
       }
     },
 })
@@ -158,7 +164,13 @@ export const fetchCampaignActions = selectorFamily<
         return { actions, error: null }
       } catch (error) {
         console.error(error)
-        return { actions: null, error: parseError(error) }
+        return {
+          actions: null,
+          error: parseError(error, {
+            source: "fetchCampaignActions",
+            campaign: address,
+          }),
+        }
       }
     },
 })
@@ -268,7 +280,14 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
         }
       } catch (error) {
         console.error(error)
-        return { campaign: null, error: parseError(error) }
+        return {
+          campaign: null,
+          error: parseError(error, {
+            source: "fetchCampaign",
+            campaign: address,
+            cState,
+          }),
+        }
       }
     },
 })
@@ -299,7 +318,13 @@ export const tokenInfo = selectorFamily<TokenInfoResponse, string>({
         return { info, error: null }
       } catch (error) {
         console.error(error)
-        return { info: null, error: parseError(error) }
+        return {
+          info: null,
+          error: parseError(error, {
+            source: "tokenInfo",
+            token: address,
+          }),
+        }
       }
     },
 })
@@ -381,9 +406,9 @@ export const campaignDenyList = selector<string[]>({
       }
       const addresses = (
         (await client.queryContractSmart(denyListContractAddress, {
-          get_addresses: {},
+          list_members: {},
         })) as AddressPriorityListResponse
-      ).map(({ addr }) => addr)
+      ).members.map(({ addr }) => addr)
 
       return addresses
     } catch (e) {

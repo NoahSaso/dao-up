@@ -44,7 +44,14 @@ export const tokenBalance = selectorFamily<
         }
       } catch (error) {
         console.error(error)
-        return { balance: null, error: parseError(error) }
+        return {
+          balance: null,
+          error: parseError(error, {
+            source: "tokenBalance",
+            wallet: walletAddress,
+            token: tokenAddress,
+          }),
+        }
       }
     },
 })

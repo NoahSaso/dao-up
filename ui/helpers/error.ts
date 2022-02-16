@@ -5,10 +5,11 @@ import { CommonError } from "./../types"
 // Passing a map will allow common errors to be mapped to a custom error message for the given context.
 export const parseError = (
   error: Error | any,
+  context: ErrorContext,
   map?: Partial<Record<CommonError, string>>
 ) => {
   if (!(error instanceof Error)) {
-    Sentry.captureException(new Error(`${error}`))
+    Sentry.captureException(new Error(`${error}`), { extra: context })
     return `${error}`
   }
 
@@ -43,7 +44,7 @@ export const parseError = (
   }
 
   // Send to Sentry since we were not expecting it.
-  Sentry.captureException(error)
+  Sentry.captureException(error, { extra: context })
 
   // If no recognized error, return default error message.
   return message

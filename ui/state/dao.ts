@@ -5,6 +5,8 @@ import { parseError } from "@/helpers"
 import { cosmWasmClient } from "@/state"
 import { CommonError } from "@/types"
 
+const InvalidDAOError = `DAO cannot be found. Ensure you are providing a DAO address (not a token or wallet address) that exists on the ${chainName} chain.`
+
 export const daoConfig = selectorFamily<DAOConfigResponse, string | undefined>({
   key: "daoConfig",
   get:
@@ -31,13 +33,60 @@ export const daoConfig = selectorFamily<DAOConfigResponse, string | undefined>({
         return { config, error: null }
       } catch (error) {
         console.error(error)
+
         return {
           config: null,
-          error: parseError(error, {
-            // Give more specific error for invalid addresses.
-            [CommonError.InvalidAddress]: `DAO cannot be found. Ensure you are providing a DAO address (not a token or wallet address) that exists on the ${chainName} chain.`,
-          }),
+          error: parseError(
+            error,
+            {
+              source: "daoConfig",
+              campaign: address,
+            },
+            {
+              // Give more specific error for invalid addresses.
+              [CommonError.InvalidAddress]: InvalidDAOError,
+            }
+          ),
         }
+      }
+    },
+})
+
+export const validateDAO = selectorFamily<
+  DAOValidationResponse,
+  string | undefined
+>({
+  key: "validateDAO",
+  get:
+    (address) =>
+    async ({ get }) => {
+      const { config, error } = get(daoConfig(address))
+      if (!config || error)
+        return {
+          valid: false,
+          error,
+        }
+
+      if (
+        config.hasOwnProperty("config") &&
+        config.hasOwnProperty("gov_token") &&
+        config.hasOwnProperty("staking_contract")
+      )
+        return {
+          valid: true,
+          error: null,
+        }
+
+      if (config.hasOwnProperty("unstaking_duration"))
+        return {
+          valid: false,
+          error:
+            "This looks like a staked token contract. Please provide a DAO address instead.",
+        }
+
+      return {
+        valid: false,
+        error: InvalidDAOError,
       }
     },
 })

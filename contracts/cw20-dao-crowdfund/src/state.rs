@@ -20,6 +20,10 @@ pub struct Campaign {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum Status {
+    /// The contract has been instantiated but its funding token has
+    /// not been instantiated. No actions can be performed on the
+    /// contract.
+    Uninstantiated {},
     /// The contract has been instantiated and is pending funding from
     /// the DAO.
     Pending {},

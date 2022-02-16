@@ -89,10 +89,19 @@ export const useFundPendingCampaign = (campaign: Campaign | null) => {
       } catch (error) {
         console.error(error)
         setFundPendingCampaignError(
-          parseError(error, {
-            [CommonError.Unauthorized]:
-              "Unauthorized. You must stake tokens in the DAO on DAO DAO before you can create a proposal.",
-          })
+          parseError(
+            error,
+            {
+              source: "fundPendingCampaign",
+              wallet: walletAddress,
+              campaign: campaign.address,
+              amount,
+            },
+            {
+              [CommonError.Unauthorized]:
+                "Unauthorized. You must stake tokens in the DAO on DAO DAO before you can create a proposal.",
+            }
+          )
         )
       } finally {
         setLoading(false)

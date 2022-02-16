@@ -34,5 +34,8 @@ pub enum ContractError {
     SmallRefund { token_price: Decimal },
 
     #[error("Only open campaigns can be closed.")]
-    InvalidClose {}
+    InvalidClose {},
+
+    #[error("Too few gov tokens sent. This would result in a funding token price of zero.")]
+    InvalidGovTokenAmount {},
 }

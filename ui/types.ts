@@ -93,6 +93,14 @@ declare global {
     [key: string]: number
   }
 
+  interface ErrorContext extends Record<string, unknown> {
+    source: string
+    campaign?: string
+    wallet?: string
+    token?: string
+    amount?: number
+  }
+
   // Selectors
 
   type AsyncSelectorResponse<T> = T & {
@@ -133,13 +141,16 @@ declare global {
   }>
 
   type DAOConfigResponse = AsyncSelectorResponse<{ config: any | null }>
+  type DAOValidationResponse = AsyncSelectorResponse<{ valid: boolean }>
 
   interface AddressPriorityListItem {
     addr: string
     priority: number
   }
 
-  type AddressPriorityListResponse = AddressPriorityListItem[]
+  interface AddressPriorityListResponse {
+    members: AddressPriorityListItem[]
+  }
 }
 
 export enum Status {
