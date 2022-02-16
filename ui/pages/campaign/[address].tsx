@@ -22,7 +22,7 @@ import {
   WalletMessage,
 } from "@/components"
 import { daoUrlPrefix } from "@/config"
-import { escrowAddressPattern } from "@/helpers"
+import { escrowAddressRegex } from "@/helpers"
 import { useRefundJoinDAOForm, useWallet } from "@/hooks"
 import { suggestToken } from "@/services"
 import {
@@ -39,7 +39,7 @@ export const Campaign: NextPage = () => {
     if (
       router.isReady &&
       (typeof router.query.address !== "string" ||
-        !escrowAddressPattern.value.test(router.query.address))
+        !escrowAddressRegex.test(router.query.address))
     ) {
       console.error("Invalid query address.")
       router.push("/campaigns")
@@ -73,7 +73,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   const campaignAddress =
     isReady &&
     typeof query.address === "string" &&
-    escrowAddressPattern.value.test(query.address)
+    escrowAddressRegex.test(query.address)
       ? query.address
       : ""
 

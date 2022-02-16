@@ -10,7 +10,7 @@ export const daoAddressPattern = {
   message: "Invalid DAO address.",
 }
 
-export const escrowAddressPattern = daoAddressPattern
+export const escrowAddressRegex = daoAddressPattern.value
 
 export const urlPattern = {
   value: /^https?:\/\/.+$/,
