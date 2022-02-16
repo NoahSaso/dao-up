@@ -25,6 +25,24 @@ fn cw20_contract() -> Box<dyn Contract<Empty>> {
     Box::new(contract)
 }
 
+fn cw20_evil_no_instantiate() -> Box<dyn Contract<Empty>> {
+    let contract = ContractWrapper::new(
+        cw20_no_instantiate::contract::execute,
+        cw20_no_instantiate::contract::instantiate,
+        cw20_no_instantiate::contract::query,
+    );
+    Box::new(contract)
+}
+
+fn cw20_evil_silent_instantiate_fail() -> Box<dyn Contract<Empty>> {
+    let contract = ContractWrapper::new(
+        cw20_silent_instantiate_fail::contract::execute,
+        cw20_silent_instantiate_fail::contract::instantiate,
+        cw20_silent_instantiate_fail::contract::query,
+    );
+    Box::new(contract)
+}
+
 fn dao_dao_dao_contract() -> Box<dyn Contract<Empty>> {
     let contract = ContractWrapper::new(
         cw3_dao::contract::execute,
@@ -219,14 +237,11 @@ fn fund_escrow_from_dao(app: &mut App, dao_addr: Addr, escrow_addr: Addr, tokens
     app.update_block(next_block);
 }
 
-fn close_escrow_from_dao(app: &mut App, dao_addr: Addr, escrow_addr: Addr, tokens: u64) {
+fn close_escrow_from_dao(app: &mut App, dao_addr: Addr, escrow_addr: Addr) {
     // Create the proposal.
     let propose_msg = cw3_dao::msg::ExecuteMsg::Propose(cw3_dao::msg::ProposeMsg {
         title: "Seed the Bong DAO fundraising escrow contract".to_string(),
-        description: format!(
-            "Seeds the Bong DAO fundraising escrow contract with {} tokens",
-            tokens
-        ),
+        description: format!("close the DAO Up! campaign at ({})", escrow_addr),
         msgs: vec![cosmwasm_std::CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: escrow_addr.to_string(),
             msg: to_binary(&ExecuteMsg::Close {}).unwrap(),
@@ -280,6 +295,87 @@ fn test_campaign_creation_with_invalid_cw20() {
 
     let dao_addr = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
     instantiate_escrow(&mut app, dao_addr.clone(), escrow_id, dao_id, 100_000_000);
+}
+
+#[test]
+#[should_panic(expected = "I am an evil token")]
+fn test_campaign_creation_with_evil_cw20_no_instantiate() {
+    let mut app = App::default();
+
+    let cw20_id = app.store_code(cw20_evil_no_instantiate());
+    let dao_id = app.store_code(dao_dao_dao_contract());
+    let stake_id = app.store_code(stake_cw20_contract());
+    let escrow_id = app.store_code(escrow_contract());
+
+    let dao_addr = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
+    instantiate_escrow(&mut app, dao_addr.clone(), escrow_id, cw20_id, 100_000_000);
+}
+
+#[test]
+fn test_campaign_creation_with_evil_cw20_silent_fail() {
+    let mut app = App::new(|router, _, storage| {
+        router
+            .bank
+            .init_balance(
+                storage,
+                &Addr::unchecked(CREATOR_ADDR),
+                vec![Coin {
+                    denom: CHAIN_DENOM.to_string(),
+                    amount: Uint128::from(1_000_000_000 as u64),
+                }],
+            )
+            .unwrap();
+    });
+    let cw20_id = app.store_code(cw20_contract());
+    let evil_cw20_id = app.store_code(cw20_evil_silent_instantiate_fail());
+    let dao_id = app.store_code(dao_dao_dao_contract());
+    let stake_id = app.store_code(stake_cw20_contract());
+    let escrow_id = app.store_code(escrow_contract());
+
+    let dao_addr = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
+    let escrow_addr = instantiate_escrow(
+        &mut app,
+        dao_addr.clone(),
+        escrow_id,
+        evil_cw20_id,
+        100_000_000,
+    );
+    fund_escrow_from_dao(&mut app, dao_addr.clone(), escrow_addr.clone(), 100_000_000);
+
+    // This should fail as minting new tokens will not be possible.
+    app.execute_contract(
+        Addr::unchecked(CREATOR_ADDR),
+        escrow_addr.clone(),
+        &ExecuteMsg::Fund {},
+        &[Coin {
+            denom: CHAIN_DENOM.to_string(),
+            amount: Uint128::from(10000000u64),
+        }],
+    )
+    .unwrap_err();
+
+    // This should still succede.
+    close_escrow_from_dao(&mut app, dao_addr.clone(), escrow_addr);
+
+    let config: cw3_dao::query::ConfigResponse = app
+        .wrap()
+        .query_wasm_smart(dao_addr.clone(), &cw3_dao::msg::QueryMsg::GetConfig {})
+        .unwrap();
+
+    let gov_token_addr = config.gov_token;
+
+    // Verify that tokens were returned
+    let balance: cw20::BalanceResponse = app
+        .wrap()
+        .query_wasm_smart(
+            gov_token_addr,
+            &cw20::Cw20QueryMsg::Balance {
+                address: dao_addr.to_string(),
+            },
+        )
+        .unwrap();
+    let expected_balance = Uint128::from(100_000_000_000u64);
+    assert_eq!(balance.balance, expected_balance);
 }
 
 #[test]
@@ -833,7 +929,7 @@ fn test_campaign_close() {
 
     assert_eq!(err, ContractError::Unauthorized {});
 
-    close_escrow_from_dao(&mut app, dao_addr.clone(), escrow_addr.clone(), gov_tokens);
+    close_escrow_from_dao(&mut app, dao_addr.clone(), escrow_addr.clone());
 
     let dao_config: cw3_dao::query::ConfigResponse = app
         .wrap()
