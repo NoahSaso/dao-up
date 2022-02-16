@@ -127,8 +127,8 @@ fn instantiate_escrow(
     let instantiate = InstantiateMsg {
         dao_address: dao_addr,
         cw20_code_id: cw20_id,
-	fee: Decimal::percent(3),
-	fee_receiver: Addr::unchecked(DAO_UP_ADDR),
+        fee: Decimal::percent(3),
+        fee_receiver: Addr::unchecked(DAO_UP_ADDR),
         funding_goal: Coin {
             denom: CHAIN_DENOM.to_string(),
             amount: Uint128::from(funding_goal),
@@ -270,6 +270,19 @@ fn close_escrow_from_dao(app: &mut App, dao_addr: Addr, escrow_addr: Addr, token
 }
 
 #[test]
+#[should_panic]
+fn test_campaign_creation_with_invalid_cw20() {
+    let mut app = App::default();
+    let cw20_id = app.store_code(cw20_contract());
+    let dao_id = app.store_code(dao_dao_dao_contract());
+    let stake_id = app.store_code(stake_cw20_contract());
+    let escrow_id = app.store_code(escrow_contract());
+
+    let dao_addr = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
+    instantiate_escrow(&mut app, dao_addr.clone(), escrow_id, dao_id, 100_000_000);
+}
+
+#[test]
 fn test_campaign_creation() {
     let mut app = App::new(|router, _, storage| {
         router
@@ -321,7 +334,7 @@ fn test_campaign_creation() {
         }
     );
     assert_eq!(
-	state.gov_token_info,
+        state.gov_token_info,
         cw20::TokenInfoResponse {
             name: "Bong DAO".to_string(),
             symbol: "BDAO".to_string(),
@@ -725,7 +738,10 @@ fn test_campaign_completion() {
         .unwrap();
     assert_eq!(dao_balance.amount, expected_dao);
 
-    let dao_up_balance = app.wrap().query_balance(Addr::unchecked(DAO_UP_ADDR), CHAIN_DENOM).unwrap();
+    let dao_up_balance = app
+        .wrap()
+        .query_balance(Addr::unchecked(DAO_UP_ADDR), CHAIN_DENOM)
+        .unwrap();
     assert_eq!(dao_up_balance.amount, expected_fee);
 }
 
