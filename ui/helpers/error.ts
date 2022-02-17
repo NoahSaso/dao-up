@@ -36,6 +36,8 @@ export const parseError = (
     recognizedError = CommonError.Network
   } else if (message.includes("Unauthorized")) {
     recognizedError = CommonError.Unauthorized
+  } else if (message.includes("Overflow: Cannot Sub with")) {
+    recognizedError = CommonError.InsufficientForProposalDeposit
   }
 
   // If recognized error, try to find it in the map, or else return the recognized error.
