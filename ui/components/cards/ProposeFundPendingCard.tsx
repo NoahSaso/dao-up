@@ -73,7 +73,9 @@ export const ProposeFundPendingCard: FunctionComponent<
             disabled={!connected}
             accent={
               govTokenSupply
-                ? `This will allocate ${fundPendingTokens} ${
+                ? `This will allocate ${prettyPrintDecimal(
+                    fundPendingTokens
+                  )} ${
                     govTokenSymbol ?? "governance tokens"
                   } (${prettyPrintDecimal(
                     (100 * fundPendingTokens) / govTokenSupply,
