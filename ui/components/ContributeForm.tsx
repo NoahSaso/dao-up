@@ -112,7 +112,7 @@ export const ContributeForm: FunctionComponent<ContributeFormProps> = ({
             value: minContribution,
             message: `Must be at least ${prettyPrintDecimal(
               minContribution
-            )} ${payTokenSymbol}, the price of 0.000001 ${tokenSymbol}.`,
+            )} ${payTokenSymbol}.`,
           },
           max: {
             value: maxContribution,
