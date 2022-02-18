@@ -8,7 +8,7 @@ import {
   useEffect,
   useState,
 } from "react"
-import { IoStar, IoStarOutline } from "react-icons/io5"
+import { IoEye, IoEyeOff, IoStar, IoStarOutline } from "react-icons/io5"
 import { useRecoilValue } from "recoil"
 
 import {
@@ -115,7 +115,7 @@ const Campaigns: NextPage = () => {
 
           <Button outline color={Color.Light} onClick={toggleFeatured}>
             <div className="flex items-center gap-2">
-              {showFeatured ? <IoStar /> : <IoStarOutline />}
+              {showFeatured ? <IoEye /> : <IoEyeOff />}
               Featured
             </div>
           </Button>

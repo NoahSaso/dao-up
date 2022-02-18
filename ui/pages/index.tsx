@@ -64,15 +64,6 @@ const Home: NextPage = () => (
       </div>
     </CenteredColumn>
 
-    <CenteredColumn topSpace>
-      <h2 className="font-semibold text-center mb-10 text-2xl lg:text-3xl xl:text-4xl">
-        Featured Projects
-      </h2>
-      <Suspense fallback={<Loader />}>
-        <HomepageFeaturedCampaigns />
-      </Suspense>
-    </CenteredColumn>
-
     <CenteredColumn topSpace className="pb-16">
       <h2 className="font-semibold text-center mb-10 text-2xl lg:text-3xl xl:text-4xl">
         Superior experience for both creators and backers.
@@ -105,6 +96,15 @@ const Home: NextPage = () => (
           button={<ButtonLink href="/campaigns">View All Campaigns</ButtonLink>}
         />
       </div>
+    </CenteredColumn>
+
+    <CenteredColumn className="pb-16">
+      <h2 className="font-semibold text-center mb-10 text-2xl lg:text-3xl xl:text-4xl">
+        Featured Projects
+      </h2>
+      <Suspense fallback={<Loader />}>
+        <HomepageFeaturedCampaigns />
+      </Suspense>
     </CenteredColumn>
 
     <div className="bg-light py-16 text-dark" id="faq">
