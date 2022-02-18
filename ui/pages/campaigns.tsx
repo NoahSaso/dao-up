@@ -8,7 +8,7 @@ import {
   useEffect,
   useState,
 } from "react"
-import { IoEye, IoEyeOff, IoStar, IoStarOutline } from "react-icons/io5"
+import { IoEye, IoEyeOff } from "react-icons/io5"
 import { useRecoilValue } from "recoil"
 
 import {
