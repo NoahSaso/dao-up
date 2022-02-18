@@ -59,6 +59,8 @@ export const ContributeForm: FunctionComponent<ContributeFormProps> = ({
     watchContribution && watchContribution > 0 && fundingTokenPrice
       ? fundingTokenPrice * watchContribution
       : 0
+  // Minimum contribution is how many funding tokens (with decimals) per 1 ujuno(x).
+  const minContribution = Math.ceil((fundingTokenPrice ?? 1e-6) * 1e6) / 1e6
   // Max contribution is remaining amount left to fund. Cannot fund more than goal.
   const maxContribution = Math.min(
     // Weird subtraction issues. JavaScript thinks 11 - 10.999 = 0.0009999999999994458
@@ -107,8 +109,10 @@ export const ContributeForm: FunctionComponent<ContributeFormProps> = ({
           valueAsNumber: true,
           pattern: numberPattern,
           min: {
-            value: 1e-6,
-            message: `Must be at least 0.000001 ${payTokenSymbol}.`,
+            value: minContribution,
+            message: `Must be at least ${prettyPrintDecimal(
+              minContribution
+            )} ${payTokenSymbol}, the price of 0.000001 ${tokenSymbol}.`,
           },
           max: {
             value: maxContribution,
