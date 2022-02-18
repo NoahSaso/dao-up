@@ -181,4 +181,5 @@ export enum CommonError {
   GetClientFailed = "Failed to get client.",
   Network = "Network error. Ensure you are connected to the internet or try again later.",
   Unauthorized = "Unauthorized.",
+  InsufficientForProposalDeposit = "Insufficient unstaked governance tokens. Ensure you have enough unstaked governance tokens on DAO DAO to pay for the proposal deposit.",
 }
