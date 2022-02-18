@@ -430,9 +430,9 @@ export const featuredCampaignAddressList = selector<string[]>({
     try {
       const addresses = (
         (await client.queryContractSmart(featuredListContractAddress, {
-          get_addresses: {},
+          list_members: {},
         })) as AddressPriorityListResponse
-      ).map(({ addr }) => addr)
+      ).members.map(({ addr }) => addr)
 
       return addresses
     } catch (e) {
