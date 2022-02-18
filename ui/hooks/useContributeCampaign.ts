@@ -41,13 +41,15 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
           fund: {},
         }
 
-        const response = await client.execute(
+        await client.execute(
           walletAddress,
           campaign.address,
           msg,
           "auto",
           undefined,
-          coins(amount * 1e6, minPayTokenSymbol)
+          // JavaScript thinks 16.31 * 1e6 = 16309999.999999998 for some reason.
+          // Round so that this value is an integer...
+          coins(Math.round(amount * 1e6), minPayTokenSymbol)
         )
 
         // Update campaign state.
