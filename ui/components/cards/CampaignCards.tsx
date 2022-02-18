@@ -14,6 +14,7 @@ import {
 } from "@/components"
 import { prettyPrintDecimal } from "@/helpers"
 import { walletTokenBalance } from "@/state"
+import { payTokenSymbol } from "@/config"
 
 interface CampaignCardWrapperProps extends PropsWithChildren<CampaignProps> {
   contentClassName?: string
@@ -134,5 +135,56 @@ export const FavoriteCampaignCard: FunctionComponent<CampaignProps> = ({
         )}
       </div>
     </CampaignCardWrapper>
+  )
+}
+
+export const HomepageFeaturedCampaignCard: FunctionComponent<CampaignProps> = ({
+  campaign,
+  className,
+}) => {
+  const { pledged, goal } = campaign
+  const fundedPercent = Math.floor((100 * pledged) / goal)
+
+  return (
+    <CardWrapper
+      className={cn(
+        "border border-card hover:border-green transition cursor-pointer relative lg:p-4 2xl:p-6",
+        className
+      )}
+    >
+      <Link href={`/campaign/${campaign.address}`}>
+        {/* The campaigns list splits into two columns at lg, and these cards become narrow again, so reduce padding and then increase again. */}
+        <a className="flex flex-col justify-start items-stretch">
+          <CampaignImage
+            imageUrl={campaign.imageUrl}
+            className="rounded-none"
+            size={147}
+          />
+          <div
+            className={cn(
+              "flex flex-col items-stretch flex-1",
+              "ml-0 mt-3 w-full md:w-72",
+              "overflow-hidden"
+            )}
+          >
+            <h2 className="font-medium text-xl text-ellipsis overflow-hidden whitespace-nowrap break-words">
+              {campaign.name}
+            </h2>
+            <p className="text-green">
+              {pledged} ${payTokenSymbol} pledged
+            </p>
+            <p>{fundedPercent}% funded</p>
+            <ReactMarkdown
+              children={campaign.description}
+              linkTarget="_blank"
+              // Campaign card is an A tag, and it's bad practice to nest A tags in the DOM. We only show two lines of this markdown as a preview, no need to allow links here.
+              disallowedElements={["a"]}
+              // line-clamp is weird on Safari, so just set max height to twice the line height and hide overflow.
+              className="mt-4 line-clamp-2 leading-6 max-h-12 overflow-hidden"
+            />
+          </div>
+        </a>
+      </Link>
+    </CardWrapper>
   )
 }
