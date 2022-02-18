@@ -10,7 +10,7 @@ use cw_utils::parse_reply_instantiate_data;
 
 use crate::error::ContractError;
 use crate::msg::{DumpStateResponse, ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::state::Status::{self, Pending};
+use crate::state::Status;
 use crate::state::{State, FUNDING_TOKEN_ADDR, GOV_TOKEN_ADDR, STATE};
 
 const CONTRACT_NAME: &str = "crates.io:cw20-dao-crowdfund";
@@ -27,14 +27,17 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
-    let dao_addr = deps.api.addr_validate(&msg.dao_address.to_string())?;
-    let config: cw3_dao::query::ConfigResponse = deps
+    let dao_addr = deps.api.addr_validate(msg.dao_address.as_str())?;
+    let dao_config: cw3_dao::query::ConfigResponse = deps
         .querier
         .query_wasm_smart(dao_addr.clone(), &cw3_dao::msg::QueryMsg::GetConfig {})?;
-    let gov_token_addr = config.gov_token;
+
+    // DAO shouldn't have an invalid gov token address but lets verify
+    // just to be sure.
+    let gov_token_addr = deps.api.addr_validate(dao_config.gov_token.as_str())?;
     GOV_TOKEN_ADDR.save(deps.storage, &gov_token_addr)?;
 
-    let fee_receiver = deps.api.addr_validate(&msg.fee_receiver.to_string())?;
+    let fee_receiver = deps.api.addr_validate(msg.fee_receiver.as_str())?;
     if msg.fee > Decimal::percent(100) {
         return Err(ContractError::Instantiation(format!(
             "fee ({}) is greater than 100%",
@@ -42,8 +45,15 @@ pub fn instantiate(
         )));
     }
 
+    if msg.funding_goal.amount == Uint128::zero() {
+        return Err(ContractError::Instantiation(format!(
+            "funding goal is zero ({})",
+            msg.funding_goal
+        )));
+    }
+
     let state = State {
-        status: Pending {},
+        status: Status::Uninstantiated {},
         dao_addr,
         creator: info.sender,
         fee_receiver,
@@ -215,10 +225,15 @@ pub fn execute_receive_gov_tokens(
 ) -> Result<Response, ContractError> {
     let mut state = STATE.load(deps.storage)?;
     match state.status {
-        Pending {} => {
-            state.status = Status::Open {
-                token_price: Decimal::from_ratio(msg.amount, state.funding_goal.amount),
-            };
+        Status::Pending {} => {
+            let token_price = Decimal::from_ratio(msg.amount, state.funding_goal.amount);
+            // Not strictly needed as fund transactions will fail the
+            // the token price is zero but slightly better UX.
+            if token_price.is_zero() {
+                return Err(ContractError::InvalidGovTokenAmount {});
+            }
+
+            state.status = Status::Open { token_price };
             STATE.save(deps.storage, &state)?;
             Ok(Response::default()
                 .add_attribute("action", "fund_gov_tokens")
@@ -235,7 +250,7 @@ pub fn execute_receive_funding_tokens(
 ) -> Result<Response, ContractError> {
     let mut state = STATE.load(deps.storage)?;
     match state.status {
-        Pending {} => Err(ContractError::NotOpen {}),
+        Status::Pending {} | Status::Uninstantiated {} => Err(ContractError::NotOpen {}),
         Status::Open { token_price } | Status::Cancelled { token_price } => {
             // User is sending tokens back to the contract indicating
             // that they would like a refund.
@@ -384,10 +399,9 @@ pub fn query_dump_state(deps: Deps) -> StdResult<Binary> {
         &cw20::Cw20QueryMsg::TokenInfo {},
     )?;
 
-    let gov_token_info: cw20::TokenInfoResponse = deps.querier.query_wasm_smart(
-        gov_token_addr.clone(),
-        &cw20::Cw20QueryMsg::TokenInfo {},
-    )?;
+    let gov_token_info: cw20::TokenInfoResponse = deps
+        .querier
+        .query_wasm_smart(gov_token_addr.clone(), &cw20::Cw20QueryMsg::TokenInfo {})?;
 
     to_binary(&DumpStateResponse {
         status: state.status,
@@ -400,6 +414,8 @@ pub fn query_dump_state(deps: Deps) -> StdResult<Binary> {
         campaign_info: state.campaign_info,
         gov_token_addr,
         funding_token_addr,
+        fee_receiver: state.fee_receiver,
+        fee: state.fee,
     })
 }
 
@@ -412,6 +428,11 @@ pub fn reply(deps: DepsMut, _env: Env, msg: Reply) -> Result<Response, ContractE
             })?;
             let token_addr = deps.api.addr_validate(&res.contract_address)?;
             FUNDING_TOKEN_ADDR.save(deps.storage, &token_addr)?;
+
+            let mut state = STATE.load(deps.storage)?;
+            state.status = Status::Pending {};
+            STATE.save(deps.storage, &state)?;
+
             Ok(Response::default()
                 .add_attribute("method", "reply")
                 .add_attribute("funding_token", token_addr))

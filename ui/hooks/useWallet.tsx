@@ -3,6 +3,8 @@ import { useRecoilValue, useSetRecoilState } from "recoil"
 
 import { InstallWalletMessage } from "@/components"
 import { chainId } from "@/config"
+import { parseError } from "@/helpers"
+import { suggestChain } from "@/services"
 import { fetchKeplr, keplrKeystoreIdAtom, walletAddress } from "@/state"
 
 export const useWallet = () => {
@@ -22,19 +24,23 @@ export const useWallet = () => {
 
     // Attempt to connect and update keystore accordingly.
     try {
+      // Suggest chain.
+      await suggestChain(keplr)
+
       await keplr.enable(chainId)
+
       // If connection succeeds, propagate client to selector dependency chain.
       setKeplrKeystoreId((id) => id + 1)
     } catch (error) {
-      // Otherwise set disconnected so we don't try to connect again without manual action.
-      setKeplrKeystoreId(-1)
+      console.error(error)
+      setConnectError(
+        parseError(error, {
+          source: "connect",
+        })
+      )
 
-      // Ignore rejected requests since the user knows they rejected.
-      if (!(error instanceof Error) || error.message !== "Request rejected") {
-        // TODO: Handle non-rejection errors better.
-        console.log(error)
-        setConnectError(`${error}`)
-      }
+      // Set disconnected so we don't try to connect again without manual action.
+      setKeplrKeystoreId(-1)
     }
   }, [setKeplrKeystoreId, setConnectError, keplr])
 

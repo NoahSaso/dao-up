@@ -2,7 +2,8 @@ import { coins } from "@cosmjs/stargate"
 import { useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
-import { defaultExecuteFee, fundingTokenDenom } from "@/config"
+import { minPayTokenSymbol } from "@/config"
+import { parseError } from "@/helpers"
 import { useRefreshCampaign, useWallet } from "@/hooks"
 import { globalLoadingAtom, signedCosmWasmClient } from "@/state"
 
@@ -44,11 +45,10 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
           walletAddress,
           campaign.address,
           msg,
-          defaultExecuteFee,
+          "auto",
           undefined,
-          coins(amount * 1e6, fundingTokenDenom)
+          coins(amount * 1e6, minPayTokenSymbol)
         )
-        console.log(response)
 
         // Update campaign state.
         refreshCampaign()
@@ -56,8 +56,14 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
         return true
       } catch (error) {
         console.error(error)
-        // TODO: Set better error messages.
-        setContributeCampaignError(`${error}`)
+        setContributeCampaignError(
+          parseError(error, {
+            source: "contributeCampaign",
+            wallet: walletAddress,
+            campaign: campaign.address,
+            amount,
+          })
+        )
         return false
       } finally {
         setLoading(false)

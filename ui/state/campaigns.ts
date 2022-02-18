@@ -7,11 +7,11 @@ import {
   escrowContractCodeId,
   featuredListContractAddress,
 } from "@/config"
-import { extractPageInfo } from "@/helpers"
+import { extractPageInfo, parseError } from "@/helpers"
 import { campaignsFromResponses, filterCampaigns } from "@/services"
-import { cosmWasmClient, cosmWasmQueryClient, walletAddress } from "@/state"
+import { cosmWasmClient, cosmWasmQueryClient, tokenBalance } from "@/state"
 import { localStorageEffectJSON } from "@/state/effects"
-import { CampaignActionType, Status } from "@/types"
+import { CampaignActionType, CommonError, Status } from "@/types"
 
 export const campaignStateId = atomFamily<number, string | undefined>({
   key: "campaignStateId",
@@ -28,20 +28,24 @@ export const campaignState = selectorFamily<CampaignStateResponse, string>({
 
       const client = get(cosmWasmClient)
 
-      try {
-        if (!client) throw new Error("Failed to get client.")
-        if (!address) throw new Error("Invalid address.")
+      if (!client) return { state: null, error: CommonError.GetClientFailed }
+      if (!address) return { state: null, error: CommonError.InvalidAddress }
 
-        return {
-          state: await client.queryContractSmart(address, {
-            dump_state: {},
-          }),
-          error: null,
-        }
+      try {
+        const state = await client.queryContractSmart(address, {
+          dump_state: {},
+        })
+
+        return { state, error: null }
       } catch (error) {
         console.error(error)
-        // TODO: Return better error.
-        return { state: null, error: `${error}` }
+        return {
+          state: null,
+          error: parseError(error, {
+            source: "campaignState",
+            campaign: address,
+          }),
+        }
       }
     },
 })
@@ -58,10 +62,18 @@ export const fetchCampaignActions = selectorFamily<
 
       const client = get(cosmWasmClient)
 
-      try {
-        if (!address) throw new Error("Invalid address.")
-        if (!client) throw new Error("Failed to get client.")
+      if (!address)
+        return {
+          actions: null,
+          error: CommonError.InvalidAddress,
+        }
+      if (!client)
+        return {
+          actions: null,
+          error: CommonError.GetClientFailed,
+        }
 
+      try {
         const blockHeight = await client?.getHeight()
 
         // Get all of the wasm messages involving this contract.
@@ -150,16 +162,15 @@ export const fetchCampaignActions = selectorFamily<
           return b.when.getTime() - a.when.getTime()
         })
 
-        return {
-          actions,
-          error: null,
-        }
+        return { actions, error: null }
       } catch (error) {
         console.error(error)
-        // TODO: Return better error.
         return {
           actions: null,
-          error: `${error}`,
+          error: parseError(error, {
+            source: "fetchCampaignActions",
+            campaign: address,
+          }),
         }
       }
     },
@@ -184,6 +195,9 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
         gov_token_info: govTokenInfo,
         ...state
       } = cState
+
+      if (!fundingTokenInfo || !govTokenInfo)
+        return { campaign: null, error: "Unknown error." }
 
       const {
         balance: campaignGovTokenBalance,
@@ -270,8 +284,14 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
         }
       } catch (error) {
         console.error(error)
-        // TODO: Return better error.
-        return { campaign: null, error: `${error}` }
+        return {
+          campaign: null,
+          error: parseError(error, {
+            source: "fetchCampaign",
+            campaign: address,
+            cState,
+          }),
+        }
       }
     },
 })
@@ -283,88 +303,33 @@ export const tokenInfo = selectorFamily<TokenInfoResponse, string>({
     async ({ get }) => {
       const client = get(cosmWasmClient)
 
-      try {
-        if (!address) throw new Error("Invalid address.")
-        if (!client) throw new Error("Failed to get client.")
-
+      if (!address)
         return {
-          info: await client.queryContractSmart(address, {
-            token_info: {},
+          info: null,
+          error: CommonError.InvalidAddress,
+        }
+      if (!client)
+        return {
+          info: null,
+          error: CommonError.GetClientFailed,
+        }
+
+      try {
+        const info = await client.queryContractSmart(address, {
+          token_info: {},
+        })
+
+        return { info, error: null }
+      } catch (error) {
+        console.error(error)
+        return {
+          info: null,
+          error: parseError(error, {
+            source: "tokenInfo",
+            token: address,
           }),
-          error: null,
         }
-      } catch (error) {
-        console.error(error)
-        // TODO: Return better error.
-        return { info: null, error: `${error}` }
       }
-    },
-})
-
-export const tokenAddressBalanceId = atomFamily<number, string | undefined>({
-  key: "tokenAddressBalanceId",
-  default: 0,
-})
-
-export const tokenBalance = selectorFamily<
-  TokenBalanceResponse,
-  {
-    tokenAddress: string | undefined | null
-    walletAddress: string | undefined | null
-  }
->({
-  key: "tokenBalance",
-  get:
-    ({ tokenAddress, walletAddress }) =>
-    async ({ get }) => {
-      if (!tokenAddress || !walletAddress) return { balance: null, error: null }
-
-      // Allow us to manually refresh balance for given token.
-      get(tokenAddressBalanceId(tokenAddress))
-
-      const client = get(cosmWasmClient)
-
-      try {
-        if (!client) throw new Error("Failed to get client.")
-
-        const { balance } = await client.queryContractSmart(tokenAddress, {
-          balance: { address: walletAddress },
-        })
-
-        return {
-          balance: Number(balance) / 1e6,
-          error: null,
-        }
-      } catch (error) {
-        console.error(error)
-        // TODO: Return better error.
-        return { balance: null, error: `${error}` }
-      }
-    },
-})
-
-export const walletTokenBalance = selectorFamily<
-  TokenBalanceResponse,
-  string | undefined | null
->({
-  key: "walletTokenBalance",
-  get:
-    (tokenAddress) =>
-    async ({ get }) => {
-      const address = get(walletAddress)
-
-      if (!address) return { balance: null, error: null }
-
-      const { balance, error: tokenBalanceError } = get(
-        tokenBalance({
-          tokenAddress,
-          walletAddress: address,
-        })
-      )
-      if (tokenBalanceError || balance === null)
-        return { balance: null, error: tokenBalanceError }
-
-      return { balance, error: null }
     },
 })
 
@@ -444,9 +409,9 @@ export const campaignDenyList = selector<string[]>({
     try {
       const addresses = (
         (await client.queryContractSmart(denyListContractAddress, {
-          get_addresses: {},
+          list_members: {},
         })) as AddressPriorityListResponse
-      ).map(({ addr }) => addr)
+      ).members.map(({ addr }) => addr)
 
       return addresses
     } catch (e) {
@@ -609,41 +574,6 @@ export const allCampaigns = selector<CampaignsResponse>({
 
     return { campaigns, hasMore: false, error: null }
   },
-})
-
-export const daoConfig = selectorFamily<DAOConfigResponse, string | undefined>({
-  key: "daoConfig",
-  get:
-    (address) =>
-    async ({ get }) => {
-      const client = get(cosmWasmClient)
-
-      try {
-        if (!address) throw new Error("Invalid address.")
-        if (!client) throw new Error("Failed to get client.")
-
-        return {
-          config: await client.queryContractSmart(address, {
-            get_config: {},
-          }),
-          error: null,
-        }
-      } catch (error) {
-        if (
-          error instanceof Error &&
-          (error.message.includes("decoding bech32 failed: invalid checksum") ||
-            error.message.includes("contract: not found") ||
-            error.message === "Invalid address.")
-        )
-          return {
-            config: null,
-            error:
-              "DAO does not exist on chain (ensure your DAO exists on the Juno Testnet chain).",
-          }
-
-        return { config: null, error: `${error}` }
-      }
-    },
 })
 
 export const favoriteCampaignAddressesKey = "favoriteCampaignAddresses"

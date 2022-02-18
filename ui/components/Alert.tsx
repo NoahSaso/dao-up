@@ -17,36 +17,40 @@ export const Alert: FunctionComponent<PropsWithChildren<AlertProps>> = ({
   title,
   visible,
   hide,
-}) =>
-  visible ? (
-    <div
-      className={cn(
-        "flex justify-center items-center fixed z-50 bg-dark/90 top-0 right-0 bottom-0 left-0",
-        { "cursor-pointer": hide }
-      )}
-      onClick={
-        hide
-          ? ({ target, currentTarget }) => target === currentTarget && hide()
-          : undefined
+}) => (
+  <div
+    className={cn(
+      "flex justify-center items-center fixed z-40 bg-dark/90 top-0 right-0 bottom-0 left-0 transition",
+      {
+        "cursor-pointer": hide,
+
+        "opacity-0 pointer-events-none": !visible,
+        "opacity-100": visible,
       }
-    >
-      <CardWrapper className="flex flex-col relative m-8 max-w-xl max-h-[90vh] overflow-y-auto cursor-auto">
-        {!!hide && (
-          <Button
-            onClick={hide}
-            className="absolute top-4 right-4 text-placeholder"
-            bare
-          >
-            <IoClose size={22} />
-          </Button>
-        )}
+    )}
+    onClick={
+      hide
+        ? ({ target, currentTarget }) => target === currentTarget && hide()
+        : undefined
+    }
+  >
+    <CardWrapper className="flex flex-col justify-start items-start relative m-8 max-w-xl max-h-[90vh] overflow-y-auto cursor-auto">
+      {!!hide && (
+        <Button
+          onClick={hide}
+          className="absolute top-4 right-4 text-placeholder"
+          bare
+        >
+          <IoClose size={22} />
+        </Button>
+      )}
 
-        <h1 className="text-3xl mb-4 font-medium text-green">{title}</h1>
+      <h1 className="text-3xl mb-4 font-medium text-green">{title}</h1>
 
-        {children}
-      </CardWrapper>
-    </div>
-  ) : null
+      {children}
+    </CardWrapper>
+  </div>
+)
 
 export const BetaAlert: FunctionComponent<Partial<AlertProps>> = (props) => {
   const [betaAlertAccepted, setBetaAlertAccepted] = useRecoilState(

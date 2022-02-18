@@ -94,6 +94,14 @@ declare global {
     [key: string]: number
   }
 
+  interface ErrorContext extends Record<string, unknown> {
+    source: string
+    campaign?: string
+    wallet?: string
+    token?: string
+    amount?: number
+  }
+
   // Selectors
 
   type AsyncSelectorResponse<T> = T & {
@@ -134,13 +142,16 @@ declare global {
   }>
 
   type DAOConfigResponse = AsyncSelectorResponse<{ config: any | null }>
+  type DAOValidationResponse = AsyncSelectorResponse<{ valid: boolean }>
 
   interface AddressPriorityListItem {
     addr: string
     priority: number
   }
 
-  type AddressPriorityListResponse = AddressPriorityListItem[]
+  interface AddressPriorityListResponse {
+    members: AddressPriorityListItem[]
+  }
 }
 
 export enum Status {
@@ -157,9 +168,19 @@ export enum Color {
   Placeholder = "placeholder",
 }
 
+export type ColorType = `${Color}`
+
 export enum CampaignActionType {
   Fund = "fund",
   Refund = "refund",
 }
 
-export type ColorType = `${Color}`
+export enum CommonError {
+  RequestRejected = "Wallet rejected transaction.",
+  InvalidAddress = "Invalid address.",
+  InsufficientFunds = "Insufficient funds.",
+  GetClientFailed = "Failed to get client.",
+  Network = "Network error. Ensure you are connected to the internet or try again later.",
+  Unauthorized = "Unauthorized.",
+  InsufficientForProposalDeposit = "Insufficient unstaked governance tokens. Ensure you have enough unstaked governance tokens on DAO DAO to pay for the proposal deposit.",
+}

@@ -27,20 +27,20 @@ import {
   daoUpDAOAddress,
   daoUpFee,
   daoUpFeeNum,
-  defaultExecuteFee,
   escrowContractCodeId,
-  fundingTokenDenom,
+  minPayTokenSymbol,
   payTokenSymbol,
 } from "@/config"
 import {
   daoAddressPattern,
   numberPattern,
+  parseError,
   prettyPrintDecimal,
   urlPattern,
 } from "@/helpers"
 import { useWallet } from "@/hooks"
 import { defaultNewCampaign, newCampaignFields } from "@/services"
-import { daoConfig, globalLoadingAtom, signedCosmWasmClient } from "@/state"
+import { globalLoadingAtom, signedCosmWasmClient, validateDAO } from "@/state"
 import { Color } from "@/types"
 
 const validUrlOrUndefined = (u: string | undefined) =>
@@ -88,14 +88,14 @@ const CreateContent = () => {
     daoAddressPattern.value
   )?.length
   const {
-    state: daoConfigState,
-    contents: { config: daoConfigData, error: daoConfigError },
+    state: daoValidateState,
+    contents: { valid: daoValid, error: daoValidateError },
   } = useRecoilValueLoadable(
-    // Only attempt to load DAO address once it matches the regex.
-    daoConfig(daoAddressFormatValid ? watchDAOAddress : undefined)
+    // Only attempt to validate DAO address once it matches the regex.
+    validateDAO(daoAddressFormatValid ? watchDAOAddress : undefined)
   )
-  const checkingDAO = daoConfigState === "loading"
-  const validDAO = daoConfigState === "hasValue" && daoConfigData !== null
+  const checkingDAO = daoValidateState === "loading"
+  const validDAO = daoValidateState === "hasValue" && !!daoValid
   // Only invalid if pattern matches AND has determined invalid address.
   const invalidDAO = daoAddressFormatValid && !validDAO
 
@@ -143,43 +143,48 @@ const CreateContent = () => {
 
       setLoading(true)
 
+      const msg = {
+        dao_address: newCampaign.daoAddress,
+        cw20_code_id: cw20CodeId,
+
+        funding_goal: coin(newCampaign.goal * 1e6, minPayTokenSymbol),
+        funding_token_name: newCampaign.tokenName,
+        funding_token_symbol: newCampaign.tokenSymbol,
+
+        fee: daoUpFee,
+        fee_receiver: daoUpDAOAddress,
+
+        campaign_info: {
+          name: newCampaign.name,
+          description: newCampaign.description,
+          hidden: newCampaign.hidden,
+
+          ...(newCampaign.imageUrl && { image_url: newCampaign.imageUrl }),
+          ...(newCampaign.website && { website: newCampaign.website }),
+          ...(newCampaign.twitter && { twitter: newCampaign.twitter }),
+          ...(newCampaign.discord && { discord: newCampaign.discord }),
+        },
+      }
+
       try {
-        const msg = {
-          dao_address: newCampaign.daoAddress,
-          cw20_code_id: cw20CodeId,
-
-          funding_goal: coin(newCampaign.goal * 1e6, fundingTokenDenom),
-          funding_token_name: newCampaign.tokenName,
-          funding_token_symbol: newCampaign.tokenSymbol,
-
-          fee: daoUpFee,
-          fee_receiver: daoUpDAOAddress,
-
-          campaign_info: {
-            name: newCampaign.name,
-            description: newCampaign.description,
-            hidden: newCampaign.hidden,
-
-            ...(newCampaign.imageUrl && { image_url: newCampaign.imageUrl }),
-            ...(newCampaign.website && { website: newCampaign.website }),
-            ...(newCampaign.twitter && { twitter: newCampaign.twitter }),
-            ...(newCampaign.discord && { discord: newCampaign.discord }),
-          },
-        }
-
         const { contractAddress } = await client.instantiate(
           walletAddress,
           escrowContractCodeId,
           msg,
           `[DAO Up!] ${newCampaign.name}`,
-          defaultExecuteFee
+          "auto"
         )
 
         return contractAddress
       } catch (error) {
         console.error(error)
-        // TODO: Set better error messages.
-        setCreateCampaignError(`${error}`)
+        setCreateCampaignError(
+          parseError(error, {
+            source: "createCampaign",
+            wallet: walletAddress,
+            msg,
+          })
+        )
       }
       // Don't stop loading until we've redirected or not. Handled elsewhere.
     },
@@ -405,7 +410,7 @@ const CreateContent = () => {
               placeholder="juno..."
               type="text"
               error={
-                (daoAddressFormatValid ? daoConfigError : null) ??
+                (daoAddressFormatValid ? daoValidateError : null) ??
                 errors.daoAddress?.message
               }
               tail={

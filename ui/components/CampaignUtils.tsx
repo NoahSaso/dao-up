@@ -1,4 +1,5 @@
 import cn from "classnames"
+import Image from "next/image"
 import { FunctionComponent, useCallback } from "react"
 import { IconType } from "react-icons"
 import { IoHeart, IoHeartOutline } from "react-icons/io5"
@@ -147,12 +148,14 @@ export const CampaignImage: FunctionComponent<CampaignImageProps> = ({
   size = 135,
 }) => (
   <div
-    className={cn("bg-green shrink-0 overflow-hidden rounded-md", className)}
+    className={cn("shrink-0 overflow-hidden rounded-md", className)}
     style={{ width: size, height: size }}
   >
-    {!!imageUrl && (
+    {imageUrl ? (
       // eslint-disable-next-line @next/next/no-img-element
       <img src={imageUrl} alt="image" className="w-full h-full object-cover" />
+    ) : (
+      <Image src="/images/placeholder.svg" alt="" width={size} height={size} />
     )}
   </div>
 )

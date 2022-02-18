@@ -10,6 +10,8 @@ export const daoAddressPattern = {
   message: "Invalid DAO address.",
 }
 
+export const escrowAddressRegex = daoAddressPattern.value
+
 export const urlPattern = {
   value: /^https?:\/\/.+$/,
   message: "Invalid URL. Ensure it starts with 'http://' or 'https://'.",
