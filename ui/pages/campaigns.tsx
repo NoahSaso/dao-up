@@ -115,7 +115,7 @@ const Campaigns: NextPage = () => {
 
           <Button outline color={Color.Light} onClick={toggleFeatured}>
             <div className="flex items-center gap-2">
-              {showFeatured ? <IoEye /> : <IoEyeOff />}
+              {showFeatured ? <IoEyeOff size={20} /> : <IoEye size={20} />}
               Featured
             </div>
           </Button>
@@ -202,13 +202,7 @@ const CampaignsContent: FunctionComponent<CampaignsContentProps> = ({
     campaigns: featured,
     hasMore: hasMoreFeatured,
     error: featuredError,
-  } = useRecoilValue(
-    featuredCampaigns({
-      // Don't page if not showing featured.
-      page: showFeatured ? page : minPage,
-      size: pageSize,
-    })
-  )
+  } = useRecoilValue(featuredCampaigns)
 
   // Switch between which campaigns and associated metadata to use.
   const showingCampaigns = showFeatured ? featured : allCampaigns

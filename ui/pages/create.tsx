@@ -3,8 +3,7 @@ import type { NextPage } from "next"
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
-import { FaEye, FaEyeSlash } from "react-icons/fa"
-import { IoCheckmark, IoWarning } from "react-icons/io5"
+import { IoCheckmark, IoEye, IoEyeOff, IoWarning } from "react-icons/io5"
 import {
   useRecoilValue,
   useRecoilValueLoadable,
@@ -252,7 +251,11 @@ const CreateContent = () => {
               onClick={() => setShowCampaignDescriptionPreview((b) => !b)}
             >
               <div className="flex items-center gap-2">
-                {showCampaignDescriptionPreview ? <FaEyeSlash /> : <FaEye />}
+                {showCampaignDescriptionPreview ? (
+                  <IoEyeOff size={20} />
+                ) : (
+                  <IoEye size={20} />
+                )}
                 Preview
               </div>
             </Button>

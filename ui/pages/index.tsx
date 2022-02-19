@@ -6,11 +6,10 @@ import {
   CenteredColumn,
   CTACard,
   FAQQuestion,
-  Loader,
+  HomepageFeaturedCampaigns,
   ResponsiveDecoration,
+  Suspense,
 } from "@/components"
-import { Suspense } from "react"
-import { HomepageFeaturedCampaigns } from "components/HomepageFeaturedCampaigns"
 
 const Home: NextPage = () => (
   <>
@@ -102,7 +101,8 @@ const Home: NextPage = () => (
       <h2 className="font-semibold text-center mb-10 text-2xl lg:text-3xl xl:text-4xl">
         Featured Projects
       </h2>
-      <Suspense fallback={<Loader />}>
+
+      <Suspense>
         <HomepageFeaturedCampaigns />
       </Suspense>
     </CenteredColumn>
