@@ -354,7 +354,6 @@ interface FormItemProps {
   accentClassName?: string
   error?: ReactNode
   wrapperClassName?: string
-  surroundingClassName?: string
   horizontal?: boolean
   onClick?: () => void
 }
@@ -369,7 +368,6 @@ export const FormWrapper: FunctionComponent<FormWrapperProps> = ({
   accentClassName,
   error,
   wrapperClassName,
-  surroundingClassName,
   horizontal,
   onClick,
 }) => (
@@ -387,26 +385,19 @@ export const FormWrapper: FunctionComponent<FormWrapperProps> = ({
     <div className="flex flex-col items-stretch">
       {!!label && (
         <label
-          className={cn(
-            "font pl-5",
-            "text-medium",
-            {
-              "mb-1": description,
-              "mb-2": !description && !horizontal,
-            },
-            surroundingClassName
-          )}
+          className={cn("font pl-5", "text-medium", {
+            "mb-1": description,
+            "mb-2": !description && !horizontal,
+          })}
         >
           {label}
         </label>
       )}
       {!!description && (
         <p
-          className={cn(
-            "block text-sm font-light pl-5",
-            { "mb-3": !horizontal },
-            surroundingClassName
-          )}
+          className={cn("block text-sm font-light pl-5", {
+            "mb-3": !horizontal,
+          })}
         >
           {description}
         </p>
@@ -417,8 +408,7 @@ export const FormWrapper: FunctionComponent<FormWrapperProps> = ({
           className={cn(
             "block text-sm font-light pl-5 text-green",
             { "mt-1": horizontal, "mt-3": !horizontal },
-            accentClassName,
-            surroundingClassName
+            accentClassName
           )}
         >
           {accent}
@@ -426,11 +416,10 @@ export const FormWrapper: FunctionComponent<FormWrapperProps> = ({
       )}
       {!!error && (
         <p
-          className={cn(
-            "pl-5 text-orange",
-            { "mt-1": horizontal, "mt-2": !horizontal },
-            surroundingClassName
-          )}
+          className={cn("pl-5 text-orange", {
+            "mt-1": horizontal,
+            "mt-2": !horizontal,
+          })}
         >
           {error}
         </p>
@@ -453,7 +442,6 @@ export const FormInput = forwardRef<
       accentClassName,
       error,
       wrapperClassName,
-      surroundingClassName,
       containerClassName,
       className,
       ...props
@@ -467,7 +455,6 @@ export const FormInput = forwardRef<
       accentClassName={accentClassName}
       error={error}
       wrapperClassName={wrapperClassName}
-      surroundingClassName={surroundingClassName}
     >
       <Input
         containerClassName={containerClassName}
@@ -497,7 +484,6 @@ export const FormTextArea = forwardRef<
       accent,
       error,
       wrapperClassName,
-      surroundingClassName,
       className,
       ...props
     },
@@ -509,7 +495,6 @@ export const FormTextArea = forwardRef<
       accent={accent}
       error={error}
       wrapperClassName={wrapperClassName}
-      surroundingClassName={surroundingClassName}
     >
       <TextArea
         className={cn(
@@ -533,7 +518,6 @@ export const FormSwitch: FunctionComponent<FormSwitchProps> = ({
   accent,
   error,
   wrapperClassName,
-  surroundingClassName,
   className,
   onClick,
   ...props
@@ -544,7 +528,6 @@ export const FormSwitch: FunctionComponent<FormSwitchProps> = ({
     accent={accent}
     error={error}
     wrapperClassName={cn("cursor-pointer", wrapperClassName)}
-    surroundingClassName={surroundingClassName}
     horizontal
     onClick={onClick}
   >
@@ -566,7 +549,6 @@ export const FormPercentTokenDoubleInput = forwardRef<
       accent,
       error,
       wrapperClassName,
-      surroundingClassName,
       shared: { className: sharedClassName, ...shared } = {},
       ...props
     },
@@ -578,7 +560,6 @@ export const FormPercentTokenDoubleInput = forwardRef<
       accent={accent}
       error={error}
       wrapperClassName={wrapperClassName}
-      surroundingClassName={surroundingClassName}
     >
       <PercentTokenDoubleInput
         shared={{
