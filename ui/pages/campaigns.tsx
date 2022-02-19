@@ -98,6 +98,15 @@ const Campaigns: NextPage = () => {
     return () => clearTimeout(timer)
   }, [filter, setActiveFilter])
 
+  // Scroll to top of page on page change.
+  useEffect(() => {
+    window.scrollTo({
+      left: 0,
+      top: 0,
+      behavior: "smooth",
+    })
+  }, [page])
+
   return (
     <>
       <ResponsiveDecoration
@@ -221,16 +230,6 @@ const CampaignsContent: FunctionComponent<CampaignsContentProps> = ({
 
   return (
     <>
-      {(canGoBack || canGoForward) && !!showingCampaigns && (
-        <CampaignsListPagination
-          className="-mt-2 mb-6"
-          canGoBack={canGoBack}
-          canGoForward={canGoForward}
-          goBack={goBack}
-          goForward={goForward}
-        />
-      )}
-
       {showingCampaigns?.length === 0 && (
         <p className="text-orange">No campaigns found.</p>
       )}

@@ -17,7 +17,7 @@ export const Loader: FunctionComponent<LoaderProps> = ({
   <div
     className={cn(
       "flex justify-center items-center",
-      { "fixed z-50 bg-dark/80 top-0 right-0 bottom-0 left-0": overlay },
+      { "fixed z-40 bg-dark/80 top-0 right-0 bottom-0 left-0": overlay },
       containerClassName
     )}
   >
