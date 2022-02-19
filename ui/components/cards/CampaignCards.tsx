@@ -148,7 +148,7 @@ export const HomepageFeaturedCampaignCard: FunctionComponent<CampaignProps> = ({
 }) => (
   <CampaignCardWrapper
     campaign={campaign}
-    contentClassName="!ml-0 !mt-3"
+    contentClassName="!ml-0 !mt-3 md:w-72"
     forceColumn
   >
     <CampaignProgress campaign={campaign} className="mt-2" showPledged />
