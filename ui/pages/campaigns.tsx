@@ -8,7 +8,6 @@ import {
   useEffect,
   useState,
 } from "react"
-import { IoEye, IoEyeOff } from "react-icons/io5"
 import { useRecoilValue } from "recoil"
 
 import {
@@ -23,7 +22,7 @@ import {
 } from "@/components"
 import { addFilter, filterExists, removeFilter } from "@/helpers"
 import { featuredCampaigns, filteredCampaigns } from "@/state"
-import { Color, Status } from "@/types"
+import { Status } from "@/types"
 
 const minPage = 1
 const pageSize = 20
@@ -117,22 +116,13 @@ const Campaigns: NextPage = () => {
       />
 
       <CenteredColumn className="pt-5 pb-10 max-w-7xl">
-        <div className="flex flex-row justify-between items-center mb-8">
-          <h1 className="font-semibold text-2xl sm:text-3xl lg:text-4xl">
-            {showFeatured ? "Featured" : "All"} Campaigns
-          </h1>
-
-          <Button outline color={Color.Light} onClick={toggleFeatured}>
-            <div className="flex items-center gap-2">
-              {showFeatured ? <IoEyeOff size={20} /> : <IoEye size={20} />}
-              Featured
-            </div>
-          </Button>
-        </div>
+        <h1 className="font-semibold text-2xl sm:text-3xl lg:text-4xl mb-8">
+          {showFeatured ? "Featured" : "All"} Campaigns
+        </h1>
 
         {!showFeatured && (
           <>
-            <div className="flex flex-wrap flex-row justify-start items-center mt-4">
+            <div className="flex flex-wrap flex-row justify-start items-center -mt-4">
               <Select
                 className="w-40"
                 label="Status"
@@ -168,6 +158,7 @@ const Campaigns: NextPage = () => {
             page={page}
             setPage={setPage}
             showFeatured={showFeatured}
+            toggleFeatured={toggleFeatured}
           />
         </Suspense>
       </CenteredColumn>
@@ -180,6 +171,7 @@ interface CampaignsContentProps {
   page: number
   setPage: Dispatch<SetStateAction<number>>
   showFeatured: boolean
+  toggleFeatured: () => void
 }
 
 const CampaignsContent: FunctionComponent<CampaignsContentProps> = ({
@@ -187,6 +179,7 @@ const CampaignsContent: FunctionComponent<CampaignsContentProps> = ({
   page,
   setPage,
   showFeatured,
+  toggleFeatured,
 }) => {
   const goBack = useCallback(
     () => setPage((p) => Math.max(minPage, p - 1)),
@@ -229,7 +222,7 @@ const CampaignsContent: FunctionComponent<CampaignsContentProps> = ({
   }, [showingCampaigns, page, setPage])
 
   return (
-    <>
+    <div className="flex flex-col">
       {showingCampaigns?.length === 0 && (
         <p className="text-orange">No campaigns found.</p>
       )}
@@ -250,7 +243,15 @@ const CampaignsContent: FunctionComponent<CampaignsContentProps> = ({
           goForward={goForward}
         />
       )}
-    </>
+
+      <Button
+        bare
+        className="underline !opacity-100 hover:no-underline self-end mt-10"
+        onClick={toggleFeatured}
+      >
+        see {showFeatured ? "all" : "featured"} campaigns
+      </Button>
+    </div>
   )
 }
 
