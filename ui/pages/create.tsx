@@ -247,8 +247,9 @@ const CreateContent = () => {
 
       <CenteredColumn className="py-6 max-w-3xl">
         <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between flex-wrap gap-4 mb-8">
             <h1 className="font-semibold text-4xl">Create a new campaign</h1>
+
             <Button
               outline
               color={Color.Light}
