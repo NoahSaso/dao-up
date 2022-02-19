@@ -17,6 +17,7 @@ import { walletTokenBalance } from "@/state"
 
 interface CampaignCardWrapperProps extends PropsWithChildren<CampaignProps> {
   contentClassName?: string
+  forceColumn?: boolean
 }
 
 const CampaignCardWrapper: FunctionComponent<CampaignCardWrapperProps> = ({
@@ -24,10 +25,12 @@ const CampaignCardWrapper: FunctionComponent<CampaignCardWrapperProps> = ({
   className,
   children,
   contentClassName,
+  forceColumn,
 }) => {
   return (
     <CardWrapper
       className={cn(
+        // The campaigns list splits into two columns at lg, and these cards become narrow again, so reduce padding and then increase again.
         "border border-card hover:border-green transition cursor-pointer relative lg:p-6 2xl:p-8",
         className
       )}
@@ -37,8 +40,11 @@ const CampaignCardWrapper: FunctionComponent<CampaignCardWrapperProps> = ({
         className="absolute top-4 right-4"
       />
       <Link href={`/campaign/${campaign.address}`}>
-        {/* The campaigns list splits into two columns at lg, and these cards become narrow again, so reduce padding and then increase again. */}
-        <a className="flex flex-col justify-start items-stretch sm:flex-row">
+        <a
+          className={cn("flex flex-col justify-start items-stretch", {
+            "sm:flex-row": !forceColumn,
+          })}
+        >
           <CampaignImage imageUrl={campaign.imageUrl} />
           <div
             className={cn(
@@ -136,3 +142,23 @@ export const FavoriteCampaignCard: FunctionComponent<CampaignProps> = ({
     </CampaignCardWrapper>
   )
 }
+
+export const HomepageFeaturedCampaignCard: FunctionComponent<CampaignProps> = ({
+  campaign,
+}) => (
+  <CampaignCardWrapper
+    campaign={campaign}
+    contentClassName="!ml-0 !mt-3 md:w-72"
+    forceColumn
+  >
+    <CampaignProgress campaign={campaign} className="mt-2" showPledged />
+    <ReactMarkdown
+      children={campaign.description}
+      linkTarget="_blank"
+      // Campaign card is an A tag, and it's bad practice to nest A tags in the DOM. We only show two lines of this markdown as a preview, no need to allow links here.
+      disallowedElements={["a"]}
+      // line-clamp is weird on Safari, so just set max height to twice the line height and hide overflow.
+      className="mt-4 line-clamp-2 leading-6 max-h-12 overflow-hidden"
+    />
+  </CampaignCardWrapper>
+)

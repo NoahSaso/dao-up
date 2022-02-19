@@ -8,10 +8,12 @@ import {
   useEffect,
   useState,
 } from "react"
+import { IoEye, IoEyeOff } from "react-icons/io5"
 import { useRecoilValue } from "recoil"
 
 import {
   AllCampaignsCard,
+  Button,
   CampaignsListPagination,
   CenteredColumn,
   Input,
@@ -20,8 +22,8 @@ import {
   Suspense,
 } from "@/components"
 import { addFilter, filterExists, removeFilter } from "@/helpers"
-import { filteredCampaigns } from "@/state"
-import { Status } from "@/types"
+import { featuredCampaigns, filteredCampaigns } from "@/state"
+import { Color, Status } from "@/types"
 
 const minPage = 1
 const pageSize = 20
@@ -33,7 +35,14 @@ const Campaigns: NextPage = () => {
   const [filter, setFilter] = useState("")
   const [activeFilter, setActiveFilter] = useState("")
 
-  const [page, setPage] = useState(1)
+  const [page, setPage] = useState(minPage)
+
+  const [showFeatured, setShowFeatured] = useState(true)
+  const toggleFeatured = () => {
+    setShowFeatured((f) => !f)
+    // Reset back to first page.
+    setPage(minPage)
+  }
 
   // Load data from query.
   useEffect(() => {
@@ -52,14 +61,20 @@ const Campaigns: NextPage = () => {
       if (loadedPage < minPage) loadedPage = minPage
       setPage(loadedPage)
     }
-  }, [query, isReady, setFilter, setActiveFilter, setPage])
+
+    if (typeof query?.f === "string") {
+      setShowFeatured(query.f === "1")
+    }
+  }, [query, isReady, setFilter, setActiveFilter, setPage, setShowFeatured])
 
   // Save data to query.
   useEffect(() => {
     // Only save data once ready and when the data changes.
     if (
       !isReady ||
-      (query.q === encodeURIComponent(filter) && query.p === page.toString())
+      (query.q === encodeURIComponent(filter) &&
+        query.p === page.toString() &&
+        query.f === (showFeatured ? "1" : "0"))
     )
       return
 
@@ -69,12 +84,13 @@ const Campaigns: NextPage = () => {
         query: {
           q: encodeURIComponent(filter),
           p: page,
+          f: showFeatured ? "1" : "0",
         },
       },
       undefined,
       { shallow: true }
     )
-  }, [query, page, isReady, filter, routerPush])
+  }, [query, page, isReady, filter, routerPush, showFeatured])
 
   // Debounce filter input: wait until filter stops changing before refiltering campaigns.
   useEffect(() => {
@@ -92,41 +108,57 @@ const Campaigns: NextPage = () => {
       />
 
       <CenteredColumn className="pt-5 pb-10 max-w-7xl">
-        <div className="flex flex-col justify-start items-start sm:flex-row sm:items-center">
-          <h1 className="font-semibold text-4xl">All Campaigns</h1>
+        <div className="flex flex-row justify-between items-center mb-8">
+          <h1 className="font-semibold text-2xl sm:text-3xl lg:text-4xl">
+            {showFeatured ? "Featured" : "All"} Campaigns
+          </h1>
 
-          <div className="flex flex-wrap flex-row justify-start items-center ml-0 mt-4 sm:ml-10 sm:mt-0">
-            <Select
-              className="w-40"
-              label="Status"
-              items={Object.entries(Status).map(([label, value]) => ({
-                label,
-                onClick: (on) =>
-                  on
-                    ? setFilter((filter) => addFilter(filter, "status", value))
-                    : setFilter((filter) =>
-                        removeFilter(filter, "status", value)
-                      ),
-                selected: filterExists(filter, "status", value),
-              }))}
-            />
-          </div>
+          <Button outline color={Color.Light} onClick={toggleFeatured}>
+            <div className="flex items-center gap-2">
+              {showFeatured ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+              Featured
+            </div>
+          </Button>
         </div>
 
-        <Input
-          containerClassName="mt-4 mb-6"
-          className="w-full"
-          type="text"
-          placeholder="Search all campaigns..."
-          value={filter}
-          onChange={({ target: { value } }) => setFilter(value)}
-        />
+        {!showFeatured && (
+          <>
+            <div className="flex flex-wrap flex-row justify-start items-center mt-4">
+              <Select
+                className="w-40"
+                label="Status"
+                items={Object.entries(Status).map(([label, value]) => ({
+                  label,
+                  onClick: (on) =>
+                    on
+                      ? setFilter((filter) =>
+                          addFilter(filter, "status", value)
+                        )
+                      : setFilter((filter) =>
+                          removeFilter(filter, "status", value)
+                        ),
+                  selected: filterExists(filter, "status", value),
+                }))}
+              />
+            </div>
+
+            <Input
+              containerClassName="mt-4 mb-6"
+              className="w-full"
+              type="text"
+              placeholder="Search all campaigns..."
+              value={filter}
+              onChange={({ target: { value } }) => setFilter(value)}
+            />
+          </>
+        )}
 
         <Suspense>
           <CampaignsContent
             filter={activeFilter}
             page={page}
             setPage={setPage}
+            showFeatured={showFeatured}
           />
         </Suspense>
       </CenteredColumn>
@@ -138,12 +170,14 @@ interface CampaignsContentProps {
   filter: string
   page: number
   setPage: Dispatch<SetStateAction<number>>
+  showFeatured: boolean
 }
 
 const CampaignsContent: FunctionComponent<CampaignsContentProps> = ({
   filter,
   page,
   setPage,
+  showFeatured,
 }) => {
   const goBack = useCallback(
     () => setPage((p) => Math.max(minPage, p - 1)),
@@ -151,23 +185,43 @@ const CampaignsContent: FunctionComponent<CampaignsContentProps> = ({
   )
   const goForward = useCallback(() => setPage((p) => p + 1), [setPage])
 
+  const {
+    campaigns: allCampaigns,
+    hasMore: hasMoreAll,
+    error: allError,
+  } = useRecoilValue(
+    filteredCampaigns({
+      filter,
+      // Don't page if not showing all.
+      page: showFeatured ? minPage : page,
+      size: pageSize,
+    })
+  )
+
+  const {
+    campaigns: featured,
+    hasMore: hasMoreFeatured,
+    error: featuredError,
+  } = useRecoilValue(featuredCampaigns)
+
+  // Switch between which campaigns and associated metadata to use.
+  const showingCampaigns = showFeatured ? featured : allCampaigns
+  const showingHasMore = showFeatured ? hasMoreFeatured : hasMoreAll
+  const showingError = showFeatured ? featuredError : allError
+
   // Pagination state
   const canGoBack = page > minPage
-  const {
-    campaigns,
-    hasMore: canGoForward,
-    error,
-  } = useRecoilValue(filteredCampaigns({ filter, page, size: pageSize }))
+  const canGoForward = showingHasMore
 
   // If loads no campaigns and not on first page, go back to first page.
   useEffect(() => {
     // Ensure campaigns are non null but empty, so we know it did not error.
-    if (campaigns?.length === 0 && page !== minPage) setPage(minPage)
-  }, [campaigns, page, setPage])
+    if (showingCampaigns?.length === 0 && page !== minPage) setPage(minPage)
+  }, [showingCampaigns, page, setPage])
 
   return (
     <>
-      {(canGoBack || canGoForward) && !!campaigns && (
+      {(canGoBack || canGoForward) && !!showingCampaigns && (
         <CampaignsListPagination
           className="-mt-2 mb-6"
           canGoBack={canGoBack}
@@ -177,18 +231,18 @@ const CampaignsContent: FunctionComponent<CampaignsContentProps> = ({
         />
       )}
 
-      {campaigns?.length === 0 && (
+      {showingCampaigns?.length === 0 && (
         <p className="text-orange">No campaigns found.</p>
       )}
-      {!!error && <p className="text-orange">{error}</p>}
+      {!!showingError && <p className="text-orange">{showingError}</p>}
 
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-        {campaigns?.map((campaign) => (
+        {showingCampaigns?.map((campaign) => (
           <AllCampaignsCard key={campaign.address} campaign={campaign} />
         ))}
       </div>
 
-      {(canGoBack || canGoForward) && !campaigns && (
+      {(canGoBack || canGoForward) && !!showingCampaigns && (
         <CampaignsListPagination
           className="my-6"
           canGoBack={canGoBack}

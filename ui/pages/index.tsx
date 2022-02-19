@@ -6,7 +6,9 @@ import {
   CenteredColumn,
   CTACard,
   FAQQuestion,
+  HomepageFeaturedCampaigns,
   ResponsiveDecoration,
+  Suspense,
 } from "@/components"
 
 const Home: NextPage = () => (
@@ -93,6 +95,16 @@ const Home: NextPage = () => (
           button={<ButtonLink href="/campaigns">View All Campaigns</ButtonLink>}
         />
       </div>
+    </CenteredColumn>
+
+    <CenteredColumn className="pb-16">
+      <h2 className="font-semibold text-center mb-10 text-2xl lg:text-3xl xl:text-4xl">
+        Featured Projects
+      </h2>
+
+      <Suspense>
+        <HomepageFeaturedCampaigns />
+      </Suspense>
     </CenteredColumn>
 
     <div className="bg-light py-16 text-dark" id="faq">

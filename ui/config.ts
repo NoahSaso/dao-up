@@ -21,6 +21,8 @@ export const chainName = process.env.NEXT_PUBLIC_CHAIN_NAME!
 
 export const denyListContractAddress =
   process.env.NEXT_PUBLIC_DENY_LIST_ADDRESS!
+export const featuredListContractAddress =
+  process.env.NEXT_PUBLIC_FEATURED_LIST_ADDRESS!
 
 export const sentryDSN = process.env.NEXT_PUBLIC_SENTRY_DSN!
 
