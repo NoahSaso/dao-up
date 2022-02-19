@@ -496,7 +496,7 @@ export const FormSwitch: FunctionComponent<FormSwitchProps> = ({
 }) => {
   const labelElem = !!label && (
     <label
-      className={cn("text-medium text-lg sm:text-base", {
+      className={cn("text-medium text-sm xs:text-lg sm:text-base", {
         // If screen is larger, description moves to under switch.
         "sm:mb-1": description,
       })}
@@ -516,7 +516,7 @@ export const FormSwitch: FunctionComponent<FormSwitchProps> = ({
       )}
       onClick={onClick}
     >
-      <div className="flex flex-row items-center gap-4">
+      <div className="flex flex-row items-center gap-3">
         <Switch className={cn("shrink-0", className)} {...props} />
 
         <div>
