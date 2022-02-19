@@ -147,7 +147,11 @@ const CreateContent = () => {
         dao_address: newCampaign.daoAddress,
         cw20_code_id: cw20CodeId,
 
-        funding_goal: coin(newCampaign.goal * 1e6, minPayTokenSymbol),
+        // Round so that this value is an integer in case JavaScript does any weird floating point stuff.
+        funding_goal: coin(
+          Math.round(newCampaign.goal * 1e6),
+          minPayTokenSymbol
+        ),
         funding_token_name: newCampaign.tokenName,
         funding_token_symbol: newCampaign.tokenSymbol,
 

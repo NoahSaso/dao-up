@@ -64,12 +64,14 @@ export const BalanceRefundJoinCard: FunctionComponent<
       : undefined
 
   // Refund
-  // Minimum refund is how many funding tokens (with decimals) per 1 ujuno(x).
-  const minRefund = Math.ceil(fundingTokenPrice ?? 1e-6) / 1e6
   const expectedPayTokensReceived =
     watchRefund && watchRefund > 0 && fundingTokenPrice
       ? watchRefund / fundingTokenPrice
       : 0
+  // Minimum refund is how many funding tokens (WITH decimals) per 1 ujuno(x).
+  // fundingTokenPrice is funding tokens (withOUT decimals) per 1 ujuno(x), so divide.
+  // Use ceiling in case fundingTokenPrice is nonzero after the 6th decimal and we need to set a minimum within the 6 decimal range.
+  const minRefund = Math.ceil(fundingTokenPrice ?? 0) / 1e6
 
   return (
     <CardWrapper className="w-full">

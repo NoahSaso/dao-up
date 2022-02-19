@@ -50,7 +50,8 @@ export const useProposeFundPendingCampaign = (campaign: Campaign | null) => {
                 JSON.stringify({
                   send: {
                     contract: campaign.address,
-                    amount: (amount * 1e6).toString(),
+                    // Round so that this value is an integer in case JavaScript does any weird floating point stuff.
+                    amount: Math.round(amount * 1e6).toString(),
                     msg: "",
                   },
                 })
