@@ -295,7 +295,7 @@ const CreateContent = () => {
 
                 <FormTextArea
                   label={newCampaignFields.description.label}
-                  placeholder="Describe what your campaign is about.."
+                  placeholder="Describe what your campaign is about (supports markdown)..."
                   rows={8}
                   error={errors.description?.message}
                   {...register("description", {
