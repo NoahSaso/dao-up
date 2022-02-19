@@ -249,7 +249,7 @@ const CampaignsContent: FunctionComponent<CampaignsContentProps> = ({
         className="underline !opacity-100 hover:no-underline self-end mt-10"
         onClick={toggleFeatured}
       >
-        see {showFeatured ? "all" : "featured"} campaigns
+        See {showFeatured ? "all" : "featured"} campaigns
       </Button>
     </div>
   )
