@@ -8,7 +8,7 @@ export const HomepageFeaturedCampaigns: FunctionComponent = () => {
   const { campaigns } = useRecoilValue(featuredCampaigns)
 
   return (
-    <div className="flex flex-row gap-4 flex-wrap justify-center items-center">
+    <div className="flex flex-row gap-6 flex-wrap justify-center items-center">
       {(campaigns ?? []).map((campaign) => (
         <HomepageFeaturedCampaignCard
           key={campaign.address}
