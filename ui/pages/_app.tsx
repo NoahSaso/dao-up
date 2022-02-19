@@ -1,6 +1,5 @@
 import "../styles/globals.scss"
 
-import cn from "classnames"
 import type { AppProps } from "next/app"
 import Head from "next/head"
 import { FunctionComponent } from "react"
@@ -22,14 +21,7 @@ const DAOUp: FunctionComponent<AppProps> = ({ Component, pageProps }) => {
     <>
       <Header />
 
-      <Loader
-        containerClassName={cn(
-          "fixed z-50 bg-dark/80 top-0 right-0 bottom-0 left-0",
-          {
-            hidden: !loading,
-          }
-        )}
-      />
+      {loading && <Loader overlay />}
 
       <Suspense loader={{ overlay: true }}>
         <main>

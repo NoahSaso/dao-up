@@ -20,7 +20,7 @@ export const Alert: FunctionComponent<PropsWithChildren<AlertProps>> = ({
 }) => (
   <div
     className={cn(
-      "flex justify-center items-center fixed z-40 bg-dark/90 top-0 right-0 bottom-0 left-0 transition",
+      "flex justify-center items-center fixed z-50 bg-dark/90 top-0 right-0 bottom-0 left-0 transition",
       {
         "cursor-pointer": hide,
 
