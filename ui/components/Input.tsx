@@ -354,7 +354,6 @@ interface FormItemProps {
   accentClassName?: string
   error?: ReactNode
   wrapperClassName?: string
-  horizontal?: boolean
   onClick?: () => void
 }
 
@@ -368,62 +367,35 @@ export const FormWrapper: FunctionComponent<FormWrapperProps> = ({
   accentClassName,
   error,
   wrapperClassName,
-  horizontal,
   onClick,
 }) => (
-  <div
-    className={cn(
-      "mb-10",
-      {
-        "flex flex-row items-center": horizontal,
-      },
-      wrapperClassName
-    )}
-    onClick={onClick}
-  >
-    {horizontal && children}
+  <div className={cn("mb-10", wrapperClassName)} onClick={onClick}>
     <div className="flex flex-col items-stretch">
       {!!label && (
         <label
           className={cn("font pl-5", "text-medium", {
             "mb-1": description,
-            "mb-2": !description && !horizontal,
+            "mb-2": !description,
           })}
         >
           {label}
         </label>
       )}
       {!!description && (
-        <p
-          className={cn("block text-sm font-light pl-5", {
-            "mb-3": !horizontal,
-          })}
-        >
-          {description}
-        </p>
+        <p className="block text-sm font-light pl-5 mb-3">{description}</p>
       )}
-      {!horizontal && children}
+      {children}
       {!!accent && (
         <p
           className={cn(
-            "block text-sm font-light pl-5 text-green",
-            { "mt-1": horizontal, "mt-3": !horizontal },
+            "block text-sm font-light pl-5 text-green mt-3",
             accentClassName
           )}
         >
           {accent}
         </p>
       )}
-      {!!error && (
-        <p
-          className={cn("pl-5 text-orange", {
-            "mt-1": horizontal,
-            "mt-2": !horizontal,
-          })}
-        >
-          {error}
-        </p>
-      )}
+      {!!error && <p className="pl-5 text-orange mt-2">{error}</p>}
     </div>
   </div>
 )
@@ -515,28 +487,55 @@ type FormSwitchProps = SwitchProps & FormItemProps
 export const FormSwitch: FunctionComponent<FormSwitchProps> = ({
   label,
   description,
-  accent,
   error,
+  accentClassName,
   wrapperClassName,
   className,
   onClick,
   ...props
-}) => (
-  <FormWrapper
-    label={label}
-    description={description}
-    accent={accent}
-    error={error}
-    wrapperClassName={cn("cursor-pointer", wrapperClassName)}
-    horizontal
-    onClick={onClick}
-  >
-    <Switch className={cn("shrink-0", className)} {...props} />
-  </FormWrapper>
-)
+}) => {
+  const labelElem = !!label && (
+    <label
+      className={cn("text-medium text-lg sm:text-base", {
+        // If screen is larger, description moves to under switch.
+        "sm:mb-1": description,
+      })}
+    >
+      {label}
+    </label>
+  )
+  const descriptionElem = !!description && (
+    <p className="text-sm font-light">{description}</p>
+  )
+
+  return (
+    <div
+      className={cn(
+        "mb-10 cursor-pointer flex flex-col items-stretch",
+        wrapperClassName
+      )}
+      onClick={onClick}
+    >
+      <div className="flex flex-row items-center gap-4">
+        <Switch className={cn("shrink-0", className)} {...props} />
+
+        <div>
+          {labelElem}
+          <div className="hidden sm:block">{descriptionElem}</div>
+        </div>
+      </div>
+
+      {descriptionElem && (
+        <div className="mt-3 sm:hidden sm:mt-0">{descriptionElem}</div>
+      )}
+
+      {!!error && <p className="text-orange mt-2">{error}</p>}
+    </div>
+  )
+}
 
 type UnforwardedFormPercentTokenDoubleInputProps =
-  UnforwardedPercentTokenDoubleInputProps & Omit<FormItemProps, "horizontal">
+  UnforwardedPercentTokenDoubleInputProps & FormItemProps
 
 export const FormPercentTokenDoubleInput = forwardRef<
   HTMLInputElement,
