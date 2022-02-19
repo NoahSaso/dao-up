@@ -59,8 +59,14 @@ export const ContributeForm: FunctionComponent<ContributeFormProps> = ({
     watchContribution && watchContribution > 0 && fundingTokenPrice
       ? fundingTokenPrice * watchContribution
       : 0
-  // Minimum contribution is how many funding tokens (with decimals) per 1 ujuno(x).
-  const minContribution = Math.ceil((fundingTokenPrice ?? 1e-6) * 1e6) / 1e6
+  // Minimum contribution is how many juno(x) per funding token (without decimals).
+  const minContribution = Math.max(
+    // Cannot fund less than 1 ujuno(x).
+    1e-6,
+    // fundingTokenPrice is funding tokens (without decimals) per 1 ujuno(x), so invert and divide.
+    // Use ceiling in case 1/fundingTokenPrice is nonzero after the 6th decimal and we need to set a minimum within the 6 decimal range.
+    Math.ceil(1 / (fundingTokenPrice ?? 1)) / 1e6
+  )
   // Max contribution is remaining amount left to fund. Cannot fund more than goal.
   const maxContribution = Math.min(
     // Weird subtraction issues. JavaScript thinks 11 - 10.999 = 0.0009999999999994458
