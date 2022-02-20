@@ -183,4 +183,5 @@ export enum CommonError {
   Network = "Network error. Ensure you are connected to the internet or try again later.",
   Unauthorized = "Unauthorized.",
   InsufficientForProposalDeposit = "Insufficient unstaked governance tokens. Ensure you have enough unstaked governance tokens on DAO DAO to pay for the proposal deposit.",
+  PendingTransaction = "You have another pending transaction. Please try again in a minute or so.",
 }

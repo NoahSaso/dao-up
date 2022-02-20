@@ -38,6 +38,8 @@ export const parseError = (
     recognizedError = CommonError.Unauthorized
   } else if (message.includes("Overflow: Cannot Sub with")) {
     recognizedError = CommonError.InsufficientForProposalDeposit
+  } else if (message.includes("account sequence mismatch")) {
+    recognizedError = CommonError.PendingTransaction
   }
 
   // If recognized error, try to find it in the map, or else return the recognized error.
