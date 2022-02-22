@@ -2,6 +2,29 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+@layer utilities {
+  .visible-scrollbar {
+    padding-right: 0.5rem;
+
+    scrollbar-color: theme("colors.gray");
+    scrollbar-width: thin;
+
+    &::-webkit-scrollbar {
+      width: 0.3rem;
+    }
+    &::-webkit-scrollbar-track {
+      width: 0.3rem;
+      background-color: theme("colors.card");
+      border-radius: 999px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: theme("colors.gray");
+      cursor: pointer;
+      border-radius: 999px;
+    }
+  }
+}
+
 * {
   box-sizing: border-box;
 }
