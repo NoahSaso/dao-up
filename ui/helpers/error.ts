@@ -40,6 +40,8 @@ export const parseError = (
     recognizedError = CommonError.InsufficientForProposalDeposit
   } else if (message.includes("account sequence mismatch")) {
     recognizedError = CommonError.PendingTransaction
+  } else if (message.includes("Campaign is not open and accepting funds")) {
+    recognizedError = CommonError.CampaignNotOpen
   }
 
   // If recognized error, try to find it in the map, or else return the recognized error.

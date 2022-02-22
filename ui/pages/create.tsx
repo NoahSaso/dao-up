@@ -35,6 +35,7 @@ import {
   numberPattern,
   parseError,
   prettyPrintDecimal,
+  tokenSymbolPattern,
   urlPattern,
 } from "@/helpers"
 import { useWallet } from "@/hooks"
@@ -203,7 +204,14 @@ const CreateContent = () => {
         return
       }
 
-      const address = await createCampaign(values as unknown as NewCampaign)
+      const newCampaignValues = values as unknown as NewCampaign
+      // Clean values before creating campaign.
+      newCampaignValues.name = newCampaignValues.name.trim()
+      newCampaignValues.description = newCampaignValues.description.trim()
+      newCampaignValues.tokenName = newCampaignValues.tokenName.trim()
+      newCampaignValues.tokenSymbol = newCampaignValues.tokenSymbol.trim()
+
+      const address = await createCampaign(newCampaignValues)
 
       // If the campaign was created successfully, redirect to the campaign page.
       // If the campaign was not created successfully, createCampaignError will show.
@@ -461,10 +469,7 @@ const CreateContent = () => {
               error={errors.tokenSymbol?.message}
               {...register("tokenSymbol", {
                 required: "Required",
-                pattern: {
-                  value: /^\s*[a-zA-Z-]{3,12}\s*$/,
-                  message: "Must be between 3 and 12 alphabetical characters.",
-                },
+                pattern: tokenSymbolPattern,
                 minLength: {
                   value: 3,
                   message: "Must be at least 3 characters.",

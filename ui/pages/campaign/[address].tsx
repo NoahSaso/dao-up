@@ -83,10 +83,6 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
     fetchCampaign(campaignAddress)
   )
 
-  const { actions, error: campaignActionsError } = useRecoilValue(
-    fetchCampaignActions(campaignAddress)
-  )
-
   // If no campaign, navigate to campaigns list.
   useEffect(() => {
     if (isReady && !campaign) routerPush("/campaigns")
@@ -234,27 +230,9 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
 
         <h2 className="text-green text-xl mt-8 mb-2">Activity</h2>
 
-        {!!campaignActionsError && (
-          <p className="text-orange my-4 w-full lg:w-3/5">
-            {campaignActionsError}
-          </p>
-        )}
-
-        {actions && actions.length > 1 && (
-          <div className="flex-1 max-w-sm my-4">
-            <ContributionGraph actions={actions} />
-          </div>
-        )}
-
-        <div className="w-full lg:w-3/5">
-          {actions?.length ? (
-            actions.map((item, idx) => (
-              <CampaignAction key={idx} action={item} />
-            ))
-          ) : (
-            <p>None yet.</p>
-          )}
-        </div>
+        <Suspense>
+          <CampaignActionsContent campaignAddress={campaignAddress} />
+        </Suspense>
       </CenteredColumn>
 
       {/* Fund pending success alert. */}
@@ -349,6 +327,38 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
           Visit the DAO
         </ButtonLink>
       </Alert>
+    </>
+  )
+}
+
+interface CampaignActionsContentProps {
+  campaignAddress: string
+}
+
+const CampaignActionsContent: React.FC<CampaignActionsContentProps> = ({
+  campaignAddress,
+}) => {
+  const { actions, error: campaignActionsError } = useRecoilValue(
+    fetchCampaignActions(campaignAddress)
+  )
+
+  return campaignActionsError ? (
+    <p className="text-orange my-4 w-full lg:w-3/5">{campaignActionsError}</p>
+  ) : (
+    <>
+      {actions && actions.length > 1 && (
+        <div className="flex-1 max-w-sm my-4">
+          <ContributionGraph actions={actions} />
+        </div>
+      )}
+
+      <div className="w-full lg:w-3/5 max-h-[80vh] overflow-y-auto visible-scrollbar">
+        {actions?.length ? (
+          actions.map((item, idx) => <CampaignAction key={idx} action={item} />)
+        ) : (
+          <p>None yet.</p>
+        )}
+      </div>
     </>
   )
 }
