@@ -21,3 +21,8 @@ export const numberPattern = {
   value: /^\s*[0-9,.]+\s*$/,
   message: "Invalid number.",
 }
+
+export const tokenSymbolPattern = {
+  value: /^\s*[a-zA-Z-]{3,12}\s*$/,
+  message: "Must be between 3 and 12 alphabetical characters.",
+}
