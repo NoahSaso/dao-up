@@ -108,6 +108,19 @@
     "Status": {
       "oneOf": [
         {
+          "description": "The contract has been instantiated but its funding token has not been instantiated. No actions can be performed on the contract.",
+          "type": "object",
+          "required": [
+            "uninstantiated"
+          ],
+          "properties": {
+            "uninstantiated": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
           "description": "The contract has been instantiated and is pending funding from the DAO.",
           "type": "object",
           "required": [
