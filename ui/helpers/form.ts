@@ -17,6 +17,12 @@ export const urlPattern = {
   message: "Invalid URL. Ensure it starts with 'http://' or 'https://'.",
 }
 
+export const nonSVGImagePattern = {
+  value: /^https?:\/\/.+(?<!\.svg)$/,
+  message:
+    "Invalid image URL. Ensure it starts with 'http://' or 'https://' and is not an SVG.",
+}
+
 export const numberPattern = {
   value: /^\s*[0-9,.]+\s*$/,
   message: "Invalid number.",

@@ -35,6 +35,7 @@ import {
 } from "@/config"
 import {
   daoAddressPattern,
+  nonSVGImagePattern,
   numberPattern,
   parseError,
   prettyPrintDecimal,
@@ -332,14 +333,15 @@ const CreateContent = () => {
 
                 <FormInput
                   label={newCampaignFields.imageUrl.label}
-                  placeholder="https://your.campaign/logo.svg"
+                  placeholder="https://your.campaign/logo.png"
                   type="url"
                   spellCheck={false}
                   autoCorrect="off"
                   error={errors.imageUrl?.message}
                   {...register("imageUrl", {
                     required: false,
-                    pattern: urlPattern,
+                    // Disallow SVG since it's not supported by URL previews.
+                    pattern: nonSVGImagePattern,
                   })}
                 />
               </div>
