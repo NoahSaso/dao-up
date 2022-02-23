@@ -88,7 +88,7 @@ const Campaigns: NextPage = () => {
           p: page,
           f: showFeatured ? "1" : "0",
           // Keep 404 if present so we display banner.
-          ["404"]: query["404"],
+          ...("404" in query ? { ["404"]: "" } : {}),
         },
       },
       undefined,
