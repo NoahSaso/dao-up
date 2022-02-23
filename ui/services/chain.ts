@@ -69,8 +69,9 @@ export const getDENSAddress = async (client: CosmWasmClient, name: string) => {
     if (
       typeof public_name !== "string" ||
       !escrowAddressRegex.test(public_name)
-    )
+    ) {
       return null
+    }
 
     return public_name
   } catch (error) {
