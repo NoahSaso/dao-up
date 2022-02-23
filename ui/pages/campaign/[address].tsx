@@ -1,5 +1,5 @@
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate"
-import type { NextPage } from "next"
+import type { GetStaticPaths, GetStaticProps, NextPage } from "next"
 import Head from "next/head"
 import { NextRouter, useRouter } from "next/router"
 import { FunctionComponent, useEffect, useState } from "react"
@@ -23,31 +23,34 @@ import {
   Suspense,
   WalletMessage,
 } from "@/components"
-import { daoUrlPrefix, rpcEndpoint } from "@/config"
+import {
+  daoUrlPrefix,
+  featuredListContractAddress,
+  rpcEndpoint,
+} from "@/config"
 import { escrowAddressRegex, parseError } from "@/helpers"
 import { useRefundJoinDAOForm, useWallet } from "@/hooks"
 import { suggestToken } from "@/services"
 import {
-  fetchCampaign,
+  // fetchCampaign,
   fetchCampaignActions,
   walletTokenBalance,
 } from "@/state"
 import { Status } from "@/types"
 
-interface CampaignInitialProps {
-  name?: string
-  imageUrl?: string
+interface CampaignStaticProps {
+  campaign?: Campaign
 }
 
-export const Campaign: NextPage<CampaignInitialProps> = ({
-  name,
-  imageUrl,
-}) => {
+export const Campaign: NextPage<CampaignStaticProps> = ({ campaign }) => {
   const router = useRouter()
+
   // Redirect to campaigns page if invalid query string.
   useEffect(() => {
     if (
       router.isReady &&
+      // No props on fallback page, so don't redirect until page is actually in an invalid state.
+      !router.isFallback &&
       (typeof router.query.address !== "string" ||
         !escrowAddressRegex.test(router.query.address))
     ) {
@@ -60,27 +63,35 @@ export const Campaign: NextPage<CampaignInitialProps> = ({
   return (
     <>
       <Head>
-        {name ? (
+        {campaign ? (
           <>
-            <title>DAO Up! | {name}</title>
+            <title>DAO Up! | {campaign.name}</title>
             <meta
               name="twitter:title"
-              content={`DAO Up! | ${name}`}
+              content={`DAO Up! | ${campaign.name}`}
               key="twitter:title"
             />
             <meta
               property="og:title"
-              content={`DAO Up! | ${name}`}
+              content={`DAO Up! | ${campaign.name}`}
               key="og:title"
             />
           </>
         ) : (
-          <title>DAO Up! | Campaign</title>
+          <title>DAO Up! | Loading...</title>
         )}
-        {!!imageUrl && (
+        {!!campaign?.imageUrl && (
           <>
-            <meta name="twitter:image" content={imageUrl} key="twitter:image" />
-            <meta property="og:image" content={imageUrl} key="og:image" />
+            <meta
+              name="twitter:image"
+              content={campaign.imageUrl}
+              key="twitter:image"
+            />
+            <meta
+              property="og:image"
+              content={campaign.imageUrl}
+              key="og:image"
+            />
           </>
         )}
       </Head>
@@ -92,19 +103,25 @@ export const Campaign: NextPage<CampaignInitialProps> = ({
         className="top-0 left-0 opacity-70"
       />
 
-      <Suspense loader={{ overlay: true }}>
-        <CampaignContent router={router} />
-      </Suspense>
+      {campaign ? (
+        <Suspense loader={{ overlay: true }}>
+          <CampaignContent router={router} campaign={campaign} />
+        </Suspense>
+      ) : (
+        <Loader overlay />
+      )}
     </>
   )
 }
 
 interface CampaignContentProps {
   router: NextRouter
+  campaign: Campaign
 }
 
 const CampaignContent: FunctionComponent<CampaignContentProps> = ({
-  router: { isReady, query, push: routerPush },
+  router: { isReady, query, push: routerPush, isFallback },
+  campaign,
 }) => {
   const campaignAddress =
     isReady &&
@@ -115,9 +132,9 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
 
   const { keplr, connected } = useWallet()
 
-  const { campaign, error: campaignError } = useRecoilValue(
-    fetchCampaign(campaignAddress)
-  )
+  // const { campaign, error: campaignError } = useRecoilValue(
+  //   fetchCampaign(campaignAddress)
+  // )
 
   // If no campaign, navigate to campaigns list.
   useEffect(() => {
@@ -173,8 +190,8 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
     onRefundJoinDAOSuccess
   )
 
-  // If page not ready, display loader.
-  if (!isReady) return <Loader overlay />
+  // If page not ready or is fallback, display loader.
+  if (!isReady || isFallback) return <Loader overlay />
   // Display nothing (redirecting to campaigns list, so this is just a type check).
   if (!campaign) return null
 
@@ -399,29 +416,106 @@ const CampaignActionsContent: React.FC<CampaignActionsContentProps> = ({
   )
 }
 
-// Could use getServerSideProps, but that will always call an API endpoint on client-side transitions, and we want to run as much in the browser as possible.
-Campaign.getInitialProps = async ({ query }): Promise<CampaignInitialProps> => {
-  const { address } = query
+// Fallback to loading screen if page has not yet been statically generated.
+export const getStaticPaths: GetStaticPaths = () => ({
+  paths: [],
+  fallback: true,
+})
+
+// TODO: Organize campaign fetching and translation code since it is identical to the Recoil selectors.
+// TODO: This code should definitely be DRY and is not.
+export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
+  params,
+}) => {
   const campaignAddress =
-    typeof address === "string" && escrowAddressRegex.test(address)
-      ? address
+    params &&
+    typeof params.address === "string" &&
+    escrowAddressRegex.test(params.address)
+      ? params.address
       : ""
 
   try {
-    if (!campaignAddress) return {}
+    if (!campaignAddress) return { props: {} }
 
     const client = await CosmWasmClient.connect(rpcEndpoint)
-    if (!client) return {}
+    if (!client) return { props: {} }
 
-    const {
-      campaign_info: { name, image_url: imageUrl },
-    } = await client.queryContractSmart(campaignAddress, {
+    // Get featured list.
+    const featuredAddresses = (
+      (await client.queryContractSmart(featuredListContractAddress, {
+        list_members: {},
+      })) as AddressPriorityListResponse
+    ).members.map(({ addr }) => addr)
+
+    const cState = await client.queryContractSmart(campaignAddress, {
       dump_state: {},
     })
 
+    const {
+      campaign_info: campaignInfo,
+      funding_token_info: fundingTokenInfo,
+      gov_token_info: govTokenInfo,
+      ...state
+    } = cState
+
+    if (!fundingTokenInfo || !govTokenInfo) return { props: {} }
+
+    // Example: status={ "pending": {} }
+    const status = Object.keys(state.status)[0] as Status
+
+    const campaign = {
+      address: campaignAddress,
+      name: campaignInfo.name,
+      description: campaignInfo.description,
+      imageUrl: campaignInfo.image_url,
+
+      status,
+      creator: state.creator,
+      hidden: campaignInfo.hidden,
+      featured: featuredAddresses.includes(campaignAddress),
+
+      goal: Number(state.funding_goal.amount) / 1e6,
+      pledged: Number(state.funds_raised.amount) / 1e6,
+
+      dao: {
+        address: state.dao_addr,
+        url: daoUrlPrefix + state.dao_addr,
+      },
+
+      govToken: {
+        address: state.gov_token_addr,
+        name: govTokenInfo.name,
+        symbol: govTokenInfo.symbol,
+        // TODO: Get
+        campaignBalance: -1,
+        daoBalance: -1,
+        supply: Number(govTokenInfo.total_supply) / 1e6,
+      },
+
+      fundingToken: {
+        address: state.funding_token_addr,
+        ...(status === Status.Open && {
+          price: Number(state.status[status].token_price),
+          // Funding tokens are minted on-demand, so calculate the total that will ever exist
+          // by multiplying the price of one token (in JUNO) by the goal (in JUNO).
+          supply:
+            (Number(state.funding_goal.amount) *
+              Number(state.status[status].token_price)) /
+            1e6,
+        }),
+        name: fundingTokenInfo.name,
+        symbol: fundingTokenInfo.symbol,
+      },
+
+      website: campaignInfo.website,
+      twitter: campaignInfo.twitter,
+      discord: campaignInfo.discord,
+    }
+
     return {
-      name,
-      imageUrl,
+      props: { campaign },
+      // Regenerate the page once every hour.
+      revalidate: 60 * 60,
     }
   } catch (err) {
     console.error(
@@ -430,7 +524,7 @@ Campaign.getInitialProps = async ({ query }): Promise<CampaignInitialProps> => {
         campaign: campaignAddress,
       })
     )
-    return {}
+    return { props: {} }
   }
 }
 
