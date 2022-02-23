@@ -8,9 +8,9 @@ export const parseError = (
   context: ErrorContext,
   map?: Partial<Record<CommonError, string>>
 ) => {
+  // Convert to error type.
   if (!(error instanceof Error)) {
-    Sentry.captureException(new Error(`${error}`), { extra: context })
-    return `${error}`
+    error = new Error(`${error}`)
   }
 
   const { message } = error

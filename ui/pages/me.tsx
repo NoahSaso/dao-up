@@ -1,4 +1,5 @@
 import type { NextPage } from "next"
+import Head from "next/head"
 import { FunctionComponent } from "react"
 import { useRecoilValue } from "recoil"
 
@@ -12,6 +13,7 @@ import {
   StatusIndicator,
   Suspense,
 } from "@/components"
+import { baseUrl, title } from "@/config"
 import { useWallet } from "@/hooks"
 import { allCampaigns, favoriteCampaigns } from "@/state"
 
@@ -20,6 +22,17 @@ const Me: NextPage = () => {
 
   return (
     <>
+      <Head>
+        <title>{title} | Me</title>
+        <meta
+          property="twitter:title"
+          content={`${title} | Me`}
+          key="twitter:title"
+        />
+        <meta property="og:title" content={`${title} | Me`} key="og:title" />
+        <meta property="og:url" content={`${baseUrl}/me`} key="og:url" />
+      </Head>
+
       <ResponsiveDecoration
         name="me_green_blur.png"
         width={344}

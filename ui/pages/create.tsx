@@ -1,5 +1,6 @@
 import { coin } from "@cosmjs/stargate"
 import type { NextPage } from "next"
+import Head from "next/head"
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
@@ -22,6 +23,7 @@ import {
   Suspense,
 } from "@/components"
 import {
+  baseUrl,
   cw20CodeId,
   daoUpDAOAddress,
   daoUpFee,
@@ -29,6 +31,7 @@ import {
   escrowContractCodeId,
   minPayTokenSymbol,
   payTokenSymbol,
+  title,
 } from "@/config"
 import {
   daoAddressPattern,
@@ -48,6 +51,17 @@ const validUrlOrUndefined = (u: string | undefined) =>
 
 const Create: NextPage = () => (
   <>
+    <Head>
+      <title>{title} | Create</title>
+      <meta
+        property="twitter:title"
+        content={`${title} | Create`}
+        key="twitter:title"
+      />
+      <meta property="og:title" content={`${title} | Create`} key="og:title" />
+      <meta property="og:url" content={`${baseUrl}/create`} key="og:url" />
+    </Head>
+
     <ResponsiveDecoration
       name="campaigns_orange_blur.png"
       width={406}
@@ -318,11 +332,17 @@ const CreateContent = () => {
 
                 <FormInput
                   label={newCampaignFields.imageUrl.label}
-                  placeholder="https://your.campaign/logo.svg"
+                  placeholder="https://your.campaign/logo.png"
                   type="url"
                   spellCheck={false}
                   autoCorrect="off"
                   error={errors.imageUrl?.message}
+                  // Warn user that SVGs will not be supported in link previews.
+                  accent={
+                    campaignImageUrl?.endsWith(".svg")
+                      ? "SVG images will not show up in link previews. We recommend using a JPG or PNG instead."
+                      : undefined
+                  }
                   {...register("imageUrl", {
                     required: false,
                     pattern: urlPattern,

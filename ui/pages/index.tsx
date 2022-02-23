@@ -1,4 +1,5 @@
 import type { NextPage } from "next"
+import Head from "next/head"
 import Image from "next/image"
 
 import {
@@ -10,9 +11,17 @@ import {
   ResponsiveDecoration,
   Suspense,
 } from "@/components"
+import { baseUrl, title } from "@/config"
 
 const Home: NextPage = () => (
   <>
+    <Head>
+      <title>{title}</title>
+      <meta property="twitter:title" content={title} key="twitter:title" />
+      <meta property="og:title" content={title} key="og:title" />
+      <meta property="og:url" content={baseUrl} key="og:url" />
+    </Head>
+
     <ResponsiveDecoration
       name="orange_blur.png"
       width={393}

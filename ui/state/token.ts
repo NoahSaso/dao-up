@@ -1,6 +1,7 @@
 import { atomFamily, selectorFamily } from "recoil"
 
 import { parseError } from "@/helpers"
+import { getWalletTokenBalance } from "@/services"
 import { cosmWasmClient, walletAddress } from "@/state"
 import { CommonError } from "@/types"
 
@@ -34,12 +35,12 @@ export const tokenBalance = selectorFamily<
         }
 
       try {
-        const { balance } = await client.queryContractSmart(tokenAddress, {
-          balance: { address: walletAddress },
-        })
-
         return {
-          balance: Number(balance) / 1e6,
+          balance: await getWalletTokenBalance(
+            client,
+            tokenAddress,
+            walletAddress
+          ),
           error: null,
         }
       } catch (error) {

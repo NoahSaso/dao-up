@@ -1,8 +1,6 @@
 import { useForm } from "react-hook-form"
-import { useRecoilValue } from "recoil"
 
 import { useRefundCampaign } from "@/hooks"
-import { walletTokenBalance } from "@/state"
 import { Status } from "@/types"
 
 interface RefundJoinDAOForm {
@@ -11,14 +9,10 @@ interface RefundJoinDAOForm {
 
 export const useRefundJoinDAOForm = (
   campaign: Campaign | null,
+  fundingTokenBalance: number | null | undefined,
   onSuccess?: () => any | Promise<any>
 ) => {
-  const {
-    status,
-    fundingToken: { address: fundingTokenAddress },
-  } = campaign ?? {
-    fundingToken: { address: null },
-  }
+  const { status } = campaign ?? {}
 
   const {
     handleSubmit,
@@ -29,9 +23,6 @@ export const useRefundJoinDAOForm = (
   } = useForm<RefundJoinDAOForm>({
     defaultValues: {},
   })
-
-  const { balance: fundingTokenBalance, error: fundingTokenBalanceError } =
-    useRecoilValue(walletTokenBalance(fundingTokenAddress))
 
   const { refundCampaign, refundCampaignError } = useRefundCampaign(campaign)
 

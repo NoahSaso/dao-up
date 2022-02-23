@@ -1,11 +1,13 @@
-import type { NextPage } from "next"
+import type { GetStaticPaths, GetStaticProps, NextPage } from "next"
+import Head from "next/head"
 import { NextRouter, useRouter } from "next/router"
 import { FunctionComponent, useEffect, useState } from "react"
-import { useRecoilValue } from "recoil"
+import { useRecoilValue, useRecoilValueLoadable } from "recoil"
 
 import {
   Alert,
   BalanceRefundJoinCard,
+  Banner,
   Button,
   ButtonLink,
   CampaignAction,
@@ -21,23 +23,37 @@ import {
   Suspense,
   WalletMessage,
 } from "@/components"
-import { daoUrlPrefix } from "@/config"
-import { escrowAddressRegex } from "@/helpers"
+import { baseUrl, daoUrlPrefix, title } from "@/config"
+import { escrowAddressRegex, parseError } from "@/helpers"
 import { useRefundJoinDAOForm, useWallet } from "@/hooks"
-import { suggestToken } from "@/services"
+import {
+  getCampaignState,
+  getClient,
+  getFeaturedAddresses,
+  getWalletTokenBalance,
+  suggestToken,
+  transformCampaign,
+} from "@/services"
 import {
   fetchCampaign,
   fetchCampaignActions,
   walletTokenBalance,
 } from "@/state"
-import { Status } from "@/types"
+import { Color, Status } from "@/types"
 
-export const Campaign: NextPage = () => {
+interface CampaignStaticProps {
+  campaign?: Campaign
+}
+
+export const Campaign: NextPage<CampaignStaticProps> = ({ campaign }) => {
   const router = useRouter()
+
   // Redirect to campaigns page if invalid query string.
   useEffect(() => {
     if (
       router.isReady &&
+      // No props on fallback page, so don't redirect until page is actually in an invalid state.
+      !router.isFallback &&
       (typeof router.query.address !== "string" ||
         !escrowAddressRegex.test(router.query.address))
     ) {
@@ -49,6 +65,50 @@ export const Campaign: NextPage = () => {
 
   return (
     <>
+      <Head>
+        {campaign ? (
+          <>
+            <title>
+              {title} | {campaign.name}
+            </title>
+            <meta
+              name="twitter:title"
+              content={`${title} | ${campaign.name}`}
+              key="twitter:title"
+            />
+            <meta
+              property="og:title"
+              content={`${title} | ${campaign.name}`}
+              key="og:title"
+            />
+
+            <meta
+              property="og:url"
+              content={`${baseUrl}/campaign/${campaign.address}`}
+              key="og:url"
+            />
+          </>
+        ) : (
+          <title>DAO Up! | Loading...</title>
+        )}
+
+        {!!campaign?.imageUrl && (
+          <meta
+            name="twitter:image"
+            content={campaign.imageUrl}
+            key="twitter:image"
+          />
+        )}
+        {/* OpenGraph does not support SVG images. */}
+        {!!campaign?.imageUrl && !campaign.imageUrl.endsWith(".svg") && (
+          <meta
+            property="og:image"
+            content={campaign.imageUrl}
+            key="og:image"
+          />
+        )}
+      </Head>
+
       <ResponsiveDecoration
         name="campaign_orange_blur.png"
         width={341}
@@ -57,7 +117,7 @@ export const Campaign: NextPage = () => {
       />
 
       <Suspense loader={{ overlay: true }}>
-        <CampaignContent router={router} />
+        <CampaignContent router={router} preLoadedCampaign={campaign} />
       </Suspense>
     </>
   )
@@ -65,10 +125,12 @@ export const Campaign: NextPage = () => {
 
 interface CampaignContentProps {
   router: NextRouter
+  preLoadedCampaign?: Campaign
 }
 
 const CampaignContent: FunctionComponent<CampaignContentProps> = ({
-  router: { isReady, query, push: routerPush },
+  router: { isReady, query, push: routerPush, isFallback },
+  preLoadedCampaign,
 }) => {
   const campaignAddress =
     isReady &&
@@ -79,19 +141,30 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
 
   const { keplr, connected } = useWallet()
 
-  const { campaign, error: campaignError } = useRecoilValue(
-    fetchCampaign(campaignAddress)
-  )
+  // Fetch latest campaign details in background and update so that page is as up to date as possible.
+  const {
+    state: latestCampaignState,
+    contents: { campaign: latestCampaign },
+  } = useRecoilValueLoadable(fetchCampaign(campaignAddress))
+  // Use just-fetched campaign over pre-loaded campaign, defaulting to pre-loaded.
+  const campaign =
+    (latestCampaignState === "hasValue" && latestCampaign) || preLoadedCampaign
 
-  // If no campaign, navigate to campaigns list.
+  // If no campaign when there should be a campaign, navigate to campaigns list.
   useEffect(() => {
-    if (isReady && !campaign) routerPush("/campaigns")
-  }, [isReady, campaign, routerPush])
+    if (isReady && !isFallback && !campaign) routerPush("/campaigns")
+  }, [isReady, isFallback, campaign, routerPush])
 
   // Funding token balance to add 'Join DAO' message to funded banner on top.
-  const { balance: fundingTokenBalance } = useRecoilValue(
+  const {
+    state: fundingTokenBalanceState,
+    contents: { balance: fundingTokenBalanceContents },
+  } = useRecoilValueLoadable(
     walletTokenBalance(campaign?.fundingToken?.address)
   )
+  // Load in background and swap 'visit' for 'join' link ASAP. No need to prevent page from displaying until this is ready.
+  const fundingTokenBalance =
+    fundingTokenBalanceState === "hasValue" ? fundingTokenBalanceContents : null
 
   // Display buttons to add tokens to wallet.
   const [showAddFundingToken, setShowAddFundingToken] = useState(false)
@@ -133,12 +206,13 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   // The last contributor to the campaign (the one who causes the change from open to funded)
   // will receive a special message prompting them to join the DAO immediately.
   const { onSubmit: onSubmitRefundJoinDAO } = useRefundJoinDAOForm(
-    campaign,
+    campaign ?? null,
+    fundingTokenBalance,
     onRefundJoinDAOSuccess
   )
 
-  // If page not ready, display loader.
-  if (!isReady) return <Loader overlay />
+  // If page not ready or is fallback, display loader.
+  if (!isReady || isFallback) return <Loader overlay />
   // Display nothing (redirecting to campaigns list, so this is just a type check).
   if (!campaign) return null
 
@@ -152,7 +226,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   return (
     <>
       {status === Status.Funded && (
-        <p className="bg-green text-dark text-center w-full px-12 py-2">
+        <Banner color={Color.Green}>
           {name} has been successfully funded!{" "}
           {/* If user has funding tokens and the campaign is funded, make it easy for them to join. */}
           {fundingTokenBalance ? (
@@ -173,7 +247,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
               Click here to visit the DAO.
             </a>
           )}
-        </p>
+        </Banner>
       )}
 
       <CenteredColumn className="pt-10 pb-12 sm:pt-20 xl:w-8/12">
@@ -361,6 +435,92 @@ const CampaignActionsContent: React.FC<CampaignActionsContentProps> = ({
       </div>
     </>
   )
+}
+
+// Fallback to loading screen if page has not yet been statically generated.
+export const getStaticPaths: GetStaticPaths = () => ({
+  paths: [],
+  fallback: true,
+})
+
+const redirectToCampaigns = {
+  redirect: {
+    destination: "/campaigns?404",
+    permanent: false,
+  },
+}
+
+export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
+  params,
+}) => {
+  const campaignAddress =
+    params &&
+    typeof params.address === "string" &&
+    escrowAddressRegex.test(params.address)
+      ? params.address
+      : ""
+
+  if (!campaignAddress) return redirectToCampaigns
+
+  try {
+    const client = await getClient()
+    if (!client) return redirectToCampaigns
+
+    // Get campaign state.
+    const state = await getCampaignState(client, campaignAddress)
+
+    // Get gov token balances.
+    const campaignGovTokenBalance = await getWalletTokenBalance(
+      client,
+      state.gov_token_addr,
+      campaignAddress
+    )
+    const daoGovTokenBalance = await getWalletTokenBalance(
+      client,
+      state.gov_token_addr,
+      state.dao_addr
+    )
+
+    // Get featured addresses.
+    const featuredAddresses = await getFeaturedAddresses(client)
+
+    // Transform data into campaign.
+    const campaign = transformCampaign(
+      campaignAddress,
+      state,
+      campaignGovTokenBalance,
+      daoGovTokenBalance,
+      featuredAddresses
+    )
+
+    if (!campaign) {
+      console.error(
+        parseError("Transformed campaign is null.", {
+          source: "Campaign.getStaticProps",
+          campaign: campaignAddress,
+          state,
+          campaignGovTokenBalance,
+          daoGovTokenBalance,
+        })
+      )
+      return redirectToCampaigns
+    }
+
+    return {
+      props: { campaign },
+      // Regenerate the page at most once per second.
+      // Should serve cached copy and update after a refresh.
+      revalidate: 1,
+    }
+  } catch (err) {
+    console.error(
+      parseError(err, {
+        source: "Campaign.getStaticProps",
+        campaign: campaignAddress,
+      })
+    )
+    return redirectToCampaigns
+  }
 }
 
 export default Campaign

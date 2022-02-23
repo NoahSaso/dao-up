@@ -1,5 +1,4 @@
 import cn from "classnames"
-import Link from "next/link"
 import { FunctionComponent, PropsWithChildren } from "react"
 import ReactMarkdown from "react-markdown"
 import { useRecoilValueLoadable } from "recoil"
@@ -39,28 +38,28 @@ const CampaignCardWrapper: FunctionComponent<CampaignCardWrapperProps> = ({
         campaign={campaign}
         className="absolute top-4 right-4"
       />
-      <Link href={`/campaign/${campaign.address}`}>
-        <a
-          className={cn("flex flex-col justify-start items-stretch", {
-            "sm:flex-row": !forceColumn,
-          })}
+      {/* Use A tag instead of Link component since the campaign page might need to wait for static props to load. For some reason, fallback:true on the statically generated page only displays the fallback (loader) when on that page, but when Link'd to, it loads in the background and navigates once it finishes. This causes a bad UX for the user who just sees nothing happen for a few seconds, instead of the desired behavior of showing the fallback loader. The A tag navigates to the page instantaneously, and shows the loader as expected. */}
+      <a
+        href={`/campaign/${campaign.address}`}
+        className={cn("flex flex-col justify-start items-stretch", {
+          "sm:flex-row": !forceColumn,
+        })}
+      >
+        <CampaignImage imageUrl={campaign.imageUrl} />
+        <div
+          className={cn(
+            "flex flex-col items-stretch flex-1",
+            "ml-0 mt-4 sm:ml-5 sm:mt-0",
+            "overflow-hidden",
+            contentClassName
+          )}
         >
-          <CampaignImage imageUrl={campaign.imageUrl} />
-          <div
-            className={cn(
-              "flex flex-col items-stretch flex-1",
-              "ml-0 mt-4 sm:ml-5 sm:mt-0",
-              "overflow-hidden",
-              contentClassName
-            )}
-          >
-            <h2 className="font-medium text-xl pr-6 text-ellipsis overflow-hidden whitespace-nowrap break-words">
-              {campaign.name}
-            </h2>
-            {children}
-          </div>
-        </a>
-      </Link>
+          <h2 className="font-medium text-xl pr-6 text-ellipsis overflow-hidden whitespace-nowrap break-words">
+            {campaign.name}
+          </h2>
+          {children}
+        </div>
+      </a>
     </CardWrapper>
   )
 }
