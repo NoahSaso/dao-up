@@ -185,4 +185,5 @@ export enum CommonError {
   InsufficientForProposalDeposit = "Insufficient unstaked governance tokens. Ensure you have enough unstaked governance tokens on DAO DAO to pay for the proposal deposit.",
   PendingTransaction = "You have another pending transaction. Please try again in a minute or so.",
   CampaignNotOpen = "This campaign is not open, so it cannot accept or return funds.",
+  NotFound = "Not found.",
 }
