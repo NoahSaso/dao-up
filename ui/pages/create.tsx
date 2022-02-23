@@ -31,6 +31,7 @@ import {
   escrowContractCodeId,
   minPayTokenSymbol,
   payTokenSymbol,
+  title,
 } from "@/config"
 import {
   daoAddressPattern,
@@ -51,7 +52,13 @@ const validUrlOrUndefined = (u: string | undefined) =>
 const Create: NextPage = () => (
   <>
     <Head>
-      <title>DAO Up! | Create</title>
+      <title>{title} | Create</title>
+      <meta
+        property="twitter:title"
+        content={`${title} | Create`}
+        key="twitter:title"
+      />
+      <meta property="og:title" content={`${title} | Create`} key="og:title" />
       <meta property="og:url" content={`${baseUrl}/create`} key="og:url" />
     </Head>
 

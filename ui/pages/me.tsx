@@ -13,7 +13,7 @@ import {
   StatusIndicator,
   Suspense,
 } from "@/components"
-import { baseUrl } from "@/config"
+import { baseUrl, title } from "@/config"
 import { useWallet } from "@/hooks"
 import { allCampaigns, favoriteCampaigns } from "@/state"
 
@@ -23,7 +23,13 @@ const Me: NextPage = () => {
   return (
     <>
       <Head>
-        <title>DAO Up! | Me</title>
+        <title>{title} | Me</title>
+        <meta
+          property="twitter:title"
+          content={`${title} | Me`}
+          key="twitter:title"
+        />
+        <meta property="og:title" content={`${title} | Me`} key="og:title" />
         <meta property="og:url" content={`${baseUrl}/me`} key="og:url" />
       </Head>
 

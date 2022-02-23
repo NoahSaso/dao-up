@@ -11,12 +11,14 @@ import {
   ResponsiveDecoration,
   Suspense,
 } from "@/components"
-import { baseUrl } from "@/config"
+import { baseUrl, title } from "@/config"
 
 const Home: NextPage = () => (
   <>
     <Head>
-      <title>DAO Up!</title>
+      <title>{title}</title>
+      <meta property="twitter:title" content={title} key="twitter:title" />
+      <meta property="og:title" content={title} key="og:title" />
       <meta property="og:url" content={baseUrl} key="og:url" />
     </Head>
 

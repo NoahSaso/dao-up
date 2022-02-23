@@ -21,7 +21,7 @@ import {
   Select,
   Suspense,
 } from "@/components"
-import { baseUrl } from "@/config"
+import { baseUrl, title } from "@/config"
 import { addFilter, filterExists, removeFilter } from "@/helpers"
 import { featuredCampaigns, filteredCampaigns } from "@/state"
 import { Status } from "@/types"
@@ -111,7 +111,17 @@ const Campaigns: NextPage = () => {
   return (
     <>
       <Head>
-        <title>DAO Up! | Campaigns</title>
+        <title>{title} | Campaigns</title>
+        <meta
+          name="twitter:title"
+          content={`${title} | Campaigns`}
+          key="twitter:title"
+        />
+        <meta
+          property="og:title"
+          content={`${title} | Campaigns`}
+          key="og:title"
+        />
         <meta property="og:url" content={`${baseUrl}/campaigns`} key="og:url" />
       </Head>
 

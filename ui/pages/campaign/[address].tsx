@@ -28,6 +28,7 @@ import {
   daoUrlPrefix,
   featuredListContractAddress,
   rpcEndpoint,
+  title,
 } from "@/config"
 import { escrowAddressRegex, parseError } from "@/helpers"
 import { useRefundJoinDAOForm, useWallet } from "@/hooks"
@@ -66,15 +67,17 @@ export const Campaign: NextPage<CampaignStaticProps> = ({ campaign }) => {
       <Head>
         {campaign ? (
           <>
-            <title>DAO Up! | {campaign.name}</title>
+            <title>
+              {title} | {campaign.name}
+            </title>
             <meta
               name="twitter:title"
-              content={`DAO Up! | ${campaign.name}`}
+              content={`${title} | ${campaign.name}`}
               key="twitter:title"
             />
             <meta
               property="og:title"
-              content={`DAO Up! | ${campaign.name}`}
+              content={`${title} | ${campaign.name}`}
               key="og:title"
             />
 
