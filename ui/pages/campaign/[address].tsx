@@ -541,8 +541,9 @@ export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
 
     return {
       props: { campaign },
-      // Regenerate the page once every hour.
-      revalidate: 60 * 60,
+      // Regenerate the page at most once per second.
+      // Should serve cached copy and update after a refresh.
+      revalidate: 1,
     }
   } catch (err) {
     console.error(
