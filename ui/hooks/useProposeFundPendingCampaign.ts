@@ -3,6 +3,7 @@ import { findAttribute } from "@cosmjs/stargate/build/logs"
 import { useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
+import { baseUrl } from "@/config"
 import { parseError, prettyPrintDecimal } from "@/helpers"
 import { useRefreshCampaign, useWallet } from "@/hooks"
 import { daoConfig, globalLoadingAtom, signedCosmWasmClient } from "@/state"
@@ -67,8 +68,8 @@ export const useProposeFundPendingCampaign = (campaign: Campaign | null) => {
           title: `Activate DAO Up! campaign`,
           description: `Send ${prettyPrintDecimal(amount)} ${
             campaign.govToken.symbol
-          } to the [${campaign.name}](https://daoup.zone/campaign/${
-            campaign.address
+          } to the [${campaign.name}](${
+            baseUrl + campaign.urlPath
           }) campaign on DAO Up! in order to launch it.`,
           msgs: [cosmMsg],
         },

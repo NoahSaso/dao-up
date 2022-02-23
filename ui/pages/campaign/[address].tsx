@@ -27,9 +27,11 @@ import { baseUrl, daoUrlPrefix, title } from "@/config"
 import { escrowAddressRegex, parseError } from "@/helpers"
 import { useRefundJoinDAOForm, useWallet } from "@/hooks"
 import {
+  createDENSAddressMap,
   getCampaignState,
   getClient,
   getDENSAddress,
+  getDENSNames,
   getFeaturedAddresses,
   getWalletTokenBalance,
   suggestToken,
@@ -86,7 +88,7 @@ export const Campaign: NextPage<CampaignStaticProps> = ({ campaign }) => {
 
             <meta
               property="og:url"
-              content={`${baseUrl}/campaign/${campaign.address}`}
+              content={`${baseUrl + campaign.urlPath}`}
               key="og:url"
             />
           </>
@@ -476,13 +478,21 @@ export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
     // Get featured addresses.
     const featuredAddresses = await getFeaturedAddresses(client)
 
+    // Get deNS address map.
+    const densNames = await getDENSNames(client)
+    const densAddresses = await Promise.all(
+      densNames.map((name) => getDENSAddress(client, name))
+    )
+    const densAddressMap = createDENSAddressMap(densNames, densAddresses)
+
     // Transform data into campaign.
     const campaign = transformCampaign(
       campaignAddress,
       state,
       campaignGovTokenBalance,
       daoGovTokenBalance,
-      featuredAddresses
+      featuredAddresses,
+      densAddressMap
     )
 
     if (!campaign) {
