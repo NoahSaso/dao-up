@@ -13,6 +13,7 @@ import {
   StatusIndicator,
   Suspense,
 } from "@/components"
+import { baseUrl } from "@/config"
 import { useWallet } from "@/hooks"
 import { allCampaigns, favoriteCampaigns } from "@/state"
 
@@ -23,6 +24,7 @@ const Me: NextPage = () => {
     <>
       <Head>
         <title>DAO Up! | Me</title>
+        <meta property="og:url" content={`${baseUrl}/me`} key="og:url" />
       </Head>
 
       <ResponsiveDecoration

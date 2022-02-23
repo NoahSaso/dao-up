@@ -21,6 +21,7 @@ import {
   Select,
   Suspense,
 } from "@/components"
+import { baseUrl } from "@/config"
 import { addFilter, filterExists, removeFilter } from "@/helpers"
 import { featuredCampaigns, filteredCampaigns } from "@/state"
 import { Status } from "@/types"
@@ -111,6 +112,7 @@ const Campaigns: NextPage = () => {
     <>
       <Head>
         <title>DAO Up! | Campaigns</title>
+        <meta property="og:url" content={`${baseUrl}/campaigns`} key="og:url" />
       </Head>
 
       <ResponsiveDecoration

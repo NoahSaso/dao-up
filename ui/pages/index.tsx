@@ -11,11 +11,13 @@ import {
   ResponsiveDecoration,
   Suspense,
 } from "@/components"
+import { baseUrl } from "@/config"
 
 const Home: NextPage = () => (
   <>
     <Head>
       <title>DAO Up!</title>
+      <meta property="og:url" content={baseUrl} key="og:url" />
     </Head>
 
     <ResponsiveDecoration

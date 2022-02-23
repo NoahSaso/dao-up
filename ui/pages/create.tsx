@@ -23,6 +23,7 @@ import {
   Suspense,
 } from "@/components"
 import {
+  baseUrl,
   cw20CodeId,
   daoUpDAOAddress,
   daoUpFee,
@@ -51,6 +52,7 @@ const Create: NextPage = () => (
   <>
     <Head>
       <title>DAO Up! | Create</title>
+      <meta property="og:url" content={`${baseUrl}/create`} key="og:url" />
     </Head>
 
     <ResponsiveDecoration

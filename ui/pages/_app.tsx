@@ -6,13 +6,8 @@ import { FunctionComponent } from "react"
 import { RecoilRoot, useRecoilValue } from "recoil"
 
 import { BetaAlert, Footer, Header, Loader, Suspense } from "@/components"
+import { description, imageUrl, title } from "@/config"
 import { globalLoadingAtom } from "@/state"
-
-const Title = "DAO Up!"
-const Description =
-  "DAO Up! is a crowdfunding tool for communities. Refunds are guaranteed if a project doesn't hit its funding goal, and successful campaigns have their treasury transferred to a DAO controlled by the backers."
-const Domain = "https://daoup.zone"
-const ImageUrl = "https://daoup.zone/images/banner.jpg"
 
 const DAOUp: FunctionComponent<AppProps> = ({ Component, pageProps }) => {
   const loading = useRecoilValue(globalLoadingAtom)
@@ -55,7 +50,7 @@ const App: FunctionComponent<AppProps> = (props) => (
       ></script>
 
       {/* SEO */}
-      <meta name="description" content={Description} />
+      <meta name="description" content={description} />
       <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
 
       {/* Social */}
@@ -65,16 +60,15 @@ const App: FunctionComponent<AppProps> = (props) => (
         content="Kick start your community with the crowdfunding platform for DAOs."
         key="twitter:card"
       />
-      <meta name="twitter:title" content={Title} key="twitter:title" />
-      <meta name="twitter:description" content={Description} />
-      <meta name="twitter:image" content={ImageUrl} key="twitter:image" />
+      <meta name="twitter:title" content={title} key="twitter:title" />
+      <meta name="twitter:description" content={description} />
+      <meta name="twitter:image" content={imageUrl} key="twitter:image" />
       {/* Open Graph */}
-      <meta property="og:title" content={Title} key="og:title" />
+      <meta property="og:title" content={title} key="og:title" />
       <meta property="og:type" content="website" />
-      <meta property="og:url" content={Domain} />
-      <meta property="og:image" content={ImageUrl} key="og:image" />
-      <meta property="og:description" content={Description} />
-      <meta property="og:site_name" content={Title} />
+      <meta property="og:image" content={imageUrl} key="og:image" />
+      <meta property="og:description" content={description} />
+      <meta property="og:site_name" content={title} />
     </Head>
 
     <RecoilRoot>

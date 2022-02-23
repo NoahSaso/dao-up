@@ -24,6 +24,7 @@ import {
   WalletMessage,
 } from "@/components"
 import {
+  baseUrl,
   daoUrlPrefix,
   featuredListContractAddress,
   rpcEndpoint,
@@ -76,23 +77,31 @@ export const Campaign: NextPage<CampaignStaticProps> = ({ campaign }) => {
               content={`DAO Up! | ${campaign.name}`}
               key="og:title"
             />
+
+            <meta
+              property="og:url"
+              content={`${baseUrl}/campaign/${campaign.address}`}
+              key="og:url"
+            />
           </>
         ) : (
           <title>DAO Up! | Loading...</title>
         )}
+
         {!!campaign?.imageUrl && (
-          <>
-            <meta
-              name="twitter:image"
-              content={campaign.imageUrl}
-              key="twitter:image"
-            />
-            <meta
-              property="og:image"
-              content={campaign.imageUrl}
-              key="og:image"
-            />
-          </>
+          <meta
+            name="twitter:image"
+            content={campaign.imageUrl}
+            key="twitter:image"
+          />
+        )}
+        {/* OpenGraph does not support SVG images. */}
+        {!!campaign?.imageUrl && !campaign.imageUrl.endsWith(".svg") && (
+          <meta
+            property="og:image"
+            content={campaign.imageUrl}
+            key="og:image"
+          />
         )}
       </Head>
 
@@ -418,6 +427,13 @@ export const getStaticPaths: GetStaticPaths = () => ({
   fallback: true,
 })
 
+const redirectToCampaigns = {
+  redirect: {
+    destination: "/campaigns",
+    permanent: false,
+  },
+}
+
 // TODO: Organize campaign fetching and translation code since it is identical to the Recoil selectors.
 // TODO: This code should definitely be DRY and is not.
 export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
@@ -430,11 +446,11 @@ export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
       ? params.address
       : ""
 
-  try {
-    if (!campaignAddress) return { props: {} }
+  if (!campaignAddress) return redirectToCampaigns
 
+  try {
     const client = await CosmWasmClient.connect(rpcEndpoint)
-    if (!client) return { props: {} }
+    if (!client) return redirectToCampaigns
 
     // Get featured list.
     const featuredAddresses = (
@@ -454,7 +470,7 @@ export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
       ...state
     } = cState
 
-    if (!fundingTokenInfo || !govTokenInfo) return { props: {} }
+    if (!fundingTokenInfo || !govTokenInfo) return redirectToCampaigns
 
     // Get gov token balances.
     const { balance: campaignGovTokenBalance } =
@@ -531,7 +547,7 @@ export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
         campaign: campaignAddress,
       })
     )
-    return { props: {} }
+    return redirectToCampaigns
   }
 }
 
