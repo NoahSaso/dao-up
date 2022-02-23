@@ -129,15 +129,10 @@ interface CampaignContentProps {
 }
 
 const CampaignContent: FunctionComponent<CampaignContentProps> = ({
-  router: { isReady, query, push: routerPush, isFallback },
+  router,
   preLoadedCampaign,
 }) => {
-  const campaignAddress =
-    isReady &&
-    typeof query.address === "string" &&
-    escrowAddressRegex.test(query.address)
-      ? query.address
-      : ""
+  const campaignAddress = preLoadedCampaign?.address ?? ""
 
   const { keplr, connected } = useWallet()
 
@@ -151,9 +146,11 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
     (latestCampaignState === "hasValue" && latestCampaign) || preLoadedCampaign
 
   // If no campaign when there should be a campaign, navigate to campaigns list.
+  // TODO: Unsure if this is still needed since getStaticProps redirects on 404.
   useEffect(() => {
-    if (isReady && !isFallback && !campaign) routerPush("/campaigns")
-  }, [isReady, isFallback, campaign, routerPush])
+    if (router.isReady && !router.isFallback && !campaign)
+      router.push("/campaigns")
+  }, [router, campaign])
 
   // Funding token balance to add 'Join DAO' message to funded banner on top.
   const {
@@ -212,7 +209,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   )
 
   // If page not ready or is fallback, display loader.
-  if (!isReady || isFallback) return <Loader overlay />
+  if (!router.isReady || router.isFallback) return <Loader overlay />
   // Display nothing (redirecting to campaigns list, so this is just a type check).
   if (!campaign) return null
 
