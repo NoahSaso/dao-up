@@ -6,7 +6,7 @@ import {
   featuredListContractAddress,
   rpcEndpoint,
 } from "@/config"
-import { parseError } from "@/helpers"
+import { escrowAddressRegex, parseError } from "@/helpers"
 import { CommonError } from "@/types"
 
 export const getClient = async () => CosmWasmClient.connect(rpcEndpoint)
@@ -64,6 +64,9 @@ export const getDENSAddress = async (client: CosmWasmClient, name: string) => {
         token_id: `dao-up::${name}`,
       },
     })
+
+    // Ensure public_name is a valid contract address.
+    if (!escrowAddressRegex.test(public_name)) return null
 
     return public_name as string | null
   } catch (error) {
