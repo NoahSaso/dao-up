@@ -58,22 +58,19 @@ export const getDENSAddress = async (client: CosmWasmClient, name: string) => {
 
   try {
     const {
-      extension: { public_name },
+      extension: { bio },
     } = await client.queryContractSmart(densContractAddress, {
       nft_info: {
         token_id: `dao-up::${name}`,
       },
     })
 
-    // Ensure public_name is a valid contract address.
-    if (
-      typeof public_name !== "string" ||
-      !escrowAddressRegex.test(public_name)
-    ) {
+    // Ensure bio is a valid contract address.
+    if (typeof bio !== "string" || !escrowAddressRegex.test(bio)) {
       return null
     }
 
-    return public_name
+    return bio
   } catch (error) {
     console.error(
       parseError(
