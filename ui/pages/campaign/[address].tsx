@@ -42,6 +42,8 @@ import {
 } from "@/state"
 import { Color, Status } from "@/types"
 
+const campaigns404Path = "/campaigns?404"
+
 interface CampaignStaticProps {
   campaign?: Campaign
 }
@@ -49,20 +51,19 @@ interface CampaignStaticProps {
 export const Campaign: NextPage<CampaignStaticProps> = ({ campaign }) => {
   const router = useRouter()
 
-  // Redirect to campaigns page if invalid query string.
+  // If no campaign when there should be a campaign, navigate back to campaigns list.
   useEffect(() => {
     if (
       router.isReady &&
       // No props on fallback page, so don't redirect until page is actually in an invalid state.
       !router.isFallback &&
-      (typeof router.query.address !== "string" ||
-        !escrowAddressRegex.test(router.query.address))
+      !campaign
     ) {
       console.error("Invalid query address.")
-      router.push("/campaigns")
+      router.push(campaigns404Path)
       return
     }
-  }, [router])
+  }, [router, campaign])
 
   return (
     <>
@@ -145,13 +146,6 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   // Use just-fetched campaign over pre-loaded campaign, defaulting to pre-loaded.
   const campaign =
     (latestCampaignState === "hasValue" && latestCampaign) || preLoadedCampaign
-
-  // If no campaign when there should be a campaign, navigate to campaigns list.
-  // TODO: Unsure if this is still needed since getStaticProps redirects on 404.
-  useEffect(() => {
-    if (router.isReady && !router.isFallback && !campaign)
-      router.push("/campaigns")
-  }, [router, campaign])
 
   // Funding token balance to add 'Join DAO' message to funded banner on top.
   const {
@@ -443,7 +437,7 @@ export const getStaticPaths: GetStaticPaths = () => ({
 
 const redirectToCampaigns = {
   redirect: {
-    destination: "/campaigns?404",
+    destination: campaigns404Path,
     permanent: false,
   },
 }
