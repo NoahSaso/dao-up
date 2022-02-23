@@ -140,6 +140,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
 
   const { keplr, connected } = useWallet()
 
+  // TODO: Fetch latest campaign details in background and update? We probably want current amount pledged to be fully accurate.
   // const { campaign, error: campaignError } = useRecoilValue(
   //   fetchCampaign(campaignAddress)
   // )
