@@ -1,4 +1,5 @@
 import type { NextPage } from "next"
+import Head from "next/head"
 import { useRouter } from "next/router"
 import {
   Dispatch,
@@ -12,6 +13,7 @@ import { useRecoilValue } from "recoil"
 
 import {
   AllCampaignsCard,
+  Banner,
   Button,
   CampaignsListPagination,
   CenteredColumn,
@@ -20,9 +22,10 @@ import {
   Select,
   Suspense,
 } from "@/components"
+import { baseUrl, title } from "@/config"
 import { addFilter, filterExists, removeFilter } from "@/helpers"
 import { featuredCampaigns, filteredCampaigns } from "@/state"
-import { Status } from "@/types"
+import { Color, Status } from "@/types"
 
 const minPage = 1
 const pageSize = 20
@@ -84,6 +87,8 @@ const Campaigns: NextPage = () => {
           q: encodeURIComponent(filter),
           p: page,
           f: showFeatured ? "1" : "0",
+          // Keep 404 if present so we display banner.
+          ...("404" in query ? { ["404"]: "" } : {}),
         },
       },
       undefined,
@@ -97,23 +102,44 @@ const Campaigns: NextPage = () => {
     return () => clearTimeout(timer)
   }, [filter, setActiveFilter])
 
-  // Scroll to top of page on page change.
+  // Scroll to top of page on page change or featured toggle.
   useEffect(() => {
     window.scrollTo({
       left: 0,
       top: 0,
       behavior: "smooth",
     })
-  }, [page])
+  }, [page, showFeatured])
 
   return (
     <>
+      <Head>
+        <title>{title} | Campaigns</title>
+        <meta
+          name="twitter:title"
+          content={`${title} | Campaigns`}
+          key="twitter:title"
+        />
+        <meta
+          property="og:title"
+          content={`${title} | Campaigns`}
+          key="og:title"
+        />
+        <meta property="og:url" content={`${baseUrl}/campaigns`} key="og:url" />
+      </Head>
+
       <ResponsiveDecoration
         name="campaigns_orange_blur.png"
         width={406}
         height={626}
         className="top-0 right-0 opacity-70"
       />
+
+      {query["404"] === "" && (
+        <Banner color={Color.Orange} className="mb-4">
+          Campaign not found.
+        </Banner>
+      )}
 
       <CenteredColumn className="pt-5 pb-10 max-w-7xl">
         <h1 className="font-semibold text-2xl sm:text-3xl lg:text-4xl mb-8">

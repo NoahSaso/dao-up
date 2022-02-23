@@ -1,17 +1,20 @@
 import { QueryContractsByCodeResponse } from "cosmjs-types/cosmwasm/wasm/v1/query"
 import { atom, atomFamily, selector, selectorFamily, waitForAll } from "recoil"
 
-import {
-  daoUrlPrefix,
-  denyListContractAddress,
-  escrowContractCodeId,
-  featuredListContractAddress,
-} from "@/config"
+import { escrowContractCodeId } from "@/config"
 import { extractPageInfo, parseError } from "@/helpers"
-import { campaignsFromResponses, filterCampaigns } from "@/services"
+import {
+  campaignsFromResponses,
+  filterCampaigns,
+  getCampaignState,
+  getDenyListAddresses,
+  getFeaturedAddresses,
+  getTokenInfo,
+  transformCampaign,
+} from "@/services"
 import { cosmWasmClient, cosmWasmQueryClient, tokenBalance } from "@/state"
 import { localStorageEffectJSON } from "@/state/effects"
-import { CampaignActionType, CommonError, Status } from "@/types"
+import { CampaignActionType, CommonError } from "@/types"
 
 export const campaignStateId = atomFamily<number, string | undefined>({
   key: "campaignStateId",
@@ -26,17 +29,16 @@ export const campaignState = selectorFamily<CampaignStateResponse, string>({
       // Allow us to manually refresh campaign state.
       get(campaignStateId(address))
 
-      const client = get(cosmWasmClient)
-
-      if (!client) return { state: null, error: CommonError.GetClientFailed }
       if (!address) return { state: null, error: CommonError.InvalidAddress }
 
-      try {
-        const state = await client.queryContractSmart(address, {
-          dump_state: {},
-        })
+      const client = get(cosmWasmClient)
+      if (!client) return { state: null, error: CommonError.GetClientFailed }
 
-        return { state, error: null }
+      try {
+        return {
+          state: await getCampaignState(client, address),
+          error: null,
+        }
       } catch (error) {
         console.error(error)
         return {
@@ -60,18 +62,10 @@ export const fetchCampaignActions = selectorFamily<
     async ({ get }) => {
       get(campaignStateId(address))
 
-      const client = get(cosmWasmClient)
+      if (!address) return { actions: null, error: CommonError.InvalidAddress }
 
-      if (!address)
-        return {
-          actions: null,
-          error: CommonError.InvalidAddress,
-        }
-      if (!client)
-        return {
-          actions: null,
-          error: CommonError.GetClientFailed,
-        }
+      const client = get(cosmWasmClient)
+      if (!client) return { actions: null, error: CommonError.GetClientFailed }
 
       try {
         const blockHeight = await client?.getHeight()
@@ -181,24 +175,12 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
   get:
     (address) =>
     async ({ get }) => {
-      const { state: cState, error: campaignStateError } = get(
-        campaignState(address)
-      )
-      if (campaignStateError || cState === null)
+      // Get campaign state.
+      const { state, error: campaignStateError } = get(campaignState(address))
+      if (campaignStateError || state === null)
         return { campaign: null, error: campaignStateError ?? "Unknown error." }
 
-      const featuredAddresses = get(featuredCampaignAddressList)
-
-      const {
-        campaign_info: campaignInfo,
-        funding_token_info: fundingTokenInfo,
-        gov_token_info: govTokenInfo,
-        ...state
-      } = cState
-
-      if (!fundingTokenInfo || !govTokenInfo)
-        return { campaign: null, error: "Unknown error." }
-
+      // Get gov token balances.
       const {
         balance: campaignGovTokenBalance,
         error: campaignGovTokenBalanceError,
@@ -227,71 +209,33 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
           error: daoGovTokenBalanceError ?? "Unknown error.",
         }
 
-      try {
-        // Example: status={ "pending": {} }
-        const status = Object.keys(state.status)[0] as Status
+      // Get featured addresses.
+      const featuredAddresses = get(featuredCampaignAddressList)
 
-        return {
-          campaign: {
-            address,
-            name: campaignInfo.name,
-            description: campaignInfo.description,
-            imageUrl: campaignInfo.image_url,
+      // Transform data into campaign.
+      const campaign = transformCampaign(
+        address,
+        state,
+        campaignGovTokenBalance,
+        daoGovTokenBalance,
+        featuredAddresses
+      )
 
-            status,
-            creator: state.creator,
-            hidden: campaignInfo.hidden,
-            featured: featuredAddresses.includes(address),
-
-            goal: Number(state.funding_goal.amount) / 1e6,
-            pledged: Number(state.funds_raised.amount) / 1e6,
-            // backers: ,
-
-            dao: {
-              address: state.dao_addr,
-              url: daoUrlPrefix + state.dao_addr,
-            },
-
-            govToken: {
-              address: state.gov_token_addr,
-              name: govTokenInfo.name,
-              symbol: govTokenInfo.symbol,
-              campaignBalance: campaignGovTokenBalance,
-              daoBalance: daoGovTokenBalance,
-              supply: Number(govTokenInfo.total_supply) / 1e6,
-            },
-
-            fundingToken: {
-              address: state.funding_token_addr,
-              ...(status === Status.Open && {
-                price: Number(state.status[status].token_price),
-                // Funding tokens are minted on-demand, so calculate the total that will ever exist
-                // by multiplying the price of one token (in JUNO) by the goal (in JUNO).
-                supply:
-                  (Number(state.funding_goal.amount) *
-                    Number(state.status[status].token_price)) /
-                  1e6,
-              }),
-              name: fundingTokenInfo.name,
-              symbol: fundingTokenInfo.symbol,
-            },
-
-            website: campaignInfo.website,
-            twitter: campaignInfo.twitter,
-            discord: campaignInfo.discord,
-          },
-          error: null,
-        }
-      } catch (error) {
-        console.error(error)
-        return {
-          campaign: null,
-          error: parseError(error, {
+      if (!campaign) {
+        console.error(
+          parseError("Transformed campaign is null.", {
             source: "fetchCampaign",
             campaign: address,
-            cState,
-          }),
-        }
+            state,
+            campaignGovTokenBalance,
+            daoGovTokenBalance,
+          })
+        )
+      }
+
+      return {
+        campaign,
+        error: campaign === null ? "Unknown error." : null,
       }
     },
 })
@@ -301,25 +245,16 @@ export const tokenInfo = selectorFamily<TokenInfoResponse, string>({
   get:
     (address) =>
     async ({ get }) => {
-      const client = get(cosmWasmClient)
+      if (!address) return { info: null, error: CommonError.InvalidAddress }
 
-      if (!address)
-        return {
-          info: null,
-          error: CommonError.InvalidAddress,
-        }
-      if (!client)
-        return {
-          info: null,
-          error: CommonError.GetClientFailed,
-        }
+      const client = get(cosmWasmClient)
+      if (!client) return { info: null, error: CommonError.GetClientFailed }
 
       try {
-        const info = await client.queryContractSmart(address, {
-          token_info: {},
-        })
-
-        return { info, error: null }
+        return {
+          info: await getTokenInfo(client, address),
+          error: null,
+        }
       } catch (error) {
         console.error(error)
         return {
@@ -364,11 +299,7 @@ export const pagedEscrowContractAddresses = selectorFamily<
 
       // Don't attempt to get paged contracts if no client.
       const queryClient = get(cosmWasmQueryClient)
-      if (!queryClient)
-        return {
-          addresses,
-          error: "Failed to get query client.",
-        }
+      if (!queryClient) return { addresses, error: CommonError.GetClientFailed }
 
       let startAtKey: number[] | undefined = undefined
       do {
@@ -407,13 +338,7 @@ export const campaignDenyList = selector<string[]>({
     if (!client) return []
 
     try {
-      const addresses = (
-        (await client.queryContractSmart(denyListContractAddress, {
-          list_members: {},
-        })) as AddressPriorityListResponse
-      ).members.map(({ addr }) => addr)
-
-      return addresses
+      return await getDenyListAddresses(client)
     } catch (e) {
       console.error(e)
       return []
@@ -428,13 +353,7 @@ export const featuredCampaignAddressList = selector<string[]>({
     if (!client) return []
 
     try {
-      const addresses = (
-        (await client.queryContractSmart(featuredListContractAddress, {
-          list_members: {},
-        })) as AddressPriorityListResponse
-      ).members.map(({ addr }) => addr)
-
-      return addresses
+      return await getFeaturedAddresses(client)
     } catch (e) {
       console.error(e)
       return []

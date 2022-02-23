@@ -1,5 +1,6 @@
 import fuzzysort from "fuzzysort"
 
+import { daoUrlPrefix } from "@/config"
 import { getFilterFns, prettyPrintDecimal } from "@/helpers"
 import { Status } from "@/types"
 
@@ -135,4 +136,83 @@ export const filterCampaigns = async (
       allowTypo: true,
     })
   ).map(({ obj }) => obj)
+}
+
+// Transform blockchain data into typed campaign object.
+export const transformCampaign = (
+  address: string,
+  campaignState: any,
+  campaignGovTokenBalance: number | undefined | null,
+  daoGovTokenBalance: number | undefined | null,
+  featuredAddresses?: string[]
+): Campaign | null => {
+  const {
+    campaign_info: campaignInfo,
+    funding_token_info: fundingTokenInfo,
+    gov_token_info: govTokenInfo,
+    ...state
+  } = campaignState ?? {}
+
+  if (
+    typeof campaignGovTokenBalance !== "number" ||
+    typeof daoGovTokenBalance !== "number" ||
+    !campaignInfo ||
+    !fundingTokenInfo ||
+    !govTokenInfo ||
+    !state
+  ) {
+    return null
+  }
+
+  // Example: status={ "pending": {} }
+  const status = Object.keys(state.status)[0] as Status
+
+  return {
+    address,
+    name: campaignInfo.name,
+    description: campaignInfo.description,
+    imageUrl: campaignInfo.image_url,
+
+    status,
+    creator: state.creator,
+    hidden: campaignInfo.hidden,
+    featured: featuredAddresses?.includes(address) ?? false,
+
+    goal: Number(state.funding_goal.amount) / 1e6,
+    pledged: Number(state.funds_raised.amount) / 1e6,
+    // backers: ,
+
+    dao: {
+      address: state.dao_addr,
+      url: daoUrlPrefix + state.dao_addr,
+    },
+
+    govToken: {
+      address: state.gov_token_addr,
+      name: govTokenInfo.name,
+      symbol: govTokenInfo.symbol,
+      campaignBalance: campaignGovTokenBalance,
+      daoBalance: daoGovTokenBalance,
+      supply: Number(govTokenInfo.total_supply) / 1e6,
+    },
+
+    fundingToken: {
+      address: state.funding_token_addr,
+      ...(status === Status.Open && {
+        price: Number(state.status[status].token_price),
+        // Funding tokens are minted on-demand, so calculate the total that will ever exist
+        // by multiplying the price of one token (in JUNO) by the goal (in JUNO).
+        supply:
+          (Number(state.funding_goal.amount) *
+            Number(state.status[status].token_price)) /
+          1e6,
+      }),
+      name: fundingTokenInfo.name,
+      symbol: fundingTokenInfo.symbol,
+    },
+
+    website: campaignInfo.website,
+    twitter: campaignInfo.twitter,
+    discord: campaignInfo.discord,
+  }
 }

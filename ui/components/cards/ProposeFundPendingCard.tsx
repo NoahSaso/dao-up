@@ -1,7 +1,7 @@
 import { FunctionComponent } from "react"
 import { useForm } from "react-hook-form"
 
-import { Button, CardWrapper, FormInput } from "@/components"
+import { Button, CardWrapper, FormInput, Suspense } from "@/components"
 import { numberPattern, prettyPrintDecimal } from "@/helpers"
 import { useProposeFundPendingCampaign, useWallet } from "@/hooks"
 
@@ -15,6 +15,16 @@ interface ProposeFundPendingCardProps {
 }
 
 export const ProposeFundPendingCard: FunctionComponent<
+  ProposeFundPendingCardProps
+> = (props) => (
+  <CardWrapper className="lg:self-stretch border border-orange">
+    <Suspense>
+      <ProposeFundPendingCardContents {...props} />
+    </Suspense>
+  </CardWrapper>
+)
+
+const ProposeFundPendingCardContents: FunctionComponent<
   ProposeFundPendingCardProps
 > = ({ campaign, onSuccess }) => {
   const {
@@ -49,7 +59,7 @@ export const ProposeFundPendingCard: FunctionComponent<
   }
 
   return (
-    <CardWrapper className="lg:self-stretch border border-orange">
+    <>
       <form onSubmit={handleSubmit(doProposeFundPending)}>
         <p className="text-orange">
           This campaign is pending and cannot accept funds until the DAO
@@ -107,6 +117,6 @@ export const ProposeFundPendingCard: FunctionComponent<
           />
         </div>
       </form>
-    </CardWrapper>
+    </>
   )
 }

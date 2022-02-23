@@ -2,7 +2,7 @@ import { FunctionComponent, useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { useSetRecoilState } from "recoil"
 
-import { Button, FormInput } from "@/components"
+import { Button, FormInput, Suspense } from "@/components"
 import { payTokenSymbol } from "@/config"
 import { numberPattern, prettyPrintDecimal } from "@/helpers"
 import { useContributeCampaign, useWallet } from "@/hooks"
@@ -17,7 +17,17 @@ interface ContributeFormProps {
   onSuccess?: () => void | Promise<void>
 }
 
-export const ContributeForm: FunctionComponent<ContributeFormProps> = ({
+export const ContributeForm: FunctionComponent<ContributeFormProps> = (
+  props
+) => (
+  <>
+    <Suspense>
+      <ContributeFormContents {...props} />
+    </Suspense>
+  </>
+)
+
+const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
   campaign,
   onSuccess,
 }) => {
