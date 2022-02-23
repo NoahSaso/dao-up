@@ -44,7 +44,7 @@ export const BalanceRefundJoinCard: FunctionComponent<
     govToken: { address: govTokenAddress, symbol: govTokenSymbol },
   } = campaign
 
-  const { keplr } = useWallet()
+  useWallet()
 
   const { balance: fundingTokenBalance, error: fundingTokenBalanceError } =
     useRecoilValue(walletTokenBalance(fundingTokenAddress))
