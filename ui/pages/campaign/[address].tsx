@@ -156,9 +156,17 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   }, [isReady, isFallback, campaign, routerPush])
 
   // Funding token balance to add 'Join DAO' message to funded banner on top.
-  const { balance: fundingTokenBalance } = useRecoilValue(
+  const {
+    state: fundingTokenBalanceState,
+    contents: { balance: fundingTokenBalanceContents },
+  } = useRecoilValueLoadable(
     walletTokenBalance(campaign?.fundingToken?.address)
   )
+  // Load in background and swap 'visit' for 'join' link ASAP. No need to prevent page from displaying until this is ready.
+  const fundingTokenBalance =
+    fundingTokenBalanceState === "hasValue"
+      ? fundingTokenBalanceContents
+      : undefined
 
   // Display buttons to add tokens to wallet.
   const [showAddFundingToken, setShowAddFundingToken] = useState(false)
