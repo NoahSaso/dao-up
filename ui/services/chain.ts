@@ -61,7 +61,7 @@ export const getDENSAddress = async (client: CosmWasmClient, name: string) => {
       extension: { bio },
     } = await client.queryContractSmart(densContractAddress, {
       nft_info: {
-        token_id: `dao-up::${name}`,
+        token_id: `dao-up::${name.toLowerCase()}`,
       },
     })
 
