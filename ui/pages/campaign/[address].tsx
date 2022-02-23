@@ -59,24 +59,31 @@ export const Campaign: NextPage<CampaignInitialProps> = ({
 
   return (
     <>
-      {!!(name || imageUrl) && (
-        <Head>
-          {!!name && (
-            <>
-              <title>{name}</title>
-              <meta name="twitter:title" content={name} />
-              <meta property="og:title" content={name} />
-              <meta property="og:site_name" content={name} />
-            </>
-          )}
-          {!!imageUrl && (
-            <>
-              <meta name="twitter:image" content={imageUrl} />
-              <meta property="og:image" content={imageUrl} />
-            </>
-          )}
-        </Head>
-      )}
+      <Head>
+        {name ? (
+          <>
+            <title>DAO Up! | {name}</title>
+            <meta
+              name="twitter:title"
+              content={`DAO Up! | ${name}`}
+              key="twitter:title"
+            />
+            <meta
+              property="og:title"
+              content={`DAO Up! | ${name}`}
+              key="og:title"
+            />
+          </>
+        ) : (
+          <title>DAO Up! | Campaign</title>
+        )}
+        {!!imageUrl && (
+          <>
+            <meta name="twitter:image" content={imageUrl} key="twitter:image" />
+            <meta property="og:image" content={imageUrl} key="og:image" />
+          </>
+        )}
+      </Head>
 
       <ResponsiveDecoration
         name="campaign_orange_blur.png"
@@ -410,11 +417,6 @@ Campaign.getInitialProps = async ({ query }): Promise<CampaignInitialProps> => {
       campaign_info: { name, image_url: imageUrl },
     } = await client.queryContractSmart(campaignAddress, {
       dump_state: {},
-    })
-
-    console.log("fetched", {
-      name,
-      imageUrl,
     })
 
     return {

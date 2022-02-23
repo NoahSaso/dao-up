@@ -1,5 +1,6 @@
 import { coin } from "@cosmjs/stargate"
 import type { NextPage } from "next"
+import Head from "next/head"
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
@@ -48,6 +49,10 @@ const validUrlOrUndefined = (u: string | undefined) =>
 
 const Create: NextPage = () => (
   <>
+    <Head>
+      <title>DAO Up! | Create</title>
+    </Head>
+
     <ResponsiveDecoration
       name="campaigns_orange_blur.png"
       width={406}

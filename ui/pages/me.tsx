@@ -1,4 +1,5 @@
 import type { NextPage } from "next"
+import Head from "next/head"
 import { FunctionComponent } from "react"
 import { useRecoilValue } from "recoil"
 
@@ -20,6 +21,10 @@ const Me: NextPage = () => {
 
   return (
     <>
+      <Head>
+        <title>DAO Up! | Me</title>
+      </Head>
+
       <ResponsiveDecoration
         name="me_green_blur.png"
         width={344}

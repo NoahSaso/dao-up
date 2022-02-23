@@ -40,8 +40,6 @@ const DAOUp: FunctionComponent<AppProps> = ({ Component, pageProps }) => {
 const App: FunctionComponent<AppProps> = (props) => (
   <>
     <Head>
-      <title>{Title}</title>
-
       {/* General */}
       <meta
         name="viewport"
@@ -65,15 +63,16 @@ const App: FunctionComponent<AppProps> = (props) => (
       <meta
         name="twitter:card"
         content="Kick start your community with the crowdfunding platform for DAOs."
+        key="twitter:card"
       />
-      <meta name="twitter:title" content={Title} />
+      <meta name="twitter:title" content={Title} key="twitter:title" />
       <meta name="twitter:description" content={Description} />
-      <meta name="twitter:image" content={ImageUrl} />
+      <meta name="twitter:image" content={ImageUrl} key="twitter:image" />
       {/* Open Graph */}
-      <meta property="og:title" content={Title} />
+      <meta property="og:title" content={Title} key="og:title" />
       <meta property="og:type" content="website" />
       <meta property="og:url" content={Domain} />
-      <meta property="og:image" content={ImageUrl} />
+      <meta property="og:image" content={ImageUrl} key="og:image" />
       <meta property="og:description" content={Description} />
       <meta property="og:site_name" content={Title} />
     </Head>

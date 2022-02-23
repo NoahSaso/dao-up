@@ -1,4 +1,5 @@
 import type { NextPage } from "next"
+import Head from "next/head"
 import Image from "next/image"
 
 import {
@@ -13,6 +14,10 @@ import {
 
 const Home: NextPage = () => (
   <>
+    <Head>
+      <title>DAO Up!</title>
+    </Head>
+
     <ResponsiveDecoration
       name="orange_blur.png"
       width={393}

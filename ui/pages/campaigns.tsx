@@ -1,4 +1,5 @@
 import type { NextPage } from "next"
+import Head from "next/head"
 import { useRouter } from "next/router"
 import {
   Dispatch,
@@ -108,6 +109,10 @@ const Campaigns: NextPage = () => {
 
   return (
     <>
+      <Head>
+        <title>DAO Up! | Campaigns</title>
+      </Head>
+
       <ResponsiveDecoration
         name="campaigns_orange_blur.png"
         width={406}
