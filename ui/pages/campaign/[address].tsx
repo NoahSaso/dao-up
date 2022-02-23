@@ -1,13 +1,13 @@
-import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate"
 import type { GetStaticPaths, GetStaticProps, NextPage } from "next"
 import Head from "next/head"
 import { NextRouter, useRouter } from "next/router"
 import { FunctionComponent, useEffect, useState } from "react"
-import { useRecoilValue } from "recoil"
+import { useRecoilValue, useRecoilValueLoadable } from "recoil"
 
 import {
   Alert,
   BalanceRefundJoinCard,
+  Banner,
   Button,
   ButtonLink,
   CampaignAction,
@@ -23,22 +23,23 @@ import {
   Suspense,
   WalletMessage,
 } from "@/components"
-import {
-  baseUrl,
-  daoUrlPrefix,
-  featuredListContractAddress,
-  rpcEndpoint,
-  title,
-} from "@/config"
+import { baseUrl, daoUrlPrefix, title } from "@/config"
 import { escrowAddressRegex, parseError } from "@/helpers"
 import { useRefundJoinDAOForm, useWallet } from "@/hooks"
-import { suggestToken } from "@/services"
 import {
-  // fetchCampaign,
+  getCampaignState,
+  getClient,
+  getFeaturedAddresses,
+  getWalletTokenBalance,
+  suggestToken,
+  transformCampaign,
+} from "@/services"
+import {
+  fetchCampaign,
   fetchCampaignActions,
   walletTokenBalance,
 } from "@/state"
-import { Status } from "@/types"
+import { Color, Status } from "@/types"
 
 interface CampaignStaticProps {
   campaign?: Campaign
@@ -116,7 +117,7 @@ export const Campaign: NextPage<CampaignStaticProps> = ({ campaign }) => {
       />
 
       <Suspense loader={{ overlay: true }}>
-        <CampaignContent router={router} campaign={campaign} />
+        <CampaignContent router={router} preLoadedCampaign={campaign} />
       </Suspense>
     </>
   )
@@ -124,12 +125,12 @@ export const Campaign: NextPage<CampaignStaticProps> = ({ campaign }) => {
 
 interface CampaignContentProps {
   router: NextRouter
-  campaign?: Campaign
+  preLoadedCampaign?: Campaign
 }
 
 const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   router: { isReady, query, push: routerPush, isFallback },
-  campaign,
+  preLoadedCampaign,
 }) => {
   const campaignAddress =
     isReady &&
@@ -140,10 +141,14 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
 
   const { keplr, connected } = useWallet()
 
-  // TODO: Fetch latest campaign details in background and update? We probably want current amount pledged to be fully accurate.
-  // const { campaign, error: campaignError } = useRecoilValue(
-  //   fetchCampaign(campaignAddress)
-  // )
+  // Fetch latest campaign details in background and update so that page is as up to date as possible.
+  const {
+    state: latestCampaignState,
+    contents: { campaign: latestCampaign },
+  } = useRecoilValueLoadable(fetchCampaign(campaignAddress))
+  // Use just-fetched campaign over pre-loaded campaign, defaulting to pre-loaded.
+  const campaign =
+    (latestCampaignState === "hasValue" && latestCampaign) || preLoadedCampaign
 
   // If no campaign when there should be a campaign, navigate to campaigns list.
   useEffect(() => {
@@ -214,7 +219,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   return (
     <>
       {status === Status.Funded && (
-        <p className="bg-green text-dark text-center w-full px-12 py-2">
+        <Banner color={Color.Green}>
           {name} has been successfully funded!{" "}
           {/* If user has funding tokens and the campaign is funded, make it easy for them to join. */}
           {fundingTokenBalance ? (
@@ -235,7 +240,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
               Click here to visit the DAO.
             </a>
           )}
-        </p>
+        </Banner>
       )}
 
       <CenteredColumn className="pt-10 pb-12 sm:pt-20 xl:w-8/12">
@@ -433,13 +438,11 @@ export const getStaticPaths: GetStaticPaths = () => ({
 
 const redirectToCampaigns = {
   redirect: {
-    destination: "/campaigns",
+    destination: "/campaigns?404",
     permanent: false,
   },
 }
 
-// TODO: Organize campaign fetching and translation code since it is identical to the Recoil selectors.
-// TODO: This code should definitely be DRY and is not.
 export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
   params,
 }) => {
@@ -453,90 +456,47 @@ export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
   if (!campaignAddress) return redirectToCampaigns
 
   try {
-    const client = await CosmWasmClient.connect(rpcEndpoint)
+    const client = await getClient()
     if (!client) return redirectToCampaigns
 
-    // Get featured list.
-    const featuredAddresses = (
-      (await client.queryContractSmart(featuredListContractAddress, {
-        list_members: {},
-      })) as AddressPriorityListResponse
-    ).members.map(({ addr }) => addr)
-
-    const cState = await client.queryContractSmart(campaignAddress, {
-      dump_state: {},
-    })
-
-    const {
-      campaign_info: campaignInfo,
-      funding_token_info: fundingTokenInfo,
-      gov_token_info: govTokenInfo,
-      ...state
-    } = cState
-
-    if (!fundingTokenInfo || !govTokenInfo) return redirectToCampaigns
+    // Get campaign state.
+    const state = await getCampaignState(client, campaignAddress)
 
     // Get gov token balances.
-    const { balance: campaignGovTokenBalance } =
-      await client.queryContractSmart(state.gov_token_addr, {
-        balance: { address: campaignAddress },
-      })
-    const { balance: daoGovTokenBalance } = await client.queryContractSmart(
+    const campaignGovTokenBalance = await getWalletTokenBalance(
+      client,
       state.gov_token_addr,
-      {
-        balance: { address: state.dao_addr },
-      }
+      campaignAddress
+    )
+    const daoGovTokenBalance = await getWalletTokenBalance(
+      client,
+      state.gov_token_addr,
+      state.dao_addr
     )
 
-    // Example: status={ "pending": {} }
-    const status = Object.keys(state.status)[0] as Status
+    // Get featured addresses.
+    const featuredAddresses = await getFeaturedAddresses(client)
 
-    const campaign = {
-      address: campaignAddress,
-      name: campaignInfo.name,
-      description: campaignInfo.description,
-      imageUrl: campaignInfo.image_url,
+    // Transform data into campaign.
+    const campaign = transformCampaign(
+      campaignAddress,
+      state,
+      campaignGovTokenBalance,
+      daoGovTokenBalance,
+      featuredAddresses
+    )
 
-      status,
-      creator: state.creator,
-      hidden: campaignInfo.hidden,
-      featured: featuredAddresses.includes(campaignAddress),
-
-      goal: Number(state.funding_goal.amount) / 1e6,
-      pledged: Number(state.funds_raised.amount) / 1e6,
-
-      dao: {
-        address: state.dao_addr,
-        url: daoUrlPrefix + state.dao_addr,
-      },
-
-      govToken: {
-        address: state.gov_token_addr,
-        name: govTokenInfo.name,
-        symbol: govTokenInfo.symbol,
-        campaignBalance: Number(campaignGovTokenBalance) / 1e6,
-        daoBalance: Number(daoGovTokenBalance) / 1e6,
-        supply: Number(govTokenInfo.total_supply) / 1e6,
-      },
-
-      fundingToken: {
-        address: state.funding_token_addr,
-        ...(status === Status.Open && {
-          price: Number(state.status[status].token_price),
-          // Funding tokens are minted on-demand, so calculate the total that will ever exist
-          // by multiplying the price of one token (in JUNO) by the goal (in JUNO).
-          supply:
-            (Number(state.funding_goal.amount) *
-              Number(state.status[status].token_price)) /
-            1e6,
-        }),
-        name: fundingTokenInfo.name,
-        symbol: fundingTokenInfo.symbol,
-      },
-
-      website: campaignInfo.website,
-      twitter: campaignInfo.twitter,
-      discord: campaignInfo.discord,
+    if (!campaign) {
+      console.error(
+        parseError("Transformed campaign is null.", {
+          source: "Campaign.getStaticProps",
+          campaign: campaignAddress,
+          state,
+          campaignGovTokenBalance,
+          daoGovTokenBalance,
+        })
+      )
+      return redirectToCampaigns
     }
 
     return {
