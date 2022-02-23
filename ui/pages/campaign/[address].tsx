@@ -103,20 +103,16 @@ export const Campaign: NextPage<CampaignStaticProps> = ({ campaign }) => {
         className="top-0 left-0 opacity-70"
       />
 
-      {campaign ? (
-        <Suspense loader={{ overlay: true }}>
-          <CampaignContent router={router} campaign={campaign} />
-        </Suspense>
-      ) : (
-        <Loader overlay />
-      )}
+      <Suspense loader={{ overlay: true }}>
+        <CampaignContent router={router} campaign={campaign} />
+      </Suspense>
     </>
   )
 }
 
 interface CampaignContentProps {
   router: NextRouter
-  campaign: Campaign
+  campaign?: Campaign
 }
 
 const CampaignContent: FunctionComponent<CampaignContentProps> = ({
@@ -136,10 +132,10 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   //   fetchCampaign(campaignAddress)
   // )
 
-  // If no campaign, navigate to campaigns list.
+  // If no campaign when there should be a campaign, navigate to campaigns list.
   useEffect(() => {
-    if (isReady && !campaign) routerPush("/campaigns")
-  }, [isReady, campaign, routerPush])
+    if (isReady && !isFallback && !campaign) routerPush("/campaigns")
+  }, [isReady, isFallback, campaign, routerPush])
 
   // Funding token balance to add 'Join DAO' message to funded banner on top.
   const { balance: fundingTokenBalance } = useRecoilValue(
@@ -186,7 +182,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   // The last contributor to the campaign (the one who causes the change from open to funded)
   // will receive a special message prompting them to join the DAO immediately.
   const { onSubmit: onSubmitRefundJoinDAO } = useRefundJoinDAOForm(
-    campaign,
+    campaign ?? null,
     onRefundJoinDAOSuccess
   )
 
