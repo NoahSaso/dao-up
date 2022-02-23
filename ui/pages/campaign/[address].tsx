@@ -29,6 +29,7 @@ import { useRefundJoinDAOForm, useWallet } from "@/hooks"
 import {
   getCampaignState,
   getClient,
+  getDENSAddress,
   getFeaturedAddresses,
   getWalletTokenBalance,
   suggestToken,
@@ -41,6 +42,8 @@ import {
 } from "@/state"
 import { Color, Status } from "@/types"
 
+const campaigns404Path = "/campaigns?404"
+
 interface CampaignStaticProps {
   campaign?: Campaign
 }
@@ -48,20 +51,19 @@ interface CampaignStaticProps {
 export const Campaign: NextPage<CampaignStaticProps> = ({ campaign }) => {
   const router = useRouter()
 
-  // Redirect to campaigns page if invalid query string.
+  // If no campaign when there should be a campaign, navigate back to campaigns list.
   useEffect(() => {
     if (
       router.isReady &&
       // No props on fallback page, so don't redirect until page is actually in an invalid state.
       !router.isFallback &&
-      (typeof router.query.address !== "string" ||
-        !escrowAddressRegex.test(router.query.address))
+      !campaign
     ) {
       console.error("Invalid query address.")
-      router.push("/campaigns")
+      router.push(campaigns404Path)
       return
     }
-  }, [router])
+  }, [router, campaign])
 
   return (
     <>
@@ -129,15 +131,10 @@ interface CampaignContentProps {
 }
 
 const CampaignContent: FunctionComponent<CampaignContentProps> = ({
-  router: { isReady, query, push: routerPush, isFallback },
+  router,
   preLoadedCampaign,
 }) => {
-  const campaignAddress =
-    isReady &&
-    typeof query.address === "string" &&
-    escrowAddressRegex.test(query.address)
-      ? query.address
-      : ""
+  const campaignAddress = preLoadedCampaign?.address ?? ""
 
   const { keplr, connected } = useWallet()
 
@@ -149,11 +146,6 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   // Use just-fetched campaign over pre-loaded campaign, defaulting to pre-loaded.
   const campaign =
     (latestCampaignState === "hasValue" && latestCampaign) || preLoadedCampaign
-
-  // If no campaign when there should be a campaign, navigate to campaigns list.
-  useEffect(() => {
-    if (isReady && !isFallback && !campaign) routerPush("/campaigns")
-  }, [isReady, isFallback, campaign, routerPush])
 
   // Funding token balance to add 'Join DAO' message to funded banner on top.
   const {
@@ -212,7 +204,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   )
 
   // If page not ready or is fallback, display loader.
-  if (!isReady || isFallback) return <Loader overlay />
+  if (!router.isReady || router.isFallback) return <Loader overlay />
   // Display nothing (redirecting to campaigns list, so this is just a type check).
   if (!campaign) return null
 
@@ -445,26 +437,26 @@ export const getStaticPaths: GetStaticPaths = () => ({
 
 const redirectToCampaigns = {
   redirect: {
-    destination: "/campaigns?404",
+    destination: campaigns404Path,
     permanent: false,
   },
 }
 
 export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
-  params,
+  params: { address } = { address: undefined },
 }) => {
-  const campaignAddress =
-    params &&
-    typeof params.address === "string" &&
-    escrowAddressRegex.test(params.address)
-      ? params.address
-      : ""
-
-  if (!campaignAddress) return redirectToCampaigns
+  if (typeof address !== "string" || !address.trim()) return redirectToCampaigns
 
   try {
     const client = await getClient()
     if (!client) return redirectToCampaigns
+
+    // If not valid contract address, perform name service lookup.
+    const campaignAddress = escrowAddressRegex.test(address)
+      ? address
+      : await getDENSAddress(client, address)
+
+    if (!campaignAddress) return redirectToCampaigns
 
     // Get campaign state.
     const state = await getCampaignState(client, campaignAddress)
@@ -516,7 +508,7 @@ export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
     console.error(
       parseError(err, {
         source: "Campaign.getStaticProps",
-        campaign: campaignAddress,
+        address,
       })
     )
     return redirectToCampaigns

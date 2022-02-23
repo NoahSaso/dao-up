@@ -42,6 +42,8 @@ export const parseError = (
     recognizedError = CommonError.PendingTransaction
   } else if (message.includes("Campaign is not open and accepting funds")) {
     recognizedError = CommonError.CampaignNotOpen
+  } else if (message.includes("not found")) {
+    recognizedError = CommonError.NotFound
   }
 
   // If recognized error, try to find it in the map, or else return the recognized error.
