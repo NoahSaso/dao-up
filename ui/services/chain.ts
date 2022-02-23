@@ -1,10 +1,13 @@
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate"
 
 import {
+  densContractAddress,
   denyListContractAddress,
   featuredListContractAddress,
   rpcEndpoint,
 } from "@/config"
+import { parseError } from "@/helpers"
+import { CommonError } from "@/types"
 
 export const getClient = async () => CosmWasmClient.connect(rpcEndpoint)
 
@@ -48,3 +51,34 @@ export const getTokenInfo = async (
   client.queryContractSmart(tokenAddress, {
     token_info: {},
   })
+
+export const getDENSAddress = async (client: CosmWasmClient, name: string) => {
+  // DENS does not exist on testnet.
+  if (!densContractAddress) return null
+
+  try {
+    const {
+      extension: { public_name },
+    } = await client.queryContractSmart(densContractAddress, {
+      nft_info: {
+        token_id: `dao-up::${name}`,
+      },
+    })
+
+    return public_name as string | null
+  } catch (error) {
+    console.error(
+      parseError(
+        error,
+        {
+          source: "getDENSAddress",
+          name,
+        },
+        {
+          [CommonError.NotFound]: "Name service lookup failed.",
+        }
+      )
+    )
+    return null
+  }
+}

@@ -29,6 +29,7 @@ import { useRefundJoinDAOForm, useWallet } from "@/hooks"
 import {
   getCampaignState,
   getClient,
+  getDENSAddress,
   getFeaturedAddresses,
   getWalletTokenBalance,
   suggestToken,
@@ -448,20 +449,20 @@ const redirectToCampaigns = {
 }
 
 export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
-  params,
+  params: { address } = { address: undefined },
 }) => {
-  const campaignAddress =
-    params &&
-    typeof params.address === "string" &&
-    escrowAddressRegex.test(params.address)
-      ? params.address
-      : ""
-
-  if (!campaignAddress) return redirectToCampaigns
+  if (typeof address !== "string" || !address.trim()) return redirectToCampaigns
 
   try {
     const client = await getClient()
     if (!client) return redirectToCampaigns
+
+    // If not valid contract address, perform name service lookup.
+    const campaignAddress = escrowAddressRegex.test(address)
+      ? address
+      : await getDENSAddress(client, address)
+
+    if (!campaignAddress) return redirectToCampaigns
 
     // Get campaign state.
     const state = await getCampaignState(client, campaignAddress)
@@ -513,7 +514,7 @@ export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
     console.error(
       parseError(err, {
         source: "Campaign.getStaticProps",
-        campaign: campaignAddress,
+        address,
       })
     )
     return redirectToCampaigns
