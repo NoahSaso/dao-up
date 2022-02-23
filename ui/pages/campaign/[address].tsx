@@ -527,7 +527,7 @@ export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
   } catch (err) {
     console.error(
       parseError(err, {
-        source: "Campaign.getInitialProps",
+        source: "Campaign.getStaticProps",
         campaign: campaignAddress,
       })
     )
