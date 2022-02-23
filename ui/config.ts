@@ -33,5 +33,9 @@ export const description =
   "DAO Up! is a crowdfunding tool for communities. Refunds are guaranteed if a project doesn't hit its funding goal, and successful campaigns have their treasury transferred to a DAO controlled by the backers."
 export const baseUrl = `http${
   process.env.NODE_ENV === "development" ? "" : "s"
-}://${process.env.VERCEL_URL ?? process.env.NEXT_PUBLIC_DOMAIN ?? "daoup.zone"}`
+}://${
+  process.env.NEXT_PUBLIC_VERCEL_URL ??
+  process.env.NEXT_PUBLIC_DOMAIN ??
+  "daoup.zone"
+}`
 export const imageUrl = `${baseUrl}/images/banner.jpg`
