@@ -1,4 +1,6 @@
+import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate"
 import type { NextPage } from "next"
+import Head from "next/head"
 import { NextRouter, useRouter } from "next/router"
 import { FunctionComponent, useEffect, useState } from "react"
 import { useRecoilValue } from "recoil"
@@ -21,8 +23,8 @@ import {
   Suspense,
   WalletMessage,
 } from "@/components"
-import { daoUrlPrefix } from "@/config"
-import { escrowAddressRegex } from "@/helpers"
+import { daoUrlPrefix, rpcEndpoint } from "@/config"
+import { escrowAddressRegex, parseError } from "@/helpers"
 import { useRefundJoinDAOForm, useWallet } from "@/hooks"
 import { suggestToken } from "@/services"
 import {
@@ -32,7 +34,15 @@ import {
 } from "@/state"
 import { Status } from "@/types"
 
-export const Campaign: NextPage = () => {
+interface CampaignInitialProps {
+  name?: string
+  imageUrl?: string
+}
+
+export const Campaign: NextPage<CampaignInitialProps> = ({
+  name,
+  imageUrl,
+}) => {
   const router = useRouter()
   // Redirect to campaigns page if invalid query string.
   useEffect(() => {
@@ -49,6 +59,25 @@ export const Campaign: NextPage = () => {
 
   return (
     <>
+      {!!(name || imageUrl) && (
+        <Head>
+          {!!name && (
+            <>
+              <title>{name}</title>
+              <meta name="twitter:title" content={name} />
+              <meta property="og:title" content={name} />
+              <meta property="og:site_name" content={name} />
+            </>
+          )}
+          {!!imageUrl && (
+            <>
+              <meta name="twitter:image" content={imageUrl} />
+              <meta property="og:image" content={imageUrl} />
+            </>
+          )}
+        </Head>
+      )}
+
       <ResponsiveDecoration
         name="campaign_orange_blur.png"
         width={341}
@@ -361,6 +390,46 @@ const CampaignActionsContent: React.FC<CampaignActionsContentProps> = ({
       </div>
     </>
   )
+}
+
+// Could use getServerSideProps, but that will always call an API endpoint on client-side transitions, and we want to run as much in the browser as possible.
+Campaign.getInitialProps = async ({ query }): Promise<CampaignInitialProps> => {
+  const { address } = query
+  const campaignAddress =
+    typeof address === "string" && escrowAddressRegex.test(address)
+      ? address
+      : ""
+
+  try {
+    if (!campaignAddress) return {}
+
+    const client = await CosmWasmClient.connect(rpcEndpoint)
+    if (!client) return {}
+
+    const {
+      campaign_info: { name, image_url: imageUrl },
+    } = await client.queryContractSmart(campaignAddress, {
+      dump_state: {},
+    })
+
+    console.log("fetched", {
+      name,
+      imageUrl,
+    })
+
+    return {
+      name,
+      imageUrl,
+    }
+  } catch (err) {
+    console.error(
+      parseError(err, {
+        source: "Campaign.getInitialProps",
+        campaign: campaignAddress,
+      })
+    )
+    return {}
+  }
 }
 
 export default Campaign
