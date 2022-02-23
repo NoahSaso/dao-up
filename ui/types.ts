@@ -20,6 +20,7 @@ declare global {
     address: string
     name: string
     description: string
+    urlPath: string
     imageUrl?: string
 
     status: Status
@@ -101,6 +102,8 @@ declare global {
     token?: string
     amount?: number
   }
+
+  type DENSAddressMap = Record<string, string | undefined>
 
   // Selectors
 

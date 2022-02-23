@@ -5,8 +5,11 @@ import { escrowContractCodeId } from "@/config"
 import { extractPageInfo, parseError } from "@/helpers"
 import {
   campaignsFromResponses,
+  createDENSAddressMap,
   filterCampaigns,
   getCampaignState,
+  getDENSAddress,
+  getDENSNames,
   getDenyListAddresses,
   getFeaturedAddresses,
   getTokenInfo,
@@ -212,13 +215,17 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
       // Get featured addresses.
       const featuredAddresses = get(featuredCampaignAddressList)
 
+      // Get deNS address map.
+      const densAddressMap = get(fetchDENSAddressMap)
+
       // Transform data into campaign.
       const campaign = transformCampaign(
         address,
         state,
         campaignGovTokenBalance,
         daoGovTokenBalance,
-        featuredAddresses
+        featuredAddresses,
+        densAddressMap
       )
 
       if (!campaign) {
@@ -475,5 +482,33 @@ export const favoriteCampaigns = selector<CampaignsResponse>({
     const campaigns = campaignsFromResponses(campaignResponses, true, true)
 
     return { campaigns, hasMore: false, error: null }
+  },
+})
+
+export const densCampaignAddress = selectorFamily<string | null, string>({
+  key: "densCampaignAddress",
+  get:
+    (name) =>
+    async ({ get }) => {
+      const client = get(cosmWasmClient)
+      if (!client) return null
+
+      return await getDENSAddress(client, name)
+    },
+})
+
+// Map from campaign address to name.
+export const fetchDENSAddressMap = selector<DENSAddressMap>({
+  key: "fetchDENSAddressMap",
+  get: async ({ get }) => {
+    const client = get(cosmWasmClient)
+    if (!client) return {}
+
+    const names = await getDENSNames(client)
+    const addresses = get(
+      waitForAll(names.map((name) => densCampaignAddress(name)))
+    )
+
+    return createDENSAddressMap(names, addresses)
   },
 })

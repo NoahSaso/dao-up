@@ -2,6 +2,8 @@ import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate"
 
 import {
   densContractAddress,
+  densRootTokenName,
+  densRootTokenOwner,
   denyListContractAddress,
   featuredListContractAddress,
   rpcEndpoint,
@@ -54,14 +56,14 @@ export const getTokenInfo = async (
 
 export const getDENSAddress = async (client: CosmWasmClient, name: string) => {
   // DENS does not exist on testnet.
-  if (!densContractAddress) return null
+  if (!densContractAddress || !densRootTokenName) return null
 
   try {
     const {
       extension: { public_bio },
     } = await client.queryContractSmart(densContractAddress, {
       nft_info: {
-        token_id: `dao-up::${name.toLowerCase()}`,
+        token_id: `${densRootTokenName}::${name.toLowerCase()}`,
       },
     })
 
@@ -90,3 +92,41 @@ export const getDENSAddress = async (client: CosmWasmClient, name: string) => {
     return null
   }
 }
+
+export const getDENSNames = async (
+  client: CosmWasmClient
+): Promise<string[]> => {
+  // DENS does not exist on testnet.
+  if (!densContractAddress || !densRootTokenName) return []
+
+  try {
+    const { tokens } = await client.queryContractSmart(densContractAddress, {
+      paths_for_token: {
+        token_id: densRootTokenName,
+        owner: densRootTokenOwner,
+      },
+    })
+
+    if (!Array.isArray(tokens)) return []
+
+    // Strip root path from beginning.
+    return tokens.map((token: string) =>
+      token.replace(`${densRootTokenName}::`, "")
+    )
+  } catch (error) {
+    console.error(parseError(error, { source: "getDENSNames" }))
+    return []
+  }
+}
+
+export const createDENSAddressMap = (
+  names: string[],
+  addresses: (string | null)[]
+): DENSAddressMap =>
+  addresses.reduce(
+    (map, address, index) => ({
+      ...map,
+      ...(address ? { [address]: names[index] } : {}),
+    }),
+    {}
+  )

@@ -23,7 +23,10 @@ export const denyListContractAddress =
   process.env.NEXT_PUBLIC_DENY_LIST_ADDRESS!
 export const featuredListContractAddress =
   process.env.NEXT_PUBLIC_FEATURED_LIST_ADDRESS!
+
 export const densContractAddress = process.env.NEXT_PUBLIC_DENS_CONTRACT_ADDRESS
+export const densRootTokenName = process.env.NEXT_PUBLIC_DENS_ROOT_TOKEN_NAME
+export const densRootTokenOwner = process.env.NEXT_PUBLIC_DENS_ROOT_TOKEN_OWNER
 
 export const sentryDSN = process.env.NEXT_PUBLIC_SENTRY_DSN!
 

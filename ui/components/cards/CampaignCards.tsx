@@ -40,7 +40,7 @@ const CampaignCardWrapper: FunctionComponent<CampaignCardWrapperProps> = ({
       />
       {/* Use A tag instead of Link component since the campaign page might need to wait for static props to load. For some reason, fallback:true on the statically generated page only displays the fallback (loader) when on that page, but when Link'd to, it loads in the background and navigates once it finishes. This causes a bad UX for the user who just sees nothing happen for a few seconds, instead of the desired behavior of showing the fallback loader. The A tag navigates to the page instantaneously, and shows the loader as expected. */}
       <a
-        href={`/campaign/${campaign.address}`}
+        href={campaign.urlPath}
         className={cn("flex flex-col justify-start items-stretch", {
           "sm:flex-row": !forceColumn,
         })}

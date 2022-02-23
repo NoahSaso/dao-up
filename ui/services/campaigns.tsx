@@ -144,7 +144,8 @@ export const transformCampaign = (
   campaignState: any,
   campaignGovTokenBalance: number | undefined | null,
   daoGovTokenBalance: number | undefined | null,
-  featuredAddresses?: string[]
+  featuredAddresses?: string[],
+  densAddressMap?: Record<string, string | undefined>
 ): Campaign | null => {
   const {
     campaign_info: campaignInfo,
@@ -171,6 +172,8 @@ export const transformCampaign = (
     address,
     name: campaignInfo.name,
     description: campaignInfo.description,
+    // Use deNS name from map if available.
+    urlPath: `/campaign/${densAddressMap?.[address] ?? address}`,
     imageUrl: campaignInfo.image_url,
 
     status,
