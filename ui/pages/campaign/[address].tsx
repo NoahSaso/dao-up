@@ -456,6 +456,18 @@ export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
 
     if (!fundingTokenInfo || !govTokenInfo) return { props: {} }
 
+    // Get gov token balances.
+    const { balance: campaignGovTokenBalance } =
+      await client.queryContractSmart(state.gov_token_addr, {
+        balance: { address: campaignAddress },
+      })
+    const { balance: daoGovTokenBalance } = await client.queryContractSmart(
+      state.gov_token_addr,
+      {
+        balance: { address: state.dao_addr },
+      }
+    )
+
     // Example: status={ "pending": {} }
     const status = Object.keys(state.status)[0] as Status
 
@@ -482,9 +494,8 @@ export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
         address: state.gov_token_addr,
         name: govTokenInfo.name,
         symbol: govTokenInfo.symbol,
-        // TODO: Get
-        campaignBalance: -1,
-        daoBalance: -1,
+        campaignBalance: Number(campaignGovTokenBalance) / 1e6,
+        daoBalance: Number(daoGovTokenBalance) / 1e6,
         supply: Number(govTokenInfo.total_supply) / 1e6,
       },
 
