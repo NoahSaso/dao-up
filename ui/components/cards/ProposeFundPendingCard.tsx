@@ -24,7 +24,7 @@ export const ProposeFundPendingCard: FunctionComponent<
   </CardWrapper>
 )
 
-export const ProposeFundPendingCardContents: FunctionComponent<
+const ProposeFundPendingCardContents: FunctionComponent<
   ProposeFundPendingCardProps
 > = ({ campaign, onSuccess }) => {
   const {
