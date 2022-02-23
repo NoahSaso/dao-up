@@ -1,5 +1,5 @@
 import { ReactNode, useCallback, useEffect, useState } from "react"
-import { useRecoilValue, useSetRecoilState } from "recoil"
+import { useRecoilValueLoadable, useSetRecoilState } from "recoil"
 
 import { InstallWalletMessage } from "@/components"
 import { chainId } from "@/config"
@@ -8,8 +8,17 @@ import { suggestChain } from "@/services"
 import { fetchKeplr, keplrKeystoreIdAtom, walletAddress } from "@/state"
 
 export const useWallet = () => {
-  const keplr = useRecoilValue(fetchKeplr)
-  const address = useRecoilValue(walletAddress)
+  // Load in background.
+  const { state: keplrState, contents: keplrContents } =
+    useRecoilValueLoadable(fetchKeplr)
+  const keplr = keplrState === "hasValue" ? keplrContents : undefined
+
+  // Load in background.
+  const { state: walletAddressState, contents: walletAddressContents } =
+    useRecoilValueLoadable(walletAddress)
+  const address =
+    walletAddressState === "hasValue" ? walletAddressContents : undefined
+
   const setKeplrKeystoreId = useSetRecoilState(keplrKeystoreIdAtom)
   const [connectError, setConnectError] = useState(null as ReactNode | null)
 
@@ -57,6 +66,7 @@ export const useWallet = () => {
   }, [connect])
 
   return {
+    loading: keplrState === "loading" || walletAddressState === "loading",
     walletAddress: address,
     connected: !!address,
     connect,

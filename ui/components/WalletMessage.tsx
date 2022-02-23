@@ -1,12 +1,14 @@
-import { Button, CardWrapper, InstallWalletMessage } from "@/components"
+import { Button, CardWrapper, InstallWalletMessage, Loader } from "@/components"
 import { useWallet } from "@/hooks"
 
 export const WalletMessage = () => {
-  const { connect, connectError, installed } = useWallet()
+  const { loading, connect, connectError, installed } = useWallet()
 
   return (
     <CardWrapper className="self-stretch border border-orange">
-      {installed ? (
+      {loading ? (
+        <Loader />
+      ) : installed ? (
         <>
           <p className="text-orange">
             You haven&apos;t connected your wallet. Connect one to contribute,

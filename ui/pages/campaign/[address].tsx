@@ -164,9 +164,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   )
   // Load in background and swap 'visit' for 'join' link ASAP. No need to prevent page from displaying until this is ready.
   const fundingTokenBalance =
-    fundingTokenBalanceState === "hasValue"
-      ? fundingTokenBalanceContents
-      : undefined
+    fundingTokenBalanceState === "hasValue" ? fundingTokenBalanceContents : null
 
   // Display buttons to add tokens to wallet.
   const [showAddFundingToken, setShowAddFundingToken] = useState(false)
@@ -209,6 +207,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   // will receive a special message prompting them to join the DAO immediately.
   const { onSubmit: onSubmitRefundJoinDAO } = useRefundJoinDAOForm(
     campaign ?? null,
+    fundingTokenBalance,
     onRefundJoinDAOSuccess
   )
 

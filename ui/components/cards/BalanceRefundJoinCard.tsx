@@ -5,10 +5,11 @@ import {
   Button,
   CardWrapper,
   ControlledFormPercentTokenDoubleInput,
+  Suspense,
 } from "@/components"
 import { payTokenSymbol } from "@/config"
 import { prettyPrintDecimal } from "@/helpers"
-import { useRefundJoinDAOForm, useWallet } from "@/hooks"
+import { useRefundJoinDAOForm } from "@/hooks"
 import { walletTokenBalance } from "@/state"
 import { Status } from "@/types"
 
@@ -22,6 +23,16 @@ interface BalanceRefundJoinCardProps {
 }
 
 export const BalanceRefundJoinCard: FunctionComponent<
+  BalanceRefundJoinCardProps
+> = (props) => (
+  <CardWrapper className="w-full">
+    <Suspense>
+      <BalanceRefundJoinCardContents {...props} />
+    </Suspense>
+  </CardWrapper>
+)
+
+const BalanceRefundJoinCardContents: FunctionComponent<
   BalanceRefundJoinCardProps
 > = ({
   campaign,
@@ -44,8 +55,6 @@ export const BalanceRefundJoinCard: FunctionComponent<
     govToken: { address: govTokenAddress, symbol: govTokenSymbol },
   } = campaign
 
-  useWallet()
-
   const { balance: fundingTokenBalance, error: fundingTokenBalanceError } =
     useRecoilValue(walletTokenBalance(fundingTokenAddress))
 
@@ -54,7 +63,7 @@ export const BalanceRefundJoinCard: FunctionComponent<
 
   // Refund Form
   const { onSubmit, control, errors, watch, refundCampaignError } =
-    useRefundJoinDAOForm(campaign, onSuccess)
+    useRefundJoinDAOForm(campaign, fundingTokenBalance, onSuccess)
   const watchRefund = watch("refund")
 
   // Percent of funding tokens the user's balance represents.
@@ -74,7 +83,7 @@ export const BalanceRefundJoinCard: FunctionComponent<
   const minRefund = Math.ceil(fundingTokenPrice ?? 0) / 1e6
 
   return (
-    <CardWrapper className="w-full">
+    <>
       <h2 className="text-xl text-green">Your Balance</h2>
 
       {!!govTokenBalance && (
@@ -191,6 +200,6 @@ export const BalanceRefundJoinCard: FunctionComponent<
             </form>
           </>
         )}
-    </CardWrapper>
+    </>
   )
 }
