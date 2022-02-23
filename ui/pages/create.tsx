@@ -35,7 +35,6 @@ import {
 } from "@/config"
 import {
   daoAddressPattern,
-  nonSVGImagePattern,
   numberPattern,
   parseError,
   prettyPrintDecimal,
@@ -338,10 +337,15 @@ const CreateContent = () => {
                   spellCheck={false}
                   autoCorrect="off"
                   error={errors.imageUrl?.message}
+                  // Warn user that SVGs will not be supported in link previews.
+                  accent={
+                    campaignImageUrl?.endsWith(".svg")
+                      ? "SVG images will not show up in link previews. We recommend using a JPG or PNG instead."
+                      : undefined
+                  }
                   {...register("imageUrl", {
                     required: false,
-                    // Disallow SVG since it's not supported by URL previews.
-                    pattern: nonSVGImagePattern,
+                    pattern: urlPattern,
                   })}
                 />
               </div>
