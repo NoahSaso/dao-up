@@ -66,9 +66,13 @@ export const getDENSAddress = async (client: CosmWasmClient, name: string) => {
     })
 
     // Ensure public_name is a valid contract address.
-    if (!escrowAddressRegex.test(public_name)) return null
+    if (
+      typeof public_name !== "string" ||
+      !escrowAddressRegex.test(public_name)
+    )
+      return null
 
-    return public_name as string | null
+    return public_name
   } catch (error) {
     console.error(
       parseError(
