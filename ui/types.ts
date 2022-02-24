@@ -1,5 +1,4 @@
 import { Window as KeplrWindow } from "@keplr-wallet/types"
-import { ReactNode } from "react"
 
 declare global {
   interface Window extends KeplrWindow {}
@@ -76,18 +75,8 @@ declare global {
     twitter?: string
     discord?: string
     imageUrl?: string
+    imageUrls?: string[]
   }
-
-  interface NewCampaignField {
-    label: string
-    pageId: number
-    required: boolean
-    render: (v: any, c: Partial<NewCampaign>) => ReactNode
-    unitBefore?: (c: Partial<NewCampaign>) => string
-    unitAfter?: (c: Partial<NewCampaign>) => string
-  }
-
-  type NewCampaignFieldKey = keyof NewCampaign
 
   interface PageInfo {
     startIndex: number

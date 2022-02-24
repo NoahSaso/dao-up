@@ -42,7 +42,7 @@ import {
   urlPattern,
 } from "@/helpers"
 import { useWallet } from "@/hooks"
-import { defaultNewCampaign, newCampaignFields } from "@/services"
+import { defaultNewCampaign } from "@/services"
 import { globalLoadingAtom, signedCosmWasmClient, validateDAO } from "@/state"
 import { Color } from "@/types"
 
@@ -303,7 +303,7 @@ const CreateContent = () => {
             <>
               <div className="lg:mx-2">
                 <FormInput
-                  label={newCampaignFields.name.label}
+                  label="Name"
                   placeholder="Name"
                   type="text"
                   error={errors.name?.message}
@@ -317,7 +317,7 @@ const CreateContent = () => {
                 />
 
                 <FormTextArea
-                  label={newCampaignFields.description.label}
+                  label="Description"
                   placeholder="Describe what your campaign is about (supports markdown)..."
                   rows={8}
                   error={errors.description?.message}
@@ -331,7 +331,7 @@ const CreateContent = () => {
                 />
 
                 <FormInput
-                  label={newCampaignFields.imageUrl.label}
+                  label="Image URL"
                   placeholder="https://your.campaign/logo.png"
                   type="url"
                   spellCheck={false}
@@ -349,12 +349,14 @@ const CreateContent = () => {
                   })}
                 />
               </div>
+
               <h2 className="font-semibold text-2xl mb-8">
                 Community Platforms
               </h2>
+
               <div className="lg:mx-2">
                 <FormInput
-                  label={newCampaignFields.website.label}
+                  label="Website"
                   placeholder="https://your.campaign"
                   type="url"
                   spellCheck={false}
@@ -367,7 +369,7 @@ const CreateContent = () => {
                 />
 
                 <FormInput
-                  label={newCampaignFields.twitter.label}
+                  label="Twitter"
                   placeholder="@CampaignDAO"
                   type="text"
                   error={errors.twitter?.message}
@@ -382,7 +384,7 @@ const CreateContent = () => {
                 />
 
                 <FormInput
-                  label={newCampaignFields.discord.label}
+                  label="Discord"
                   placeholder="https://discord.gg/campaign"
                   type="url"
                   spellCheck={false}
@@ -401,10 +403,11 @@ const CreateContent = () => {
             </>
           )}
 
-          <h2 className="font-semibold text-2xl mb-8">Funding details</h2>
+          <h2 className="font-semibold text-2xl mb-8">Funding Details</h2>
+
           <div className="lg:mx-2">
             <FormInput
-              label={newCampaignFields.goal.label}
+              label="Funding Target"
               placeholder="10,000"
               type="number"
               inputMode="decimal"
@@ -442,7 +445,7 @@ const CreateContent = () => {
             />
 
             <FormInput
-              label={newCampaignFields.daoAddress.label}
+              label="DAO Address"
               placeholder="juno..."
               type="text"
               error={
@@ -468,7 +471,7 @@ const CreateContent = () => {
             />
 
             <FormInput
-              label={newCampaignFields.tokenName.label}
+              label="Campaign Token Name"
               description="The name of the tokens backers will receive for their contributions. These become exchangeable for the DAO's governance tokens when funding succeeds."
               placeholder="Funding Token"
               type="text"
@@ -483,7 +486,7 @@ const CreateContent = () => {
             />
 
             <FormInput
-              label={newCampaignFields.tokenSymbol.label}
+              label="Campaign Token Symbol"
               placeholder="TOKEN"
               type="text"
               error={errors.tokenSymbol?.message}
@@ -509,7 +512,7 @@ const CreateContent = () => {
                 fieldState: { error },
               }) => (
                 <FormSwitch
-                  label={newCampaignFields.hidden.label}
+                  label="Hide from public campaigns list"
                   description="Whether or not to hide this campaign from the public directory of active campaigns. You may want to turn this on if you plan to send a direct link to your community. Default is no."
                   error={error?.message}
                   onClick={() => onChange(!value)}
