@@ -31,7 +31,7 @@ export const CampaignDetails: FunctionComponent<CampaignDetailsProps> = ({
       <CampaignImage
         imageUrl={imageUrl}
         size={139}
-        className="mb-4 md:mb-0 mr-4"
+        className="mb-4 md:mb-0 md:mr-4"
       />
       <div className="flex flex-col">
         <h1 className="font-medium text-4xl">{name}</h1>
