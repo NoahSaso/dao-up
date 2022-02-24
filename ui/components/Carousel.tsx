@@ -154,15 +154,17 @@ export const Carousel: FunctionComponent<CarouselProps> = ({
         <div className="snap-none shrink-0 w-1/2"></div>
       </div>
 
-      <div className="flex flex-row gap-8 mt-2">
-        <Button onClick={() => move(false)} bare>
-          <IoChevronBack className="text-green" size={24} />
-        </Button>
+      {Children.count(children) > 1 && (
+        <div className="flex flex-row gap-8 mt-2">
+          <Button onClick={() => move(false)} bare>
+            <IoChevronBack className="text-green" size={24} />
+          </Button>
 
-        <Button onClick={() => move(true)} bare>
-          <IoChevronForward className="text-green" size={24} />
-        </Button>
-      </div>
+          <Button onClick={() => move(true)} bare>
+            <IoChevronForward className="text-green" size={24} />
+          </Button>
+        </div>
+      )}
     </div>
   )
 }
