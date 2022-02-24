@@ -12,7 +12,10 @@ pub struct Campaign {
     pub website: Option<String>,
     pub twitter: Option<String>,
     pub discord: Option<String>,
-    pub image_url: Option<String>,
+    /// The image URL used as the campaign's profile photo.
+    pub profile_image_url: Option<String>,
+    /// The image URL used as the campaign's description.
+    pub description_image_urls: Vec<String>,
 
     pub hidden: bool,
 }

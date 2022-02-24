@@ -159,7 +159,8 @@ fn instantiate_escrow(
             website: None,
             twitter: None,
             discord: None,
-            image_url: None,
+            profile_image_url: None,
+            description_image_urls: vec!["https://moonphase.is/image.svg".to_string()],
             hidden: true,
         },
     };
@@ -437,6 +438,12 @@ fn test_campaign_creation() {
             decimals: 6,
             total_supply: Uint128::from(100100000000 as u64),
         }
+    );
+
+    assert_eq!(state.campaign_info.profile_image_url, None);
+    assert_eq!(
+        state.campaign_info.description_image_urls,
+        vec!["https://moonphase.is/image.svg"]
     );
 
     let config: cw3_dao::query::ConfigResponse = app
