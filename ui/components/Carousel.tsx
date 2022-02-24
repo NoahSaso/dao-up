@@ -144,7 +144,7 @@ export const Carousel: FunctionComponent<CarouselProps> = ({
         ref={setScrollContainer}
       >
         {/* Allow first element to snap to center. */}
-        <div className="snap-none shrink-0 w-1/2"></div>
+        <div className="snap-none shrink-0 w-1/2 h-[1px]"></div>
 
         {Children.map(children, (child, index) => (
           <div
@@ -156,7 +156,7 @@ export const Carousel: FunctionComponent<CarouselProps> = ({
         ))}
 
         {/* Allow last element to snap to center. */}
-        <div className="snap-none shrink-0 w-1/2"></div>
+        <div className="snap-none shrink-0 w-1/2 h-[1px]"></div>
       </div>
 
       {Children.count(children) > 1 && (
