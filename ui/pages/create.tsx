@@ -215,10 +215,12 @@ const CreateContent = () => {
           description: newCampaign.description,
           hidden: newCampaign.hidden,
 
-          ...(newCampaign.imageUrl && { image_url: newCampaign.imageUrl }),
           ...(newCampaign.website && { website: newCampaign.website }),
           ...(newCampaign.twitter && { twitter: newCampaign.twitter }),
           ...(newCampaign.discord && { discord: newCampaign.discord }),
+
+          ...(newCampaign.imageUrl && { image_url: newCampaign.imageUrl }),
+          ...(newCampaign.imageUrls && { image_urls: newCampaign.imageUrls }),
         },
       }
 
