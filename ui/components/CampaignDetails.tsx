@@ -1,3 +1,4 @@
+import cn from "classnames"
 import { FunctionComponent } from "react"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
 import ReactMarkdown from "react-markdown"
@@ -5,23 +6,25 @@ import ReactMarkdown from "react-markdown"
 import { CampaignImage, CampaignPlatformLink, Carousel } from "@/components"
 
 interface CampaignDetailsProps {
+  name: string
+  description: string
   website?: string
   discord?: string
   twitter?: string
-  description: string
   imageUrl?: string
   imageUrls?: string[]
-  name: string
+  smallerCarousel?: boolean
 }
 
 export const CampaignDetails: FunctionComponent<CampaignDetailsProps> = ({
+  name,
+  description,
   website,
   twitter,
   discord,
-  description,
-  name,
   imageUrl,
   imageUrls,
+  smallerCarousel = false,
 }) => (
   <div className="flex flex-col text-left">
     <div className="flex flex-col text-center items-center md:flex-row md:items-start md:text-left">
@@ -62,7 +65,10 @@ export const CampaignDetails: FunctionComponent<CampaignDetailsProps> = ({
 
     {!!imageUrls && imageUrls.length > 0 && (
       <Carousel
-        className="h-[19rem] my-4"
+        className={cn("my-4", {
+          "h-[19rem]": !smallerCarousel,
+          "h-[15rem]": smallerCarousel,
+        })}
         childContainerClassName="w-full h-full"
       >
         {imageUrls.map((src, index) => (

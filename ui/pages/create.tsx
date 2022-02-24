@@ -1,8 +1,9 @@
 import { coin } from "@cosmjs/stargate"
+import cn from "classnames"
 import type { NextPage } from "next"
 import Head from "next/head"
 import { useRouter } from "next/router"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import {
   Controller,
   SubmitHandler,
@@ -10,6 +11,7 @@ import {
   useForm,
 } from "react-hook-form"
 import {
+  IoAdd,
   IoCheckmark,
   IoClose,
   IoEye,
@@ -56,7 +58,6 @@ import {
 import { useWallet } from "@/hooks"
 import { defaultNewCampaign } from "@/services"
 import { globalLoadingAtom, signedCosmWasmClient, validateDAO } from "@/state"
-import { Color } from "@/types"
 
 const validUrlOrUndefined = (u: string | undefined) =>
   u && u.match(urlPattern.value) ? u : undefined
@@ -115,8 +116,24 @@ const CreateContent = () => {
     remove: imageUrlsRemove,
   } = useFieldArray({
     control,
-    name: "imageUrls",
+    name: "_imageUrls",
   })
+  // New Image URL
+  const [newImageUrl, setNewImageUrl] = useState("")
+  const [newImageUrlError, setNewImageUrlError] = useState("")
+  const newImageUrlRef = useRef<HTMLInputElement>(null)
+  const addNewImageUrl = () => {
+    if (newImageUrl.match(urlPattern.value)) {
+      imageUrlsAppend({ url: newImageUrl })
+      setNewImageUrl("")
+      setNewImageUrlError("")
+    } else {
+      setNewImageUrlError(urlPattern.message)
+    }
+
+    // Just pressed add button, refocus on input.
+    newImageUrlRef.current?.focus()
+  }
 
   // Automatically verify DAO contract address exists on chain.
   const watchDAOAddress = watch("daoAddress")
@@ -144,12 +161,12 @@ const CreateContent = () => {
 
   // Information for displaying campaign preview.
   const campaignName = watch("name")
-  const campaignImageUrl = validUrlOrUndefined(watch("imageUrl"))
   const campaignDescription = watch("description")
-
   const campaignWebsite = validUrlOrUndefined(watch("website"))
   const campaignDiscord = validUrlOrUndefined(watch("discord"))
   const campaignTwitter = watch("twitter")
+  const campaignImageUrl = validUrlOrUndefined(watch("imageUrl"))
+  const campaignImageUrls = watch("_imageUrls")
 
   const [showCampaignDescriptionPreview, setShowCampaignDescriptionPreview] =
     useState(false)
@@ -246,6 +263,11 @@ const CreateContent = () => {
       newCampaignValues.description = newCampaignValues.description.trim()
       newCampaignValues.tokenName = newCampaignValues.tokenName.trim()
       newCampaignValues.tokenSymbol = newCampaignValues.tokenSymbol.trim()
+      // Transform _imageUrls objects into strings.
+      newCampaignValues.imageUrls = newCampaignValues._imageUrls?.map(
+        ({ url }) => url
+      )
+      delete newCampaignValues._imageUrls
 
       const address = await createCampaign(newCampaignValues)
 
@@ -296,7 +318,7 @@ const CreateContent = () => {
 
             <Button
               outline
-              color={Color.Light}
+              color="light"
               onClick={() => setShowCampaignDescriptionPreview((b) => !b)}
             >
               <div className="flex items-center gap-2">
@@ -315,10 +337,12 @@ const CreateContent = () => {
               <CampaignDetails
                 name={campaignName || "Your campaign"}
                 description={campaignDescription || "Your campaign description"}
-                imageUrl={campaignImageUrl}
                 website={campaignWebsite}
                 twitter={campaignTwitter}
                 discord={campaignDiscord}
+                imageUrl={campaignImageUrl}
+                imageUrls={campaignImageUrls?.map(({ url }) => url)}
+                smallerCarousel
               />
             </div>
           ) : (
@@ -371,34 +395,55 @@ const CreateContent = () => {
                   })}
                 />
 
-                <FormWrapper label="Carousel Image URLs"></FormWrapper>
-
-                {imageUrlsFields.map((field, index) => (
-                  <div
-                    key={field.id}
-                    className="flex flex-row items-stretch gap-2"
+                <FormWrapper label="Carousel Image URLs">
+                  {/* Form to add new image URLs. */}
+                  <FormInput
+                    placeholder="https://your.campaign/campaign-1.png"
+                    type="url"
+                    spellCheck={false}
+                    autoCorrect="off"
+                    error={newImageUrlError}
+                    value={newImageUrl}
+                    onInput={(e) => {
+                      setNewImageUrl(e.currentTarget.value)
+                      newImageUrlError && setNewImageUrlError("")
+                    }}
+                    // Add image on enter key press.
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        addNewImageUrl()
+                        e.preventDefault()
+                      }
+                    }}
+                    wrapperClassName={cn({
+                      "!mb-0": imageUrlsFields.length === 0,
+                      "!mb-2": imageUrlsFields.length > 0,
+                    })}
+                    ref={newImageUrlRef}
                   >
-                    <FormInput
-                      label={`Image URL ${index + 1}`}
-                      placeholder="https://your.campaign/logo.png"
-                      type="url"
-                      spellCheck={false}
-                      autoCorrect="off"
-                      error={errors.imageUrls?.[index]?.message}
-                      {...register(`imageUrls.${index}`, {
-                        required: false,
-                        pattern: urlPattern,
-                      })}
-                    />
-
                     <Button
-                      color={Color.Orange}
-                      onClick={() => imageUrlsRemove(index)}
+                      outline
+                      color="green"
+                      type="button"
+                      onClick={addNewImageUrl}
                     >
-                      <IoClose className="text-dark" size={24} />
+                      <IoAdd size={24} />
                     </Button>
-                  </div>
-                ))}
+                  </FormInput>
+
+                  {imageUrlsFields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      className="flex flex-row justify-between items-start border-b border-light pl-5 p-3 pr-0 first:pt-0"
+                    >
+                      <h3 className="text-green">{field.url}</h3>
+
+                      <Button onClick={() => imageUrlsRemove(index)} bare>
+                        <IoClose size={24} />
+                      </Button>
+                    </div>
+                  ))}
+                </FormWrapper>
               </div>
 
               <h2 className="font-semibold text-2xl mb-8">

@@ -42,7 +42,7 @@ import {
   fetchCampaignActions,
   walletTokenBalance,
 } from "@/state"
-import { Color, Status } from "@/types"
+import { Status } from "@/types"
 
 const campaigns404Path = "/campaigns?404"
 
@@ -220,7 +220,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   return (
     <>
       {status === Status.Funded && (
-        <Banner color={Color.Green}>
+        <Banner color="green">
           {name} has been successfully funded!{" "}
           {/* If user has funding tokens and the campaign is funded, make it easy for them to join. */}
           {fundingTokenBalance ? (

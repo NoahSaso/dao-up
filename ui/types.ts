@@ -75,7 +75,9 @@ declare global {
     twitter?: string
     discord?: string
     imageUrl?: string
+
     imageUrls?: string[]
+    _imageUrls?: { url: string }[]
   }
 
   interface PageInfo {
