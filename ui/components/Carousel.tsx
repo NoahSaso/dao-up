@@ -11,7 +11,7 @@ import {
 import { IoChevronBack, IoChevronForward } from "react-icons/io5"
 
 import { Button } from "@/components"
-import { useRefCallback } from "@/hooks"
+import { useRefCallback, useWindowSize } from "@/hooks"
 
 interface ChildOffset {
   left: number
@@ -29,6 +29,8 @@ export const Carousel: FunctionComponent<CarouselProps> = ({
   children,
   childContainerClassName,
 }) => {
+  const { width: windowWidth } = useWindowSize()
+
   const scrollContainer = useRef<HTMLDivElement | null>(null)
   // childOffsets will be equal to children.length - 2, due to padding.
   // Thus, childNum - 1 will get the offset for the child at position childNum.
@@ -45,7 +47,7 @@ export const Carousel: FunctionComponent<CarouselProps> = ({
   const activeChildNum = pendingCenteredChildNum ?? centeredChildNum
 
   // Calculate offsets of children in scrollable area.
-  // Update once everything is in place and if children are changed.
+  // Update once everything is initial rendered, if children are changed, and on window resize.
   const updateChildOffsets = useCallback(() => {
     if (!scrollContainer.current) {
       return childOffsets.current
@@ -74,11 +76,11 @@ export const Carousel: FunctionComponent<CarouselProps> = ({
 
     return childOffsets.current
   }, [scrollContainer, setNavVisible])
-  // Update child offsets if children change.
+  // Update child offsets if children change and on window resize.
   useEffect(() => {
     updateChildOffsets()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [children])
+  }, [children, windowWidth])
 
   // Calculate the centered child when scrolling so we can enable/disable buttons accordingly.
   const scrollListener = useCallback(

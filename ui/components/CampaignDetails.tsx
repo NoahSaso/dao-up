@@ -63,7 +63,7 @@ export const CampaignDetails: FunctionComponent<CampaignDetailsProps> = ({
       </div>
     </div>
 
-    {!!imageUrls && imageUrls.length > 0 && (
+    {!!imageUrls?.length && (
       <Carousel
         className={cn("my-4", {
           "h-[19rem]": !smallerCarousel,
