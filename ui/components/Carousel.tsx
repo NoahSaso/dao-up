@@ -227,10 +227,7 @@ export const Carousel: FunctionComponent<CarouselProps> = ({
   return (
     <div className={cn("flex flex-col items-center", className)}>
       <div
-        className={cn(
-          "flex flex-row justify-start items-center gap-4 snap-x snap-mandatory overflow-x-auto w-full no-scrollbar",
-          className
-        )}
+        className="flex flex-row justify-start items-center gap-4 snap-x snap-mandatory overflow-x-auto w-full no-scrollbar"
         ref={setScrollContainer}
       >
         {/* Allow first element to snap to center. */}
