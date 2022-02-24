@@ -148,7 +148,10 @@ export const Carousel: FunctionComponent<CarouselProps> = ({
 
         {Children.map(children, (child, index) => (
           <div
-            className={cn("snap-center shrink-0", childContainerClassName)}
+            className={cn(
+              "snap-center shrink-0 max-w-full",
+              childContainerClassName
+            )}
             key={index}
           >
             {child}
@@ -160,7 +163,7 @@ export const Carousel: FunctionComponent<CarouselProps> = ({
       </div>
 
       {Children.count(children) > 1 && (
-        <div className="flex flex-row gap-8 mt-2">
+        <div className="flex flex-row gap-8 mt-5">
           <Button onClick={() => move(false)} bare>
             <IoChevronBack className="text-green" size={24} />
           </Button>

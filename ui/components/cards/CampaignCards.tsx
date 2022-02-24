@@ -159,7 +159,7 @@ export const HomepageFeaturedCampaignCard: FunctionComponent<CampaignProps> = ({
 }) => (
   <CampaignCardWrapper
     campaign={campaign}
-    className="w-[80vw] xs:w-[21rem] sm:w-[23rem] xl:w-[24rem]"
+    className="max-w-full w-full xs:w-[21.6rem] sm:w-[23rem] xl:w-[24rem]"
     contentClassName="!ml-0 !mt-3"
     forceColumn
   >

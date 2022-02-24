@@ -8,7 +8,7 @@ export const HomepageFeaturedCampaigns: FunctionComponent = () => {
   const { campaigns } = useRecoilValue(featuredCampaigns)
 
   return campaigns?.length ? (
-    <Carousel>
+    <Carousel childContainerClassName="w-full xs:w-auto">
       {campaigns.map((campaign) => (
         <HomepageFeaturedCampaignCard
           key={campaign.address}
