@@ -80,7 +80,7 @@ export const CampaignProgress: FunctionComponent<CampaignProgressProps> = ({
           )}
           {!hidePercent && (
             <p className="text-placeholder italic text-right">
-              {prettyPrintDecimal(fundedPercent, 0)}% funded
+              {prettyPrintDecimal(fundedPercent, 0)}%
             </p>
           )}
         </div>
