@@ -83,14 +83,7 @@ export const transformCampaign = (
     // Use deNS name from map if available.
     urlPath: `/campaign/${densAddressMap?.[address] ?? address}`,
     imageUrl: campaignInfo.image_url,
-    // TODO: Remove.
-    imageUrls: campaignInfo.image_urls ?? [
-      "https://moonphase.is/image.svg",
-      "https://moonphase.is/image.svg",
-      "https://moonphase.is/image.svg",
-      "https://moonphase.is/image.svg",
-      "https://moonphase.is/image.svg",
-    ],
+    imageUrls: campaignInfo.image_urls ?? null,
 
     status,
     creator: state.creator,
