@@ -175,6 +175,13 @@ export const transformCampaign = (
     // Use deNS name from map if available.
     urlPath: `/campaign/${densAddressMap?.[address] ?? address}`,
     imageUrl: campaignInfo.image_url,
+    imageUrls: campaignInfo.image_urls ?? [
+      "https://moonphase.is/image.svg",
+      "https://moonphase.is/image.svg",
+      "https://moonphase.is/image.svg",
+      "https://moonphase.is/image.svg",
+      "https://moonphase.is/image.svg",
+    ],
 
     status,
     creator: state.creator,

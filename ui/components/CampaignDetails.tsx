@@ -2,7 +2,7 @@ import { FunctionComponent } from "react"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
 import ReactMarkdown from "react-markdown"
 
-import { CampaignImage, CampaignPlatformLink } from "@/components"
+import { CampaignImage, CampaignPlatformLink, Carousel } from "@/components"
 
 interface CampaignDetailsProps {
   website?: string
@@ -10,6 +10,7 @@ interface CampaignDetailsProps {
   twitter?: string
   description: string
   imageUrl?: string
+  imageUrls?: string[]
   name: string
 }
 
@@ -20,6 +21,7 @@ export const CampaignDetails: FunctionComponent<CampaignDetailsProps> = ({
   description,
   name,
   imageUrl,
+  imageUrls,
 }) => (
   <div className="flex flex-col text-left">
     <div className="flex flex-col text-center items-center md:flex-row md:items-start md:text-left">
@@ -57,6 +59,23 @@ export const CampaignDetails: FunctionComponent<CampaignDetailsProps> = ({
         )}
       </div>
     </div>
+
+    {!!imageUrls && imageUrls.length > 0 && (
+      <Carousel
+        className="h-[19rem] my-4"
+        childContainerClassName="w-full h-full"
+      >
+        {imageUrls.map((src, index) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={index}
+            src={src}
+            alt=""
+            className="object-contain object-center w-full h-full"
+          />
+        ))}
+      </Carousel>
+    )}
 
     <ReactMarkdown
       children={description}

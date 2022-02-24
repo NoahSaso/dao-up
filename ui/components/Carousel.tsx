@@ -41,11 +41,13 @@ const centerChildInContainer = (
 
 type CarouselProps = PropsWithChildren<{
   className?: string
+  childContainerClassName?: string
 }>
 
 export const Carousel: FunctionComponent<CarouselProps> = ({
   className,
   children,
+  childContainerClassName,
 }) => {
   const { ref: scrollContainer, setRef: setScrollContainer } =
     // When ref is set, scroll to fit as many cards as possible.
@@ -136,7 +138,7 @@ export const Carousel: FunctionComponent<CarouselProps> = ({
     <div className={cn("flex flex-col items-center", className)}>
       <div
         className={cn(
-          "flex flex-row justify-start items-center gap-4 snap-x snap-mandatory overflow-x-auto w-full pb-4 no-scrollbar",
+          "flex flex-row justify-start items-center gap-4 snap-x snap-mandatory overflow-x-auto w-full no-scrollbar",
           className
         )}
         ref={setScrollContainer}
@@ -145,7 +147,10 @@ export const Carousel: FunctionComponent<CarouselProps> = ({
         <div className="snap-none shrink-0 w-1/2"></div>
 
         {Children.map(children, (child, index) => (
-          <div className="snap-center" key={index}>
+          <div
+            className={cn("snap-center shrink-0", childContainerClassName)}
+            key={index}
+          >
             {child}
           </div>
         ))}

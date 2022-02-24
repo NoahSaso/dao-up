@@ -22,6 +22,7 @@ declare global {
     description: string
     urlPath: string
     imageUrl?: string
+    imageUrls?: string[]
 
     status: Status
     creator: string
