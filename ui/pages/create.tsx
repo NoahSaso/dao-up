@@ -4,20 +4,15 @@ import type { NextPage } from "next"
 import Head from "next/head"
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useRef, useState } from "react"
+import { DndProvider } from "react-dnd"
+import { HTML5Backend } from "react-dnd-html5-backend"
 import {
   Controller,
   SubmitHandler,
   useFieldArray,
   useForm,
 } from "react-hook-form"
-import {
-  IoAdd,
-  IoCheckmark,
-  IoClose,
-  IoEye,
-  IoEyeOff,
-  IoWarning,
-} from "react-icons/io5"
+import { IoAdd, IoCheckmark, IoEye, IoEyeOff, IoWarning } from "react-icons/io5"
 import {
   useRecoilValue,
   useRecoilValueLoadable,
@@ -32,6 +27,7 @@ import {
   FormSwitch,
   FormTextArea,
   FormWrapper,
+  ImageUrlField,
   Loader,
   ResponsiveDecoration,
   Suspense,
@@ -82,9 +78,11 @@ const Create: NextPage = () => (
       className="top-0 right-0 opacity-70"
     />
 
-    <Suspense loader={{ overlay: true }}>
-      <CreateContent />
-    </Suspense>
+    <DndProvider backend={HTML5Backend}>
+      <Suspense loader={{ overlay: true }}>
+        <CreateContent />
+      </Suspense>
+    </DndProvider>
   </>
 )
 
@@ -114,6 +112,7 @@ const CreateContent = () => {
     fields: imageUrlsFields,
     append: imageUrlsAppend,
     remove: imageUrlsRemove,
+    move: imageUrlsMove,
   } = useFieldArray({
     control,
     name: "_imageUrls",
@@ -432,16 +431,13 @@ const CreateContent = () => {
                   </FormInput>
 
                   {imageUrlsFields.map((field, index) => (
-                    <div
+                    <ImageUrlField
                       key={field.id}
-                      className="flex flex-row justify-between items-start border-b border-light pl-5 p-3 pr-0 first:pt-0"
-                    >
-                      <h3 className="text-green">{field.url}</h3>
-
-                      <Button onClick={() => imageUrlsRemove(index)} bare>
-                        <IoClose size={24} />
-                      </Button>
-                    </div>
+                      index={index}
+                      field={field}
+                      remove={() => imageUrlsRemove(index)}
+                      move={(from, to) => imageUrlsMove(from, to)}
+                    />
                   ))}
                 </FormWrapper>
               </div>
