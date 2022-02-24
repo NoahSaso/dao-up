@@ -3,8 +3,19 @@ import type { NextPage } from "next"
 import Head from "next/head"
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
-import { Controller, SubmitHandler, useForm } from "react-hook-form"
-import { IoCheckmark, IoEye, IoEyeOff, IoWarning } from "react-icons/io5"
+import {
+  Controller,
+  SubmitHandler,
+  useFieldArray,
+  useForm,
+} from "react-hook-form"
+import {
+  IoCheckmark,
+  IoClose,
+  IoEye,
+  IoEyeOff,
+  IoWarning,
+} from "react-icons/io5"
 import {
   useRecoilValue,
   useRecoilValueLoadable,
@@ -18,6 +29,7 @@ import {
   FormInput,
   FormSwitch,
   FormTextArea,
+  FormWrapper,
   Loader,
   ResponsiveDecoration,
   Suspense,
@@ -94,7 +106,17 @@ const CreateContent = () => {
     control,
     watch,
     setValue,
-  } = useForm({ defaultValues: defaultNewCampaign })
+  } = useForm<NewCampaign>({ defaultValues: defaultNewCampaign })
+
+  // imageUrls list
+  const {
+    fields: imageUrlsFields,
+    append: imageUrlsAppend,
+    remove: imageUrlsRemove,
+  } = useFieldArray({
+    control,
+    name: "imageUrls",
+  })
 
   // Automatically verify DAO contract address exists on chain.
   const watchDAOAddress = watch("daoAddress")
@@ -348,6 +370,35 @@ const CreateContent = () => {
                     pattern: urlPattern,
                   })}
                 />
+
+                <FormWrapper label="Carousel Image URLs"></FormWrapper>
+
+                {imageUrlsFields.map((field, index) => (
+                  <div
+                    key={field.id}
+                    className="flex flex-row items-stretch gap-2"
+                  >
+                    <FormInput
+                      label={`Image URL ${index + 1}`}
+                      placeholder="https://your.campaign/logo.png"
+                      type="url"
+                      spellCheck={false}
+                      autoCorrect="off"
+                      error={errors.imageUrls?.[index]?.message}
+                      {...register(`imageUrls.${index}`, {
+                        required: false,
+                        pattern: urlPattern,
+                      })}
+                    />
+
+                    <Button
+                      color={Color.Orange}
+                      onClick={() => imageUrlsRemove(index)}
+                    >
+                      <IoClose className="text-dark" size={24} />
+                    </Button>
+                  </div>
+                ))}
               </div>
 
               <h2 className="font-semibold text-2xl mb-8">
