@@ -79,7 +79,7 @@ export const transformVersionedCampaignFields = (
             status === Status.Pending
               ? 0
               : (statusFields as StatusFields<typeof version, typeof status>)
-                  .initial_gov_token_balance,
+                  .initial_gov_token_balance / 1e6,
         },
       }
     default: {
