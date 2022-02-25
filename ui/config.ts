@@ -48,3 +48,7 @@ export const baseUrl = `http${
   "daoup.zone"
 }`
 export const imageUrl = `${baseUrl}/images/banner.jpg`
+
+export const visibleDescriptionChars = parseInt(
+  process.env.NEXT_PUBLIC_VISIBLE_DESCRIPTION_CHARS ?? "400"
+)
