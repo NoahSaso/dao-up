@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form"
 
 import { useRefundCampaign } from "@/hooks"
-import { Status } from "@/types"
+import { CampaignStatus } from "@/types"
 
 interface RefundJoinDAOForm {
   refund?: number
@@ -28,7 +28,7 @@ export const useRefundJoinDAOForm = (
 
   const doRefund = async ({ refund }: RefundJoinDAOForm) => {
     // If funded, the refund action becomes the join DAO action, so send all tokens.
-    if (status === Status.Funded) refund = fundingTokenBalance ?? 0
+    if (status === CampaignStatus.Funded) refund = fundingTokenBalance ?? 0
 
     if (!refund) return
 

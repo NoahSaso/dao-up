@@ -5,7 +5,7 @@ import {
   ButtonLink,
   CampaignFavoriteToggle,
   CampaignProgress,
-  CampaignStatus,
+  CampaignStatusIndicator,
   CardWrapper,
 } from "@/components"
 import { payTokenSymbol } from "@/config"
@@ -31,7 +31,7 @@ export const CampaignInfoCard: FunctionComponent<CampaignInfoCardProps> = ({
       className={cn("flex flex-col items-start max-w-full relative", className)}
     >
       <div className="flex flex-row justify-between items-center self-stretch mb-4">
-        <CampaignStatus campaign={campaign} />
+        <CampaignStatusIndicator campaign={campaign} />
         <CampaignFavoriteToggle campaign={campaign} />
       </div>
 

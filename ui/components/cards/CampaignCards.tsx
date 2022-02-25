@@ -7,7 +7,7 @@ import {
   CampaignFavoriteToggle,
   CampaignImage,
   CampaignProgress,
-  CampaignStatus,
+  CampaignStatusIndicator,
   CardWrapper,
   Loader,
 } from "@/components"
@@ -99,7 +99,7 @@ export const CreatorCampaignCard: FunctionComponent<CampaignProps> = ({
     // The campaigns list splits into two columns at lg, and these cards become narrow again, so reduce padding and then increase again.
     className={cn("lg:p-6 2xl:p-8", className)}
   >
-    <CampaignStatus campaign={campaign} />
+    <CampaignStatusIndicator campaign={campaign} />
 
     <CampaignProgress campaign={campaign} className="mt-4" showPledged />
   </CampaignCardWrapper>
@@ -130,7 +130,7 @@ export const FavoriteCampaignCard: FunctionComponent<CampaignProps> = ({
       // The campaigns list splits into two columns at lg, and these cards become narrow again, so reduce padding and then increase again.
       className={cn("lg:p-6 2xl:p-8", className)}
     >
-      <CampaignStatus campaign={campaign} className="shrink-0" />
+      <CampaignStatusIndicator campaign={campaign} className="shrink-0" />
       <CampaignProgress campaign={campaign} thin />
 
       <div className="flex flex-row items-end gap-2 mt-5">

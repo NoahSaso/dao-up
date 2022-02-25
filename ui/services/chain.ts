@@ -41,7 +41,7 @@ export const getDenyListAddresses = async (client: CosmWasmClient) =>
 export const getCampaignState = async (
   client: CosmWasmClient,
   campaignAddress: string
-) =>
+): Promise<CampaignDumpStateResponse> =>
   client.queryContractSmart(campaignAddress, {
     dump_state: {},
   })
@@ -49,7 +49,7 @@ export const getCampaignState = async (
 export const getTokenInfo = async (
   client: CosmWasmClient,
   tokenAddress: string
-) =>
+): Promise<TokenInfoResponse> =>
   client.queryContractSmart(tokenAddress, {
     token_info: {},
   })

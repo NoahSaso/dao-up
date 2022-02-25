@@ -25,7 +25,7 @@ import {
 import { baseUrl, title } from "@/config"
 import { addFilter, filterExists, removeFilter } from "@/helpers"
 import { featuredCampaigns, filteredCampaigns } from "@/state"
-import { Status } from "@/types"
+import { CampaignStatus } from "@/types"
 
 const minPage = 1
 const pageSize = 20
@@ -152,7 +152,7 @@ const Campaigns: NextPage = () => {
               <Select
                 className="w-40"
                 label="Status"
-                items={Object.entries(Status).map(([label, value]) => ({
+                items={Object.entries(CampaignStatus).map(([label, value]) => ({
                   label,
                   onClick: (on) =>
                     on

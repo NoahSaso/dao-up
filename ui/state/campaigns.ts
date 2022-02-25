@@ -247,7 +247,7 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
     },
 })
 
-export const tokenInfo = selectorFamily<TokenInfoResponse, string>({
+export const tokenInfo = selectorFamily<TokenInfoSelectorResponse, string>({
   key: "tokenInfo",
   get:
     (address) =>

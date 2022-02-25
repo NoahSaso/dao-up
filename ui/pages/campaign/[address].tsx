@@ -42,7 +42,7 @@ import {
   fetchCampaignActions,
   walletTokenBalance,
 } from "@/state"
-import { CampaignContractVersion, Status } from "@/types"
+import { CampaignContractVersion, CampaignStatus } from "@/types"
 
 const campaigns404Path = "/campaigns?404"
 
@@ -187,7 +187,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
 
   // Handler for successful DAO join, show relevant alerts.
   const onRefundJoinDAOSuccess = async () => {
-    if (status === Status.Funded) {
+    if (status === CampaignStatus.Funded) {
       // Hide contribution success message in case user joins the DAO from there.
       setShowContributionSuccessAlert(false)
 
@@ -222,7 +222,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
 
   return (
     <>
-      {status === Status.Funded && (
+      {status === CampaignStatus.Funded && (
         <Banner color="green">
           {name} has been successfully funded!{" "}
           {/* If user has funding tokens and the campaign is funded, make it easy for them to join. */}
@@ -254,7 +254,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
 
             {!connected && <WalletMessage />}
 
-            {status === Status.Pending ? (
+            {status === CampaignStatus.Pending ? (
               <ProposeFundPendingCard
                 campaign={campaign}
                 onSuccess={(proposalId: string) =>
@@ -264,7 +264,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
                   )
                 }
               />
-            ) : status === Status.Open ? (
+            ) : status === CampaignStatus.Open ? (
               <ContributeForm
                 campaign={campaign}
                 onSuccess={async () => {
@@ -297,9 +297,11 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
             {/* v1 contract does not store initial gov token funding amount. The govToken.campaignBalance is wrong after it is funded since people start joining the DAO which drains the campaign's gov token balance. */}
             {version === CampaignContractVersion.v1
               ? // Only show if open since the balance is accurate.
-                status === Status.Open && <GovernanceCard campaign={campaign} />
-              : // All newer contracts can show the balance after pending.
-                status !== Status.Pending && (
+                status === CampaignStatus.Open && (
+                  <GovernanceCard campaign={campaign} />
+                )
+              : // All v2+ contracts can show the balance after pending.
+                status !== CampaignStatus.Pending && (
                   <GovernanceCard campaign={campaign} />
                 )}
           </div>
@@ -334,7 +336,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
         hide={() => setShowContributionSuccessAlert(false)}
         title="Contribution successful!"
       >
-        {status === Status.Funded ? (
+        {status === CampaignStatus.Funded ? (
           <>
             <p>
               The campaign is now funded and you can join the{" "}
