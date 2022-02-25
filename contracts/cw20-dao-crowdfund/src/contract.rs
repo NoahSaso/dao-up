@@ -452,6 +452,7 @@ pub fn query_dump_state(deps: Deps) -> StdResult<Binary> {
         funding_token_addr,
         fee_receiver: state.fee_receiver,
         fee: state.fee,
+        version: CONTRACT_VERSION.to_string(),
     })
 }
 
