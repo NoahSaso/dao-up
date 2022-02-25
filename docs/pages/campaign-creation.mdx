@@ -39,8 +39,8 @@ allocate to the campaign, and press the "Propose" button.
 
 The proposal will be created in your DAO with a default
 description, and DAO members will be able to vote on the proposal.
-Once it passes, your campaign will become active and ready to accept
-funding.
+Once it is passed and executed, your campaign will become active and
+ready to accept funding.
 
 If you'd like a little more manual control over the proposal, consider
 creating the proposal manually.
@@ -92,7 +92,7 @@ has N decimals, the smallest denomination of token on the chain is actually
 
 If you created a new token via the DAO DAO UI, it will
 have six decimals. This means that the amount field should be
-`tokens_to_send * 10**6`, because each token on the UI is actually 10**6
+`tokens_to_send * 10**6`, because each token on the UI is actually 10\*\*6
 tokens on the blockchain. For more information about decimals and tokens,
 see the CosmWasm [cw20 spec](https://github.com/CosmWasm/cw-plus/blob/main/packages/cw20/README.md#base).
 

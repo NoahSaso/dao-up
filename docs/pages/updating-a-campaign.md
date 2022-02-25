@@ -1,7 +1,30 @@
 # Updating a campaign
 
 After a campaign is created, the fundraising DAO may want to update
-information about the campaign. To do this, the fundraising DAO should
+information about the campaign. This occurs through a proposal, so
+we tried to make it pretty easy for you to create an update proposal
+on the DAO Up! UI.
+
+Note that only the fundraising DAO may update a campaign's
+configuration, not the wallet that created the campaign initially.
+
+## Creating the proposal via the DAO Up! UI
+
+If you have governance tokens in the DAO, a button should appear
+on the campaign page to edit the details. This will take you to
+a form with the current campaign details already filled in.
+
+Submitting the form will create a proposal in your DAO with a default
+description, and DAO members will be able to vote on the proposal.
+Once it is passed and executed, the campaign details will update
+immediately.
+
+You can also create the proposal manually via the
+[DAO DAO](https://daodao.zone/) UI.
+
+## Creating the proposal manually
+
+To create the proposal manually, the fundraising DAO needs to
 execute the `update_campaign` method on the campaign contract address.
 
 ```json
@@ -32,9 +55,6 @@ execute the `update_campaign` method on the campaign contract address.
 }
 ```
 
-Note that only the fundraising DAO may update a campaign's
-configuration.
-
 You can find the address of your campaign by looking in the URL bar of
 your browser while viewing the campaign. The URL will be in the form
 `https://daoup.zone/campaign/CAMPAIGN_ADDRESS_AT_THE_END`.
@@ -49,5 +69,5 @@ junod query wasm contract-state smart CAMPAIGN_CONTRACT_ADDRESS_HERE '{"dump_sta
 ```
 
 You will then want to copy the campaign object shown in that
-command's output into your messages campaign field and update only the
+command's output into the proposal message field and update only the
 fields you want.
