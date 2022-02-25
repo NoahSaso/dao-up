@@ -1,7 +1,7 @@
 # Updating a campaign
 
-After a campaign is created the fundraising DAO may want to update
-information about the campaign. To do this the fundraising DAO should
+After a campaign is created, the fundraising DAO may want to update
+information about the campaign. To do this, the fundraising DAO should
 execute the `update_campaign` method on the campaign contract address.
 
 ```json
@@ -20,7 +20,7 @@ execute the `update_campaign` method on the campaign contract address.
               "CAMPAIGN_DESCRIPTION_IMAGE_URL_1",
               "CAMPAIGN_DESCRIPTION_IMAGE_URL_2"
             ],
-            "twitter": "CAMPAIGN_TWITER_HANDLE",
+            "twitter": "CAMPAIGN_TWITTER_HANDLE",
             "website": "CAMPAIGN_WEBSITE_URL",
             "discord": "CAMPAIGN_DISCORD_URL"
           }
@@ -40,12 +40,14 @@ your browser while viewing the campaign. The URL will be in the form
 `https://daoup.zone/campaign/CAMPAIGN_ADDRESS_AT_THE_END`.
 
 Likely, campaign creators will not want to update all of the fields in
-their campaign. To get the current campaign config run:
+their campaign. To get the current campaign config, you need to
+[setup junod](https://docs.junonetwork.io/smart-contracts-and-junod-development/junod-local-dev-setup).
+Then, run:
 
 ```bash
-junod query wasm contract-state smart juno1yarv09jdpz5dfhrvjhna07sf3yuwsdf0xznl965qj0edh34df0ssanurd0 '{"dump_state": {}}' --output json | jq '.data.campaign_info'
+junod query wasm contract-state smart CAMPAIGN_CONTRACT_ADDRESS_HERE '{"dump_state": {}}' --output json | jq '.data.campaign_info'
 ```
 
-You will then likely want to copy the campaign object shown in that
+You will then want to copy the campaign object shown in that
 command's output into your messages campaign field and update only the
-fields you deem needed.
+fields you want.
