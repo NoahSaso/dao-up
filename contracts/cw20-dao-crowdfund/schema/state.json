@@ -47,12 +47,20 @@
       "type": "object",
       "required": [
         "description",
+        "description_image_urls",
         "hidden",
         "name"
       ],
       "properties": {
         "description": {
           "type": "string"
+        },
+        "description_image_urls": {
+          "description": "The image URLs displayed with the campaign's description.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "discord": {
           "type": [
@@ -63,14 +71,15 @@
         "hidden": {
           "type": "boolean"
         },
-        "image_url": {
+        "name": {
+          "type": "string"
+        },
+        "profile_image_url": {
+          "description": "The image URL used as the campaign's profile photo.",
           "type": [
             "string",
             "null"
           ]
-        },
-        "name": {
-          "type": "string"
         },
         "twitter": {
           "type": [
@@ -143,9 +152,13 @@
             "open": {
               "type": "object",
               "required": [
+                "initial_gov_token_balance",
                 "token_price"
               ],
               "properties": {
+                "initial_gov_token_balance": {
+                  "$ref": "#/definitions/Uint128"
+                },
                 "token_price": {
                   "description": "The token price in number of tokens per native token (ex. uJuno).",
                   "allOf": [
@@ -169,9 +182,13 @@
             "cancelled": {
               "type": "object",
               "required": [
+                "initial_gov_token_balance",
                 "token_price"
               ],
               "properties": {
+                "initial_gov_token_balance": {
+                  "$ref": "#/definitions/Uint128"
+                },
                 "token_price": {
                   "$ref": "#/definitions/Decimal"
                 }
@@ -190,9 +207,13 @@
             "funded": {
               "type": "object",
               "required": [
+                "initial_gov_token_balance",
                 "token_price"
               ],
               "properties": {
+                "initial_gov_token_balance": {
+                  "$ref": "#/definitions/Uint128"
+                },
                 "token_price": {
                   "$ref": "#/definitions/Decimal"
                 }

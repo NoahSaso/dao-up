@@ -72,12 +72,20 @@
       "type": "object",
       "required": [
         "description",
+        "description_image_urls",
         "hidden",
         "name"
       ],
       "properties": {
         "description": {
           "type": "string"
+        },
+        "description_image_urls": {
+          "description": "The image URLs displayed with the campaign's description.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "discord": {
           "type": [
@@ -88,14 +96,15 @@
         "hidden": {
           "type": "boolean"
         },
-        "image_url": {
+        "name": {
+          "type": "string"
+        },
+        "profile_image_url": {
+          "description": "The image URL used as the campaign's profile photo.",
           "type": [
             "string",
             "null"
           ]
-        },
-        "name": {
-          "type": "string"
         },
         "twitter": {
           "type": [

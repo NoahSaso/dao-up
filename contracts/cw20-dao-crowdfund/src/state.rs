@@ -14,7 +14,7 @@ pub struct Campaign {
     pub discord: Option<String>,
     /// The image URL used as the campaign's profile photo.
     pub profile_image_url: Option<String>,
-    /// The image URL used as the campaign's description.
+    /// The image URLs displayed with the campaign's description.
     pub description_image_urls: Vec<String>,
 
     pub hidden: bool,

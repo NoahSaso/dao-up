@@ -87,7 +87,8 @@ declare global {
     discord?: string
     profileImageUrl?: string
 
-    descriptionImageUrls?: string[]
+    descriptionImageUrls: string[]
+    // Optional so it can be deleted.
     _descriptionImageUrls?: { url: string }[]
   }
 
