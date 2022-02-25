@@ -10,6 +10,8 @@ interface AlertProps {
   title: string
   visible: boolean
   hide?: () => void
+  // Display Alert below global loader display. Default above.
+  belowLoaders?: boolean
 }
 
 export const Alert: FunctionComponent<PropsWithChildren<AlertProps>> = ({
@@ -17,15 +19,20 @@ export const Alert: FunctionComponent<PropsWithChildren<AlertProps>> = ({
   title,
   visible,
   hide,
+  belowLoaders = false,
 }) => (
   <div
     className={cn(
-      "flex justify-center items-center fixed z-50 bg-dark/90 top-0 right-0 bottom-0 left-0 transition",
+      "flex justify-center items-center fixed bg-dark/90 top-0 right-0 bottom-0 left-0 transition",
       {
         "cursor-pointer": hide,
 
         "opacity-0 pointer-events-none": !visible,
         "opacity-100": visible,
+      },
+      {
+        "z-50": !belowLoaders,
+        "z-30": belowLoaders,
       }
     )}
     onClick={
