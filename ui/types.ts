@@ -162,8 +162,8 @@ declare global {
 }
 
 export enum CampaignContractVersion {
-  v1 = "1",
-  v2 = "2",
+  v1 = "0.1.0",
+  v2 = "0.2.0",
 }
 
 export enum Status {
