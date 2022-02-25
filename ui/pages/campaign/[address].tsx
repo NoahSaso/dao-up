@@ -391,7 +391,6 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
       <Alert
         visible={status === CampaignStatus.Funded && !!fundingTokenBalance}
         title="Campaign funded!"
-        belowLoaders
       >
         <p>
           Now join the{" "}
@@ -467,7 +466,6 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
         hide={() => setShowEditCampaignAlert(false)}
         title="Update campaign"
         className="!max-w-4xl"
-        belowLoaders
       >
         <p className="mb-5">
           This form will submit a new proposal to the{" "}
