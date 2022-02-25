@@ -8,7 +8,8 @@ import {
   useRef,
   useState,
 } from "react"
-import { IoChevronBack, IoChevronForward } from "react-icons/io5"
+import { HiOutlineArrowsExpand } from "react-icons/hi"
+import { IoChevronBack, IoChevronForward, IoClose } from "react-icons/io5"
 
 import { Button } from "@/components"
 import { useRefCallback, useWindowSize } from "@/hooks"
@@ -22,14 +23,24 @@ interface ChildOffset {
 type CarouselProps = PropsWithChildren<{
   className?: string
   childContainerClassName?: string
+
+  allowExpand?: boolean
+  // Display close button between nav.
+  onShrink?: () => void
 }>
 
-export const Carousel: FunctionComponent<CarouselProps> = ({
-  className,
-  children,
-  childContainerClassName,
-}) => {
+export const Carousel: FunctionComponent<CarouselProps> = (props) => {
+  const {
+    className,
+    children,
+    childContainerClassName,
+
+    allowExpand = false,
+    onShrink,
+  } = props
+
   const { width: windowWidth } = useWindowSize()
+  const [expanded, setExpanded] = useState(false)
 
   const scrollContainer = useRef<HTMLDivElement | null>(null)
   // childOffsets will be equal to children.length - 2, due to padding.
@@ -227,53 +238,89 @@ export const Carousel: FunctionComponent<CarouselProps> = ({
   )
 
   return (
-    <div className={cn("flex flex-col items-center", className)}>
+    <>
       <div
-        className="flex flex-row justify-start items-center gap-4 snap-x snap-mandatory overflow-x-auto w-full no-scrollbar"
-        ref={setScrollContainer}
+        className={cn("flex flex-col justify-center items-center", className)}
       >
-        {/* Allow first element to snap to center. */}
-        <div className="snap-none shrink-0 w-1/2 h-[1px]"></div>
+        <div
+          className="flex flex-row justify-start items-center gap-4 snap-x snap-mandatory overflow-x-auto w-full no-scrollbar"
+          ref={setScrollContainer}
+        >
+          {/* Allow first element to snap to center. */}
+          <div className="snap-none shrink-0 w-1/2 h-[1px]"></div>
 
-        {Children.map(children, (child, index) => (
-          <div
-            className={cn(
-              "snap-center shrink-0 max-w-full",
-              childContainerClassName
-            )}
-            key={index}
-          >
-            {child}
+          {Children.map(children, (child, index) => (
+            <div
+              className={cn(
+                "snap-center shrink-0 max-w-full",
+                childContainerClassName
+              )}
+              key={index}
+            >
+              {child}
+            </div>
+          ))}
+
+          {/* Allow last element to snap to center. */}
+          <div className="snap-none shrink-0 w-1/2 h-[1px]"></div>
+        </div>
+
+        {navVisible && !!childOffsets.current && (
+          <div className="flex flex-row gap-8 mt-5 text-green">
+            <Button
+              onClick={() => move(false)}
+              bare
+              // Cannot move backward if centered child is equal to first child.
+              // centeredChildNum is index offset by 1 due to padding elements, so if equal to 1, first child is centered.
+              disabled={activeChildNum <= 1}
+            >
+              <IoChevronBack size={24} />
+            </Button>
+
+            {allowExpand ? (
+              <Button onClick={() => setExpanded(true)} bare>
+                <HiOutlineArrowsExpand size={20} />
+              </Button>
+            ) : !!onShrink ? (
+              <Button onClick={onShrink} bare>
+                <IoClose size={28} />
+              </Button>
+            ) : null}
+
+            <Button
+              onClick={() => move(true)}
+              bare
+              // Cannot move forward if centered child is equal to last child.
+              // centeredChildNum is index offset by 1 due to padding elements, so if equal to length, last child is centered.
+              disabled={activeChildNum >= childOffsets.current.length}
+            >
+              <IoChevronForward size={24} />
+            </Button>
           </div>
-        ))}
-
-        {/* Allow last element to snap to center. */}
-        <div className="snap-none shrink-0 w-1/2 h-[1px]"></div>
+        )}
       </div>
 
-      {navVisible && !!childOffsets.current && (
-        <div className="flex flex-row gap-8 mt-5">
-          <Button
-            onClick={() => move(false)}
-            bare
-            // Cannot move backward if centered child is equal to first child.
-            // centeredChildNum is index offset by 1 due to padding elements, so if equal to 1, first child is centered.
-            disabled={activeChildNum <= 1}
-          >
-            <IoChevronBack className="text-green" size={24} />
-          </Button>
-
-          <Button
-            onClick={() => move(true)}
-            bare
-            // Cannot move forward if centered child is equal to last child.
-            // centeredChildNum is index offset by 1 due to padding elements, so if equal to length, last child is centered.
-            disabled={activeChildNum >= childOffsets.current.length}
-          >
-            <IoChevronForward className="text-green" size={24} />
-          </Button>
+      {allowExpand && (
+        <div
+          className={cn(
+            "flex justify-center items-center fixed z-30 bg-dark/90 top-0 right-0 bottom-0 left-0 transition",
+            {
+              "opacity-0 pointer-events-none": !expanded,
+              "opacity-100": expanded,
+            }
+          )}
+          onClick={({ target, currentTarget }) =>
+            target === currentTarget && setExpanded(false)
+          }
+        >
+          <Carousel
+            {...props}
+            className="w-5/6 max-w-3xl h-[90vh] max-h-[42rem]"
+            allowExpand={false}
+            onShrink={() => setExpanded(false)}
+          />
         </div>
       )}
-    </div>
+    </>
   )
 }

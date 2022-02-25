@@ -349,7 +349,6 @@ const CreateContent = () => {
                 descriptionImageUrls={campaign_DescriptionImageUrls?.map(
                   ({ url }) => url
                 )}
-                smallerCarousel
               />
             </div>
           ) : (
