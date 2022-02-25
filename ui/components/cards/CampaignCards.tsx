@@ -45,7 +45,7 @@ const CampaignCardWrapper: FunctionComponent<CampaignCardWrapperProps> = ({
           "sm:flex-row": !forceColumn,
         })}
       >
-        <CampaignImage imageUrl={campaign.imageUrl} />
+        <CampaignImage imageUrl={campaign.profileImageUrl} />
         <div
           className={cn(
             "flex flex-col items-stretch flex-1",

@@ -34,11 +34,11 @@ import {
 } from "@/components"
 import {
   baseUrl,
+  currentEscrowContractCodeId,
   cw20CodeId,
   daoUpDAOAddress,
   daoUpFee,
   daoUpFeeNum,
-  escrowContractCodeId,
   minPayTokenSymbol,
   payTokenSymbol,
   title,
@@ -107,31 +107,32 @@ const CreateContent = () => {
     setValue,
   } = useForm<NewCampaign>({ defaultValues: defaultNewCampaign })
 
-  // imageUrls list
+  // descriptionImageUrls list
   const {
-    fields: imageUrlsFields,
-    append: imageUrlsAppend,
-    remove: imageUrlsRemove,
-    move: imageUrlsMove,
+    fields: descriptionImageUrlsFields,
+    append: descriptionImageUrlsAppend,
+    remove: descriptionImageUrlsRemove,
+    move: descriptionImageUrlsMove,
   } = useFieldArray({
     control,
-    name: "_imageUrls",
+    name: "_descriptionImageUrls",
   })
-  // New Image URL
-  const [newImageUrl, setNewImageUrl] = useState("")
-  const [newImageUrlError, setNewImageUrlError] = useState("")
-  const newImageUrlRef = useRef<HTMLInputElement>(null)
-  const addNewImageUrl = () => {
-    if (newImageUrl.match(urlPattern.value)) {
-      imageUrlsAppend({ url: newImageUrl })
-      setNewImageUrl("")
-      setNewImageUrlError("")
+  // New Description Image URL
+  const [newDescriptionImageUrl, setNewDescriptionImageUrl] = useState("")
+  const [newDescriptionImageUrlError, setNewDescriptionImageUrlError] =
+    useState("")
+  const newDescriptionImageUrlRef = useRef<HTMLInputElement>(null)
+  const addNewDescriptionImageUrl = () => {
+    if (newDescriptionImageUrl.match(urlPattern.value)) {
+      descriptionImageUrlsAppend({ url: newDescriptionImageUrl })
+      setNewDescriptionImageUrl("")
+      setNewDescriptionImageUrlError("")
     } else {
-      setNewImageUrlError(urlPattern.message)
+      setNewDescriptionImageUrlError(urlPattern.message)
     }
 
     // Just pressed add button, refocus on input.
-    newImageUrlRef.current?.focus()
+    newDescriptionImageUrlRef.current?.focus()
   }
 
   // Automatically verify DAO contract address exists on chain.
@@ -164,8 +165,8 @@ const CreateContent = () => {
   const campaignWebsite = validUrlOrUndefined(watch("website"))
   const campaignDiscord = validUrlOrUndefined(watch("discord"))
   const campaignTwitter = watch("twitter")
-  const campaignImageUrl = validUrlOrUndefined(watch("imageUrl"))
-  const campaignImageUrls = watch("_imageUrls")
+  const campaignProfileImageUrl = validUrlOrUndefined(watch("profileImageUrl"))
+  const campaign_DescriptionImageUrls = watch("_descriptionImageUrls")
 
   const [showCampaignDescriptionPreview, setShowCampaignDescriptionPreview] =
     useState(false)
@@ -219,15 +220,19 @@ const CreateContent = () => {
           ...(newCampaign.twitter && { twitter: newCampaign.twitter }),
           ...(newCampaign.discord && { discord: newCampaign.discord }),
 
-          ...(newCampaign.imageUrl && { image_url: newCampaign.imageUrl }),
-          ...(newCampaign.imageUrls && { image_urls: newCampaign.imageUrls }),
+          ...(newCampaign.profileImageUrl && {
+            profile_image_url: newCampaign.profileImageUrl,
+          }),
+          ...(newCampaign.descriptionImageUrls && {
+            description_image_urls: newCampaign.descriptionImageUrls,
+          }),
         },
       }
 
       try {
         const { contractAddress } = await client.instantiate(
           walletAddress,
-          escrowContractCodeId,
+          currentEscrowContractCodeId,
           msg,
           `[DAO Up!] ${newCampaign.name}`,
           "auto"
@@ -264,11 +269,10 @@ const CreateContent = () => {
       newCampaignValues.description = newCampaignValues.description.trim()
       newCampaignValues.tokenName = newCampaignValues.tokenName.trim()
       newCampaignValues.tokenSymbol = newCampaignValues.tokenSymbol.trim()
-      // Transform _imageUrls objects into strings.
-      newCampaignValues.imageUrls = newCampaignValues._imageUrls?.map(
-        ({ url }) => url
-      )
-      delete newCampaignValues._imageUrls
+      // Transform _descriptionImageUrls objects into strings.
+      newCampaignValues.descriptionImageUrls =
+        newCampaignValues._descriptionImageUrls?.map(({ url }) => url)
+      delete newCampaignValues._descriptionImageUrls
 
       const address = await createCampaign(newCampaignValues)
 
@@ -341,8 +345,10 @@ const CreateContent = () => {
                 website={campaignWebsite}
                 twitter={campaignTwitter}
                 discord={campaignDiscord}
-                imageUrl={campaignImageUrl}
-                imageUrls={campaignImageUrls?.map(({ url }) => url)}
+                profileImageUrl={campaignProfileImageUrl}
+                descriptionImageUrls={campaign_DescriptionImageUrls?.map(
+                  ({ url }) => url
+                )}
                 smallerCarousel
               />
             </div>
@@ -383,62 +389,63 @@ const CreateContent = () => {
                   type="url"
                   spellCheck={false}
                   autoCorrect="off"
-                  error={errors.imageUrl?.message}
+                  error={errors.profileImageUrl?.message}
                   // Warn user that SVGs will not be supported in link previews.
                   accent={
-                    campaignImageUrl?.endsWith(".svg")
+                    campaignProfileImageUrl?.endsWith(".svg")
                       ? "SVG images will not show up in link previews. We recommend using a JPG or PNG instead."
                       : undefined
                   }
-                  {...register("imageUrl", {
+                  {...register("profileImageUrl", {
                     required: false,
                     pattern: urlPattern,
                   })}
                 />
 
                 <FormWrapper label="Carousel Image URLs">
-                  {/* Form to add new image URLs. */}
+                  {/* Add new description image URL. */}
                   <FormInput
                     placeholder="https://your.campaign/campaign-1.png"
                     type="url"
                     spellCheck={false}
                     autoCorrect="off"
-                    error={newImageUrlError}
-                    value={newImageUrl}
+                    error={newDescriptionImageUrlError}
+                    value={newDescriptionImageUrl}
                     onInput={(e) => {
-                      setNewImageUrl(e.currentTarget.value)
-                      newImageUrlError && setNewImageUrlError("")
+                      setNewDescriptionImageUrl(e.currentTarget.value)
+                      newDescriptionImageUrlError &&
+                        setNewDescriptionImageUrlError("")
                     }}
                     // Add image on enter key press.
                     onKeyPress={(e) => {
                       if (e.key === "Enter") {
-                        addNewImageUrl()
+                        addNewDescriptionImageUrl()
                         e.preventDefault()
                       }
                     }}
                     wrapperClassName={cn({
-                      "!mb-0": imageUrlsFields.length === 0,
-                      "!mb-2": imageUrlsFields.length > 0,
+                      "!mb-0": descriptionImageUrlsFields.length === 0,
+                      "!mb-2": descriptionImageUrlsFields.length > 0,
                     })}
-                    ref={newImageUrlRef}
+                    ref={newDescriptionImageUrlRef}
                   >
                     <Button
                       outline
                       color="green"
                       type="button"
-                      onClick={addNewImageUrl}
+                      onClick={addNewDescriptionImageUrl}
                     >
                       <IoAdd size={24} />
                     </Button>
                   </FormInput>
 
-                  {imageUrlsFields.map((field, index) => (
+                  {descriptionImageUrlsFields.map((field, index) => (
                     <ImageUrlField
                       key={field.id}
                       index={index}
                       field={field}
-                      remove={() => imageUrlsRemove(index)}
-                      move={(from, to) => imageUrlsMove(from, to)}
+                      remove={() => descriptionImageUrlsRemove(index)}
+                      move={(from, to) => descriptionImageUrlsMove(from, to)}
                     />
                   ))}
                 </FormWrapper>

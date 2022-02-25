@@ -42,7 +42,7 @@ import {
   fetchCampaignActions,
   walletTokenBalance,
 } from "@/state"
-import { Status } from "@/types"
+import { CampaignContractVersion, Status } from "@/types"
 
 const campaigns404Path = "/campaigns?404"
 
@@ -96,21 +96,22 @@ export const Campaign: NextPage<CampaignStaticProps> = ({ campaign }) => {
           <title>DAO Up! | Loading...</title>
         )}
 
-        {!!campaign?.imageUrl && (
+        {!!campaign?.profileImageUrl && (
           <meta
             name="twitter:image"
-            content={campaign.imageUrl}
+            content={campaign.profileImageUrl}
             key="twitter:image"
           />
         )}
         {/* OpenGraph does not support SVG images. */}
-        {!!campaign?.imageUrl && !campaign.imageUrl.endsWith(".svg") && (
-          <meta
-            property="og:image"
-            content={campaign.imageUrl}
-            key="og:image"
-          />
-        )}
+        {!!campaign?.profileImageUrl &&
+          !campaign.profileImageUrl.endsWith(".svg") && (
+            <meta
+              property="og:image"
+              content={campaign.profileImageUrl}
+              key="og:image"
+            />
+          )}
       </Head>
 
       <ResponsiveDecoration
@@ -146,7 +147,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
     contents: { campaign: latestCampaign },
   } = useRecoilValueLoadable(fetchCampaign(campaignAddress))
   // Use just-fetched campaign over pre-loaded campaign, defaulting to pre-loaded.
-  const campaign =
+  const campaign: Campaign =
     (latestCampaignState === "hasValue" && latestCampaign) || preLoadedCampaign
 
   // Funding token balance to add 'Join DAO' message to funded banner on top.
@@ -211,6 +212,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   if (!campaign) return null
 
   const {
+    version,
     name,
     status,
 
@@ -291,8 +293,14 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
           <div className="flex flex-col self-stretch gap-8 flex-1">
             <CampaignInfoCard campaign={campaign} className="hidden lg:block" />
 
-            {/* TODO: Show for funded campaigns by storing initial fund amount in contract state and use that instead (since govTokenCampaignBalance won't remain constant). */}
-            {status === Status.Open && <GovernanceCard campaign={campaign} />}
+            {/* v1 contract does not store initial gov token funding amount. The govToken.campaignBalance is wrong after it is funded since people start joining the DAO which drains the campaign's gov token balance. */}
+            {version === CampaignContractVersion.v1
+              ? // Only show if open since the balance is accurate.
+                status === Status.Open && <GovernanceCard campaign={campaign} />
+              : // All newer contracts can show the balance after pending.
+                status !== Status.Pending && (
+                  <GovernanceCard campaign={campaign} />
+                )}
           </div>
         </div>
 

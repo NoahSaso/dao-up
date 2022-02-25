@@ -15,13 +15,24 @@ declare global {
     when?: Date
   }
 
-  interface Campaign {
+  // These are retrieved differently for different Campaign contract versions.
+  interface VersionedCampaignFields {
+    profileImageUrl?: string
+    descriptionImageUrls: string[]
+    govToken: {
+      campaignBalance: number
+    }
+  }
+
+  interface Campaign extends VersionedCampaignFields {
+    version: CampaignContractVersion
+
     address: string
     name: string
     description: string
     urlPath: string
-    imageUrl?: string
-    imageUrls?: string[]
+    profileImageUrl?: string
+    descriptionImageUrls: string[]
 
     status: Status
     creator: string
@@ -74,10 +85,10 @@ declare global {
     website?: string
     twitter?: string
     discord?: string
-    imageUrl?: string
+    profileImageUrl?: string
 
-    imageUrls?: string[]
-    _imageUrls?: { url: string }[]
+    descriptionImageUrls?: string[]
+    _descriptionImageUrls?: { url: string }[]
   }
 
   interface PageInfo {
@@ -149,12 +160,35 @@ declare global {
   }
 }
 
+export enum CampaignContractVersion {
+  v1 = "1",
+  v2 = "2",
+}
+
 export enum Status {
   Pending = "pending",
   Open = "open",
   Cancelled = "cancelled",
   Funded = "funded",
 }
+
+export type StatusFields<
+  V extends CampaignContractVersion,
+  S extends Status
+> = V extends CampaignContractVersion.v1
+  ? S extends Status.Pending
+    ? {}
+    : {
+        token_price: number
+      }
+  : V extends CampaignContractVersion.v2
+  ? S extends Status.Pending
+    ? {}
+    : {
+        token_price: number
+        initial_gov_token_balance: number
+      }
+  : {}
 
 export enum Color {
   Green = "green",

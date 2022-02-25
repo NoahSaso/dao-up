@@ -11,8 +11,8 @@ interface CampaignDetailsProps {
   website?: string
   discord?: string
   twitter?: string
-  imageUrl?: string
-  imageUrls?: string[]
+  profileImageUrl?: string
+  descriptionImageUrls?: string[]
   smallerCarousel?: boolean
 }
 
@@ -22,14 +22,14 @@ export const CampaignDetails: FunctionComponent<CampaignDetailsProps> = ({
   website,
   twitter,
   discord,
-  imageUrl,
-  imageUrls,
+  profileImageUrl,
+  descriptionImageUrls,
   smallerCarousel = false,
 }) => (
   <div className="flex flex-col text-left">
     <div className="flex flex-col text-center items-center md:flex-row md:items-start md:text-left">
       <CampaignImage
-        imageUrl={imageUrl}
+        imageUrl={profileImageUrl}
         size={139}
         className="mb-4 md:mb-0 md:mr-4"
       />
@@ -63,7 +63,7 @@ export const CampaignDetails: FunctionComponent<CampaignDetailsProps> = ({
       </div>
     </div>
 
-    {!!imageUrls?.length && (
+    {!!descriptionImageUrls?.length && (
       <Carousel
         className={cn("my-4", {
           "h-[19rem]": !smallerCarousel,
@@ -71,7 +71,7 @@ export const CampaignDetails: FunctionComponent<CampaignDetailsProps> = ({
         })}
         childContainerClassName="w-full h-full"
       >
-        {imageUrls.map((src, index) => (
+        {descriptionImageUrls.map((src, index) => (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             key={index}
