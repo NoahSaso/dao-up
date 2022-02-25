@@ -1,5 +1,6 @@
 import cn from "classnames"
 import { FunctionComponent } from "react"
+import { CampaignContractVersion } from "types/campaign"
 
 import {
   Button,
@@ -27,6 +28,7 @@ export const CampaignInfoCard: FunctionComponent<CampaignInfoCardProps> = ({
   className,
 }) => {
   const {
+    version,
     pledged,
     goal,
     dao: { url: daoUrl },
@@ -39,7 +41,8 @@ export const CampaignInfoCard: FunctionComponent<CampaignInfoCardProps> = ({
       <div className="flex flex-row justify-between items-center self-stretch mb-4">
         <CampaignStatusIndicator campaign={campaign} />
         <div className="flex flex-row items-center gap-4">
-          {hasGovToken && (
+          {/* v1 contracts cannot be edited. */}
+          {hasGovToken && version !== CampaignContractVersion.v1 && (
             <Button
               className="flex justify-center items-center"
               onClick={showEdit}
