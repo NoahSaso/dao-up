@@ -14,7 +14,8 @@
     "funds_raised",
     "gov_token_addr",
     "gov_token_info",
-    "status"
+    "status",
+    "version"
   ],
   "properties": {
     "campaign_info": {
@@ -52,6 +53,9 @@
     },
     "status": {
       "$ref": "#/definitions/Status"
+    },
+    "version": {
+      "type": "string"
     }
   },
   "definitions": {
