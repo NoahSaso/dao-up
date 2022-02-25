@@ -10,6 +10,7 @@ interface AlertProps {
   title: string
   visible: boolean
   hide?: () => void
+  className?: string
 }
 
 export const Alert: FunctionComponent<PropsWithChildren<AlertProps>> = ({
@@ -17,6 +18,7 @@ export const Alert: FunctionComponent<PropsWithChildren<AlertProps>> = ({
   title,
   visible,
   hide,
+  className,
 }) => (
   <div
     className={cn(
@@ -34,7 +36,12 @@ export const Alert: FunctionComponent<PropsWithChildren<AlertProps>> = ({
         : undefined
     }
   >
-    <CardWrapper className="flex flex-col justify-start items-start relative m-8 max-w-xl max-h-[90vh] overflow-y-auto cursor-auto">
+    <CardWrapper
+      className={cn(
+        "flex flex-col justify-start items-start relative m-8 max-w-xl max-h-[90vh] overflow-y-auto cursor-auto",
+        className
+      )}
+    >
       {!!hide && (
         <Button
           onClick={hide}

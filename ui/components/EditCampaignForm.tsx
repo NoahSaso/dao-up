@@ -34,12 +34,13 @@ import {
 import { daoUpFeeNum, payTokenSymbol } from "@/config"
 import {
   daoAddressPattern,
+  getScrollableParent,
   numberPattern,
   prettyPrintDecimal,
   tokenSymbolPattern,
   urlPattern,
 } from "@/helpers"
-import { useWallet } from "@/hooks"
+import { useRefCallback, useWallet } from "@/hooks"
 import { globalLoadingAtom, validateDAO } from "@/state"
 
 const validUrlOrUndefined = (u: string | undefined) =>
@@ -51,7 +52,7 @@ type FormValues<T extends boolean = boolean> = T extends true
 type OnSubmitForm<T extends boolean> = SubmitHandler<FormValues<T>>
 
 type EditCampaignFormProps = {
-  title: string
+  title?: string
   submitLabel: string
   error?: string | null
 } & (
@@ -129,15 +130,26 @@ export const EditCampaignForm: FunctionComponent<EditCampaignFormProps> = ({
   const [showCampaignDescriptionPreview, setShowCampaignDescriptionPreview] =
     useState(false)
 
+  const [formScrollableParent, setFormScrollableParent] = useState<
+    HTMLElement | Window
+  >(window)
+  const formRef = useRef<HTMLFormElement | null>(null)
+  const { setRef: setFormRef } = useRefCallback<HTMLFormElement>(
+    formRef,
+    (ref) => setFormScrollableParent(getScrollableParent(ref))
+  )
+
   // Scroll to bottom of page when error is displayed.
   useEffect(() => {
-    if (error || connectError)
-      window.scrollTo({
+    if (error || connectError) {
+      // Get first scrollable parent of form.
+      formScrollableParent.scrollTo({
         left: 0,
         top: document.body.scrollHeight,
         behavior: "smooth",
       })
-  }, [error, connectError])
+    }
+  }, [formScrollableParent, error, connectError])
 
   const _onSubmit: SubmitHandler<FormValues> = useCallback(
     async (values) => {
@@ -183,9 +195,13 @@ export const EditCampaignForm: FunctionComponent<EditCampaignFormProps> = ({
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <form className="flex flex-col" onSubmit={handleSubmit(_onSubmit)}>
+      <form
+        className="flex flex-col"
+        onSubmit={handleSubmit(_onSubmit)}
+        ref={setFormRef}
+      >
         <div className="flex items-center justify-between flex-wrap gap-4 mb-8">
-          <h1 className="font-semibold text-4xl">{title}</h1>
+          {!!title && <h1 className="font-semibold text-4xl">{title}</h1>}
 
           <Button
             outline

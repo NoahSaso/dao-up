@@ -1,11 +1,11 @@
 import { toAscii, toBase64 } from "@cosmjs/encoding"
-import { findAttribute } from "@cosmjs/stargate/build/logs"
 import { useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
 import { baseUrl } from "@/config"
 import { parseError, prettyPrintDecimal } from "@/helpers"
 import { useRefreshCampaign, useWallet } from "@/hooks"
+import { createDAOProposalForCampaign } from "@/services"
 import { daoConfig, globalLoadingAtom, signedCosmWasmClient } from "@/state"
 import { CommonError } from "@/types"
 
@@ -65,7 +65,7 @@ export const useProposeFundPendingCampaign = (campaign: Campaign | null) => {
 
       const msg = {
         propose: {
-          title: `Activate DAO Up! campaign`,
+          title: "Activate DAO Up! campaign",
           description: `Send ${prettyPrintDecimal(amount)} ${
             campaign.govToken.symbol
           } to the [${campaign.name}](${
@@ -76,32 +76,13 @@ export const useProposeFundPendingCampaign = (campaign: Campaign | null) => {
       }
 
       try {
-        const daoProposalDeposit = Number(dao.config?.proposal_deposit)
-        if (!isNaN(daoProposalDeposit) && daoProposalDeposit > 0)
-          await client.execute(
-            walletAddress,
-            campaign.govToken.address,
-            {
-              increase_allowance: {
-                amount: dao.config.proposal_deposit,
-                spender: campaign.dao.address,
-              },
-            },
-            "auto"
-          )
-
-        const response = await client.execute(
+        const proposalId = await createDAOProposalForCampaign(
+          client,
           walletAddress,
-          campaign.dao.address,
-          msg,
-          "auto"
+          campaign,
+          dao,
+          msg
         )
-
-        const proposalId = findAttribute(
-          response.logs,
-          "wasm",
-          "proposal_id"
-        ).value
 
         // Update campaign state.
         refreshCampaign()

@@ -2,22 +2,28 @@ import cn from "classnames"
 import { FunctionComponent } from "react"
 
 import {
+  Button,
   ButtonLink,
   CampaignFavoriteToggle,
   CampaignProgress,
   CampaignStatusIndicator,
   CardWrapper,
+  PencilIcon,
 } from "@/components"
 import { payTokenSymbol } from "@/config"
 import { prettyPrintDecimal } from "@/helpers"
 
 interface CampaignInfoCardProps {
   campaign: Campaign
+  hasGovToken: boolean
+  showEdit: () => void
   className?: string
 }
 
 export const CampaignInfoCard: FunctionComponent<CampaignInfoCardProps> = ({
   campaign,
+  hasGovToken,
+  showEdit,
   className,
 }) => {
   const {
@@ -32,7 +38,18 @@ export const CampaignInfoCard: FunctionComponent<CampaignInfoCardProps> = ({
     >
       <div className="flex flex-row justify-between items-center self-stretch mb-4">
         <CampaignStatusIndicator campaign={campaign} />
-        <CampaignFavoriteToggle campaign={campaign} />
+        <div className="flex flex-row items-center gap-4">
+          {hasGovToken && (
+            <Button
+              className="flex justify-center items-center"
+              onClick={showEdit}
+              bare
+            >
+              <PencilIcon className="fill-green text-lg" />
+            </Button>
+          )}
+          <CampaignFavoriteToggle campaign={campaign} />
+        </div>
       </div>
 
       {!!daoUrl && (

@@ -16,6 +16,7 @@ import {
   CenteredColumn,
   ContributeForm,
   ContributionGraph,
+  EditCampaignForm,
   GovernanceCard,
   Loader,
   ProposeFundPendingCard,
@@ -25,7 +26,7 @@ import {
 } from "@/components"
 import { baseUrl, daoUrlPrefix, title } from "@/config"
 import { escrowAddressRegex, parseError } from "@/helpers"
-import { useRefundJoinDAOForm, useWallet } from "@/hooks"
+import { useRefundJoinDAOForm, useUpdateCampaign, useWallet } from "@/hooks"
 import {
   createDENSAddressMap,
   getCampaignState,
@@ -162,10 +163,20 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   const fundingTokenBalance =
     fundingTokenBalanceState === "hasValue" ? fundingTokenBalanceContents : null
 
+  // Check gov token balance to show edit campaign form.
+  const {
+    state: govTokenBalanceState,
+    contents: { balance: govTokenBalanceContents },
+  } = useRecoilValueLoadable(walletTokenBalance(campaign?.govToken?.address))
+  // Load in background and add button when ready. No need to prevent page from displaying until this is ready.
+  const hasGovToken =
+    govTokenBalanceState === "hasValue" ? !!govTokenBalanceContents : null
+
   // Display buttons to add tokens to wallet.
   const [showAddFundingToken, setShowAddFundingToken] = useState(false)
   const [showAddGovToken, setShowAddGovToken] = useState(false)
 
+  // ALERTS
   // Display successful fund pending alert by setting the URL to the proposal.
   const [fundCampaignProposalUrl, setFundCampaignProposalUrl] = useState("")
   // Display successful contribution alert.
@@ -173,6 +184,10 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
     useState(false)
   // Display successful join DAO alert.
   const [showJoinDAOSuccessAlert, setShowJoinDAOSuccessAlert] = useState(false)
+  // Display edit campaign alert.
+  const [showEditCampaignAlert, setShowEditCampaignAlert] = useState(false)
+  // Display successful edit campaign proposal alert by setting the URL to the proposal.
+  const [editCampaignProposalUrl, setEditCampaignProposalUrl] = useState("")
 
   const suggestFundingToken = async () =>
     keplr &&
@@ -206,6 +221,17 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
     fundingTokenBalance,
     onRefundJoinDAOSuccess
   )
+
+  const { editCampaign, editCampaignError, defaultEditCampaign } =
+    useUpdateCampaign(campaign, (proposalId) => {
+      // Show success message with proposal URL.
+      setEditCampaignProposalUrl(
+        `${daoUrlPrefix}${daoAddress}/proposals/${proposalId}`
+      )
+
+      // Hide update form.
+      setShowEditCampaignAlert(false)
+    })
 
   // If page not ready or is fallback, display loader.
   if (!router.isReady || router.isFallback) return <Loader overlay />
@@ -277,7 +303,12 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
               />
             ) : undefined}
 
-            <CampaignInfoCard campaign={campaign} className="lg:hidden" />
+            <CampaignInfoCard
+              campaign={campaign}
+              hasGovToken={!!hasGovToken}
+              showEdit={() => setShowEditCampaignAlert(true)}
+              className="lg:hidden"
+            />
 
             {connected && (
               <BalanceRefundJoinCard
@@ -292,7 +323,12 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
           </div>
 
           <div className="flex flex-col self-stretch gap-8 flex-1">
-            <CampaignInfoCard campaign={campaign} className="hidden lg:block" />
+            <CampaignInfoCard
+              campaign={campaign}
+              hasGovToken={!!hasGovToken}
+              showEdit={() => setShowEditCampaignAlert(true)}
+              className="hidden lg:block"
+            />
 
             {/* v1 contract does not store initial gov token funding amount. The govToken.campaignBalance is wrong after it is funded since people start joining the DAO which drains the campaign's gov token balance. */}
             {version === CampaignContractVersion.v1
@@ -404,6 +440,56 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
 
         <ButtonLink href={daoUrl} className="mt-5" cardOutline>
           Visit the DAO
+        </ButtonLink>
+      </Alert>
+
+      {/* Edit campaign alert. */}
+      <Alert
+        visible={showEditCampaignAlert}
+        hide={() => setShowEditCampaignAlert(false)}
+        title="Update campaign"
+        className="!max-w-4xl"
+      >
+        <p className="mb-5">
+          This form will submit a new proposal to the{" "}
+          {daoUrl ? (
+            <a
+              href={daoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:no-underline"
+            >
+              DAO
+            </a>
+          ) : (
+            "DAO"
+          )}{" "}
+          on DAO DAO. Once this proposal is approved and executed, the campaign
+          will be updated.
+        </p>
+
+        <EditCampaignForm
+          submitLabel="Create update proposal"
+          error={editCampaignError}
+          creating={false}
+          defaultValues={defaultEditCampaign}
+          onSubmit={editCampaign}
+        />
+      </Alert>
+
+      {/* Edit campaign proposal successfully created alert. */}
+      <Alert
+        visible={!!editCampaignProposalUrl}
+        hide={() => setEditCampaignProposalUrl("")}
+        title="Proposal created!"
+      >
+        <p>
+          This campaign will update once the proposal is approved and executed
+          on DAO DAO. Refresh this page after the proposal executes.
+        </p>
+
+        <ButtonLink href={editCampaignProposalUrl} className="mt-5" cardOutline>
+          View Proposal
         </ButtonLink>
       </Alert>
     </>

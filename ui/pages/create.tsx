@@ -99,9 +99,7 @@ const CreateContent = () => {
           ...(newCampaign.profileImageUrl && {
             profile_image_url: newCampaign.profileImageUrl,
           }),
-          ...(newCampaign.descriptionImageUrls && {
-            description_image_urls: newCampaign.descriptionImageUrls,
-          }),
+          description_image_urls: newCampaign.descriptionImageUrls,
         },
       }
 
@@ -127,7 +125,6 @@ const CreateContent = () => {
           })
         )
       }
-      // Don't stop loading until we've redirected or not. Handled elsewhere.
     },
     [client, walletAddress, setCreateCampaignError, routerPush]
   )
