@@ -7,6 +7,8 @@ import { CampaignContractVersion, Status, StatusFields } from "@/types"
 
 export const defaultNewCampaign: Partial<NewCampaign> = {
   hidden: false,
+  descriptionImageUrls: [],
+  _descriptionImageUrls: [],
 }
 
 export const campaignsFromResponses = (

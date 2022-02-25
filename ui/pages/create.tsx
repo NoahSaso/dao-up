@@ -271,7 +271,7 @@ const CreateContent = () => {
       newCampaignValues.tokenSymbol = newCampaignValues.tokenSymbol.trim()
       // Transform _descriptionImageUrls objects into strings.
       newCampaignValues.descriptionImageUrls =
-        newCampaignValues._descriptionImageUrls?.map(({ url }) => url)
+        newCampaignValues._descriptionImageUrls?.map(({ url }) => url) ?? []
       delete newCampaignValues._descriptionImageUrls
 
       const address = await createCampaign(newCampaignValues)

@@ -238,6 +238,61 @@ fn fund_escrow_from_dao(app: &mut App, dao_addr: Addr, escrow_addr: Addr, tokens
     app.update_block(next_block);
 }
 
+fn update_campaign_from_dao(
+    app: &mut App,
+    dao_addr: Addr,
+    escrow_addr: Addr,
+    new_campaign: Campaign,
+) {
+    // Create the proposal.
+    let propose_msg = cw3_dao::msg::ExecuteMsg::Propose(cw3_dao::msg::ProposeMsg {
+        title: "Seed the Bong DAO fundraising escrow contract".to_string(),
+        description: "Update the Bong DAO config.".to_string(),
+        msgs: vec![cosmwasm_std::CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: escrow_addr.to_string(),
+            msg: to_binary(&ExecuteMsg::UpdateCampaign {
+                campaign: new_campaign,
+            })
+            .unwrap(),
+            funds: vec![],
+        })],
+        latest: None,
+    });
+    app.execute_contract(
+        Addr::unchecked(CREATOR_ADDR),
+        dao_addr.clone(),
+        &propose_msg,
+        &[],
+    )
+    .unwrap();
+    app.update_block(next_block);
+
+    // Pass the proposal.
+    let yes_vote = cw3_dao::msg::ExecuteMsg::Vote(cw3_dao::msg::VoteMsg {
+        proposal_id: 2,
+        vote: cw3::Vote::Yes,
+    });
+    app.execute_contract(
+        Addr::unchecked(CREATOR_ADDR),
+        dao_addr.clone(),
+        &yes_vote,
+        &[],
+    )
+    .unwrap();
+    app.update_block(next_block);
+
+    // Execute the proposal.
+    let execute = cw3_dao::msg::ExecuteMsg::Execute { proposal_id: 2 };
+    app.execute_contract(
+        Addr::unchecked(CREATOR_ADDR),
+        dao_addr.clone(),
+        &execute,
+        &[],
+    )
+    .unwrap();
+    app.update_block(next_block);
+}
+
 fn close_escrow_from_dao(app: &mut App, dao_addr: Addr, escrow_addr: Addr) {
     // Create the proposal.
     let propose_msg = cw3_dao::msg::ExecuteMsg::Propose(cw3_dao::msg::ProposeMsg {
@@ -377,6 +432,58 @@ fn test_campaign_creation_with_evil_cw20_silent_fail() {
         .unwrap();
     let expected_balance = Uint128::from(100_000_000_000u64);
     assert_eq!(balance.balance, expected_balance);
+}
+
+#[test]
+fn test_campaign_update() {
+    let mut app = App::default();
+    let cw20_id = app.store_code(cw20_contract());
+    let dao_id = app.store_code(dao_dao_dao_contract());
+    let stake_id = app.store_code(stake_cw20_contract());
+    let escrow_id = app.store_code(escrow_contract());
+
+    let dao_addr = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
+    let escrow_addr =
+        instantiate_escrow(&mut app, dao_addr.clone(), escrow_id, cw20_id, 100_000_000);
+
+    fund_escrow_from_dao(&mut app, dao_addr.clone(), escrow_addr.clone(), 100_000_000);
+
+    let new_campaign = Campaign {
+        name: "A totally new name".to_string(),
+        description: "For a totally new campaign".to_string(),
+        website: Some("https://moonphase.is".to_string()),
+        twitter: None,
+        discord: None,
+        profile_image_url: Some("https://moonphase.is/image.svg".to_string()),
+        description_image_urls: vec!["https://moonphase.is/image.svg".to_string()],
+        hidden: false,
+    };
+
+    update_campaign_from_dao(
+        &mut app,
+        dao_addr,
+        escrow_addr.clone(),
+        new_campaign.clone(),
+    );
+
+    let state: DumpStateResponse = app
+        .wrap()
+        .query_wasm_smart(escrow_addr.clone(), &QueryMsg::DumpState {})
+        .unwrap();
+
+    assert_eq!(state.campaign_info, new_campaign);
+
+    // Try and update the campaign from an unauthorized address.
+    let update_message = ExecuteMsg::UpdateCampaign {
+        campaign: new_campaign,
+    };
+    app.execute_contract(
+        Addr::unchecked(CREATOR_ADDR),
+        escrow_addr.clone(),
+        &update_message,
+        &[],
+    )
+    .unwrap_err();
 }
 
 #[test]

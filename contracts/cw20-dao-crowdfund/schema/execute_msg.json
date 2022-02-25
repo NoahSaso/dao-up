@@ -40,12 +40,85 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "description": "Replaces the campaign's campaign information with `campaign`.",
+      "type": "object",
+      "required": [
+        "update_campaign"
+      ],
+      "properties": {
+        "update_campaign": {
+          "type": "object",
+          "required": [
+            "campaign"
+          ],
+          "properties": {
+            "campaign": {
+              "$ref": "#/definitions/Campaign"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {
     "Binary": {
       "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>",
       "type": "string"
+    },
+    "Campaign": {
+      "type": "object",
+      "required": [
+        "description",
+        "description_image_urls",
+        "hidden",
+        "name"
+      ],
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "description_image_urls": {
+          "description": "The image URLs displayed with the campaign's description.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "discord": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "profile_image_url": {
+          "description": "The image URL used as the campaign's profile photo.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "twitter": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "website": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
     },
     "Cw20ReceiveMsg": {
       "description": "Cw20ReceiveMsg should be de/serialized under `Receive()` variant in a ExecuteMsg",

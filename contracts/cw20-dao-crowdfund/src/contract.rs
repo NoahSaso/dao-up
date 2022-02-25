@@ -10,7 +10,7 @@ use cw_utils::parse_reply_instantiate_data;
 
 use crate::error::ContractError;
 use crate::msg::{DumpStateResponse, ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::state::Status;
+use crate::state::{Campaign, Status};
 use crate::state::{State, FUNDING_TOKEN_ADDR, GOV_TOKEN_ADDR, STATE};
 
 const CONTRACT_NAME: &str = "crates.io:cw20-dao-crowdfund";
@@ -104,7 +104,28 @@ pub fn execute(
         ExecuteMsg::Fund {} => execute_fund(deps, &info.funds, info.sender),
         ExecuteMsg::Receive(msg) => execute_receive(deps, msg, info.sender),
         ExecuteMsg::Close {} => execute_close(deps, env, info.sender),
+        ExecuteMsg::UpdateCampaign { campaign } => {
+            execute_update_campaign(deps, campaign, info.sender)
+        }
     }
+}
+
+pub fn execute_update_campaign(
+    deps: DepsMut,
+    new_campaign_info: Campaign,
+    sender: Addr,
+) -> Result<Response, ContractError> {
+    let mut state = STATE.load(deps.storage)?;
+    if sender != state.dao_addr {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    state.campaign_info = new_campaign_info;
+    STATE.save(deps.storage, &state)?;
+
+    Ok(Response::default()
+        .add_attribute("action", "update_campaign")
+        .add_attribute("sender", sender))
 }
 
 pub fn execute_close(deps: DepsMut, env: Env, sender: Addr) -> Result<Response, ContractError> {

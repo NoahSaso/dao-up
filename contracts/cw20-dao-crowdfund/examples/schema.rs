@@ -5,6 +5,7 @@ use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 
 use cw20_dao_crowdfund::msg::DumpStateResponse;
 use cw20_dao_crowdfund::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
+use cw20_dao_crowdfund::state::Campaign;
 use cw20_dao_crowdfund::state::State;
 
 fn main() {
@@ -18,4 +19,5 @@ fn main() {
     export_schema(&schema_for!(QueryMsg), &out_dir);
     export_schema(&schema_for!(State), &out_dir);
     export_schema(&schema_for!(DumpStateResponse), &out_dir);
+    export_schema(&schema_for!(Campaign), &out_dir);
 }
