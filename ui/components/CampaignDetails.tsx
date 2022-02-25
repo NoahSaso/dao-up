@@ -1,30 +1,35 @@
+import cn from "classnames"
 import { FunctionComponent } from "react"
 import { FaDiscord, FaTwitter } from "react-icons/fa"
 import ReactMarkdown from "react-markdown"
 
-import { CampaignImage, CampaignPlatformLink } from "@/components"
+import { CampaignImage, CampaignPlatformLink, Carousel } from "@/components"
 
 interface CampaignDetailsProps {
+  name: string
+  description: string
   website?: string
   discord?: string
   twitter?: string
-  description: string
-  imageUrl?: string
-  name: string
+  profileImageUrl?: string
+  descriptionImageUrls?: string[]
+  smallerCarousel?: boolean
 }
 
 export const CampaignDetails: FunctionComponent<CampaignDetailsProps> = ({
+  name,
+  description,
   website,
   twitter,
   discord,
-  description,
-  name,
-  imageUrl,
+  profileImageUrl,
+  descriptionImageUrls,
+  smallerCarousel = false,
 }) => (
   <div className="flex flex-col text-left">
     <div className="flex flex-col text-center items-center md:flex-row md:items-start md:text-left">
       <CampaignImage
-        imageUrl={imageUrl}
+        imageUrl={profileImageUrl}
         size={139}
         className="mb-4 md:mb-0 md:mr-4"
       />
@@ -57,6 +62,26 @@ export const CampaignDetails: FunctionComponent<CampaignDetailsProps> = ({
         )}
       </div>
     </div>
+
+    {!!descriptionImageUrls?.length && (
+      <Carousel
+        className={cn("my-4", {
+          "h-[19rem]": !smallerCarousel,
+          "h-[15rem]": smallerCarousel,
+        })}
+        childContainerClassName="w-full h-full"
+      >
+        {descriptionImageUrls.map((src, index) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={index}
+            src={src}
+            alt=""
+            className="object-contain object-center w-full h-full"
+          />
+        ))}
+      </Carousel>
+    )}
 
     <ReactMarkdown
       children={description}

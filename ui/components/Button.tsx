@@ -9,22 +9,22 @@ import { Color, ColorType } from "@/types"
 
 type BoolString = "true" | "false"
 
-const buttonBorderClasses: Record<ColorType, Record<BoolString, string>> = {
+const buttonColorClasses: Record<ColorType, Record<BoolString, string>> = {
   [Color.Green]: {
-    true: "text-green hover:bg-green",
-    false: "bg-green hover:text-green",
+    true: "text-green hover:bg-green border-green",
+    false: "bg-green hover:text-green border-green",
   },
   [Color.Orange]: {
-    true: "text-orange hover:bg-orange",
-    false: "bg-orange hover:text-orange",
+    true: "text-orange hover:bg-orange border-orange",
+    false: "bg-orange hover:text-orange border-orange",
   },
   [Color.Light]: {
-    true: "text-light hover:bg-light",
-    false: "bg-light hover:text-light",
+    true: "text-light hover:bg-light border-light",
+    false: "bg-light hover:text-light border-light",
   },
   [Color.Placeholder]: {
-    true: "text-placeholder hover:bg-placeholder",
-    false: "bg-placeholder hover:text-placeholder",
+    true: "text-placeholder hover:bg-placeholder border-placeholder",
+    false: "bg-placeholder hover:text-placeholder border-placeholder",
   },
 }
 
@@ -62,7 +62,7 @@ export const Button: FunctionComponent<ButtonProps> = ({
     { "py-2 px-4 rounded-full": !bare },
     { border: !bare },
     {
-      [buttonBorderClasses[color][
+      [buttonColorClasses[color][
         (outline ?? cardOutline ?? false).toString() as BoolString
       ]]: !bare,
     },

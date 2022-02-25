@@ -161,41 +161,34 @@ const BalanceRefundJoinCardContents: FunctionComponent<
                   <Button submitLabel="Join DAO" className="mt-4" />
                 </>
               ) : (
-                <div className="flex flex-row items-start gap-4">
-                  <ControlledFormPercentTokenDoubleInput
-                    name="refund"
-                    control={control}
-                    minValue={minRefund}
-                    maxValue={fundingTokenBalance}
-                    currency={fundingTokenSymbol}
-                    first={{
-                      placeholder: "50",
-                    }}
-                    second={{
-                      placeholder: prettyPrintDecimal(
-                        fundingTokenBalance * 0.5
-                      ),
-                    }}
-                    shared={{
-                      disabled: status !== Status.Open,
-                    }}
-                    accent={
-                      expectedPayTokensReceived
-                        ? `You will receive about ${prettyPrintDecimal(
-                            expectedPayTokensReceived
-                          )} ${payTokenSymbol}`
-                        : undefined
-                    }
-                    error={
-                      errors?.refund?.message ??
-                      refundCampaignError ??
-                      undefined
-                    }
-                    wrapperClassName="mb-0 flex-1"
-                  />
-
-                  <Button submitLabel="Refund" className="h-[50px]" />
-                </div>
+                <ControlledFormPercentTokenDoubleInput
+                  name="refund"
+                  control={control}
+                  minValue={minRefund}
+                  maxValue={fundingTokenBalance}
+                  currency={fundingTokenSymbol}
+                  first={{
+                    placeholder: "50",
+                  }}
+                  second={{
+                    placeholder: prettyPrintDecimal(fundingTokenBalance * 0.5),
+                  }}
+                  shared={{
+                    disabled: status !== Status.Open,
+                    children: <Button submitLabel="Refund" />,
+                  }}
+                  accent={
+                    expectedPayTokensReceived
+                      ? `You will receive about ${prettyPrintDecimal(
+                          expectedPayTokensReceived
+                        )} ${payTokenSymbol}`
+                      : undefined
+                  }
+                  error={
+                    errors?.refund?.message ?? refundCampaignError ?? undefined
+                  }
+                  wrapperClassName="mb-0"
+                />
               )}
             </form>
           </>

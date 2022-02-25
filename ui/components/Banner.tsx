@@ -11,7 +11,7 @@ const bannerColor: Record<ColorType, string> = {
 }
 
 interface BannerProps {
-  color: Color
+  color: ColorType
   className?: string
 }
 

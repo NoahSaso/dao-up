@@ -1,100 +1,9 @@
 import fuzzysort from "fuzzysort"
+import _merge from "lodash.merge"
 
 import { daoUrlPrefix } from "@/config"
-import { getFilterFns, prettyPrintDecimal } from "@/helpers"
-import { Status } from "@/types"
-
-const renderString = (v: string) => v
-const renderBoolean = (v: boolean) => (v ? "Yes" : "No")
-const makeRenderNumber =
-  (maxDecimals?: number, minDecimals?: number) => (v: number) =>
-    prettyPrintDecimal(v, maxDecimals, minDecimals)
-
-const renderImageUrl = (imageUrl?: string) => (
-  <>
-    {imageUrl}
-    {!!imageUrl && (
-      // image is being loaded from anywhere, so can't use next image component
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={imageUrl} alt="" className="mt-2 max-w-[14rem]" />
-    )}
-  </>
-)
-
-export const newCampaignFields: Record<NewCampaignFieldKey, NewCampaignField> =
-  {
-    name: {
-      label: "Name",
-      pageId: 1,
-      required: true,
-      render: renderString,
-    },
-    description: {
-      label: "Description",
-      pageId: 1,
-      required: true,
-      render: renderString,
-    },
-    imageUrl: {
-      label: "Image URL",
-      pageId: 1,
-      required: false,
-      render: renderImageUrl,
-    },
-    goal: {
-      label: "Funding Target",
-      pageId: 1,
-      required: true,
-      unitBefore: (_) => "$",
-      render: makeRenderNumber(2, 2),
-    },
-    daoAddress: {
-      label: "DAO Address",
-      pageId: 1,
-      required: true,
-      render: makeRenderNumber(2, 2),
-    },
-    tokenName: {
-      label: "Campaign Token Name",
-      pageId: 1,
-      required: true,
-      render: renderString,
-    },
-    tokenSymbol: {
-      label: "Campaign Token Symbol",
-      pageId: 1,
-      required: true,
-      render: renderString,
-    },
-    hidden: {
-      label: "Hide from public campaigns list",
-      pageId: 1,
-      required: false,
-      render: renderBoolean,
-    },
-    website: {
-      label: "Website",
-      pageId: 1,
-      required: false,
-      render: renderString,
-    },
-    twitter: {
-      label: "Twitter",
-      pageId: 1,
-      required: false,
-      render: renderString,
-    },
-    discord: {
-      label: "Discord",
-      pageId: 1,
-      required: false,
-      render: renderString,
-    },
-  }
-export const newCampaignFieldEntries = Object.entries(newCampaignFields) as [
-  NewCampaignFieldKey,
-  NewCampaignField
-][]
+import { getFilterFns, parseError } from "@/helpers"
+import { CampaignContractVersion, Status, StatusFields } from "@/types"
 
 export const defaultNewCampaign: Partial<NewCampaign> = {
   hidden: false,
@@ -138,6 +47,60 @@ export const filterCampaigns = async (
   ).map(({ obj }) => obj)
 }
 
+// Different fields based on Campaign contract version.
+export const transformVersionedCampaignFields = (
+  version: CampaignContractVersion,
+  address: string,
+  campaignState: any,
+  status: Status,
+  statusFields: any,
+  campaignGovTokenBalance: number
+): VersionedCampaignFields => {
+  const { campaign_info: campaignInfo } = campaignState
+
+  switch (version) {
+    case CampaignContractVersion.v1:
+      return {
+        profileImageUrl: campaignInfo.image_url,
+        // Introduced in v2.
+        descriptionImageUrls: [],
+        govToken: {
+          campaignBalance: campaignGovTokenBalance,
+        },
+      }
+    case CampaignContractVersion.v2:
+      return {
+        profileImageUrl: campaignInfo.profile_image_url,
+        descriptionImageUrls: campaignInfo.description_image_urls ?? [],
+        govToken: {
+          campaignBalance:
+            status === Status.Pending
+              ? 0
+              : (statusFields as StatusFields<typeof version, typeof status>)
+                  .initial_gov_token_balance,
+        },
+      }
+    default: {
+      console.error(
+        parseError("Unknown campaign contract version.", {
+          source: "transformVersionedCampaignFields",
+          campaign: address,
+          version,
+          campaignState,
+        })
+      )
+
+      return {
+        profileImageUrl: undefined,
+        descriptionImageUrls: [],
+        govToken: {
+          campaignBalance: campaignGovTokenBalance,
+        },
+      }
+    }
+  }
+}
+
 // Transform blockchain data into typed campaign object.
 export const transformCampaign = (
   address: string,
@@ -148,6 +111,7 @@ export const transformCampaign = (
   densAddressMap?: Record<string, string | undefined>
 ): Campaign | null => {
   const {
+    version: stateVersion,
     campaign_info: campaignInfo,
     funding_token_info: fundingTokenInfo,
     gov_token_info: govTokenInfo,
@@ -160,21 +124,37 @@ export const transformCampaign = (
     !campaignInfo ||
     !fundingTokenInfo ||
     !govTokenInfo ||
-    !state
+    !state ||
+    !campaignState
   ) {
     return null
   }
 
   // Example: status={ "pending": {} }
   const status = Object.keys(state.status)[0] as Status
+  const statusFields = state.status[status]
 
-  return {
+  // First contract has no version set.
+  const version = Object.values(CampaignContractVersion).includes(stateVersion)
+    ? (stateVersion as CampaignContractVersion)
+    : CampaignContractVersion.v1
+  // Get fields based on contract version.
+  const versionedFields = transformVersionedCampaignFields(
+    version,
+    address,
+    campaignState,
+    status,
+    statusFields,
+    campaignGovTokenBalance
+  )
+
+  const baseFields = {
+    version,
     address,
     name: campaignInfo.name,
     description: campaignInfo.description,
     // Use deNS name from map if available.
     urlPath: `/campaign/${densAddressMap?.[address] ?? address}`,
-    imageUrl: campaignInfo.image_url,
 
     status,
     creator: state.creator,
@@ -194,20 +174,25 @@ export const transformCampaign = (
       address: state.gov_token_addr,
       name: govTokenInfo.name,
       symbol: govTokenInfo.symbol,
-      campaignBalance: campaignGovTokenBalance,
       daoBalance: daoGovTokenBalance,
       supply: Number(govTokenInfo.total_supply) / 1e6,
     },
 
     fundingToken: {
       address: state.funding_token_addr,
-      ...(status === Status.Open && {
-        price: Number(state.status[status].token_price),
+      ...(status !== Status.Pending && {
+        price: Number(
+          (statusFields as StatusFields<typeof version, typeof status>)
+            .token_price
+        ),
         // Funding tokens are minted on-demand, so calculate the total that will ever exist
         // by multiplying the price of one token (in JUNO) by the goal (in JUNO).
         supply:
           (Number(state.funding_goal.amount) *
-            Number(state.status[status].token_price)) /
+            Number(
+              (statusFields as StatusFields<typeof version, typeof status>)
+                .token_price
+            )) /
           1e6,
       }),
       name: fundingTokenInfo.name,
@@ -218,4 +203,6 @@ export const transformCampaign = (
     twitter: campaignInfo.twitter,
     discord: campaignInfo.discord,
   }
+
+  return _merge(baseFields, versionedFields)
 }

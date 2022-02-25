@@ -3,9 +3,14 @@ export const restEndpoint = process.env.NEXT_PUBLIC_REST_ENDPOINT!
 
 export const chainId = process.env.NEXT_PUBLIC_CHAIN_ID!
 export const cw20CodeId = parseInt(process.env.NEXT_PUBLIC_CW20_CODE_ID!)
-export const escrowContractCodeId = parseInt(
-  process.env.NEXT_PUBLIC_ESCROW_CONTRACT_CODE_ID!
-)
+
+// List of Code IDs separated by commas.
+export const escrowContractCodeIds = process.env
+  .NEXT_PUBLIC_ESCROW_CONTRACT_CODE_IDS!.split(",")
+  .map((codeId) => parseInt(codeId))
+// Use last code ID for new campaigns.
+export const currentEscrowContractCodeId =
+  escrowContractCodeIds[escrowContractCodeIds.length - 1]
 
 export const minPayTokenSymbol = process.env.NEXT_PUBLIC_MIN_PAY_TOKEN_SYMBOL!
 export const payTokenSymbol = process.env.NEXT_PUBLIC_PAY_TOKEN_SYMBOL!

@@ -1,5 +1,4 @@
 import { Window as KeplrWindow } from "@keplr-wallet/types"
-import { ReactNode } from "react"
 
 declare global {
   interface Window extends KeplrWindow {}
@@ -16,12 +15,24 @@ declare global {
     when?: Date
   }
 
-  interface Campaign {
+  // These are retrieved differently for different Campaign contract versions.
+  interface VersionedCampaignFields {
+    profileImageUrl?: string
+    descriptionImageUrls: string[]
+    govToken: {
+      campaignBalance: number
+    }
+  }
+
+  interface Campaign extends VersionedCampaignFields {
+    version: CampaignContractVersion
+
     address: string
     name: string
     description: string
     urlPath: string
-    imageUrl?: string
+    profileImageUrl?: string
+    descriptionImageUrls: string[]
 
     status: Status
     creator: string
@@ -74,19 +85,11 @@ declare global {
     website?: string
     twitter?: string
     discord?: string
-    imageUrl?: string
-  }
+    profileImageUrl?: string
 
-  interface NewCampaignField {
-    label: string
-    pageId: number
-    required: boolean
-    render: (v: any, c: Partial<NewCampaign>) => ReactNode
-    unitBefore?: (c: Partial<NewCampaign>) => string
-    unitAfter?: (c: Partial<NewCampaign>) => string
+    descriptionImageUrls?: string[]
+    _descriptionImageUrls?: { url: string }[]
   }
-
-  type NewCampaignFieldKey = keyof NewCampaign
 
   interface PageInfo {
     startIndex: number
@@ -157,12 +160,35 @@ declare global {
   }
 }
 
+export enum CampaignContractVersion {
+  v1 = "1",
+  v2 = "2",
+}
+
 export enum Status {
   Pending = "pending",
   Open = "open",
   Cancelled = "cancelled",
   Funded = "funded",
 }
+
+export type StatusFields<
+  V extends CampaignContractVersion,
+  S extends Status
+> = V extends CampaignContractVersion.v1
+  ? S extends Status.Pending
+    ? {}
+    : {
+        token_price: number
+      }
+  : V extends CampaignContractVersion.v2
+  ? S extends Status.Pending
+    ? {}
+    : {
+        token_price: number
+        initial_gov_token_balance: number
+      }
+  : {}
 
 export enum Color {
   Green = "green",
