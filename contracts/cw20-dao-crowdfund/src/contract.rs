@@ -112,11 +112,11 @@ pub fn execute_close(deps: DepsMut, env: Env, sender: Addr) -> Result<Response, 
     if sender != state.dao_addr {
         return Err(ContractError::Unauthorized {});
     }
-    let (token_price, initial_gov_token_supply) = match state.status {
+    let (token_price, initial_gov_token_balance) = match state.status {
         Status::Open {
             token_price,
-            initial_gov_token_balance: initial_gov_token_supply,
-        } => (token_price, initial_gov_token_supply),
+            initial_gov_token_balance,
+        } => (token_price, initial_gov_token_balance),
         _ => return Err(ContractError::InvalidClose {}),
     };
 
@@ -144,7 +144,7 @@ pub fn execute_close(deps: DepsMut, env: Env, sender: Addr) -> Result<Response, 
 
     state.status = Status::Cancelled {
         token_price,
-        initial_gov_token_balance: initial_gov_token_supply,
+        initial_gov_token_balance,
     };
     STATE.save(deps.storage, &state)?;
     Ok(Response::default()
@@ -160,11 +160,11 @@ pub fn execute_fund(
 ) -> Result<Response, ContractError> {
     let mut state = STATE.load(deps.storage)?;
 
-    let (token_price, initial_gov_token_supply) = match state.status {
+    let (token_price, initial_gov_token_balance) = match state.status {
         Status::Open {
             token_price,
-            initial_gov_token_balance: initial_gov_token_supply,
-        } => Ok((token_price, initial_gov_token_supply)),
+            initial_gov_token_balance,
+        } => Ok((token_price, initial_gov_token_balance)),
         _ => Err(ContractError::NotOpen {}),
     }?;
 
@@ -184,7 +184,7 @@ pub fn execute_fund(
     if state.funds_raised.amount == state.funding_goal.amount {
         state.status = Status::Funded {
             token_price,
-            initial_gov_token_balance: initial_gov_token_supply,
+            initial_gov_token_balance,
         };
     }
     STATE.save(deps.storage, &state)?;
