@@ -454,7 +454,8 @@ fn test_campaign_update() {
         website: Some("https://moonphase.is".to_string()),
         twitter: None,
         discord: None,
-        image_url: Some("https://moonphase.is/image.svg".to_string()),
+        profile_image_url: Some("https://moonphase.is/image.svg".to_string()),
+        description_image_urls: vec!["https://moonphase.is/image.svg".to_string()],
         hidden: false,
     };
 

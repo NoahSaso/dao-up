@@ -11,16 +11,20 @@ execute the `update_campaign` method on the campaign contract address.
       "contract_addr": "CAMPAIGN_ADDRESS_BETWEEN_THESE_QUOTES",
       "msg": {
         "update_campaign": {
-			"campaign": {
-				"name": "NEW_CAMPAIGN_NAME",
-				"description": "NEW_CAMPAIGN_DESCRIPTION",
-				"hidden": false,
-				"image_url": "CAMPAIGN_IMAGE_URL",
-				"twitter": "CAMPAIGN_TWITER_HANDLE",
-				"website": "CAMPAIGN_WEBSITE_URL",
-				"discord": "CAMPAIGN_DISCORD_URL"
-			}
-		}
+          "campaign": {
+            "name": "NEW_CAMPAIGN_NAME",
+            "description": "NEW_CAMPAIGN_DESCRIPTION",
+            "hidden": false,
+            "profile_image_url": "CAMPAIGN_PROFILE_IMAGE_URL",
+            "description_image_urls": [
+              "CAMPAIGN_DESCRIPTION_IMAGE_URL_1",
+              "CAMPAIGN_DESCRIPTION_IMAGE_URL_2"
+            ],
+            "twitter": "CAMPAIGN_TWITER_HANDLE",
+            "website": "CAMPAIGN_WEBSITE_URL",
+            "discord": "CAMPAIGN_DISCORD_URL"
+          }
+        }
       },
       "funds": []
     }
