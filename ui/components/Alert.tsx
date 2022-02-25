@@ -10,6 +10,9 @@ interface AlertProps {
   title: string
   visible: boolean
   hide?: () => void
+  className?: string
+  // Display Alert above global loader display. Default below.
+  aboveLoaders?: boolean
 }
 
 export const Alert: FunctionComponent<PropsWithChildren<AlertProps>> = ({
@@ -17,15 +20,21 @@ export const Alert: FunctionComponent<PropsWithChildren<AlertProps>> = ({
   title,
   visible,
   hide,
+  className,
+  aboveLoaders = false,
 }) => (
   <div
     className={cn(
-      "flex justify-center items-center fixed z-50 bg-dark/90 top-0 right-0 bottom-0 left-0 transition",
+      "flex justify-center items-center fixed bg-dark/90 top-0 right-0 bottom-0 left-0 transition",
       {
         "cursor-pointer": hide,
 
         "opacity-0 pointer-events-none": !visible,
         "opacity-100": visible,
+      },
+      {
+        "z-30": !aboveLoaders,
+        "z-50": aboveLoaders,
       }
     )}
     onClick={
@@ -34,7 +43,12 @@ export const Alert: FunctionComponent<PropsWithChildren<AlertProps>> = ({
         : undefined
     }
   >
-    <CardWrapper className="flex flex-col justify-start items-start relative m-8 max-w-xl max-h-[90vh] overflow-y-auto cursor-auto">
+    <CardWrapper
+      className={cn(
+        "flex flex-col justify-start items-start relative m-8 max-w-xl max-h-[90vh] overflow-y-auto cursor-auto",
+        className
+      )}
+    >
       {!!hide && (
         <Button
           onClick={hide}
@@ -58,7 +72,13 @@ export const BetaAlert: FunctionComponent<Partial<AlertProps>> = (props) => {
   )
 
   return (
-    <Alert {...props} visible={!betaAlertAccepted} title="We are in beta">
+    <Alert
+      {...props}
+      visible={!betaAlertAccepted}
+      title="We are in beta"
+      // Display above loaders so the user can read it while the page is loading underneath.
+      aboveLoaders
+    >
       <p className="mb-4">DAO Up! is in beta and has not yet been audited.</p>
 
       <p>

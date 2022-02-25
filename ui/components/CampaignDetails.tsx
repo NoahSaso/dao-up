@@ -13,10 +13,10 @@ import { visibleDescriptionChars } from "@/config"
 interface CampaignDetailsProps {
   name: string
   description: string
-  website?: string
-  discord?: string
-  twitter?: string
-  profileImageUrl?: string
+  website?: string | null
+  discord?: string | null
+  twitter?: string | null
+  profileImageUrl?: string | null
   descriptionImageUrls?: string[]
 }
 
@@ -36,7 +36,7 @@ export const CampaignDetails: FunctionComponent<CampaignDetailsProps> = ({
     <div className="flex flex-col text-left">
       <div className="flex flex-col text-center items-center md:flex-row md:items-start md:text-left">
         <CampaignImage
-          imageUrl={profileImageUrl}
+          url={profileImageUrl}
           size={139}
           className="mb-4 md:mb-0 md:mr-4"
         />

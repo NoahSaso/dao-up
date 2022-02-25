@@ -138,13 +138,13 @@ export const CampaignFavoriteToggle: FunctionComponent<CampaignProps> = ({
 }
 
 interface CampaignImageProps {
+  url?: string | null
   size?: number
-  imageUrl?: string
   className?: string
 }
 
 export const CampaignImage: FunctionComponent<CampaignImageProps> = ({
-  imageUrl,
+  url,
   className,
   size = 135,
 }) => (
@@ -152,9 +152,9 @@ export const CampaignImage: FunctionComponent<CampaignImageProps> = ({
     className={cn("shrink-0 overflow-hidden rounded-md", className)}
     style={{ width: size, height: size }}
   >
-    {imageUrl ? (
+    {url ? (
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={imageUrl} alt="image" className="w-full h-full object-cover" />
+      <img src={url} alt="image" className="w-full h-full object-cover" />
     ) : (
       <Image src="/images/placeholder.svg" alt="" width={size} height={size} />
     )}
