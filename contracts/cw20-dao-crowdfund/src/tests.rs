@@ -555,6 +555,8 @@ fn test_campaign_creation() {
         vec!["https://moonphase.is/image.svg"]
     );
 
+    assert_eq!(env!("CARGO_PKG_VERSION"), state.version);
+
     let config: cw3_dao::query::ConfigResponse = app
         .wrap()
         .query_wasm_smart(dao_addr.clone(), &cw3_dao::msg::QueryMsg::GetConfig {})

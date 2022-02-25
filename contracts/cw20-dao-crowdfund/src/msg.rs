@@ -83,4 +83,5 @@ pub struct DumpStateResponse {
     pub funding_token_addr: Addr,
     pub fee_receiver: Addr,
     pub fee: Decimal,
+    pub version: String,
 }
