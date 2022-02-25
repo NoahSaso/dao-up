@@ -13,7 +13,7 @@ declare global {
 
   // These are retrieved differently for different Campaign contract versions.
   interface VersionedCampaignFields {
-    profileImageUrl?: string
+    profileImageUrl: string | null
     descriptionImageUrls: string[]
     govToken: {
       campaignBalance: number
@@ -27,7 +27,7 @@ declare global {
     name: string
     description: string
     urlPath: string
-    profileImageUrl?: string
+    profileImageUrl: string | null
     descriptionImageUrls: string[]
 
     status: CampaignStatus
@@ -57,26 +57,21 @@ declare global {
     fundingToken: {
       address: string
       // fundingToken/JUNO
-      price?: number
-      supply?: number
+      price: number | null
+      supply: number | null
       name: string
       symbol: string
     }
 
-    website?: string
-    twitter?: string
-    discord?: string
+    website: string | null
+    twitter: string | null
+    discord: string | null
   }
 
-  interface NewCampaign {
+  interface BaseCampaignInfo {
     name: string
     description: string
     hidden: boolean
-
-    goal: number
-    daoAddress: string
-    tokenName: string
-    tokenSymbol: string
 
     website?: string
     twitter?: string
@@ -87,6 +82,15 @@ declare global {
     // Optional so it can be deleted.
     _descriptionImageUrls?: { url: string }[]
   }
+
+  interface NewCampaignInfo extends BaseCampaignInfo {
+    goal: number
+    daoAddress: string
+    tokenName: string
+    tokenSymbol: string
+  }
+
+  interface UpdateCampaignInfo extends BaseCampaignInfo {}
 
   type DENSAddressMap = Record<string, string | undefined>
 }
