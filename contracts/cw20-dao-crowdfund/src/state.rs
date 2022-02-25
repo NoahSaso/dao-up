@@ -36,19 +36,19 @@ pub enum Status {
         /// The token price in number of tokens per native token
         /// (ex. uJuno).
         token_price: Decimal,
-        initial_gov_token_supply: Uint128,
+        initial_gov_token_balance: Uint128,
     },
     /// The DAO has closed the campaign. Refunds are avaliable but no
     /// new funds may be added.
     Cancelled {
         token_price: Decimal,
-        initial_gov_token_supply: Uint128,
+        initial_gov_token_balance: Uint128,
     },
     /// The campaign has met its funding goal. Tokens may now be
     /// exchanged for governance tokens in the DAO.
     Funded {
         token_price: Decimal,
-        initial_gov_token_supply: Uint128,
+        initial_gov_token_balance: Uint128,
     },
 }
 

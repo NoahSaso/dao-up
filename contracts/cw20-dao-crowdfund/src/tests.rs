@@ -416,7 +416,7 @@ fn test_campaign_creation() {
         state.status,
         Status::Open {
             token_price: Decimal::from_ratio(100_000_000 as u64, 100_000_000 as u64),
-            initial_gov_token_supply: Uint128::from(gov_tokens),
+            initial_gov_token_balance: Uint128::from(gov_tokens),
         }
     );
     assert_eq!(state.dao_addr, dao_addr);
@@ -537,7 +537,7 @@ fn do_fund_refund(funding_goal: u64, gov_tokens: u64) {
         state.status,
         Status::Open {
             token_price,
-            initial_gov_token_supply: Uint128::from(gov_tokens)
+            initial_gov_token_balance: Uint128::from(gov_tokens)
         }
     );
 
@@ -677,7 +677,7 @@ fn do_fund_refund(funding_goal: u64, gov_tokens: u64) {
         state.status,
         Status::Funded {
             token_price,
-            initial_gov_token_supply: Uint128::from(gov_tokens)
+            initial_gov_token_balance: Uint128::from(gov_tokens)
         }
     );
 
@@ -812,7 +812,7 @@ fn test_campaign_completion() {
         state.status,
         Status::Funded {
             token_price,
-            initial_gov_token_supply: Uint128::from(gov_tokens)
+            initial_gov_token_balance: Uint128::from(gov_tokens)
         }
     );
 
@@ -983,7 +983,7 @@ fn test_campaign_close() {
         state.status,
         Status::Cancelled {
             token_price,
-            initial_gov_token_supply: Uint128::from(gov_tokens)
+            initial_gov_token_balance: Uint128::from(gov_tokens)
         }
     );
 

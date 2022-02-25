@@ -115,7 +115,7 @@ pub fn execute_close(deps: DepsMut, env: Env, sender: Addr) -> Result<Response, 
     let (token_price, initial_gov_token_supply) = match state.status {
         Status::Open {
             token_price,
-            initial_gov_token_supply,
+            initial_gov_token_balance: initial_gov_token_supply,
         } => (token_price, initial_gov_token_supply),
         _ => return Err(ContractError::InvalidClose {}),
     };
@@ -144,7 +144,7 @@ pub fn execute_close(deps: DepsMut, env: Env, sender: Addr) -> Result<Response, 
 
     state.status = Status::Cancelled {
         token_price,
-        initial_gov_token_supply,
+        initial_gov_token_balance: initial_gov_token_supply,
     };
     STATE.save(deps.storage, &state)?;
     Ok(Response::default()
@@ -163,7 +163,7 @@ pub fn execute_fund(
     let (token_price, initial_gov_token_supply) = match state.status {
         Status::Open {
             token_price,
-            initial_gov_token_supply,
+            initial_gov_token_balance: initial_gov_token_supply,
         } => Ok((token_price, initial_gov_token_supply)),
         _ => Err(ContractError::NotOpen {}),
     }?;
@@ -184,7 +184,7 @@ pub fn execute_fund(
     if state.funds_raised.amount == state.funding_goal.amount {
         state.status = Status::Funded {
             token_price,
-            initial_gov_token_supply,
+            initial_gov_token_balance: initial_gov_token_supply,
         };
     }
     STATE.save(deps.storage, &state)?;
@@ -247,7 +247,7 @@ pub fn execute_receive_gov_tokens(
 
             state.status = Status::Open {
                 token_price,
-                initial_gov_token_supply: msg.amount,
+                initial_gov_token_balance: msg.amount,
             };
             STATE.save(deps.storage, &state)?;
             Ok(Response::default()
