@@ -133,8 +133,11 @@ pub fn execute_close(deps: DepsMut, env: Env, sender: Addr) -> Result<Response, 
     if sender != state.dao_addr {
         return Err(ContractError::Unauthorized {});
     }
-    let token_price = match state.status {
-        Status::Open { token_price } => token_price,
+    let (token_price, initial_gov_token_balance) = match state.status {
+        Status::Open {
+            token_price,
+            initial_gov_token_balance,
+        } => (token_price, initial_gov_token_balance),
         _ => return Err(ContractError::InvalidClose {}),
     };
 
@@ -160,7 +163,10 @@ pub fn execute_close(deps: DepsMut, env: Env, sender: Addr) -> Result<Response, 
         funds: vec![],
     };
 
-    state.status = Status::Cancelled { token_price };
+    state.status = Status::Cancelled {
+        token_price,
+        initial_gov_token_balance,
+    };
     STATE.save(deps.storage, &state)?;
     Ok(Response::default()
         .add_attribute("action", "close")
@@ -175,8 +181,11 @@ pub fn execute_fund(
 ) -> Result<Response, ContractError> {
     let mut state = STATE.load(deps.storage)?;
 
-    let token_price = match state.status {
-        Status::Open { token_price } => Ok(token_price),
+    let (token_price, initial_gov_token_balance) = match state.status {
+        Status::Open {
+            token_price,
+            initial_gov_token_balance,
+        } => Ok((token_price, initial_gov_token_balance)),
         _ => Err(ContractError::NotOpen {}),
     }?;
 
@@ -194,7 +203,10 @@ pub fn execute_fund(
     state.funds_raised.amount += payment;
     // If we've met the funding goal set the state to complete.
     if state.funds_raised.amount == state.funding_goal.amount {
-        state.status = Status::Funded { token_price };
+        state.status = Status::Funded {
+            token_price,
+            initial_gov_token_balance,
+        };
     }
     STATE.save(deps.storage, &state)?;
 
@@ -254,7 +266,10 @@ pub fn execute_receive_gov_tokens(
                 return Err(ContractError::InvalidGovTokenAmount {});
             }
 
-            state.status = Status::Open { token_price };
+            state.status = Status::Open {
+                token_price,
+                initial_gov_token_balance: msg.amount,
+            };
             STATE.save(deps.storage, &state)?;
             Ok(Response::default()
                 .add_attribute("action", "fund_gov_tokens")
@@ -272,7 +287,7 @@ pub fn execute_receive_funding_tokens(
     let mut state = STATE.load(deps.storage)?;
     match state.status {
         Status::Pending {} | Status::Uninstantiated {} => Err(ContractError::NotOpen {}),
-        Status::Open { token_price } | Status::Cancelled { token_price } => {
+        Status::Open { token_price, .. } | Status::Cancelled { token_price, .. } => {
             // User is sending tokens back to the contract indicating
             // that they would like a refund.
             let sender = deps.api.addr_validate(&msg.sender)?;
@@ -311,7 +326,7 @@ pub fn execute_receive_funding_tokens(
                 .add_message(bank_msg)
                 .add_message(burn_msg))
         }
-        Status::Funded { token_price } => {
+        Status::Funded { token_price, .. } => {
             // User is sending tokens back to the contract indicating
             // that they would like staked governance tokens.
             let sender = deps.api.addr_validate(&msg.sender)?;

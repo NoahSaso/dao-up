@@ -1,10 +1,18 @@
 import { coin } from "@cosmjs/stargate"
+import cn from "classnames"
 import type { NextPage } from "next"
 import Head from "next/head"
 import { useRouter } from "next/router"
-import { useCallback, useEffect, useState } from "react"
-import { Controller, SubmitHandler, useForm } from "react-hook-form"
-import { IoCheckmark, IoEye, IoEyeOff, IoWarning } from "react-icons/io5"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { DndProvider } from "react-dnd"
+import { HTML5Backend } from "react-dnd-html5-backend"
+import {
+  Controller,
+  SubmitHandler,
+  useFieldArray,
+  useForm,
+} from "react-hook-form"
+import { IoAdd, IoCheckmark, IoEye, IoEyeOff, IoWarning } from "react-icons/io5"
 import {
   useRecoilValue,
   useRecoilValueLoadable,
@@ -18,17 +26,19 @@ import {
   FormInput,
   FormSwitch,
   FormTextArea,
+  FormWrapper,
+  ImageUrlField,
   Loader,
   ResponsiveDecoration,
   Suspense,
 } from "@/components"
 import {
   baseUrl,
+  currentEscrowContractCodeId,
   cw20CodeId,
   daoUpDAOAddress,
   daoUpFee,
   daoUpFeeNum,
-  escrowContractCodeId,
   minPayTokenSymbol,
   payTokenSymbol,
   title,
@@ -42,9 +52,8 @@ import {
   urlPattern,
 } from "@/helpers"
 import { useWallet } from "@/hooks"
-import { defaultNewCampaign, newCampaignFields } from "@/services"
+import { defaultNewCampaign } from "@/services"
 import { globalLoadingAtom, signedCosmWasmClient, validateDAO } from "@/state"
-import { Color } from "@/types"
 
 const validUrlOrUndefined = (u: string | undefined) =>
   u && u.match(urlPattern.value) ? u : undefined
@@ -69,9 +78,11 @@ const Create: NextPage = () => (
       className="top-0 right-0 opacity-70"
     />
 
-    <Suspense loader={{ overlay: true }}>
-      <CreateContent />
-    </Suspense>
+    <DndProvider backend={HTML5Backend}>
+      <Suspense loader={{ overlay: true }}>
+        <CreateContent />
+      </Suspense>
+    </DndProvider>
   </>
 )
 
@@ -94,7 +105,35 @@ const CreateContent = () => {
     control,
     watch,
     setValue,
-  } = useForm({ defaultValues: defaultNewCampaign })
+  } = useForm<NewCampaign>({ defaultValues: defaultNewCampaign })
+
+  // descriptionImageUrls list
+  const {
+    fields: descriptionImageUrlsFields,
+    append: descriptionImageUrlsAppend,
+    remove: descriptionImageUrlsRemove,
+    move: descriptionImageUrlsMove,
+  } = useFieldArray({
+    control,
+    name: "_descriptionImageUrls",
+  })
+  // New Description Image URL
+  const [newDescriptionImageUrl, setNewDescriptionImageUrl] = useState("")
+  const [newDescriptionImageUrlError, setNewDescriptionImageUrlError] =
+    useState("")
+  const newDescriptionImageUrlRef = useRef<HTMLInputElement>(null)
+  const addNewDescriptionImageUrl = () => {
+    if (newDescriptionImageUrl.match(urlPattern.value)) {
+      descriptionImageUrlsAppend({ url: newDescriptionImageUrl })
+      setNewDescriptionImageUrl("")
+      setNewDescriptionImageUrlError("")
+    } else {
+      setNewDescriptionImageUrlError(urlPattern.message)
+    }
+
+    // Just pressed add button, refocus on input.
+    newDescriptionImageUrlRef.current?.focus()
+  }
 
   // Automatically verify DAO contract address exists on chain.
   const watchDAOAddress = watch("daoAddress")
@@ -122,12 +161,12 @@ const CreateContent = () => {
 
   // Information for displaying campaign preview.
   const campaignName = watch("name")
-  const campaignImageUrl = validUrlOrUndefined(watch("imageUrl"))
   const campaignDescription = watch("description")
-
   const campaignWebsite = validUrlOrUndefined(watch("website"))
   const campaignDiscord = validUrlOrUndefined(watch("discord"))
   const campaignTwitter = watch("twitter")
+  const campaignProfileImageUrl = validUrlOrUndefined(watch("profileImageUrl"))
+  const campaign_DescriptionImageUrls = watch("_descriptionImageUrls")
 
   const [showCampaignDescriptionPreview, setShowCampaignDescriptionPreview] =
     useState(false)
@@ -177,17 +216,23 @@ const CreateContent = () => {
           description: newCampaign.description,
           hidden: newCampaign.hidden,
 
-          ...(newCampaign.imageUrl && { image_url: newCampaign.imageUrl }),
           ...(newCampaign.website && { website: newCampaign.website }),
           ...(newCampaign.twitter && { twitter: newCampaign.twitter }),
           ...(newCampaign.discord && { discord: newCampaign.discord }),
+
+          ...(newCampaign.profileImageUrl && {
+            profile_image_url: newCampaign.profileImageUrl,
+          }),
+          ...(newCampaign.descriptionImageUrls && {
+            description_image_urls: newCampaign.descriptionImageUrls,
+          }),
         },
       }
 
       try {
         const { contractAddress } = await client.instantiate(
           walletAddress,
-          escrowContractCodeId,
+          currentEscrowContractCodeId,
           msg,
           `[DAO Up!] ${newCampaign.name}`,
           "auto"
@@ -224,6 +269,10 @@ const CreateContent = () => {
       newCampaignValues.description = newCampaignValues.description.trim()
       newCampaignValues.tokenName = newCampaignValues.tokenName.trim()
       newCampaignValues.tokenSymbol = newCampaignValues.tokenSymbol.trim()
+      // Transform _descriptionImageUrls objects into strings.
+      newCampaignValues.descriptionImageUrls =
+        newCampaignValues._descriptionImageUrls?.map(({ url }) => url)
+      delete newCampaignValues._descriptionImageUrls
 
       const address = await createCampaign(newCampaignValues)
 
@@ -274,7 +323,7 @@ const CreateContent = () => {
 
             <Button
               outline
-              color={Color.Light}
+              color="light"
               onClick={() => setShowCampaignDescriptionPreview((b) => !b)}
             >
               <div className="flex items-center gap-2">
@@ -293,17 +342,21 @@ const CreateContent = () => {
               <CampaignDetails
                 name={campaignName || "Your campaign"}
                 description={campaignDescription || "Your campaign description"}
-                imageUrl={campaignImageUrl}
                 website={campaignWebsite}
                 twitter={campaignTwitter}
                 discord={campaignDiscord}
+                profileImageUrl={campaignProfileImageUrl}
+                descriptionImageUrls={campaign_DescriptionImageUrls?.map(
+                  ({ url }) => url
+                )}
+                smallerCarousel
               />
             </div>
           ) : (
             <>
               <div className="lg:mx-2">
                 <FormInput
-                  label={newCampaignFields.name.label}
+                  label="Name"
                   placeholder="Name"
                   type="text"
                   error={errors.name?.message}
@@ -317,7 +370,7 @@ const CreateContent = () => {
                 />
 
                 <FormTextArea
-                  label={newCampaignFields.description.label}
+                  label="Description"
                   placeholder="Describe what your campaign is about (supports markdown)..."
                   rows={8}
                   error={errors.description?.message}
@@ -331,30 +384,80 @@ const CreateContent = () => {
                 />
 
                 <FormInput
-                  label={newCampaignFields.imageUrl.label}
+                  label="Profile Image URL"
                   placeholder="https://your.campaign/logo.png"
                   type="url"
                   spellCheck={false}
                   autoCorrect="off"
-                  error={errors.imageUrl?.message}
+                  error={errors.profileImageUrl?.message}
                   // Warn user that SVGs will not be supported in link previews.
                   accent={
-                    campaignImageUrl?.endsWith(".svg")
+                    campaignProfileImageUrl?.endsWith(".svg")
                       ? "SVG images will not show up in link previews. We recommend using a JPG or PNG instead."
                       : undefined
                   }
-                  {...register("imageUrl", {
+                  {...register("profileImageUrl", {
                     required: false,
                     pattern: urlPattern,
                   })}
                 />
+
+                <FormWrapper label="Description Image URLs">
+                  {/* Add new description image URL. */}
+                  <FormInput
+                    placeholder="https://your.campaign/campaign-1.png"
+                    type="url"
+                    spellCheck={false}
+                    autoCorrect="off"
+                    error={newDescriptionImageUrlError}
+                    value={newDescriptionImageUrl}
+                    onInput={(e) => {
+                      setNewDescriptionImageUrl(e.currentTarget.value)
+                      newDescriptionImageUrlError &&
+                        setNewDescriptionImageUrlError("")
+                    }}
+                    // Add image on enter key press.
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        addNewDescriptionImageUrl()
+                        e.preventDefault()
+                      }
+                    }}
+                    wrapperClassName={cn({
+                      "!mb-0": descriptionImageUrlsFields.length === 0,
+                      "!mb-2": descriptionImageUrlsFields.length > 0,
+                    })}
+                    ref={newDescriptionImageUrlRef}
+                  >
+                    <Button
+                      outline
+                      color="green"
+                      type="button"
+                      onClick={addNewDescriptionImageUrl}
+                    >
+                      <IoAdd size={24} />
+                    </Button>
+                  </FormInput>
+
+                  {descriptionImageUrlsFields.map((field, index) => (
+                    <ImageUrlField
+                      key={field.id}
+                      index={index}
+                      field={field}
+                      remove={() => descriptionImageUrlsRemove(index)}
+                      move={(from, to) => descriptionImageUrlsMove(from, to)}
+                    />
+                  ))}
+                </FormWrapper>
               </div>
+
               <h2 className="font-semibold text-2xl mb-8">
                 Community Platforms
               </h2>
+
               <div className="lg:mx-2">
                 <FormInput
-                  label={newCampaignFields.website.label}
+                  label="Website"
                   placeholder="https://your.campaign"
                   type="url"
                   spellCheck={false}
@@ -367,7 +470,7 @@ const CreateContent = () => {
                 />
 
                 <FormInput
-                  label={newCampaignFields.twitter.label}
+                  label="Twitter"
                   placeholder="@CampaignDAO"
                   type="text"
                   error={errors.twitter?.message}
@@ -382,7 +485,7 @@ const CreateContent = () => {
                 />
 
                 <FormInput
-                  label={newCampaignFields.discord.label}
+                  label="Discord"
                   placeholder="https://discord.gg/campaign"
                   type="url"
                   spellCheck={false}
@@ -401,10 +504,11 @@ const CreateContent = () => {
             </>
           )}
 
-          <h2 className="font-semibold text-2xl mb-8">Funding details</h2>
+          <h2 className="font-semibold text-2xl mb-8">Funding Details</h2>
+
           <div className="lg:mx-2">
             <FormInput
-              label={newCampaignFields.goal.label}
+              label="Funding Target"
               placeholder="10,000"
               type="number"
               inputMode="decimal"
@@ -442,7 +546,7 @@ const CreateContent = () => {
             />
 
             <FormInput
-              label={newCampaignFields.daoAddress.label}
+              label="DAO Address"
               placeholder="juno..."
               type="text"
               error={
@@ -468,7 +572,7 @@ const CreateContent = () => {
             />
 
             <FormInput
-              label={newCampaignFields.tokenName.label}
+              label="Campaign Token Name"
               description="The name of the tokens backers will receive for their contributions. These become exchangeable for the DAO's governance tokens when funding succeeds."
               placeholder="Funding Token"
               type="text"
@@ -483,7 +587,7 @@ const CreateContent = () => {
             />
 
             <FormInput
-              label={newCampaignFields.tokenSymbol.label}
+              label="Campaign Token Symbol"
               placeholder="TOKEN"
               type="text"
               error={errors.tokenSymbol?.message}
@@ -509,7 +613,7 @@ const CreateContent = () => {
                 fieldState: { error },
               }) => (
                 <FormSwitch
-                  label={newCampaignFields.hidden.label}
+                  label="Hide from public campaigns list"
                   description="Whether or not to hide this campaign from the public directory of active campaigns. You may want to turn this on if you plan to send a direct link to your community. Default is no."
                   error={error?.message}
                   onClick={() => onChange(!value)}

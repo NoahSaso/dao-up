@@ -18,9 +18,8 @@ import { numberPattern, prettyPrintDecimal } from "@/helpers"
 // Input
 
 interface UnforwardedInputProps
-  extends DetailedHTMLProps<
-    InputHTMLAttributes<HTMLInputElement>,
-    HTMLInputElement
+  extends PropsWithChildren<
+    DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>
   > {
   containerClassName?: string
   tail?: ReactNode
@@ -36,43 +35,55 @@ export const Input = forwardRef<HTMLInputElement, UnforwardedInputProps>(
       tailContainerClassName,
       tailClassName,
       disabled,
+      children,
       ...props
     },
     ref
   ) => (
-    <div className={cn("relative", containerClassName)}>
-      <input
-        className={cn(
-          "bg-card placeholder:text-placeholder",
-          "py-3 px-7 w-full",
-          "rounded-full",
-          "border border-card focus:outline-none focus:border-green",
-          "transition",
-          { "opacity-40 pointer-events-none cursor-not-allowed": disabled },
-          className
-        )}
-        disabled={disabled}
-        {...(props.type === "number" ? { step: 1e-6 } : {})}
-        {...props}
-        ref={ref}
-      />
-      {!!tail && (
-        <div
+    <div
+      className={cn(
+        "flex flex-row justify-between items-stretch gap-3",
+        containerClassName
+      )}
+    >
+      <div className="relative w-full flex-1">
+        <input
           className={cn(
-            "absolute top-[1px] right-[1px] bottom-[1px] rounded-full",
+            "bg-card placeholder:text-placeholder",
+            "py-3 px-7 w-full",
+            "rounded-full",
+            "border border-card focus:outline-none focus:border-green",
+            "transition",
             { "opacity-40 pointer-events-none cursor-not-allowed": disabled },
-            tailContainerClassName
+            className
           )}
-        >
+          disabled={disabled}
+          {...(props.type === "number" ? { step: 1e-6 } : {})}
+          {...props}
+          ref={ref}
+        />
+        {!!tail && (
           <div
             className={cn(
-              "h-full px-6 rounded-full bg-light flex items-center text-center text-dark",
-              tailClassName
+              "absolute top-[1px] right-[1px] bottom-[1px] rounded-full",
+              { "opacity-40 pointer-events-none cursor-not-allowed": disabled },
+              tailContainerClassName
             )}
           >
-            {tail}
+            <div
+              className={cn(
+                "h-full px-6 rounded-full bg-light flex items-center text-center text-dark",
+                tailClassName
+              )}
+            >
+              {tail}
+            </div>
           </div>
-        </div>
+        )}
+      </div>
+
+      {children && (
+        <div className="shrink-0 flex flex-row items-stretch">{children}</div>
       )}
     </div>
   )

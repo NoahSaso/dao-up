@@ -1,12 +1,15 @@
 import { QueryContractsByCodeResponse } from "cosmjs-types/cosmwasm/wasm/v1/query"
 import { atom, atomFamily, selector, selectorFamily, waitForAll } from "recoil"
 
-import { escrowContractCodeId } from "@/config"
+import { escrowContractCodeIds } from "@/config"
 import { extractPageInfo, parseError } from "@/helpers"
 import {
   campaignsFromResponses,
+  createDENSAddressMap,
   filterCampaigns,
   getCampaignState,
+  getDENSAddress,
+  getDENSNames,
   getDenyListAddresses,
   getFeaturedAddresses,
   getTokenInfo,
@@ -212,13 +215,17 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
       // Get featured addresses.
       const featuredAddresses = get(featuredCampaignAddressList)
 
+      // Get deNS address map.
+      const densAddressMap = get(fetchDENSAddressMap)
+
       // Transform data into campaign.
       const campaign = transformCampaign(
         address,
         state,
         campaignGovTokenBalance,
         daoGovTokenBalance,
-        featuredAddresses
+        featuredAddresses,
+        densAddressMap
       )
 
       if (!campaign) {
@@ -270,17 +277,17 @@ export const tokenInfo = selectorFamily<TokenInfoResponse, string>({
 
 export const escrowContractAddresses = selectorFamily<
   QueryContractsByCodeResponse | undefined,
-  { startAtKey?: number[] }
+  { codeId: number; startAtKey?: number[] }
 >({
   key: "escrowContractAddresses",
   get:
-    ({ startAtKey }) =>
+    ({ codeId, startAtKey }) =>
     async ({ get }) => {
       const queryClient = get(cosmWasmQueryClient)
       if (!queryClient) return
 
       return await queryClient.wasm.listContractsByCodeId(
-        escrowContractCodeId,
+        codeId,
         startAtKey && new Uint8Array(startAtKey)
       )
     },
@@ -301,24 +308,38 @@ export const pagedEscrowContractAddresses = selectorFamily<
       const queryClient = get(cosmWasmQueryClient)
       if (!queryClient) return { addresses, error: CommonError.GetClientFailed }
 
+      let codeIdIndex = 0
       let startAtKey: number[] | undefined = undefined
       do {
         const addressDenyList = get(campaignDenyList)
         const response = get(
           escrowContractAddresses({
+            codeId: escrowContractCodeIds[codeIdIndex],
             startAtKey: startAtKey && Array.from(startAtKey),
           })
         ) as QueryContractsByCodeResponse | undefined
 
-        if (response) {
-          const contracts = response.contracts.filter(
-            (a) => !addressDenyList.includes(a)
-          )
-          addresses.push(...contracts)
-          startAtKey = Array.from(response.pagination?.nextKey ?? [])
+        // If no response, move to next codeId.
+        if (!response) {
+          startAtKey = undefined
+          codeIdIndex++
+          continue
+        }
+
+        const contracts = response.contracts.filter(
+          (a) => !addressDenyList.includes(a)
+        )
+        addresses.push(...contracts)
+        startAtKey = Array.from(response.pagination?.nextKey ?? [])
+
+        // If exhausted all addresses for this code ID, move on.
+        if (!startAtKey.length) {
+          codeIdIndex++
         }
       } while (
-        startAtKey?.length !== 0 &&
+        // Keep going as long as there is another page key or the code ID is still valid.
+        (!!startAtKey?.length || codeIdIndex < escrowContractCodeIds.length) &&
+        // Keep going if not at pagination limit.
         (!page || addresses.length - 1 < page.endIndex)
       )
 
@@ -475,5 +496,33 @@ export const favoriteCampaigns = selector<CampaignsResponse>({
     const campaigns = campaignsFromResponses(campaignResponses, true, true)
 
     return { campaigns, hasMore: false, error: null }
+  },
+})
+
+export const densCampaignAddress = selectorFamily<string | null, string>({
+  key: "densCampaignAddress",
+  get:
+    (name) =>
+    async ({ get }) => {
+      const client = get(cosmWasmClient)
+      if (!client) return null
+
+      return await getDENSAddress(client, name)
+    },
+})
+
+// Map from campaign address to name.
+export const fetchDENSAddressMap = selector<DENSAddressMap>({
+  key: "fetchDENSAddressMap",
+  get: async ({ get }) => {
+    const client = get(cosmWasmClient)
+    if (!client) return {}
+
+    const names = await getDENSNames(client)
+    const addresses = get(
+      waitForAll(names.map((name) => densCampaignAddress(name)))
+    )
+
+    return createDENSAddressMap(names, addresses)
   },
 })
