@@ -160,7 +160,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
     walletTokenBalance(campaign?.fundingToken?.address)
   )
   // Load in background and swap 'visit' for 'join' link ASAP. No need to prevent page from displaying until this is ready.
-  const fundingTokenBalance =
+  const fundingTokenBalance: number | null =
     fundingTokenBalanceState === "hasValue" ? fundingTokenBalanceContents : null
 
   // Check gov token balance to show edit campaign form.
@@ -203,9 +203,6 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   // Handler for successful DAO join, show relevant alerts.
   const onRefundJoinDAOSuccess = async () => {
     if (status === CampaignStatus.Funded) {
-      // Hide contribution success message in case user joins the DAO from there.
-      setShowContributionSuccessAlert(false)
-
       // Show success message.
       setShowJoinDAOSuccessAlert(true)
 
@@ -368,37 +365,48 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
 
       {/* Contribution success alert. */}
       <Alert
-        visible={showContributionSuccessAlert}
+        // Only show if not funded.
+        // If just contributed and it's now funded, campaign funded message will appear instead as necessary.
+        visible={
+          status !== CampaignStatus.Funded && showContributionSuccessAlert
+        }
         hide={() => setShowContributionSuccessAlert(false)}
         title="Contribution successful!"
       >
-        {status === CampaignStatus.Funded ? (
-          <>
-            <p>
-              The campaign is now funded and you can join the{" "}
-              {daoUrl ? (
-                <a
-                  href={daoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline hover:no-underline"
-                >
-                  DAO
-                </a>
-              ) : (
-                "DAO"
-              )}
-              ! Join by clicking the button below.
-            </p>
+        <p>
+          Once the campaign is fully funded, return to this page to join the{" "}
+          <a
+            href={daoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:no-underline"
+          >
+            DAO
+          </a>
+          .
+        </p>
+      </Alert>
 
-            <form onSubmit={onSubmitRefundJoinDAO}>
-              <Button submitLabel="Join DAO" className="mt-5" cardOutline />
-            </form>
-          </>
-        ) : (
-          <p>
-            Once the campaign is fully funded, return to this page to join the{" "}
-            {daoUrl ? (
+      {/* Campaign funded alert if needs to join DAO. */}
+      <Alert
+        visible={status === CampaignStatus.Funded && !!fundingTokenBalance}
+        title="Campaign funded!"
+        belowLoaders
+      >
+        <p>
+          Now join the{" "}
+          <a
+            href={daoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:no-underline"
+          >
+            DAO
+          </a>
+          . Joining:
+          <ol className="list-disc pl-8 mt-2">
+            <li>
+              sends the{" "}
               <a
                 href={daoUrl}
                 target="_blank"
@@ -406,13 +414,27 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
                 className="underline hover:no-underline"
               >
                 DAO
-              </a>
-            ) : (
-              "DAO"
-            )}
-            .
-          </p>
-        )}
+              </a>{" "}
+              your contribution
+            </li>
+            <li>
+              lets you participate in the{" "}
+              <a
+                href={daoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:no-underline"
+              >
+                DAO
+              </a>{" "}
+              by sending you governance tokens
+            </li>
+          </ol>
+        </p>
+
+        <form onSubmit={onSubmitRefundJoinDAO}>
+          <Button submitLabel="Join DAO" className="mt-5" cardOutline />
+        </form>
       </Alert>
 
       {/* Join DAO success alert. */}
@@ -423,18 +445,14 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
       >
         <p>
           You will vote in the{" "}
-          {daoUrl ? (
-            <a
-              href={daoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:no-underline"
-            >
-              DAO
-            </a>
-          ) : (
-            "DAO"
-          )}{" "}
+          <a
+            href={daoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:no-underline"
+          >
+            DAO
+          </a>{" "}
           on DAO DAO going forward.
         </p>
 
