@@ -1,28 +1,10 @@
 # Updating a campaign
 
 After a campaign is created, the fundraising DAO may want to update
-information about the campaign. This occurs through a proposal, so
-we tried to make it pretty easy for you to create an update proposal
-on the DAO Up! UI.
+information about the campaign. This occurs through a proposal.
 
 Note that only the fundraising DAO may update a campaign's
 configuration, not the wallet that created the campaign initially.
-
-## Creating the proposal via the DAO Up! UI
-
-If you have governance tokens in the DAO, a button should appear
-on the campaign page to edit the details. This will take you to
-a form with the current campaign details already filled in.
-
-Submitting the form will create a proposal in your DAO with a default
-description, and DAO members will be able to vote on the proposal.
-Once it is passed and executed, the campaign details will update
-immediately.
-
-You can also create the proposal manually via the
-[DAO DAO](https://daodao.zone/) UI.
-
-## Creating the proposal manually
 
 To create the proposal manually, the fundraising DAO needs to
 execute the `update_campaign` method on the campaign contract address.
