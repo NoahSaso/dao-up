@@ -15,7 +15,7 @@ interface ImageUrlDropResult {
 
 interface ImageUrlFieldProps {
   index: number
-  field: FieldArrayWithId<NewCampaign, "_imageUrls", "id">
+  field: FieldArrayWithId<NewCampaign, "_descriptionImageUrls", "id">
   remove: () => void
   move: (from: number, to: number) => void
 }

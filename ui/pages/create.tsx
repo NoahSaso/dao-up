@@ -384,7 +384,7 @@ const CreateContent = () => {
                 />
 
                 <FormInput
-                  label="Image URL"
+                  label="Profile Image URL"
                   placeholder="https://your.campaign/logo.png"
                   type="url"
                   spellCheck={false}
@@ -402,7 +402,7 @@ const CreateContent = () => {
                   })}
                 />
 
-                <FormWrapper label="Carousel Image URLs">
+                <FormWrapper label="Description Image URLs">
                   {/* Add new description image URL. */}
                   <FormInput
                     placeholder="https://your.campaign/campaign-1.png"
