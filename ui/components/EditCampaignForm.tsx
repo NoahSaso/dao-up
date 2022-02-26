@@ -196,7 +196,7 @@ export const EditCampaignForm: FunctionComponent<EditCampaignFormProps> = ({
   return (
     <DndProvider backend={HTML5Backend}>
       <form
-        className="flex flex-col"
+        className="flex flex-col w-full"
         onSubmit={handleSubmit(_onSubmit)}
         ref={setFormRef}
       >

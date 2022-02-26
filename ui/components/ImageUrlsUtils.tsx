@@ -57,15 +57,16 @@ export const ImageUrlField: FunctionComponent<ImageUrlFieldProps> = ({
 
   return (
     <div className="relative cursor-move" ref={dragRef}>
-      <div className="flex flex-row justify-between items-start pl-5 py-3 pr-0">
-        <h3
-          className={cn("flex-1 text-green", {
+      <h3
+        className={cn(
+          "pl-5 py-3 pr-8 text-ellipsis overflow-hidden whitespace-nowrap text-green",
+          {
             "opacity-50": isDragging,
-          })}
-        >
-          {field.url}
-        </h3>
-      </div>
+          }
+        )}
+      >
+        {field.url}
+      </h3>
 
       {/* Dropzones for before and after this field. */}
       <ImageUrlDropzone
