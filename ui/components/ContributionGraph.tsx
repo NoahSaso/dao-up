@@ -8,17 +8,18 @@ import {
 import { FunctionComponent } from "react"
 import { Line } from "react-chartjs-2"
 
-import { payTokenSymbol } from "@/config"
 import theme from "@/theme"
 import { CampaignActionType } from "@/types"
 
 ChartJS.register(LinearScale, LineElement, CategoryScale, PointElement)
 
 interface ContributionGraphProps {
+  campaign: Campaign
   actions: CampaignAction[]
 }
 
 export const ContributionGraph: FunctionComponent<ContributionGraphProps> = ({
+  campaign: { payToken },
   actions,
 }) => {
   const cumSum = (
@@ -55,7 +56,7 @@ export const ContributionGraph: FunctionComponent<ContributionGraphProps> = ({
           y: {
             display: true,
             title: {
-              text: payTokenSymbol,
+              text: payToken.label,
               display: true,
               color: theme.colors.gray,
             },

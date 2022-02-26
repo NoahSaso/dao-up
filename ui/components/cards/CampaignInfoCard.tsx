@@ -11,7 +11,6 @@ import {
   CardWrapper,
   PencilIcon,
 } from "@/components"
-import { payTokenSymbol } from "@/config"
 import { prettyPrintDecimal } from "@/helpers"
 
 interface CampaignInfoCardProps {
@@ -29,6 +28,7 @@ export const CampaignInfoCard: FunctionComponent<CampaignInfoCardProps> = ({
 }) => {
   const {
     version,
+    payToken,
     pledged,
     goal,
     dao: { url: daoUrl },
@@ -64,10 +64,10 @@ export const CampaignInfoCard: FunctionComponent<CampaignInfoCardProps> = ({
       <CampaignProgress campaign={campaign} className="mt-2 text-md" />
 
       <h3 className="mt-2 text-green text-3xl">
-        {prettyPrintDecimal(pledged)} {payTokenSymbol}
+        {prettyPrintDecimal(pledged)} {payToken.label}
       </h3>
       <p className="text-light text-sm">
-        pledged out of {goal.toLocaleString()} {payTokenSymbol} goal.
+        pledged out of {goal.toLocaleString()} {payToken.label} goal.
       </p>
       {/* TODO: Display backers. */}
       {/* <h3 className="mt-6 text-green text-3xl">{backers.toLocaleString()}</h3>

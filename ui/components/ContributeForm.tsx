@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form"
 import { useSetRecoilState } from "recoil"
 
 import { Button, FormInput, Suspense } from "@/components"
-import { payTokenSymbol } from "@/config"
 import { numberPattern, prettyPrintDecimal } from "@/helpers"
 import { useContributeCampaign, useWallet } from "@/hooks"
 import { favoriteCampaignAddressesAtom } from "@/state"
@@ -32,6 +31,7 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
   onSuccess,
 }) => {
   const {
+    payToken,
     goal,
     pledged,
 
@@ -116,7 +116,7 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
         }
         wrapperClassName="!mb-4 sm:!mb-0 sm:mr-4 sm:flex-1"
         className="!py-3 !px-6 !pr-28"
-        tail={payTokenSymbol}
+        tail={payToken.label}
         error={
           errors?.contribution?.message ?? contributeCampaignError ?? undefined
         }
@@ -126,15 +126,15 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
           pattern: numberPattern,
           min: {
             value: minContribution,
-            message: `Must be at least ${prettyPrintDecimal(
-              minContribution
-            )} ${payTokenSymbol}.`,
+            message: `Must be at least ${prettyPrintDecimal(minContribution)} ${
+              payToken.label
+            }.`,
           },
           max: {
             value: maxContribution,
             message: `Must be less than or equal to ${prettyPrintDecimal(
               maxContribution
-            )} ${payTokenSymbol}.`,
+            )} ${payToken.label}.`,
           },
         })}
       />

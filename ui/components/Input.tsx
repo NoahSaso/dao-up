@@ -10,7 +10,7 @@ import {
   useState,
 } from "react"
 import { Control, Controller, FieldValues } from "react-hook-form"
-import { IoCaretDownSharp } from "react-icons/io5"
+import { IoCaretDown } from "react-icons/io5"
 
 import { Button } from "@/components"
 import { numberPattern, prettyPrintDecimal } from "@/helpers"
@@ -220,7 +220,7 @@ export const DoubleInput = forwardRef<
           className="h-full px-6 !border-none !text-dark flex flex-row items-center"
         >
           {tailContent ?? shared.tail}
-          <IoCaretDownSharp size={18} className="ml-2" />
+          <IoCaretDown size={18} className="ml-2" />
         </Button>
       ),
     })

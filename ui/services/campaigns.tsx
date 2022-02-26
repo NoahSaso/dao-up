@@ -1,7 +1,7 @@
 import fuzzysort from "fuzzysort"
 import _merge from "lodash.merge"
 
-import { daoUrlPrefix } from "@/config"
+import { daoUrlPrefix, minPayTokenSymbol, payTokenSymbol } from "@/config"
 import { getFilterFns, parseError } from "@/helpers"
 import {
   CampaignContractVersion,
@@ -9,7 +9,22 @@ import {
   CampaignVersionedStatus,
 } from "@/types"
 
+export const payTokens: PayToken[] = [
+  // Default chain symbol (probably juno(x))
+  {
+    label: payTokenSymbol,
+    denom: minPayTokenSymbol,
+  },
+  {
+    label: "UST",
+    denom:
+      "ibc/BE1BB42D4BE3C30D50B68D7C41DB4DFCE9678E8EF8C539F6E6A9345048894FCC",
+  },
+]
+
 export const defaultNewCampaign: Partial<NewCampaignInfo> = {
+  // Default to first payToken, which should be juno(x).
+  payTokenDenom: payTokens[0].denom,
   hidden: false,
   descriptionImageUrls: [],
   _descriptionImageUrls: [],
@@ -150,6 +165,10 @@ export const transformCampaign = (
     ...state
   } = campaignState ?? {}
 
+  const payToken = payTokens.find(
+    ({ denom }) => denom === state.funding_goal.denom
+  )
+
   if (
     typeof campaignGovTokenBalance !== "number" ||
     typeof daoGovTokenBalance !== "number" ||
@@ -157,7 +176,8 @@ export const transformCampaign = (
     !fundingTokenInfo ||
     !govTokenInfo ||
     !state ||
-    !campaignState
+    !campaignState ||
+    !payToken
   ) {
     return null
   }
@@ -195,6 +215,7 @@ export const transformCampaign = (
     hidden: campaignInfo.hidden,
     featured: featuredAddresses?.includes(address) ?? false,
 
+    payToken,
     goal: Number(state.funding_goal.amount) / 1e6,
     pledged: Number(state.funds_raised.amount) / 1e6,
     // backers: ,
@@ -253,3 +274,11 @@ export const transformCampaign = (
 
   return _merge(baseFields, versionedFields)
 }
+
+export const getPayTokenLabel = (denom: string) =>
+  payTokens.find(({ denom: d }) => d === denom)?.label ?? "Unknown"
+
+export const getNextPayTokenDenom = (denom: string) =>
+  payTokens[
+    (payTokens.findIndex(({ denom: d }) => d === denom) + 1) % payTokens.length
+  ].denom

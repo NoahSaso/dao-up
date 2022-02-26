@@ -17,7 +17,6 @@ import {
   cw20CodeId,
   daoUpDAOAddress,
   daoUpFee,
-  minPayTokenSymbol,
   title,
 } from "@/config"
 import { parseError } from "@/helpers"
@@ -79,7 +78,7 @@ const CreateContent = () => {
         // Round so that this value is an integer in case JavaScript does any weird floating point stuff.
         funding_goal: coin(
           Math.round(newCampaign.goal * 1e6),
-          minPayTokenSymbol
+          newCampaign.payTokenDenom
         ),
         funding_token_name: newCampaign.tokenName,
         funding_token_symbol: newCampaign.tokenSymbol,

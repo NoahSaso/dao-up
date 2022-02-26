@@ -7,7 +7,6 @@ import {
   ControlledFormPercentTokenDoubleInput,
   Suspense,
 } from "@/components"
-import { payTokenSymbol } from "@/config"
 import { prettyPrintDecimal } from "@/helpers"
 import { useRefundJoinDAOForm } from "@/hooks"
 import { walletTokenBalance } from "@/state"
@@ -44,6 +43,8 @@ const BalanceRefundJoinCardContents: FunctionComponent<
 }) => {
   const {
     status,
+
+    payToken,
 
     fundingToken: {
       address: fundingTokenAddress,
@@ -181,7 +182,7 @@ const BalanceRefundJoinCardContents: FunctionComponent<
                     expectedPayTokensReceived
                       ? `You will receive about ${prettyPrintDecimal(
                           expectedPayTokensReceived
-                        )} ${payTokenSymbol}`
+                        )} ${payToken.label}`
                       : undefined
                   }
                   error={

@@ -19,8 +19,16 @@ import {
   UseFormSetValue,
   UseFormWatch,
 } from "react-hook-form"
-import { IoAdd, IoCheckmark, IoEye, IoEyeOff, IoWarning } from "react-icons/io5"
+import {
+  IoAdd,
+  IoCaretDown,
+  IoCheckmark,
+  IoEye,
+  IoEyeOff,
+  IoWarning,
+} from "react-icons/io5"
 import { useRecoilValueLoadable, useSetRecoilState } from "recoil"
+import { getNextPayTokenDenom, getPayTokenLabel } from "services/campaigns"
 
 import {
   Button,
@@ -32,7 +40,7 @@ import {
   ImageUrlField,
   Loader,
 } from "@/components"
-import { daoUpFeeNum, payTokenSymbol } from "@/config"
+import { daoUpFeeNum } from "@/config"
 import {
   daoAddressPattern,
   getScrollableParent,
@@ -466,6 +474,10 @@ const FundingDetailsContent: FunctionComponent<FundingDetailsContentProps> = ({
     ? Math.ceil(watchGoal / (1 - daoUpFeeNum))
     : undefined
 
+  // Pay token.
+  const watchPayTokenDenom = watch("payTokenDenom")
+  const watchPayTokenLabel = getPayTokenLabel(watchPayTokenDenom)
+
   return (
     <>
       <h2 className="font-semibold text-2xl mb-8">Funding Details</h2>
@@ -477,14 +489,30 @@ const FundingDetailsContent: FunctionComponent<FundingDetailsContentProps> = ({
           type="number"
           inputMode="decimal"
           className="!pr-28"
-          tail={payTokenSymbol}
+          // Move padding to button so the whole tail is clickable.
+          tailClassName="!p-0 bg-light/70"
+          tail={
+            <Button
+              onClick={() =>
+                setValue(
+                  "payTokenDenom",
+                  getNextPayTokenDenom(watchPayTokenDenom)
+                )
+              }
+              color="light"
+              className="h-full px-6 !border-none !text-dark flex flex-row items-center gap-2"
+            >
+              {watchPayTokenLabel}
+              <IoCaretDown size={18} />
+            </Button>
+          }
           error={errors.goal?.message}
           accent={
             goalReceived && raiseToGoal ? (
               <>
                 DAO Up! will take a 3% cut and you&apos;ll receive{" "}
                 <span className="text-light">
-                  {prettyPrintDecimal(goalReceived)} {payTokenSymbol}
+                  {prettyPrintDecimal(goalReceived)} {watchPayTokenLabel}
                 </span>
                 .{" "}
                 <Button
@@ -492,9 +520,9 @@ const FundingDetailsContent: FunctionComponent<FundingDetailsContentProps> = ({
                   className="inline underline"
                   onClick={() => setValue("goal", raiseToGoal)}
                 >
-                  Raise {prettyPrintDecimal(raiseToGoal)} {payTokenSymbol}
+                  Raise {prettyPrintDecimal(raiseToGoal)} {watchPayTokenLabel}
                 </Button>{" "}
-                to receive {prettyPrintDecimal(watchGoal)} {payTokenSymbol}.
+                to receive {prettyPrintDecimal(watchGoal)} {watchPayTokenLabel}.
               </>
             ) : undefined
           }

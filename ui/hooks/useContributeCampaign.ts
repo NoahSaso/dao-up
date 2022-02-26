@@ -2,7 +2,6 @@ import { coins } from "@cosmjs/stargate"
 import { useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
-import { minPayTokenSymbol } from "@/config"
 import { parseError } from "@/helpers"
 import { useRefreshCampaign, useWallet } from "@/hooks"
 import { globalLoadingAtom, signedCosmWasmClient } from "@/state"
@@ -49,7 +48,7 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
           undefined,
           // JavaScript thinks 16.31 * 1e6 = 16309999.999999998 for some reason.
           // Round so that this value is an integer...
-          coins(Math.round(amount * 1e6), minPayTokenSymbol)
+          coins(Math.round(amount * 1e6), campaign.payToken.denom)
         )
 
         // Update campaign state.
