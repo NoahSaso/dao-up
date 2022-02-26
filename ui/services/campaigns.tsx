@@ -9,7 +9,7 @@ import {
   CampaignVersionedStatus,
 } from "@/types"
 
-import { tokens as ibcAssetsTokens } from "./ibc_assets.json"
+import ibcAssets from "./ibc_assets.json"
 
 const allowedIBCAssets = ["UST"]
 export const payTokens: PayToken[] = [
@@ -19,7 +19,9 @@ export const payTokens: PayToken[] = [
     denom: minPayTokenSymbol,
     junoDenom: minPayTokenSymbol,
   },
-  ...ibcAssetsTokens.filter((token) => allowedIBCAssets.includes(token.symbol)),
+  ...ibcAssets.tokens.filter((token) =>
+    allowedIBCAssets.includes(token.symbol)
+  ),
 ]
 
 export const defaultNewCampaign: Partial<NewCampaignInfo> = {
