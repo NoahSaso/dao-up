@@ -140,7 +140,9 @@ const CreateContent = () => {
 
       <CenteredColumn className="py-6 max-w-3xl">
         <EditCampaignForm
-          title="Create a new campaign"
+          title={
+            <h1 className="font-semibold text-4xl">Create a new campaign</h1>
+          }
           submitLabel="Create campaign"
           error={createCampaignError}
           creating

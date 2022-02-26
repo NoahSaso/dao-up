@@ -467,25 +467,26 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
         title="Update campaign"
         className="!max-w-4xl"
       >
-        <p className="mb-5">
-          This form will submit a new proposal to the{" "}
-          {daoUrl ? (
-            <a
-              href={daoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:no-underline"
-            >
-              DAO
-            </a>
-          ) : (
-            "DAO"
-          )}{" "}
-          on DAO DAO. Once this proposal is approved and executed, the campaign
-          will be updated.
-        </p>
-
         <EditCampaignForm
+          title={
+            <p className="flex-1 min-w-full md:min-w-0">
+              This form will submit a new proposal to the{" "}
+              {daoUrl ? (
+                <a
+                  href={daoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:no-underline"
+                >
+                  DAO
+                </a>
+              ) : (
+                "DAO"
+              )}{" "}
+              on DAO DAO. Once this proposal is approved and executed, the
+              campaign will be updated.
+            </p>
+          }
           submitLabel="Create update proposal"
           error={editCampaignError}
           creating={false}

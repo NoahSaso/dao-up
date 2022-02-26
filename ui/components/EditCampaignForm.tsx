@@ -1,6 +1,7 @@
 import cn from "classnames"
 import {
   FunctionComponent,
+  ReactNode,
   useCallback,
   useEffect,
   useRef,
@@ -52,7 +53,7 @@ type FormValues<T extends boolean = boolean> = T extends true
 type OnSubmitForm<T extends boolean> = SubmitHandler<FormValues<T>>
 
 type EditCampaignFormProps = {
-  title?: string
+  title?: ReactNode
   submitLabel: string
   error?: string | null
 } & (
@@ -200,8 +201,8 @@ export const EditCampaignForm: FunctionComponent<EditCampaignFormProps> = ({
         onSubmit={handleSubmit(_onSubmit)}
         ref={setFormRef}
       >
-        <div className="flex items-center justify-between flex-wrap gap-4 mb-8">
-          {!!title && <h1 className="font-semibold text-4xl">{title}</h1>}
+        <div className="flex flex-row justify-between items-center flex-wrap gap-4 mb-8">
+          {title}
 
           <Button
             outline
