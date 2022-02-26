@@ -1,7 +1,7 @@
 import { QueryContractsByCodeResponse } from "cosmjs-types/cosmwasm/wasm/v1/query"
 import { atom, atomFamily, selector, selectorFamily, waitForAll } from "recoil"
 
-import { escrowContractCodeId } from "@/config"
+import { escrowContractCodeIds } from "@/config"
 import { extractPageInfo, parseError } from "@/helpers"
 import {
   campaignsFromResponses,
@@ -247,7 +247,7 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
     },
 })
 
-export const tokenInfo = selectorFamily<TokenInfoResponse, string>({
+export const tokenInfo = selectorFamily<TokenInfoSelectorResponse, string>({
   key: "tokenInfo",
   get:
     (address) =>
@@ -277,17 +277,17 @@ export const tokenInfo = selectorFamily<TokenInfoResponse, string>({
 
 export const escrowContractAddresses = selectorFamily<
   QueryContractsByCodeResponse | undefined,
-  { startAtKey?: number[] }
+  { codeId: number; startAtKey?: number[] }
 >({
   key: "escrowContractAddresses",
   get:
-    ({ startAtKey }) =>
+    ({ codeId, startAtKey }) =>
     async ({ get }) => {
       const queryClient = get(cosmWasmQueryClient)
       if (!queryClient) return
 
       return await queryClient.wasm.listContractsByCodeId(
-        escrowContractCodeId,
+        codeId,
         startAtKey && new Uint8Array(startAtKey)
       )
     },
@@ -308,24 +308,38 @@ export const pagedEscrowContractAddresses = selectorFamily<
       const queryClient = get(cosmWasmQueryClient)
       if (!queryClient) return { addresses, error: CommonError.GetClientFailed }
 
+      let codeIdIndex = 0
       let startAtKey: number[] | undefined = undefined
       do {
         const addressDenyList = get(campaignDenyList)
         const response = get(
           escrowContractAddresses({
+            codeId: escrowContractCodeIds[codeIdIndex],
             startAtKey: startAtKey && Array.from(startAtKey),
           })
         ) as QueryContractsByCodeResponse | undefined
 
-        if (response) {
-          const contracts = response.contracts.filter(
-            (a) => !addressDenyList.includes(a)
-          )
-          addresses.push(...contracts)
-          startAtKey = Array.from(response.pagination?.nextKey ?? [])
+        // If no response, move to next codeId.
+        if (!response) {
+          startAtKey = undefined
+          codeIdIndex++
+          continue
+        }
+
+        const contracts = response.contracts.filter(
+          (a) => !addressDenyList.includes(a)
+        )
+        addresses.push(...contracts)
+        startAtKey = Array.from(response.pagination?.nextKey ?? [])
+
+        // If exhausted all addresses for this code ID, move on.
+        if (!startAtKey.length) {
+          codeIdIndex++
         }
       } while (
-        startAtKey?.length !== 0 &&
+        // Keep going as long as there is another page key or the code ID is still valid.
+        (!!startAtKey?.length || codeIdIndex < escrowContractCodeIds.length) &&
+        // Keep going if not at pagination limit.
         (!page || addresses.length - 1 < page.endIndex)
       )
 

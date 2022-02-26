@@ -1,4 +1,8 @@
-import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate"
+import {
+  CosmWasmClient,
+  SigningCosmWasmClient,
+} from "@cosmjs/cosmwasm-stargate"
+import { findAttribute } from "@cosmjs/stargate/build/logs"
 
 import {
   densContractAddress,
@@ -41,7 +45,7 @@ export const getDenyListAddresses = async (client: CosmWasmClient) =>
 export const getCampaignState = async (
   client: CosmWasmClient,
   campaignAddress: string
-) =>
+): Promise<CampaignDumpStateResponse> =>
   client.queryContractSmart(campaignAddress, {
     dump_state: {},
   })
@@ -49,7 +53,7 @@ export const getCampaignState = async (
 export const getTokenInfo = async (
   client: CosmWasmClient,
   tokenAddress: string
-) =>
+): Promise<TokenInfoResponse> =>
   client.queryContractSmart(tokenAddress, {
     token_info: {},
   })
@@ -130,3 +134,35 @@ export const createDENSAddressMap = (
     }),
     {}
   )
+
+export const createDAOProposalForCampaign = async (
+  client: SigningCosmWasmClient,
+  walletAddress: string,
+  campaign: Campaign,
+  // Response of DAO's get_config.
+  dao: any,
+  msg: any
+) => {
+  const daoProposalDeposit = Number(dao.config?.proposal_deposit)
+  if (!isNaN(daoProposalDeposit) && daoProposalDeposit > 0)
+    await client.execute(
+      walletAddress,
+      campaign.govToken.address,
+      {
+        increase_allowance: {
+          amount: dao.config.proposal_deposit,
+          spender: campaign.dao.address,
+        },
+      },
+      "auto"
+    )
+
+  const response = await client.execute(
+    walletAddress,
+    campaign.dao.address,
+    msg,
+    "auto"
+  )
+
+  return findAttribute(response.logs, "wasm", "proposal_id").value
+}

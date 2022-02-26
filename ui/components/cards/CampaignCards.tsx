@@ -7,7 +7,7 @@ import {
   CampaignFavoriteToggle,
   CampaignImage,
   CampaignProgress,
-  CampaignStatus,
+  CampaignStatusIndicator,
   CardWrapper,
   Loader,
 } from "@/components"
@@ -17,6 +17,7 @@ import { walletTokenBalance } from "@/state"
 interface CampaignCardWrapperProps extends PropsWithChildren<CampaignProps> {
   contentClassName?: string
   forceColumn?: boolean
+  lessPaddingOnLg?: boolean
 }
 
 const CampaignCardWrapper: FunctionComponent<CampaignCardWrapperProps> = ({
@@ -29,8 +30,7 @@ const CampaignCardWrapper: FunctionComponent<CampaignCardWrapperProps> = ({
   return (
     <CardWrapper
       className={cn(
-        // The campaigns list splits into two columns at lg, and these cards become narrow again, so reduce padding and then increase again.
-        "border border-card hover:border-green transition cursor-pointer relative lg:p-6 2xl:p-8",
+        "border border-card hover:border-green transition cursor-pointer relative",
         className
       )}
     >
@@ -45,7 +45,7 @@ const CampaignCardWrapper: FunctionComponent<CampaignCardWrapperProps> = ({
           "sm:flex-row": !forceColumn,
         })}
       >
-        <CampaignImage imageUrl={campaign.imageUrl} />
+        <CampaignImage url={campaign.profileImageUrl} />
         <div
           className={cn(
             "flex flex-col items-stretch flex-1",
@@ -68,7 +68,11 @@ export const AllCampaignsCard: FunctionComponent<CampaignProps> = ({
   campaign,
   className,
 }) => (
-  <CampaignCardWrapper campaign={campaign} className={className}>
+  <CampaignCardWrapper
+    campaign={campaign}
+    // The campaigns list splits into two columns at lg, and these cards become narrow again, so reduce padding and then increase again.
+    className={cn("lg:p-6 2xl:p-8", className)}
+  >
     <CampaignProgress
       campaign={campaign}
       className="mt-2"
@@ -90,8 +94,12 @@ export const CreatorCampaignCard: FunctionComponent<CampaignProps> = ({
   campaign,
   className,
 }) => (
-  <CampaignCardWrapper campaign={campaign} className={className}>
-    <CampaignStatus campaign={campaign} />
+  <CampaignCardWrapper
+    campaign={campaign}
+    // The campaigns list splits into two columns at lg, and these cards become narrow again, so reduce padding and then increase again.
+    className={cn("lg:p-6 2xl:p-8", className)}
+  >
+    <CampaignStatusIndicator campaign={campaign} />
 
     <CampaignProgress campaign={campaign} className="mt-4" showPledged />
   </CampaignCardWrapper>
@@ -117,8 +125,12 @@ export const FavoriteCampaignCard: FunctionComponent<CampaignProps> = ({
     balance && fundingTokenSupply && (100 * balance) / fundingTokenSupply
 
   return (
-    <CampaignCardWrapper campaign={campaign} className={className}>
-      <CampaignStatus campaign={campaign} className="shrink-0" />
+    <CampaignCardWrapper
+      campaign={campaign}
+      // The campaigns list splits into two columns at lg, and these cards become narrow again, so reduce padding and then increase again.
+      className={cn("lg:p-6 2xl:p-8", className)}
+    >
+      <CampaignStatusIndicator campaign={campaign} className="shrink-0" />
       <CampaignProgress campaign={campaign} thin />
 
       <div className="flex flex-row items-end gap-2 mt-5">
@@ -147,7 +159,8 @@ export const HomepageFeaturedCampaignCard: FunctionComponent<CampaignProps> = ({
 }) => (
   <CampaignCardWrapper
     campaign={campaign}
-    contentClassName="!ml-0 !mt-3 md:w-72"
+    className="max-w-full w-full xs:w-[21.6rem] sm:w-[23rem] xl:w-[24rem]"
+    contentClassName="!ml-0 !mt-3"
     forceColumn
   >
     <CampaignProgress campaign={campaign} className="mt-2" showPledged />

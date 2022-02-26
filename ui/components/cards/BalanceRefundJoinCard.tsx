@@ -11,7 +11,7 @@ import { payTokenSymbol } from "@/config"
 import { prettyPrintDecimal } from "@/helpers"
 import { useRefundJoinDAOForm } from "@/hooks"
 import { walletTokenBalance } from "@/state"
-import { Status } from "@/types"
+import { CampaignStatus } from "@/types"
 
 interface BalanceRefundJoinCardProps {
   campaign: Campaign
@@ -112,7 +112,7 @@ const BalanceRefundJoinCardContents: FunctionComponent<
       )}
 
       {/* Show funding token balance if funded and has not yet swapped to governance tokens, or if no governance tokens at all so we don't show an empty card. */}
-      {(status !== Status.Funded ||
+      {(status !== CampaignStatus.Funded ||
         !!fundingTokenBalance ||
         !govTokenBalance) && (
         <>
@@ -142,16 +142,16 @@ const BalanceRefundJoinCardContents: FunctionComponent<
         </>
       )}
 
-      {(status === Status.Open || status === Status.Funded) &&
+      {(status === CampaignStatus.Open || status === CampaignStatus.Funded) &&
         fundingTokenBalance !== null &&
         fundingTokenBalance > 0 && (
           <>
-            {status !== Status.Funded && (
+            {status !== CampaignStatus.Funded && (
               <h2 className="text-xl text-green mt-6 mb-4">Refunds</h2>
             )}
 
             <form onSubmit={onSubmit}>
-              {status === Status.Funded ? (
+              {status === CampaignStatus.Funded ? (
                 <>
                   <p className="text-placeholder italic">
                     This campaign has been successfully funded. To join the DAO,
@@ -161,41 +161,34 @@ const BalanceRefundJoinCardContents: FunctionComponent<
                   <Button submitLabel="Join DAO" className="mt-4" />
                 </>
               ) : (
-                <div className="flex flex-row items-start gap-4">
-                  <ControlledFormPercentTokenDoubleInput
-                    name="refund"
-                    control={control}
-                    minValue={minRefund}
-                    maxValue={fundingTokenBalance}
-                    currency={fundingTokenSymbol}
-                    first={{
-                      placeholder: "50",
-                    }}
-                    second={{
-                      placeholder: prettyPrintDecimal(
-                        fundingTokenBalance * 0.5
-                      ),
-                    }}
-                    shared={{
-                      disabled: status !== Status.Open,
-                    }}
-                    accent={
-                      expectedPayTokensReceived
-                        ? `You will receive about ${prettyPrintDecimal(
-                            expectedPayTokensReceived
-                          )} ${payTokenSymbol}`
-                        : undefined
-                    }
-                    error={
-                      errors?.refund?.message ??
-                      refundCampaignError ??
-                      undefined
-                    }
-                    wrapperClassName="mb-0 flex-1"
-                  />
-
-                  <Button submitLabel="Refund" className="h-[50px]" />
-                </div>
+                <ControlledFormPercentTokenDoubleInput
+                  name="refund"
+                  control={control}
+                  minValue={minRefund}
+                  maxValue={fundingTokenBalance}
+                  currency={fundingTokenSymbol}
+                  first={{
+                    placeholder: "50",
+                  }}
+                  second={{
+                    placeholder: prettyPrintDecimal(fundingTokenBalance * 0.5),
+                  }}
+                  shared={{
+                    disabled: status !== CampaignStatus.Open,
+                    children: <Button submitLabel="Refund" />,
+                  }}
+                  accent={
+                    expectedPayTokensReceived
+                      ? `You will receive about ${prettyPrintDecimal(
+                          expectedPayTokensReceived
+                        )} ${payTokenSymbol}`
+                      : undefined
+                  }
+                  error={
+                    errors?.refund?.message ?? refundCampaignError ?? undefined
+                  }
+                  wrapperClassName="mb-0"
+                />
               )}
             </form>
           </>

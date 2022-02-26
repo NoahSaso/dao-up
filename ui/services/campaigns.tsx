@@ -1,104 +1,39 @@
 import fuzzysort from "fuzzysort"
+import _merge from "lodash.merge"
 
 import { daoUrlPrefix } from "@/config"
-import { getFilterFns, prettyPrintDecimal } from "@/helpers"
-import { Status } from "@/types"
+import { getFilterFns, parseError } from "@/helpers"
+import {
+  CampaignContractVersion,
+  CampaignStatus,
+  CampaignVersionedStatus,
+} from "@/types"
 
-const renderString = (v: string) => v
-const renderBoolean = (v: boolean) => (v ? "Yes" : "No")
-const makeRenderNumber =
-  (maxDecimals?: number, minDecimals?: number) => (v: number) =>
-    prettyPrintDecimal(v, maxDecimals, minDecimals)
-
-const renderImageUrl = (imageUrl?: string) => (
-  <>
-    {imageUrl}
-    {!!imageUrl && (
-      // image is being loaded from anywhere, so can't use next image component
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={imageUrl} alt="" className="mt-2 max-w-[14rem]" />
-    )}
-  </>
-)
-
-export const newCampaignFields: Record<NewCampaignFieldKey, NewCampaignField> =
-  {
-    name: {
-      label: "Name",
-      pageId: 1,
-      required: true,
-      render: renderString,
-    },
-    description: {
-      label: "Description",
-      pageId: 1,
-      required: true,
-      render: renderString,
-    },
-    imageUrl: {
-      label: "Image URL",
-      pageId: 1,
-      required: false,
-      render: renderImageUrl,
-    },
-    goal: {
-      label: "Funding Target",
-      pageId: 1,
-      required: true,
-      unitBefore: (_) => "$",
-      render: makeRenderNumber(2, 2),
-    },
-    daoAddress: {
-      label: "DAO Address",
-      pageId: 1,
-      required: true,
-      render: makeRenderNumber(2, 2),
-    },
-    tokenName: {
-      label: "Campaign Token Name",
-      pageId: 1,
-      required: true,
-      render: renderString,
-    },
-    tokenSymbol: {
-      label: "Campaign Token Symbol",
-      pageId: 1,
-      required: true,
-      render: renderString,
-    },
-    hidden: {
-      label: "Hide from public campaigns list",
-      pageId: 1,
-      required: false,
-      render: renderBoolean,
-    },
-    website: {
-      label: "Website",
-      pageId: 1,
-      required: false,
-      render: renderString,
-    },
-    twitter: {
-      label: "Twitter",
-      pageId: 1,
-      required: false,
-      render: renderString,
-    },
-    discord: {
-      label: "Discord",
-      pageId: 1,
-      required: false,
-      render: renderString,
-    },
-  }
-export const newCampaignFieldEntries = Object.entries(newCampaignFields) as [
-  NewCampaignFieldKey,
-  NewCampaignField
-][]
-
-export const defaultNewCampaign: Partial<NewCampaign> = {
+export const defaultNewCampaign: Partial<NewCampaignInfo> = {
   hidden: false,
+  descriptionImageUrls: [],
+  _descriptionImageUrls: [],
 }
+
+export const requiredNewCampaignFields: (keyof NewCampaignInfo)[] = [
+  "name",
+  "description",
+  "hidden",
+  "goal",
+  "daoAddress",
+  "tokenName",
+  "tokenSymbol",
+  // Empty array.
+  "descriptionImageUrls",
+]
+
+export const requiredUpdateCampaignFields: (keyof UpdateCampaignInfo)[] = [
+  "name",
+  "description",
+  "hidden",
+  // Empty array.
+  "descriptionImageUrls",
+]
 
 export const campaignsFromResponses = (
   campaignResponses: CampaignResponse[],
@@ -110,7 +45,7 @@ export const campaignsFromResponses = (
       ({ campaign }) =>
         !!campaign &&
         (includeHidden || !campaign.hidden) &&
-        (includePending || campaign.status !== Status.Pending)
+        (includePending || campaign.status !== CampaignStatus.Pending)
     )
     .map(({ campaign }) => campaign!)
 
@@ -138,16 +73,77 @@ export const filterCampaigns = async (
   ).map(({ obj }) => obj)
 }
 
+// Different fields based on Campaign contract version.
+export const transformVersionedCampaignFields = (
+  version: CampaignContractVersion,
+  address: string,
+  campaignState: CampaignDumpStateResponse,
+  status: CampaignStatus,
+  statusFields: CampaignDumpStateStatus[CampaignStatus],
+  campaignGovTokenBalance: number
+): VersionedCampaignFields => {
+  const { campaign_info: campaignInfo } = campaignState
+
+  switch (version) {
+    case CampaignContractVersion.v1:
+      return {
+        profileImageUrl: campaignInfo.image_url ?? null,
+        // Introduced in v2.
+        descriptionImageUrls: [],
+        govToken: {
+          campaignBalance: campaignGovTokenBalance,
+        },
+      }
+    case CampaignContractVersion.v2:
+      return {
+        profileImageUrl: campaignInfo.profile_image_url ?? null,
+        descriptionImageUrls: campaignInfo.description_image_urls ?? [],
+        govToken: {
+          campaignBalance:
+            status === CampaignStatus.Pending
+              ? 0
+              : Number(
+                  (
+                    statusFields as CampaignVersionedStatus<
+                      typeof version,
+                      typeof status
+                    >
+                  ).initial_gov_token_balance
+                ) / 1e6,
+        },
+      }
+    default: {
+      console.error(
+        parseError("Unknown campaign contract version.", {
+          source: "transformVersionedCampaignFields",
+          campaign: address,
+          version,
+          campaignState,
+        })
+      )
+
+      return {
+        profileImageUrl: null,
+        descriptionImageUrls: [],
+        govToken: {
+          campaignBalance: campaignGovTokenBalance,
+        },
+      }
+    }
+  }
+}
+
 // Transform blockchain data into typed campaign object.
 export const transformCampaign = (
   address: string,
-  campaignState: any,
+  campaignState: CampaignDumpStateResponse,
   campaignGovTokenBalance: number | undefined | null,
   daoGovTokenBalance: number | undefined | null,
   featuredAddresses?: string[],
   densAddressMap?: Record<string, string | undefined>
 ): Campaign | null => {
   const {
+    version: stateVersion,
     campaign_info: campaignInfo,
     funding_token_info: fundingTokenInfo,
     gov_token_info: govTokenInfo,
@@ -160,21 +156,39 @@ export const transformCampaign = (
     !campaignInfo ||
     !fundingTokenInfo ||
     !govTokenInfo ||
-    !state
+    !state ||
+    !campaignState
   ) {
     return null
   }
 
   // Example: status={ "pending": {} }
-  const status = Object.keys(state.status)[0] as Status
+  const status = Object.keys(state.status)[0] as keyof CampaignDumpStateStatus
+  const statusFields = state.status[status]!
 
-  return {
+  // First contract has no version set.
+  const version = Object.values(CampaignContractVersion).includes(
+    stateVersion as any
+  )
+    ? (stateVersion as CampaignContractVersion)
+    : CampaignContractVersion.v1
+  // Get fields based on contract version.
+  const versionedFields = transformVersionedCampaignFields(
+    version,
+    address,
+    campaignState,
+    status,
+    statusFields,
+    campaignGovTokenBalance
+  )
+
+  const baseFields = {
+    version,
     address,
     name: campaignInfo.name,
     description: campaignInfo.description,
     // Use deNS name from map if available.
     urlPath: `/campaign/${densAddressMap?.[address] ?? address}`,
-    imageUrl: campaignInfo.image_url,
 
     status,
     creator: state.creator,
@@ -194,28 +208,48 @@ export const transformCampaign = (
       address: state.gov_token_addr,
       name: govTokenInfo.name,
       symbol: govTokenInfo.symbol,
-      campaignBalance: campaignGovTokenBalance,
       daoBalance: daoGovTokenBalance,
       supply: Number(govTokenInfo.total_supply) / 1e6,
     },
 
     fundingToken: {
       address: state.funding_token_addr,
-      ...(status === Status.Open && {
-        price: Number(state.status[status].token_price),
-        // Funding tokens are minted on-demand, so calculate the total that will ever exist
-        // by multiplying the price of one token (in JUNO) by the goal (in JUNO).
-        supply:
-          (Number(state.funding_goal.amount) *
-            Number(state.status[status].token_price)) /
-          1e6,
-      }),
+      ...(status !== CampaignStatus.Pending
+        ? {
+            price: Number(
+              (
+                statusFields as CampaignVersionedStatus<
+                  typeof version,
+                  typeof status
+                >
+              ).token_price
+            ),
+            // Funding tokens are minted on-demand, so calculate the total that will ever exist
+            // by multiplying the price of one token (in JUNO) by the goal (in JUNO).
+            supply:
+              (Number(state.funding_goal.amount) *
+                Number(
+                  (
+                    statusFields as CampaignVersionedStatus<
+                      typeof version,
+                      typeof status
+                    >
+                  ).token_price
+                )) /
+              1e6,
+          }
+        : {
+            price: null,
+            supply: null,
+          }),
       name: fundingTokenInfo.name,
       symbol: fundingTokenInfo.symbol,
     },
 
-    website: campaignInfo.website,
-    twitter: campaignInfo.twitter,
-    discord: campaignInfo.discord,
+    website: campaignInfo.website ?? null,
+    twitter: campaignInfo.twitter ?? null,
+    discord: campaignInfo.discord ?? null,
   }
+
+  return _merge(baseFields, versionedFields)
 }

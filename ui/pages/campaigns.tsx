@@ -25,7 +25,7 @@ import {
 import { baseUrl, title } from "@/config"
 import { addFilter, filterExists, removeFilter } from "@/helpers"
 import { featuredCampaigns, filteredCampaigns } from "@/state"
-import { Color, Status } from "@/types"
+import { CampaignStatus } from "@/types"
 
 const minPage = 1
 const pageSize = 20
@@ -136,7 +136,7 @@ const Campaigns: NextPage = () => {
       />
 
       {query["404"] === "" && (
-        <Banner color={Color.Orange} className="mb-4">
+        <Banner color="orange" className="mb-4">
           Campaign not found.
         </Banner>
       )}
@@ -152,7 +152,7 @@ const Campaigns: NextPage = () => {
               <Select
                 className="w-40"
                 label="Status"
-                items={Object.entries(Status).map(([label, value]) => ({
+                items={Object.entries(CampaignStatus).map(([label, value]) => ({
                   label,
                   onClick: (on) =>
                     on
