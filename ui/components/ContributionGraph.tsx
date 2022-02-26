@@ -56,7 +56,7 @@ export const ContributionGraph: FunctionComponent<ContributionGraphProps> = ({
           y: {
             display: true,
             title: {
-              text: payToken.label,
+              text: payToken.symbol,
               display: true,
               color: theme.colors.gray,
             },

@@ -97,8 +97,9 @@ declare global {
   type DENSAddressMap = Record<string, string | undefined>
 
   interface PayToken {
-    label: string
+    symbol: string
     denom: string
+    junoDenom: string
   }
 }
 

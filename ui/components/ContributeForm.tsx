@@ -116,7 +116,7 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
         }
         wrapperClassName="!mb-4 sm:!mb-0 sm:mr-4 sm:flex-1"
         className="!py-3 !px-6 !pr-28"
-        tail={payToken.label}
+        tail={payToken.symbol}
         error={
           errors?.contribution?.message ?? contributeCampaignError ?? undefined
         }
@@ -127,14 +127,14 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
           min: {
             value: minContribution,
             message: `Must be at least ${prettyPrintDecimal(minContribution)} ${
-              payToken.label
+              payToken.symbol
             }.`,
           },
           max: {
             value: maxContribution,
             message: `Must be less than or equal to ${prettyPrintDecimal(
               maxContribution
-            )} ${payToken.label}.`,
+            )} ${payToken.symbol}.`,
           },
         })}
       />

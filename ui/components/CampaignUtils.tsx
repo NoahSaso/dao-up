@@ -75,7 +75,7 @@ export const CampaignProgress: FunctionComponent<CampaignProgressProps> = ({
         >
           {showPledged && (
             <p className="sm:text-lg text-green">
-              {pledged.toLocaleString()} {payToken.label} pledged
+              {pledged.toLocaleString()} {payToken.symbol} pledged
             </p>
           )}
           {!hidePercent && (
@@ -198,7 +198,7 @@ export const CampaignAction: FunctionComponent<CampaignActionProps> = ({
         })}
       >
         {type === CampaignActionType.Fund ? "+" : "-"}{" "}
-        {prettyPrintDecimal(amount)} {payToken.label}
+        {prettyPrintDecimal(amount)} {payToken.symbol}
       </p>
       {!!when && <TimeAgo date={when} className="text-placeholder" />}
     </div>

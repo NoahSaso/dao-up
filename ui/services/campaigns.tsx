@@ -9,17 +9,17 @@ import {
   CampaignVersionedStatus,
 } from "@/types"
 
+import { tokens as ibcAssetsTokens } from "./ibc_assets.json"
+
+const allowedIBCAssets = ["UST"]
 export const payTokens: PayToken[] = [
   // Default chain symbol (probably juno(x))
   {
-    label: payTokenSymbol,
+    symbol: payTokenSymbol,
     denom: minPayTokenSymbol,
+    junoDenom: minPayTokenSymbol,
   },
-  {
-    label: "UST",
-    denom:
-      "ibc/BE1BB42D4BE3C30D50B68D7C41DB4DFCE9678E8EF8C539F6E6A9345048894FCC",
-  },
+  ...ibcAssetsTokens.filter((token) => allowedIBCAssets.includes(token.symbol)),
 ]
 
 export const defaultNewCampaign: Partial<NewCampaignInfo> = {
@@ -276,7 +276,7 @@ export const transformCampaign = (
 }
 
 export const getPayTokenLabel = (denom: string) =>
-  payTokens.find(({ denom: d }) => d === denom)?.label ?? "Unknown"
+  payTokens.find(({ denom: d }) => d === denom)?.symbol ?? "Unknown"
 
 export const getNextPayTokenDenom = (denom: string) =>
   payTokens[

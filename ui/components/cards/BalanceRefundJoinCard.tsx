@@ -182,7 +182,7 @@ const BalanceRefundJoinCardContents: FunctionComponent<
                     expectedPayTokensReceived
                       ? `You will receive about ${prettyPrintDecimal(
                           expectedPayTokensReceived
-                        )} ${payToken.label}`
+                        )} ${payToken.symbol}`
                       : undefined
                   }
                   error={
