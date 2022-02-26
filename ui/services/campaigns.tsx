@@ -24,7 +24,7 @@ export const payTokens: PayToken[] = [
 
 export const defaultNewCampaign: Partial<NewCampaignInfo> = {
   // Default to first payToken, which should be juno(x).
-  payTokenDenom: payTokens[0].denom,
+  payTokenDenom: payTokens[0].junoDenom,
   hidden: false,
   descriptionImageUrls: [],
   _descriptionImageUrls: [],
@@ -166,7 +166,7 @@ export const transformCampaign = (
   } = campaignState ?? {}
 
   const payToken = payTokens.find(
-    ({ denom }) => denom === state.funding_goal.denom
+    ({ junoDenom }) => junoDenom === state.funding_goal.denom
   )
 
   if (
@@ -276,9 +276,10 @@ export const transformCampaign = (
 }
 
 export const getPayTokenLabel = (denom: string) =>
-  payTokens.find(({ denom: d }) => d === denom)?.symbol ?? "Unknown"
+  payTokens.find(({ junoDenom }) => junoDenom === denom)?.symbol ?? "Unknown"
 
 export const getNextPayTokenDenom = (denom: string) =>
   payTokens[
-    (payTokens.findIndex(({ denom: d }) => d === denom) + 1) % payTokens.length
-  ].denom
+    (payTokens.findIndex(({ junoDenom }) => junoDenom === denom) + 1) %
+      payTokens.length
+  ].junoDenom
