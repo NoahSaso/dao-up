@@ -152,14 +152,14 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   const campaign: Campaign =
     (latestCampaignState === "hasValue" && latestCampaign) || preLoadedCampaign
 
-  // Funding token balance to add 'Join DAO' message to funded banner on top.
+  // Funding token balance to check if user needs to join the DAO.
   const {
     state: fundingTokenBalanceState,
     contents: { balance: fundingTokenBalanceContents },
   } = useRecoilValueLoadable(
     walletTokenBalance(campaign?.fundingToken?.address)
   )
-  // Load in background and swap 'visit' for 'join' link ASAP. No need to prevent page from displaying until this is ready.
+  // No need to prevent page from displaying until this is ready.
   const fundingTokenBalance: number | null =
     fundingTokenBalanceState === "hasValue" ? fundingTokenBalanceContents : null
 
@@ -168,7 +168,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
     state: govTokenBalanceState,
     contents: { balance: govTokenBalanceContents },
   } = useRecoilValueLoadable(walletTokenBalance(campaign?.govToken?.address))
-  // Load in background and add button when ready. No need to prevent page from displaying until this is ready.
+  // No need to prevent page from displaying until this is ready.
   const hasGovToken =
     govTokenBalanceState === "hasValue" ? !!govTokenBalanceContents : null
 
@@ -210,9 +210,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
       await suggestGovToken()
     }
   }
-  // Refund / Join DAO Form for joining DAO from funded banner and last contributor's contribution alert.
-  // The last contributor to the campaign (the one who causes the change from open to funded)
-  // will receive a special message prompting them to join the DAO immediately.
+  // Needed for joining DAO from campaign funded join DAO alert.
   const { onSubmit: onSubmitRefundJoinDAO } = useRefundJoinDAOForm(
     campaign ?? null,
     fundingTokenBalance,
@@ -248,25 +246,14 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
       {status === CampaignStatus.Funded && (
         <Banner color="green">
           {name} has been successfully funded!{" "}
-          {/* If user has funding tokens and the campaign is funded, make it easy for them to join. */}
-          {fundingTokenBalance ? (
-            <form onSubmit={onSubmitRefundJoinDAO} className="inline-block">
-              <Button
-                submitLabel="Click here to join the DAO."
-                className="underline"
-                bare
-              />
-            </form>
-          ) : (
-            <a
-              href={daoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:no-underline"
-            >
-              Click here to visit the DAO.
-            </a>
-          )}
+          <a
+            href={daoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:no-underline"
+          >
+            Click here to visit the DAO.
+          </a>
         </Banner>
       )}
 
