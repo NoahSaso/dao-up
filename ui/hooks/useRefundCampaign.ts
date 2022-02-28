@@ -51,7 +51,6 @@ export const useRefundCampaign = (campaign: Campaign | null) => {
           "auto",
           undefined
         )
-        console.log(response)
 
         // Update campaign state.
         refreshCampaign()

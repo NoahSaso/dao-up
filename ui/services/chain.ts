@@ -227,6 +227,5 @@ export const swapToken = async (
     undefined,
     [coin(microInputAmount, baseToken.denom)]
   )
-  console.log(response)
   return response
 }
