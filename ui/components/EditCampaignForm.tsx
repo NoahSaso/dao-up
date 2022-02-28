@@ -28,7 +28,6 @@ import {
   IoWarning,
 } from "react-icons/io5"
 import { useRecoilValueLoadable, useSetRecoilState } from "recoil"
-import { getNextPayTokenDenom, getPayTokenLabel } from "services/campaigns"
 
 import {
   Button,
@@ -50,6 +49,7 @@ import {
   urlPattern,
 } from "@/helpers"
 import { useRefCallback, useWallet } from "@/hooks"
+import { getNextPayTokenDenom, getPayTokenLabel } from "@/services"
 import { globalLoadingAtom, validateDAO } from "@/state"
 
 const validUrlOrUndefined = (u: string | undefined) =>
