@@ -116,6 +116,14 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
     !!payTokenNeeded && !!swapPrice
       ? getBaseTokenForDesiredAmount(payTokenNeeded, swapPrice)
       : 0
+  // When swapping, there will usually be slightly more received than asked for, given the nature of slippage. Give the user the option to just round up and send all the balance if they just swapped and have some extra.
+  // If the balance is more than the entered contribution AND the initial contribution is less than the max contribution, add button to round up. If the initial contribution = max contribution, no need to round up.
+  const showRoundUpOption =
+    !!payTokenBalance &&
+    !!watchContribution &&
+    payTokenBalance > watchContribution &&
+    watchContribution < maxContribution
+
   const swap = async () => {
     const success = await swapForAtLeast(payTokenNeeded)
     if (success) {
@@ -133,7 +141,7 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
         return
       }
 
-      if (await contributeCampaign(contribution)) {
+      if (await contributeCampaign(Math.min(contribution, maxContribution))) {
         // Ensure swap alert is closed.
         setSwapAlertStatus(SwapAlertStatus.Closed)
 
@@ -155,6 +163,7 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
       setSwapAlertStatus,
       isBase,
       payTokenBalance,
+      maxContribution,
     ]
   )
 
@@ -257,8 +266,11 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
           <>
             <p>
               You now have {prettyPrintDecimal(payTokenBalance ?? 0)}{" "}
-              {payToken.symbol}. Choose one of the two options below to complete
-              your contribution.
+              {payToken.symbol}.{" "}
+              {showRoundUpOption
+                ? "Choose one of the two buttons"
+                : "Press the button"}{" "}
+              below to complete your contribution.
             </p>
 
             <div className="flex flex-row items-center flex-wrap gap-4 mt-4">
@@ -271,14 +283,24 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
                 {payToken.symbol}
               </Button>
 
-              <Button
-                onClick={() =>
-                  doContribution({ contribution: payTokenBalance ?? 0 })
-                }
-              >
-                Contribute all ({prettyPrintDecimal(payTokenBalance ?? 0)}{" "}
-                {payToken.symbol})
-              </Button>
+              {showRoundUpOption && (
+                <Button
+                  onClick={() =>
+                    doContribution({
+                      contribution: Math.min(
+                        payTokenBalance ?? 0,
+                        maxContribution
+                      ),
+                    })
+                  }
+                >
+                  Contribute max (
+                  {prettyPrintDecimal(
+                    Math.min(payTokenBalance ?? 0, maxContribution)
+                  )}{" "}
+                  {payToken.symbol})
+                </Button>
+              )}
             </div>
           </>
         )}
