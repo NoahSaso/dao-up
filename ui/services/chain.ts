@@ -2,6 +2,7 @@ import {
   CosmWasmClient,
   SigningCosmWasmClient,
 } from "@cosmjs/cosmwasm-stargate"
+import { coin } from "@cosmjs/stargate"
 import { findAttribute } from "@cosmjs/stargate/build/logs"
 
 import {
@@ -13,11 +14,12 @@ import {
   rpcEndpoint,
 } from "@/config"
 import { escrowAddressRegex, parseError } from "@/helpers"
+import { baseToken, getBaseTokenForDesiredAmount } from "@/services"
 import { CommonError } from "@/types"
 
 export const getClient = async () => CosmWasmClient.connect(rpcEndpoint)
 
-export const getWalletTokenBalance = async (
+export const getCW20WalletTokenBalance = async (
   client: CosmWasmClient,
   tokenAddress: string,
   walletAddress: string
@@ -165,4 +167,66 @@ export const createDAOProposalForCampaign = async (
   )
 
   return findAttribute(response.logs, "wasm", "proposal_id").value
+}
+
+export const getNativeTokenBalance = async (
+  client: SigningCosmWasmClient,
+  walletAddress: string,
+  token: PayToken
+): Promise<number> => {
+  const coin = await client.getBalance(walletAddress, token.denom)
+  return Number(coin?.amount ?? 0) / Math.pow(10, token.decimals)
+}
+
+// Price of token in juno(x).
+export const getTokenPricePerBase = async (
+  client: CosmWasmClient,
+  token: PayToken,
+  baseAmount: number
+): Promise<number> => {
+  const { token2_amount } = await client.queryContractSmart(token.swapAddress, {
+    token1_for_token2_price: {
+      token1_amount: Math.round(
+        baseAmount * Math.pow(10, baseToken.decimals)
+      ).toString(),
+    },
+  })
+  return Number(token2_amount) / Math.pow(10, token.decimals)
+}
+
+// Swaps base token (juno(x)) for outputToken and receive at least minOutput.
+export const swapToken = async (
+  client: SigningCosmWasmClient,
+  walletAddress: string,
+  outputToken: PayToken,
+  minOutput: number,
+  swapPrice: number
+): Promise<any> => {
+  // Get base token amount that will yield at least the desired minOutput.
+  const inputAmount = getBaseTokenForDesiredAmount(minOutput, swapPrice)
+
+  const microInputAmount = Math.round(
+    inputAmount * Math.pow(10, baseToken.decimals)
+  ).toString()
+  const microMinOutputAmount = Math.floor(
+    minOutput * Math.pow(10, outputToken.decimals)
+  ).toString()
+
+  const msg = {
+    swap: {
+      input_token: "Token1",
+      input_amount: microInputAmount,
+      min_output: microMinOutputAmount,
+    },
+  }
+  const response = await client.execute(
+    walletAddress,
+    outputToken.swapAddress,
+    msg,
+    "auto",
+    undefined,
+    [coin(microInputAmount, baseToken.denom)]
+  )
+  console.log(response)
+  return response
 }

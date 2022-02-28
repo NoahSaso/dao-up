@@ -145,7 +145,7 @@ const CreateContent = () => {
           submitLabel="Create campaign"
           error={createCampaignError}
           creating
-          defaultValues={defaultNewCampaign}
+          defaultValues={defaultNewCampaign()}
           onSubmit={createCampaign}
         />
       </CenteredColumn>

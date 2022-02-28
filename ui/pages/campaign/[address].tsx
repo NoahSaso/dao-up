@@ -31,17 +31,17 @@ import {
   createDENSAddressMap,
   getCampaignState,
   getClient,
+  getCW20WalletTokenBalance,
   getDENSAddress,
   getDENSNames,
   getFeaturedAddresses,
-  getWalletTokenBalance,
   suggestToken,
   transformCampaign,
 } from "@/services"
 import {
+  cw20WalletTokenBalance,
   fetchCampaign,
   fetchCampaignActions,
-  walletTokenBalance,
 } from "@/state"
 import { CampaignContractVersion, CampaignStatus } from "@/types"
 
@@ -157,7 +157,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
     state: fundingTokenBalanceState,
     contents: { balance: fundingTokenBalanceContents },
   } = useRecoilValueLoadable(
-    walletTokenBalance(campaign?.fundingToken?.address)
+    cw20WalletTokenBalance(campaign?.fundingToken?.address)
   )
   // Load in background and swap 'visit' for 'join' link ASAP. No need to prevent page from displaying until this is ready.
   const fundingTokenBalance: number | null =
@@ -167,7 +167,9 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   const {
     state: govTokenBalanceState,
     contents: { balance: govTokenBalanceContents },
-  } = useRecoilValueLoadable(walletTokenBalance(campaign?.govToken?.address))
+  } = useRecoilValueLoadable(
+    cw20WalletTokenBalance(campaign?.govToken?.address)
+  )
   // Load in background and add button when ready. No need to prevent page from displaying until this is ready.
   const hasGovToken =
     govTokenBalanceState === "hasValue" ? !!govTokenBalanceContents : null
@@ -581,12 +583,12 @@ export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
     const state = await getCampaignState(client, campaignAddress)
 
     // Get gov token balances.
-    const campaignGovTokenBalance = await getWalletTokenBalance(
+    const campaignGovTokenBalance = await getCW20WalletTokenBalance(
       client,
       state.gov_token_addr,
       campaignAddress
     )
-    const daoGovTokenBalance = await getWalletTokenBalance(
+    const daoGovTokenBalance = await getCW20WalletTokenBalance(
       client,
       state.gov_token_addr,
       state.dao_addr

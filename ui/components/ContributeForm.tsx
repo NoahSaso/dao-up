@@ -1,11 +1,18 @@
-import { FunctionComponent, useCallback } from "react"
+import { FunctionComponent, useCallback, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useSetRecoilState } from "recoil"
 
-import { Button, FormInput, Suspense } from "@/components"
+import { Alert, Button, FormInput, Suspense } from "@/components"
 import { numberPattern, prettyPrintDecimal } from "@/helpers"
-import { useContributeCampaign, useWallet } from "@/hooks"
+import { useContributeCampaign, usePayTokenUtil, useWallet } from "@/hooks"
+import { baseToken, getBaseTokenForDesiredAmount } from "@/services"
 import { favoriteCampaignAddressesAtom } from "@/state"
+
+enum SwapAlertStatus {
+  Closed,
+  Swapping,
+  Swapped,
+}
 
 interface ContributionForm {
   contribution?: number
@@ -84,66 +91,198 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
     Number.MAX_SAFE_INTEGER / 1e6
   )
 
-  const doContribution = async ({ contribution }: ContributionForm) => {
-    if (!contribution) return
-
-    if (await contributeCampaign(contribution)) {
-      // Add to favorites so user can access it quickly.
-      addFavorite(campaign.address)
-
-      // Empty form fields.
-      reset()
-
-      await onSuccess?.()
+  // Swap for pay token if necessary.
+  const {
+    canSwap,
+    swapForAtLeast,
+    swapError,
+    swapPrice,
+    balance: payTokenBalance,
+    isBase,
+  } = usePayTokenUtil(payToken)
+  const [swapAlertStatus, setSwapAlertStatus] = useState<SwapAlertStatus>(
+    SwapAlertStatus.Closed
+  )
+  // Get missing pay token amount.
+  const payTokenNeeded =
+    !isBase &&
+    typeof payTokenBalance === "number" &&
+    !!watchContribution &&
+    watchContribution > payTokenBalance
+      ? Number((watchContribution - payTokenBalance).toFixed(payToken.decimals))
+      : 0
+  // Display the associated base token amount that will be swapped.
+  const baseTokenToSwap =
+    !!payTokenNeeded && !!swapPrice
+      ? getBaseTokenForDesiredAmount(payTokenNeeded, swapPrice)
+      : 0
+  const swap = async () => {
+    const success = await swapForAtLeast(payTokenNeeded)
+    if (success) {
+      setSwapAlertStatus(SwapAlertStatus.Swapped)
     }
   }
 
-  return (
-    <form
-      onSubmit={handleSubmit(doContribution)}
-      className="flex flex-col items-stretch sm:flex-row sm:items-start lg:self-stretch"
-    >
-      <FormInput
-        type="number"
-        inputMode="decimal"
-        placeholder="Contribute..."
-        accent={
-          expectedFundingTokensReceived
-            ? `You will receive about ${prettyPrintDecimal(
-                expectedFundingTokensReceived
-              )} ${tokenSymbol}`
-            : undefined
-        }
-        wrapperClassName="!mb-4 sm:!mb-0 sm:mr-4 sm:flex-1"
-        className="!py-3 !px-6 !pr-28"
-        tail={payToken.symbol}
-        error={
-          errors?.contribution?.message ?? contributeCampaignError ?? undefined
-        }
-        disabled={!connected}
-        {...register("contribution", {
-          valueAsNumber: true,
-          pattern: numberPattern,
-          min: {
-            value: minContribution,
-            message: `Must be at least ${prettyPrintDecimal(minContribution)} ${
-              payToken.symbol
-            }.`,
-          },
-          max: {
-            value: maxContribution,
-            message: `Must be less than or equal to ${prettyPrintDecimal(
-              maxContribution
-            )} ${payToken.symbol}.`,
-          },
-        })}
-      />
+  const doContribution = useCallback(
+    async ({ contribution }: ContributionForm) => {
+      if (!contribution) return
 
-      <Button
-        className="sm:h-[50px]"
-        disabled={!connected}
-        submitLabel="Support this campaign"
-      />
-    </form>
+      // Check if we need to swap for more pay token.
+      if (!isBase && contribution > (payTokenBalance ?? 0)) {
+        setSwapAlertStatus(SwapAlertStatus.Swapping)
+        return
+      }
+
+      if (await contributeCampaign(contribution)) {
+        // Ensure swap alert is closed.
+        setSwapAlertStatus(SwapAlertStatus.Closed)
+
+        // Add to favorites so user can access it quickly.
+        addFavorite(campaign.address)
+
+        // Empty form fields.
+        reset()
+
+        await onSuccess?.()
+      }
+    },
+    [
+      campaign,
+      contributeCampaign,
+      addFavorite,
+      reset,
+      onSuccess,
+      setSwapAlertStatus,
+      isBase,
+      payTokenBalance,
+    ]
+  )
+
+  return (
+    <>
+      <form
+        onSubmit={handleSubmit(doContribution)}
+        className="flex flex-col items-stretch sm:flex-row sm:items-start lg:self-stretch"
+      >
+        <FormInput
+          type="number"
+          inputMode="decimal"
+          placeholder="Contribute..."
+          accent={
+            expectedFundingTokensReceived
+              ? `You will receive about ${prettyPrintDecimal(
+                  expectedFundingTokensReceived
+                )} ${tokenSymbol}`
+              : undefined
+          }
+          wrapperClassName="!mb-4 sm:!mb-0 sm:mr-4 sm:flex-1"
+          className="!py-3 !px-6 !pr-28"
+          tail={payToken.symbol}
+          error={
+            errors?.contribution?.message ??
+            contributeCampaignError ??
+            undefined
+          }
+          disabled={!connected}
+          {...register("contribution", {
+            valueAsNumber: true,
+            pattern: numberPattern,
+            min: {
+              value: minContribution,
+              message: `Must be at least ${prettyPrintDecimal(
+                minContribution
+              )} ${payToken.symbol}.`,
+            },
+            max: {
+              value: maxContribution,
+              message: `Must be less than or equal to ${prettyPrintDecimal(
+                maxContribution
+              )} ${payToken.symbol}.`,
+            },
+          })}
+        />
+
+        <Button
+          className="sm:h-[50px]"
+          disabled={!connected}
+          submitLabel="Support this campaign"
+        />
+      </form>
+
+      {/* Swap funds alert. */}
+      <Alert
+        visible={swapAlertStatus !== SwapAlertStatus.Closed}
+        hide={() => setSwapAlertStatus(SwapAlertStatus.Closed)}
+        title={
+          swapAlertStatus === SwapAlertStatus.Swapping
+            ? `Swap for ${payToken.symbol}`
+            : swapAlertStatus === SwapAlertStatus.Swapped
+            ? "Swap successful!"
+            : ""
+        }
+      >
+        {swapAlertStatus === SwapAlertStatus.Swapping ? (
+          <>
+            <p>
+              You currently have {prettyPrintDecimal(payTokenBalance ?? 0)}{" "}
+              {payToken.symbol} but are trying to contribute{" "}
+              {prettyPrintDecimal(watchContribution ?? 0)} {payToken.symbol}.
+              Pressing the button below will use{" "}
+              <a
+                href="https://junoswap.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:no-underline"
+              >
+                Junoswap
+              </a>{" "}
+              to swap about {prettyPrintDecimal(baseTokenToSwap)}{" "}
+              {baseToken.symbol} for about {prettyPrintDecimal(payTokenNeeded)}{" "}
+              {payToken.symbol}.
+            </p>
+
+            <p className="text-placeholder mt-2 italic">
+              These numbers are subject to the volatility of the market and may
+              change slightly by the time the transaction is complete. Junoswap
+              takes a 0.3% fee.
+            </p>
+
+            <Button onClick={swap} disabled={!canSwap} className="mt-4">
+              Swap
+            </Button>
+
+            {swapError && <p className="mt-2 text-orange">{swapError}</p>}
+          </>
+        ) : (
+          <>
+            <p>
+              You now have {prettyPrintDecimal(payTokenBalance ?? 0)}{" "}
+              {payToken.symbol}. Choose one of the two options below to complete
+              your contribution.
+            </p>
+
+            <div className="flex flex-row items-center flex-wrap gap-4 mt-4">
+              <Button
+                onClick={() =>
+                  doContribution({ contribution: watchContribution ?? 0 })
+                }
+              >
+                Contribute {prettyPrintDecimal(watchContribution ?? 0)}{" "}
+                {payToken.symbol}
+              </Button>
+
+              <Button
+                onClick={() =>
+                  doContribution({ contribution: payTokenBalance ?? 0 })
+                }
+              >
+                Contribute all ({prettyPrintDecimal(payTokenBalance ?? 0)}{" "}
+                {payToken.symbol})
+              </Button>
+            </div>
+          </>
+        )}
+      </Alert>
+    </>
   )
 }

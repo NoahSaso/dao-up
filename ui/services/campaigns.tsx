@@ -1,36 +1,22 @@
 import fuzzysort from "fuzzysort"
 import _merge from "lodash.merge"
 
-import { daoUrlPrefix, minPayTokenSymbol, payTokenSymbol } from "@/config"
+import { daoUrlPrefix } from "@/config"
 import { getFilterFns, parseError } from "@/helpers"
+import { baseToken, payTokens } from "@/services"
 import {
   CampaignContractVersion,
   CampaignStatus,
   CampaignVersionedStatus,
 } from "@/types"
 
-import ibcAssets from "./ibc_assets.json"
-
-const allowedIBCAssets = ["UST"]
-export const payTokens: PayToken[] = [
-  // Default chain symbol (probably juno(x))
-  {
-    symbol: payTokenSymbol,
-    denom: minPayTokenSymbol,
-    junoDenom: minPayTokenSymbol,
-  },
-  ...ibcAssets.tokens.filter((token) =>
-    allowedIBCAssets.includes(token.symbol)
-  ),
-]
-
-export const defaultNewCampaign: Partial<NewCampaignInfo> = {
+export const defaultNewCampaign = (): Partial<NewCampaignInfo> => ({
   // Default to first payToken, which should be juno(x).
-  payTokenDenom: payTokens[0].junoDenom,
+  payTokenDenom: baseToken.denom,
   hidden: false,
   descriptionImageUrls: [],
   _descriptionImageUrls: [],
-}
+})
 
 export const requiredNewCampaignFields: (keyof NewCampaignInfo)[] = [
   "name",
@@ -168,7 +154,7 @@ export const transformCampaign = (
   } = campaignState ?? {}
 
   const payToken = payTokens.find(
-    ({ junoDenom }) => junoDenom === state.funding_goal.denom
+    ({ denom }) => denom === state.funding_goal.denom
   )
 
   if (
@@ -276,12 +262,3 @@ export const transformCampaign = (
 
   return _merge(baseFields, versionedFields)
 }
-
-export const getPayTokenLabel = (denom: string) =>
-  payTokens.find(({ junoDenom }) => junoDenom === denom)?.symbol ?? "Unknown"
-
-export const getNextPayTokenDenom = (denom: string) =>
-  payTokens[
-    (payTokens.findIndex(({ junoDenom }) => junoDenom === denom) + 1) %
-      payTokens.length
-  ].junoDenom

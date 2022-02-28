@@ -9,7 +9,7 @@ import {
 } from "@/components"
 import { prettyPrintDecimal } from "@/helpers"
 import { useRefundJoinDAOForm } from "@/hooks"
-import { walletTokenBalance } from "@/state"
+import { cw20WalletTokenBalance } from "@/state"
 import { CampaignStatus } from "@/types"
 
 interface BalanceRefundJoinCardProps {
@@ -57,10 +57,10 @@ const BalanceRefundJoinCardContents: FunctionComponent<
   } = campaign
 
   const { balance: fundingTokenBalance, error: fundingTokenBalanceError } =
-    useRecoilValue(walletTokenBalance(fundingTokenAddress))
+    useRecoilValue(cw20WalletTokenBalance(fundingTokenAddress))
 
   const { balance: govTokenBalance, error: govTokenBalanceError } =
-    useRecoilValue(walletTokenBalance(govTokenAddress))
+    useRecoilValue(cw20WalletTokenBalance(govTokenAddress))
 
   // Refund Form
   const { onSubmit, control, errors, watch, refundCampaignError } =

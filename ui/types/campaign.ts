@@ -99,7 +99,8 @@ declare global {
   interface PayToken {
     symbol: string
     denom: string
-    junoDenom: string
+    decimals: number
+    swapAddress: string
   }
 }
 

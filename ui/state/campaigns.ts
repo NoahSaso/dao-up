@@ -15,7 +15,7 @@ import {
   getTokenInfo,
   transformCampaign,
 } from "@/services"
-import { cosmWasmClient, cosmWasmQueryClient, tokenBalance } from "@/state"
+import { cosmWasmClient, cosmWasmQueryClient, cw20TokenBalance } from "@/state"
 import { localStorageEffectJSON } from "@/state/effects"
 import { CampaignActionType, CommonError } from "@/types"
 
@@ -188,7 +188,7 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
         balance: campaignGovTokenBalance,
         error: campaignGovTokenBalanceError,
       } = get(
-        tokenBalance({
+        cw20TokenBalance({
           tokenAddress: state.gov_token_addr,
           walletAddress: address,
         })
@@ -201,7 +201,7 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
 
       const { balance: daoGovTokenBalance, error: daoGovTokenBalanceError } =
         get(
-          tokenBalance({
+          cw20TokenBalance({
             tokenAddress: state.gov_token_addr,
             walletAddress: state.dao_addr,
           })

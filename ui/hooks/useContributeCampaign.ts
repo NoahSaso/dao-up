@@ -48,7 +48,7 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
           undefined,
           // JavaScript thinks 16.31 * 1e6 = 16309999.999999998 for some reason.
           // Round so that this value is an integer...
-          coins(Math.round(amount * 1e6), campaign.payToken.junoDenom)
+          coins(Math.round(amount * 1e6), campaign.payToken.denom)
         )
 
         // Update campaign state.
