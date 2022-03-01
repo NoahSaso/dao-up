@@ -3,7 +3,7 @@ import _merge from "lodash.merge"
 
 import { daoUrlPrefix } from "@/config"
 import { convertMicroDenomToDenom, getFilterFns, parseError } from "@/helpers"
-import { baseToken, payTokens } from "@/services"
+import { baseToken, findPayTokenByDenom } from "@/services"
 import {
   CampaignContractVersion,
   CampaignStatus,
@@ -155,9 +155,7 @@ export const transformCampaign = (
     ...state
   } = campaignState ?? {}
 
-  const payToken = payTokens.find(
-    ({ denom }) => denom === state.funding_goal.denom
-  )
+  const payToken = findPayTokenByDenom(state.funding_goal.denom)
 
   if (
     typeof campaignGovTokenBalance !== "number" ||

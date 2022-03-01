@@ -29,8 +29,11 @@ export const payTokens: PayToken[] = [
     })),
 ]
 
+export const findPayTokenByDenom = (denom: string) =>
+  payTokens.find(({ denom: d }) => d === denom)
+
 export const getPayTokenLabel = (denom: string) =>
-  payTokens.find(({ denom: d }) => d === denom)?.symbol ?? "Unknown"
+  findPayTokenByDenom(denom)?.symbol ?? "Unknown"
 
 export const getNextPayTokenDenom = (denom: string) =>
   payTokens[

@@ -21,7 +21,7 @@ import {
 } from "@/config"
 import { convertDenomToMicroDenom, parseError } from "@/helpers"
 import { useWallet } from "@/hooks"
-import { baseToken, defaultNewCampaign, payTokens } from "@/services"
+import { defaultNewCampaign, findPayTokenByDenom } from "@/services"
 import { signedCosmWasmClient } from "@/state"
 
 const Create: NextPage = () => (
@@ -71,9 +71,11 @@ const CreateContent = () => {
         return
       }
 
-      const payToken =
-        payTokens.find(({ denom }) => denom === newCampaign.payTokenDenom) ??
-        baseToken
+      const payToken = findPayTokenByDenom(newCampaign.payTokenDenom)
+      if (!payToken) {
+        setCreateCampaignError("Invalid funding goal token selected.")
+        return
+      }
 
       const msg = {
         dao_address: newCampaign.daoAddress,

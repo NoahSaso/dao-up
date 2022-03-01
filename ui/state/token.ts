@@ -2,9 +2,9 @@ import { atomFamily, selectorFamily } from "recoil"
 
 import { parseError } from "@/helpers"
 import {
+  findPayTokenByDenom,
   getCW20WalletTokenBalance,
   getNativeTokenBalance,
-  payTokens,
 } from "@/services"
 import { cosmWasmClient, signedCosmWasmClient, walletAddress } from "@/state"
 import { CommonError } from "@/types"
@@ -98,7 +98,7 @@ export const nativeWalletTokenBalance = selectorFamily<
       get(tokenBalanceId(tokenDenom))
 
       const address = get(walletAddress)
-      const payToken = payTokens.find((token) => token.denom === tokenDenom)
+      const payToken = findPayTokenByDenom(tokenDenom)
 
       if (!address || !payToken) return { balance: null, error: null }
 
