@@ -3,7 +3,11 @@ import { useRecoilValue, useSetRecoilState } from "recoil"
 
 import { convertDenomToMicroDenom, parseError } from "@/helpers"
 import { useRefreshCampaign, useWallet } from "@/hooks"
-import { globalLoadingAtom, signedCosmWasmClient } from "@/state"
+import {
+  globalLoadingAtom,
+  signedCosmWasmClient,
+  tokenBalanceId,
+} from "@/state"
 
 export const useRefundCampaign = (campaign: Campaign | null) => {
   const client = useRecoilValue(signedCosmWasmClient)
@@ -13,6 +17,14 @@ export const useRefundCampaign = (campaign: Campaign | null) => {
   const { refreshCampaign } = useRefreshCampaign(campaign)
   const [refundCampaignError, setRefundCampaignError] = useState(
     null as string | null
+  )
+
+  const setPayTokenBalanceId = useSetRecoilState(
+    tokenBalanceId(campaign?.payToken.denom)
+  )
+  const refreshPayTokenBalance = useCallback(
+    () => setPayTokenBalanceId((id) => id + 1),
+    [setPayTokenBalanceId]
   )
 
   const refundCampaign = useCallback(
@@ -57,6 +69,9 @@ export const useRefundCampaign = (campaign: Campaign | null) => {
         // Update campaign state.
         refreshCampaign()
 
+        // Refresh balance.
+        refreshPayTokenBalance()
+
         return true
       } catch (error) {
         console.error(error)
@@ -80,6 +95,7 @@ export const useRefundCampaign = (campaign: Campaign | null) => {
       setRefundCampaignError,
       walletAddress,
       client,
+      refreshPayTokenBalance,
     ]
   )
 

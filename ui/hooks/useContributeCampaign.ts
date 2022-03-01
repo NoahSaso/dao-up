@@ -8,6 +8,7 @@ import {
   globalLoadingAtom,
   nativeWalletTokenBalance,
   signedCosmWasmClient,
+  tokenBalanceId,
 } from "@/state"
 
 import { CommonError } from "./../types/miscellaneous"
@@ -24,6 +25,13 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
 
   const { balance } = useRecoilValue(
     nativeWalletTokenBalance(campaign?.payToken?.denom)
+  )
+  const setPayTokenBalanceId = useSetRecoilState(
+    tokenBalanceId(campaign?.payToken.denom)
+  )
+  const refreshPayTokenBalance = useCallback(
+    () => setPayTokenBalanceId((id) => id + 1),
+    [setPayTokenBalanceId]
   )
 
   const contributeCampaign = useCallback(
@@ -73,6 +81,9 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
         // Update campaign state.
         refreshCampaign()
 
+        // Refresh balance.
+        refreshPayTokenBalance()
+
         return true
       } catch (error) {
         console.error(error)
@@ -97,6 +108,7 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
       walletAddress,
       client,
       balance,
+      refreshPayTokenBalance,
     ]
   )
 
