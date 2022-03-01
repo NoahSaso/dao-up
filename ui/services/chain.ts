@@ -14,6 +14,7 @@ import {
   rpcEndpoint,
 } from "@/config"
 import {
+  convertDenomToMicroDenom,
   convertMicroDenomToDenom,
   escrowAddressRegex,
   parseError,
@@ -179,7 +180,7 @@ export const getNativeTokenBalance = async (
   token: PayToken
 ): Promise<number> => {
   const coin = await client.getBalance(walletAddress, token.denom)
-  return Number(coin?.amount ?? 0) / Math.pow(10, token.decimals)
+  return convertMicroDenomToDenom(coin?.amount ?? 0, token.decimals)
 }
 
 // Price of token in baseToken.
@@ -190,12 +191,13 @@ export const getTokenPricePerBase = async (
 ): Promise<number> => {
   const { token2_amount } = await client.queryContractSmart(token.swapAddress, {
     token1_for_token2_price: {
-      token1_amount: Math.round(
-        baseAmount * Math.pow(10, baseToken.decimals)
+      token1_amount: convertDenomToMicroDenom(
+        baseAmount,
+        baseToken.decimals
       ).toString(),
     },
   })
-  return Number(token2_amount) / Math.pow(10, token.decimals)
+  return convertMicroDenomToDenom(token2_amount, token.decimals)
 }
 
 // Swaps baseToken for outputToken and receive at least minOutput outputTokens.
@@ -213,11 +215,13 @@ export const swapToken = async (
     baseToken.decimals
   )
 
-  const microInputAmount = Math.round(
-    inputAmount * Math.pow(10, baseToken.decimals)
+  const microInputAmount = convertDenomToMicroDenom(
+    inputAmount,
+    baseToken.decimals
   ).toString()
-  const microMinOutputAmount = Math.floor(
-    minOutput * Math.pow(10, outputToken.decimals)
+  const microMinOutputAmount = convertDenomToMicroDenom(
+    minOutput,
+    outputToken.decimals
   ).toString()
 
   const msg = {

@@ -90,13 +90,9 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
       : 0
   // Minimum contribution is how many non-micro payTokens per micro funding token, since each contribution much return at least 1 micro funding token.
   const minContribution = convertMicroDenomToDenom(
-    Math.max(
-      // Cannot fund less than 1 micro payToken.
-      1,
-      // fundingTokenPrice is non-micro funding tokens per 1 micro payToken, so invert and convert to non-micro.
-      // Use ceiling in case 1/fundingTokenPrice is nonzero after the nth decimal and we need to set a minimum within the n decimal range.
-      Math.ceil(1 / (fundingTokenPrice ?? 1))
-    ),
+    // fundingTokenPrice is micro funding tokens per 1 micro payToken, so invert before converting to non-micro.
+    // Use ceiling in case 1/fundingTokenPrice is nonzero after the nth decimal and we need to set a minimum within the n decimal range.
+    Math.ceil(1 / (fundingTokenPrice ?? 1)),
     payToken.decimals
   )
   // Max contribution is remaining amount left to fund. Cannot fund more than goal.
