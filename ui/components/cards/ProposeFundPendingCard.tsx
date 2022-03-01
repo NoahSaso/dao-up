@@ -2,7 +2,11 @@ import { FunctionComponent } from "react"
 import { useForm } from "react-hook-form"
 
 import { Button, CardWrapper, FormInput, Suspense } from "@/components"
-import { numberPattern, prettyPrintDecimal } from "@/helpers"
+import {
+  convertMicroDenomToDenom,
+  numberPattern,
+  prettyPrintDecimal,
+} from "@/helpers"
 import { useProposeFundPendingCampaign, useWallet } from "@/hooks"
 
 interface ProposeFundPendingForm {
@@ -98,7 +102,7 @@ const ProposeFundPendingCardContents: FunctionComponent<
               valueAsNumber: true,
               pattern: numberPattern,
               min: {
-                value: 1e-6,
+                value: convertMicroDenomToDenom(1, 6),
                 message: `Must be at least 0.000001 ${govTokenSymbol}.`,
               },
               max: {

@@ -7,30 +7,29 @@ import TimeAgo from "react-timeago"
 import { useRecoilState } from "recoil"
 
 import { Button, StatusIndicator } from "@/components"
-import { payTokenSymbol } from "@/config"
 import { prettyPrintDecimal } from "@/helpers"
 import { favoriteCampaignAddressesAtom } from "@/state"
-import { CampaignActionType, Color, Status } from "@/types"
+import { CampaignActionType, CampaignStatus, Color } from "@/types"
 
-export const CampaignStatus: FunctionComponent<CampaignProps> = ({
+export const CampaignStatusIndicator: FunctionComponent<CampaignProps> = ({
   campaign: { status },
   className,
 }) => {
   let color: Color = Color.Placeholder
   let label: string
   switch (status) {
-    case Status.Pending:
+    case CampaignStatus.Pending:
       label = "Pending"
       break
-    case Status.Open:
+    case CampaignStatus.Open:
       color = Color.Orange
       label = "Open"
       break
-    case Status.Funded:
+    case CampaignStatus.Funded:
       color = Color.Green
       label = "Funded"
       break
-    case Status.Cancelled:
+    case CampaignStatus.Cancelled:
       label = "Cancelled"
       break
     default:
@@ -54,7 +53,7 @@ interface CampaignProgressProps extends CampaignProps {
 }
 
 export const CampaignProgress: FunctionComponent<CampaignProgressProps> = ({
-  campaign: { status, pledged, goal },
+  campaign: { status, payToken, pledged, goal },
   className,
   thin,
   showPledged = false,
@@ -62,7 +61,8 @@ export const CampaignProgress: FunctionComponent<CampaignProgressProps> = ({
 }) => {
   // Round down so we don't say 100% funded until it has actually been funded.
   const fundedPercent = Math.floor((100 * pledged) / goal)
-  const showProgress = status === Status.Open || status === Status.Funded
+  const showProgress =
+    status === CampaignStatus.Open || status === CampaignStatus.Funded
 
   return (
     <div className={cn("flex flex-col justify-start w-full", className)}>
@@ -75,12 +75,12 @@ export const CampaignProgress: FunctionComponent<CampaignProgressProps> = ({
         >
           {showPledged && (
             <p className="sm:text-lg text-green">
-              {pledged.toLocaleString()} {payTokenSymbol} pledged
+              {pledged.toLocaleString()} {payToken.symbol} pledged
             </p>
           )}
           {!hidePercent && (
             <p className="text-placeholder italic text-right">
-              {prettyPrintDecimal(fundedPercent, 0)}% funded
+              {prettyPrintDecimal(fundedPercent, 0)}%
             </p>
           )}
         </div>
@@ -137,13 +137,13 @@ export const CampaignFavoriteToggle: FunctionComponent<CampaignProps> = ({
 }
 
 interface CampaignImageProps {
+  url?: string | null
   size?: number
-  imageUrl?: string
   className?: string
 }
 
 export const CampaignImage: FunctionComponent<CampaignImageProps> = ({
-  imageUrl,
+  url,
   className,
   size = 135,
 }) => (
@@ -151,9 +151,9 @@ export const CampaignImage: FunctionComponent<CampaignImageProps> = ({
     className={cn("shrink-0 overflow-hidden rounded-md", className)}
     style={{ width: size, height: size }}
   >
-    {imageUrl ? (
+    {url ? (
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={imageUrl} alt="image" className="w-full h-full object-cover" />
+      <img src={url} alt="image" className="w-full h-full object-cover" />
     ) : (
       <Image src="/images/placeholder.svg" alt="" width={size} height={size} />
     )}
@@ -181,10 +181,12 @@ export const CampaignPlatformLink: FunctionComponent<
 )
 
 interface CampaignActionProps {
+  campaign: Campaign
   action: CampaignAction
 }
 
 export const CampaignAction: FunctionComponent<CampaignActionProps> = ({
+  campaign: { payToken },
   action: { when, address, amount, type },
 }) => (
   <div className="py-5 border-b border-light">
@@ -196,7 +198,7 @@ export const CampaignAction: FunctionComponent<CampaignActionProps> = ({
         })}
       >
         {type === CampaignActionType.Fund ? "+" : "-"}{" "}
-        {prettyPrintDecimal(amount)} {payTokenSymbol}
+        {prettyPrintDecimal(amount)} {payToken.symbol}
       </p>
       {!!when && <TimeAgo date={when} className="text-placeholder" />}
     </div>

@@ -1,7 +1,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use cosmwasm_std::{Addr, Coin, Decimal};
+use cosmwasm_std::{Addr, Coin, Decimal, Uint128};
 use cw_storage_plus::Item;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -12,7 +12,10 @@ pub struct Campaign {
     pub website: Option<String>,
     pub twitter: Option<String>,
     pub discord: Option<String>,
-    pub image_url: Option<String>,
+    /// The image URL used as the campaign's profile photo.
+    pub profile_image_url: Option<String>,
+    /// The image URLs displayed with the campaign's description.
+    pub description_image_urls: Vec<String>,
 
     pub hidden: bool,
 }
@@ -33,13 +36,20 @@ pub enum Status {
         /// The token price in number of tokens per native token
         /// (ex. uJuno).
         token_price: Decimal,
+        initial_gov_token_balance: Uint128,
     },
     /// The DAO has closed the campaign. Refunds are avaliable but no
     /// new funds may be added.
-    Cancelled { token_price: Decimal },
+    Cancelled {
+        token_price: Decimal,
+        initial_gov_token_balance: Uint128,
+    },
     /// The campaign has met its funding goal. Tokens may now be
     /// exchanged for governance tokens in the DAO.
-    Funded { token_price: Decimal },
+    Funded {
+        token_price: Decimal,
+        initial_gov_token_balance: Uint128,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

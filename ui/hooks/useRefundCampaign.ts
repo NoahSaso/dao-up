@@ -1,9 +1,13 @@
 import { useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
-import { parseError } from "@/helpers"
+import { convertDenomToMicroDenom, parseError } from "@/helpers"
 import { useRefreshCampaign, useWallet } from "@/hooks"
-import { globalLoadingAtom, signedCosmWasmClient } from "@/state"
+import {
+  globalLoadingAtom,
+  signedCosmWasmClient,
+  tokenBalanceId,
+} from "@/state"
 
 export const useRefundCampaign = (campaign: Campaign | null) => {
   const client = useRecoilValue(signedCosmWasmClient)
@@ -13,6 +17,14 @@ export const useRefundCampaign = (campaign: Campaign | null) => {
   const { refreshCampaign } = useRefreshCampaign(campaign)
   const [refundCampaignError, setRefundCampaignError] = useState(
     null as string | null
+  )
+
+  const setPayTokenBalanceId = useSetRecoilState(
+    tokenBalanceId(campaign?.payToken.denom)
+  )
+  const refreshPayTokenBalance = useCallback(
+    () => setPayTokenBalanceId((id) => id + 1),
+    [setPayTokenBalanceId]
   )
 
   const refundCampaign = useCallback(
@@ -38,8 +50,10 @@ export const useRefundCampaign = (campaign: Campaign | null) => {
         const msg = {
           send: {
             contract: campaign.address,
-            // Round so that this value is an integer in case JavaScript does any weird floating point stuff.
-            amount: Math.round(amount * 1e6).toString(),
+            amount: convertDenomToMicroDenom(
+              amount,
+              campaign.payToken.decimals
+            ).toString(),
             msg: "",
           },
         }
@@ -51,10 +65,12 @@ export const useRefundCampaign = (campaign: Campaign | null) => {
           "auto",
           undefined
         )
-        console.log(response)
 
         // Update campaign state.
         refreshCampaign()
+
+        // Refresh balance.
+        refreshPayTokenBalance()
 
         return true
       } catch (error) {
@@ -79,6 +95,7 @@ export const useRefundCampaign = (campaign: Campaign | null) => {
       setRefundCampaignError,
       walletAddress,
       client,
+      refreshPayTokenBalance,
     ]
   )
 

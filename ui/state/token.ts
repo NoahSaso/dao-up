@@ -1,30 +1,34 @@
 import { atomFamily, selectorFamily } from "recoil"
 
 import { parseError } from "@/helpers"
-import { getWalletTokenBalance } from "@/services"
-import { cosmWasmClient, walletAddress } from "@/state"
+import {
+  findPayTokenByDenom,
+  getCW20WalletTokenBalance,
+  getNativeTokenBalance,
+} from "@/services"
+import { cosmWasmClient, signedCosmWasmClient, walletAddress } from "@/state"
 import { CommonError } from "@/types"
 
-export const tokenAddressBalanceId = atomFamily<number, string | undefined>({
-  key: "tokenAddressBalanceId",
+export const tokenBalanceId = atomFamily<number, string | undefined>({
+  key: "tokenBalanceId",
   default: 0,
 })
 
-export const tokenBalance = selectorFamily<
+export const cw20TokenBalance = selectorFamily<
   TokenBalanceResponse,
   {
     tokenAddress: string | undefined | null
     walletAddress: string | undefined | null
   }
 >({
-  key: "tokenBalance",
+  key: "cw20TokenBalance",
   get:
     ({ tokenAddress, walletAddress }) =>
     async ({ get }) => {
       if (!tokenAddress || !walletAddress) return { balance: null, error: null }
 
       // Allow us to manually refresh balance for given token.
-      get(tokenAddressBalanceId(tokenAddress))
+      get(tokenBalanceId(tokenAddress))
 
       const client = get(cosmWasmClient)
 
@@ -36,7 +40,7 @@ export const tokenBalance = selectorFamily<
 
       try {
         return {
-          balance: await getWalletTokenBalance(
+          balance: await getCW20WalletTokenBalance(
             client,
             tokenAddress,
             walletAddress
@@ -57,11 +61,11 @@ export const tokenBalance = selectorFamily<
     },
 })
 
-export const walletTokenBalance = selectorFamily<
+export const cw20WalletTokenBalance = selectorFamily<
   TokenBalanceResponse,
   string | undefined | null
 >({
-  key: "walletTokenBalance",
+  key: "cw20WalletTokenBalance",
   get:
     (tokenAddress) =>
     async ({ get }) => {
@@ -70,7 +74,7 @@ export const walletTokenBalance = selectorFamily<
       if (!address) return { balance: null, error: null }
 
       const { balance, error: tokenBalanceError } = get(
-        tokenBalance({
+        cw20TokenBalance({
           tokenAddress,
           walletAddress: address,
         })
@@ -79,5 +83,50 @@ export const walletTokenBalance = selectorFamily<
         return { balance: null, error: tokenBalanceError }
 
       return { balance, error: null }
+    },
+})
+
+export const nativeWalletTokenBalance = selectorFamily<
+  TokenBalanceResponse,
+  string | undefined | null
+>({
+  key: "nativeWalletTokenBalance",
+  get:
+    (tokenDenom) =>
+    async ({ get }) => {
+      if (!tokenDenom) return { balance: null, error: null }
+
+      // Allow us to manually refresh balance for given token.
+      get(tokenBalanceId(tokenDenom))
+
+      const address = get(walletAddress)
+      const payToken = findPayTokenByDenom(tokenDenom)
+
+      if (!address || !payToken) return { balance: null, error: null }
+
+      const client = get(signedCosmWasmClient)
+      if (!client)
+        return {
+          balance: null,
+          error: CommonError.GetClientFailed,
+        }
+
+      try {
+        return {
+          balance: await getNativeTokenBalance(client, address, payToken),
+          error: null,
+        }
+      } catch (error) {
+        console.error(error)
+        return {
+          balance: null,
+          error: parseError(error, {
+            source: "nativeWalletTokenBalance",
+            wallet: address,
+            tokenDenom,
+            payToken,
+          }),
+        }
+      }
     },
 })

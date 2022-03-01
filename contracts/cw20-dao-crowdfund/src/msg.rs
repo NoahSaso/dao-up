@@ -48,6 +48,8 @@ pub enum ExecuteMsg {
     /// DAO. Refunds are still accepted but funding is no longer
     /// possible.
     Close {},
+    /// Replaces the campaign's campaign information with `campaign`.
+    UpdateCampaign { campaign: Campaign },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -81,4 +83,5 @@ pub struct DumpStateResponse {
     pub funding_token_addr: Addr,
     pub fee_receiver: Addr,
     pub fee: Decimal,
+    pub version: String,
 }

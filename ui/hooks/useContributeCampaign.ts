@@ -2,10 +2,16 @@ import { coins } from "@cosmjs/stargate"
 import { useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
-import { minPayTokenSymbol } from "@/config"
-import { parseError } from "@/helpers"
+import { convertDenomToMicroDenom, parseError } from "@/helpers"
 import { useRefreshCampaign, useWallet } from "@/hooks"
-import { globalLoadingAtom, signedCosmWasmClient } from "@/state"
+import {
+  globalLoadingAtom,
+  nativeWalletTokenBalance,
+  signedCosmWasmClient,
+  tokenBalanceId,
+} from "@/state"
+
+import { CommonError } from "./../types/miscellaneous"
 
 export const useContributeCampaign = (campaign: Campaign | null) => {
   const client = useRecoilValue(signedCosmWasmClient)
@@ -15,6 +21,17 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
   const { refreshCampaign } = useRefreshCampaign(campaign)
   const [contributeCampaignError, setContributeCampaignError] = useState(
     null as string | null
+  )
+
+  const { balance } = useRecoilValue(
+    nativeWalletTokenBalance(campaign?.payToken?.denom)
+  )
+  const setPayTokenBalanceId = useSetRecoilState(
+    tokenBalanceId(campaign?.payToken.denom)
+  )
+  const refreshPayTokenBalance = useCallback(
+    () => setPayTokenBalanceId((id) => id + 1),
+    [setPayTokenBalanceId]
   )
 
   const contributeCampaign = useCallback(
@@ -33,6 +50,14 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
         setContributeCampaignError("Campaign is not loaded.")
         return false
       }
+      if (balance === null) {
+        setContributeCampaignError("Could not check balance.")
+        return false
+      }
+      if (amount > balance) {
+        setContributeCampaignError(CommonError.InsufficientFunds)
+        return false
+      }
 
       setLoading(true)
 
@@ -47,13 +72,17 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
           msg,
           "auto",
           undefined,
-          // JavaScript thinks 16.31 * 1e6 = 16309999.999999998 for some reason.
-          // Round so that this value is an integer...
-          coins(Math.round(amount * 1e6), minPayTokenSymbol)
+          coins(
+            convertDenomToMicroDenom(amount, campaign.payToken.decimals),
+            campaign.payToken.denom
+          )
         )
 
         // Update campaign state.
         refreshCampaign()
+
+        // Refresh balance.
+        refreshPayTokenBalance()
 
         return true
       } catch (error) {
@@ -78,6 +107,8 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
       setContributeCampaignError,
       walletAddress,
       client,
+      balance,
+      refreshPayTokenBalance,
     ]
   )
 

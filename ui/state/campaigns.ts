@@ -1,8 +1,12 @@
 import { QueryContractsByCodeResponse } from "cosmjs-types/cosmwasm/wasm/v1/query"
 import { atom, atomFamily, selector, selectorFamily, waitForAll } from "recoil"
 
-import { escrowContractCodeId } from "@/config"
-import { extractPageInfo, parseError } from "@/helpers"
+import { escrowContractCodeIds } from "@/config"
+import {
+  convertMicroDenomToDenom,
+  extractPageInfo,
+  parseError,
+} from "@/helpers"
 import {
   campaignsFromResponses,
   createDENSAddressMap,
@@ -15,7 +19,7 @@ import {
   getTokenInfo,
   transformCampaign,
 } from "@/services"
-import { cosmWasmClient, cosmWasmQueryClient, tokenBalance } from "@/state"
+import { cosmWasmClient, cosmWasmQueryClient, cw20TokenBalance } from "@/state"
 import { localStorageEffectJSON } from "@/state/effects"
 import { CampaignActionType, CommonError } from "@/types"
 
@@ -63,9 +67,11 @@ export const fetchCampaignActions = selectorFamily<
   get:
     (address) =>
     async ({ get }) => {
-      get(campaignStateId(address))
-
       if (!address) return { actions: null, error: CommonError.InvalidAddress }
+
+      const { campaign, error: campaignError } = get(fetchCampaign(address))
+      if (!campaign || campaignError)
+        return { actions: null, error: campaignError }
 
       const client = get(cosmWasmClient)
       if (!client) return { actions: null, error: CommonError.GetClientFailed }
@@ -101,10 +107,10 @@ export const fetchCampaignActions = selectorFamily<
 
         // Extract the amount and sender.
         const fundActions: CampaignAction[] = funds.map((fund) => {
-          let amount =
-            Number(
-              fund.wasm.attributes.find((a: any) => a.key === "amount")?.value
-            ) / 1e6
+          let amount = convertMicroDenomToDenom(
+            fund.wasm.attributes.find((a: any) => a.key === "amount")?.value,
+            campaign.payToken.decimals
+          )
           let address = fund.wasm.attributes.find(
             (a: any) => a.key === "sender"
           )?.value as string
@@ -127,11 +133,11 @@ export const fetchCampaignActions = selectorFamily<
           }
         })
         const refundActions: CampaignAction[] = refunds.map((fund) => {
-          let amount =
-            Number(
-              fund.wasm.attributes.find((a: any) => a.key === "native_returned")
-                ?.value
-            ) / 1e6
+          let amount = convertMicroDenomToDenom(
+            fund.wasm.attributes.find((a: any) => a.key === "native_returned")
+              ?.value,
+            campaign.payToken.decimals
+          )
           let address = fund.wasm.attributes.find(
             (a: any) => a.key === "sender"
           )?.value as string
@@ -188,7 +194,7 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
         balance: campaignGovTokenBalance,
         error: campaignGovTokenBalanceError,
       } = get(
-        tokenBalance({
+        cw20TokenBalance({
           tokenAddress: state.gov_token_addr,
           walletAddress: address,
         })
@@ -201,7 +207,7 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
 
       const { balance: daoGovTokenBalance, error: daoGovTokenBalanceError } =
         get(
-          tokenBalance({
+          cw20TokenBalance({
             tokenAddress: state.gov_token_addr,
             walletAddress: state.dao_addr,
           })
@@ -247,7 +253,7 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
     },
 })
 
-export const tokenInfo = selectorFamily<TokenInfoResponse, string>({
+export const tokenInfo = selectorFamily<TokenInfoSelectorResponse, string>({
   key: "tokenInfo",
   get:
     (address) =>
@@ -277,17 +283,17 @@ export const tokenInfo = selectorFamily<TokenInfoResponse, string>({
 
 export const escrowContractAddresses = selectorFamily<
   QueryContractsByCodeResponse | undefined,
-  { startAtKey?: number[] }
+  { codeId: number; startAtKey?: number[] }
 >({
   key: "escrowContractAddresses",
   get:
-    ({ startAtKey }) =>
+    ({ codeId, startAtKey }) =>
     async ({ get }) => {
       const queryClient = get(cosmWasmQueryClient)
       if (!queryClient) return
 
       return await queryClient.wasm.listContractsByCodeId(
-        escrowContractCodeId,
+        codeId,
         startAtKey && new Uint8Array(startAtKey)
       )
     },
@@ -308,24 +314,38 @@ export const pagedEscrowContractAddresses = selectorFamily<
       const queryClient = get(cosmWasmQueryClient)
       if (!queryClient) return { addresses, error: CommonError.GetClientFailed }
 
+      let codeIdIndex = 0
       let startAtKey: number[] | undefined = undefined
       do {
         const addressDenyList = get(campaignDenyList)
         const response = get(
           escrowContractAddresses({
+            codeId: escrowContractCodeIds[codeIdIndex],
             startAtKey: startAtKey && Array.from(startAtKey),
           })
         ) as QueryContractsByCodeResponse | undefined
 
-        if (response) {
-          const contracts = response.contracts.filter(
-            (a) => !addressDenyList.includes(a)
-          )
-          addresses.push(...contracts)
-          startAtKey = Array.from(response.pagination?.nextKey ?? [])
+        // If no response, move to next codeId.
+        if (!response) {
+          startAtKey = undefined
+          codeIdIndex++
+          continue
+        }
+
+        const contracts = response.contracts.filter(
+          (a) => !addressDenyList.includes(a)
+        )
+        addresses.push(...contracts)
+        startAtKey = Array.from(response.pagination?.nextKey ?? [])
+
+        // If exhausted all addresses for this code ID, move on.
+        if (!startAtKey.length) {
+          codeIdIndex++
         }
       } while (
-        startAtKey?.length !== 0 &&
+        // Keep going as long as there is another page key or the code ID is still valid.
+        (!!startAtKey?.length || codeIdIndex < escrowContractCodeIds.length) &&
+        // Keep going if not at pagination limit.
         (!page || addresses.length - 1 < page.endIndex)
       )
 

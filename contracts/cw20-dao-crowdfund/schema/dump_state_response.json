@@ -6,12 +6,16 @@
     "campaign_info",
     "creator",
     "dao_addr",
+    "fee",
+    "fee_receiver",
     "funding_goal",
     "funding_token_addr",
     "funding_token_info",
     "funds_raised",
     "gov_token_addr",
-    "status"
+    "gov_token_info",
+    "status",
+    "version"
   ],
   "properties": {
     "campaign_info": {
@@ -21,6 +25,12 @@
       "$ref": "#/definitions/Addr"
     },
     "dao_addr": {
+      "$ref": "#/definitions/Addr"
+    },
+    "fee": {
+      "$ref": "#/definitions/Decimal"
+    },
+    "fee_receiver": {
       "$ref": "#/definitions/Addr"
     },
     "funding_goal": {
@@ -38,8 +48,14 @@
     "gov_token_addr": {
       "$ref": "#/definitions/Addr"
     },
+    "gov_token_info": {
+      "$ref": "#/definitions/TokenInfoResponse"
+    },
     "status": {
       "$ref": "#/definitions/Status"
+    },
+    "version": {
+      "type": "string"
     }
   },
   "definitions": {
@@ -51,12 +67,20 @@
       "type": "object",
       "required": [
         "description",
+        "description_image_urls",
         "hidden",
         "name"
       ],
       "properties": {
         "description": {
           "type": "string"
+        },
+        "description_image_urls": {
+          "description": "The image URLs displayed with the campaign's description.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "discord": {
           "type": [
@@ -67,14 +91,15 @@
         "hidden": {
           "type": "boolean"
         },
-        "image_url": {
+        "name": {
+          "type": "string"
+        },
+        "profile_image_url": {
+          "description": "The image URL used as the campaign's profile photo.",
           "type": [
             "string",
             "null"
           ]
-        },
-        "name": {
-          "type": "string"
         },
         "twitter": {
           "type": [
@@ -112,6 +137,19 @@
     "Status": {
       "oneOf": [
         {
+          "description": "The contract has been instantiated but its funding token has not been instantiated. No actions can be performed on the contract.",
+          "type": "object",
+          "required": [
+            "uninstantiated"
+          ],
+          "properties": {
+            "uninstantiated": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
           "description": "The contract has been instantiated and is pending funding from the DAO.",
           "type": "object",
           "required": [
@@ -134,9 +172,13 @@
             "open": {
               "type": "object",
               "required": [
+                "initial_gov_token_balance",
                 "token_price"
               ],
               "properties": {
+                "initial_gov_token_balance": {
+                  "$ref": "#/definitions/Uint128"
+                },
                 "token_price": {
                   "description": "The token price in number of tokens per native token (ex. uJuno).",
                   "allOf": [
@@ -160,9 +202,13 @@
             "cancelled": {
               "type": "object",
               "required": [
+                "initial_gov_token_balance",
                 "token_price"
               ],
               "properties": {
+                "initial_gov_token_balance": {
+                  "$ref": "#/definitions/Uint128"
+                },
                 "token_price": {
                   "$ref": "#/definitions/Decimal"
                 }
@@ -181,9 +227,13 @@
             "funded": {
               "type": "object",
               "required": [
+                "initial_gov_token_balance",
                 "token_price"
               ],
               "properties": {
+                "initial_gov_token_balance": {
+                  "$ref": "#/definitions/Uint128"
+                },
                 "token_price": {
                   "$ref": "#/definitions/Decimal"
                 }
