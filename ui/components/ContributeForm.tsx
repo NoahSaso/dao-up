@@ -80,12 +80,12 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
     watchContribution && watchContribution > 0 && fundingTokenPrice
       ? fundingTokenPrice * watchContribution
       : 0
-  // Minimum contribution is how many juno(x) per funding token (without decimals).
+  // Minimum contribution is how many non-micro payTokens per micro funding token, since each contribution much return at least 1 micro funding token.
   const minContribution = convertMicroDenomToDenom(
     Math.max(
-      // Cannot fund less than 1 ujuno(x).
+      // Cannot fund less than 1 micro payToken.
       1,
-      // fundingTokenPrice is funding tokens (without decimals) per 1 ujuno(x), so invert and convert to non-micro.
+      // fundingTokenPrice is non-micro funding tokens per 1 micro payToken, so invert and convert to non-micro.
       // Use ceiling in case 1/fundingTokenPrice is nonzero after the nth decimal and we need to set a minimum within the n decimal range.
       Math.ceil(1 / (fundingTokenPrice ?? 1))
     ),

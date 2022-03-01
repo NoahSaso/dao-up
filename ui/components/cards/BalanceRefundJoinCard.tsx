@@ -78,8 +78,8 @@ const BalanceRefundJoinCardContents: FunctionComponent<
     watchRefund && watchRefund > 0 && fundingTokenPrice
       ? watchRefund / fundingTokenPrice
       : 0
-  // Minimum refund is how many funding tokens (WITH decimals) per 1 ujuno(x).
-  // fundingTokenPrice is micro funding tokens (withOUT decimals) per 1 ujuno(x), so convert to non-micro.
+  // Minimum refund is how many non-micro funding tokens per 1 micro payToken.
+  // fundingTokenPrice is micro funding tokens per 1 micro payToken, so convert to non-micro.
   // Use ceiling in case fundingTokenPrice is nonzero after the nth decimal and we need to set a minimum within the n decimal range.
   const minRefund = convertMicroDenomToDenom(
     Math.ceil(fundingTokenPrice ?? 0),

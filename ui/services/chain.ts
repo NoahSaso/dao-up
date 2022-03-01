@@ -182,7 +182,7 @@ export const getNativeTokenBalance = async (
   return Number(coin?.amount ?? 0) / Math.pow(10, token.decimals)
 }
 
-// Price of token in juno(x).
+// Price of token in baseToken.
 export const getTokenPricePerBase = async (
   client: CosmWasmClient,
   token: PayToken,
@@ -198,7 +198,7 @@ export const getTokenPricePerBase = async (
   return Number(token2_amount) / Math.pow(10, token.decimals)
 }
 
-// Swaps base token (juno(x)) for outputToken and receive at least minOutput.
+// Swaps baseToken for outputToken and receive at least minOutput outputTokens.
 export const swapToken = async (
   client: SigningCosmWasmClient,
   walletAddress: string,
