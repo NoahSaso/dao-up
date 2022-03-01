@@ -4,7 +4,13 @@ import { useRecoilValue, useSetRecoilState } from "recoil"
 
 import { convertDenomToMicroDenom, parseError } from "@/helpers"
 import { useRefreshCampaign, useWallet } from "@/hooks"
-import { globalLoadingAtom, signedCosmWasmClient } from "@/state"
+import {
+  globalLoadingAtom,
+  nativeWalletTokenBalance,
+  signedCosmWasmClient,
+} from "@/state"
+
+import { CommonError } from "./../types/miscellaneous"
 
 export const useContributeCampaign = (campaign: Campaign | null) => {
   const client = useRecoilValue(signedCosmWasmClient)
@@ -14,6 +20,10 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
   const { refreshCampaign } = useRefreshCampaign(campaign)
   const [contributeCampaignError, setContributeCampaignError] = useState(
     null as string | null
+  )
+
+  const { balance } = useRecoilValue(
+    nativeWalletTokenBalance(campaign?.payToken?.denom)
   )
 
   const contributeCampaign = useCallback(
@@ -30,6 +40,14 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
       }
       if (!campaign) {
         setContributeCampaignError("Campaign is not loaded.")
+        return false
+      }
+      if (balance === null) {
+        setContributeCampaignError("Could not check balance.")
+        return false
+      }
+      if (amount > balance) {
+        setContributeCampaignError(CommonError.InsufficientFunds)
         return false
       }
 
@@ -78,6 +96,7 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
       setContributeCampaignError,
       walletAddress,
       client,
+      balance,
     ]
   )
 

@@ -4,6 +4,7 @@ import {
   swapFee,
   swapSlippage,
 } from "@/config"
+import { convertMicroDenomToDenom } from "@/helpers"
 
 import tokenList from "./token_list.json"
 
@@ -41,9 +42,34 @@ export const getNextPayTokenDenom = (denom: string) =>
   ].denom
 
 // swapPrice is in payToken/baseToken (i.e. price of 1 baseToken in payToken)
-export const getBaseTokenForDesiredAmount = (
-  minOutput: number,
-  swapPrice: number
+export const getBaseTokenForMinPayToken = (
+  minPayToken: number,
+  swapPrice: number,
+  decimals: number
 ) =>
-  // Take into account slippage and fee.
-  minOutput / swapPrice / (1 - swapSlippage) / (1 - swapFee)
+  Number(
+    // Take into account slippage and fee.
+    (
+      minPayToken / swapPrice / (1 - swapSlippage) / (1 - swapFee) +
+      // Add the smallest unit in case of nonzero decimals after the truncation to ensure sufficient balance.
+      convertMicroDenomToDenom(1, decimals)
+    ).toFixed(decimals)
+  )
+
+// swapPrice is in payToken/baseToken (i.e. price of 1 baseToken in payToken)
+export const getMinPayTokenForBaseToken = (
+  baseToken: number,
+  swapPrice: number,
+  decimals: number
+) =>
+  Number(
+    // Take into account slippage and fee.
+    (
+      (baseToken -
+        // Subtract the smallest unit in case of nonzero decimals after the truncation to ensure sufficient balance.
+        convertMicroDenomToDenom(1, decimals)) *
+      swapPrice *
+      (1 - swapSlippage) *
+      (1 - swapFee)
+    ).toFixed(decimals)
+  )

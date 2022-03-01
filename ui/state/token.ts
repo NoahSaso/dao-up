@@ -88,12 +88,14 @@ export const cw20WalletTokenBalance = selectorFamily<
 
 export const nativeWalletTokenBalance = selectorFamily<
   TokenBalanceResponse,
-  string
+  string | undefined | null
 >({
   key: "nativeWalletTokenBalance",
   get:
     (tokenDenom) =>
     async ({ get }) => {
+      if (!tokenDenom) return { balance: null, error: null }
+
       // Allow us to manually refresh balance for given token.
       get(tokenBalanceId(tokenDenom))
 

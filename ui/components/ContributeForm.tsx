@@ -1,6 +1,6 @@
 import { FunctionComponent, useCallback, useState } from "react"
 import { useForm } from "react-hook-form"
-import { useSetRecoilState } from "recoil"
+import { useRecoilValue, useSetRecoilState } from "recoil"
 
 import { Alert, Button, FormInput, Suspense } from "@/components"
 import {
@@ -9,8 +9,15 @@ import {
   prettyPrintDecimal,
 } from "@/helpers"
 import { useContributeCampaign, usePayTokenUtil, useWallet } from "@/hooks"
-import { baseToken, getBaseTokenForDesiredAmount } from "@/services"
-import { favoriteCampaignAddressesAtom } from "@/state"
+import {
+  baseToken,
+  getBaseTokenForMinPayToken,
+  getMinPayTokenForBaseToken,
+} from "@/services"
+import {
+  favoriteCampaignAddressesAtom,
+  nativeWalletTokenBalance,
+} from "@/state"
 
 enum SwapAlertStatus {
   Closed,
@@ -60,6 +67,7 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
     formState: { errors },
     watch,
     reset,
+    setValue,
   } = useForm<ContributionForm>({
     mode: "onChange",
     defaultValues: {},
@@ -107,6 +115,9 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
     balance: payTokenBalance,
     isBase,
   } = usePayTokenUtil(payToken)
+  const { balance: baseTokenBalance } = useRecoilValue(
+    nativeWalletTokenBalance(baseToken.denom)
+  )
   const [swapAlertStatus, setSwapAlertStatus] = useState<SwapAlertStatus>(
     SwapAlertStatus.Closed
   )
@@ -119,9 +130,30 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
       ? Number((watchContribution - payTokenBalance).toFixed(payToken.decimals))
       : 0
   // Display the associated base token amount that will be swapped.
-  const baseTokenToSwap =
+  const baseTokenForPayTokenNeeded =
     !!payTokenNeeded && !!swapPrice
-      ? getBaseTokenForDesiredAmount(payTokenNeeded, swapPrice)
+      ? getBaseTokenForMinPayToken(
+          payTokenNeeded,
+          swapPrice,
+          baseToken.decimals
+        )
+      : 0
+  // Check if we can swap for the desired amount.
+  const insufficientBaseToken =
+    baseTokenBalance === null || baseTokenForPayTokenNeeded > baseTokenBalance
+  // Calculate the maximum pay token the given base token balance can swap for if there is insufficient balance to swap.
+  const maxPayTokenForBaseTokenBalance =
+    insufficientBaseToken &&
+    baseTokenBalance !== null &&
+    // Need enough to cover gas...
+    baseTokenBalance > 0.01 &&
+    !!swapPrice
+      ? getMinPayTokenForBaseToken(
+          // Reserve a conservative 0.01 baseToken for gas.
+          baseTokenBalance - 0.01,
+          swapPrice,
+          payToken.decimals
+        )
       : 0
   // When swapping, there will usually be slightly more received than asked for, given the nature of slippage. Give the user the option to just round up and send all the balance if they just swapped and have some extra.
   // If the balance is more than the entered contribution AND the initial contribution is less than the max contribution, add button to round up. If the initial contribution = max contribution, no need to round up.
@@ -140,10 +172,10 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
 
   const doContribution = useCallback(
     async ({ contribution }: ContributionForm) => {
-      if (!contribution) return
+      if (!contribution || payTokenBalance === null) return
 
       // Check if we need to swap for more pay token.
-      if (!isBase && contribution > (payTokenBalance ?? 0)) {
+      if (!isBase && contribution > payTokenBalance) {
         setSwapAlertStatus(SwapAlertStatus.Swapping)
         return
       }
@@ -220,7 +252,7 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
 
         <Button
           className="sm:h-[50px]"
-          disabled={!connected}
+          disabled={!connected || payTokenBalance === null}
           submitLabel="Support this campaign"
         />
       </form>
@@ -252,7 +284,7 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
               >
                 Junoswap
               </a>{" "}
-              to swap about {prettyPrintDecimal(baseTokenToSwap)}{" "}
+              to swap about {prettyPrintDecimal(baseTokenForPayTokenNeeded)}{" "}
               {baseToken.symbol} for about {prettyPrintDecimal(payTokenNeeded)}{" "}
               {payToken.symbol}.
             </p>
@@ -263,9 +295,39 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
               takes a 0.3% fee.
             </p>
 
-            <Button onClick={swap} disabled={!canSwap} className="mt-4">
+            <Button
+              onClick={swap}
+              disabled={!canSwap || insufficientBaseToken}
+              className="mt-4"
+            >
               Swap
             </Button>
+
+            {insufficientBaseToken && (
+              <p className="mt-2 text-orange">
+                You have {prettyPrintDecimal(baseTokenBalance ?? 0)}{" "}
+                {baseToken.symbol} which is insufficient to make this swap.
+                {maxPayTokenForBaseTokenBalance > 0 ? (
+                  <>
+                    {" "}
+                    Either{" "}
+                    <span
+                      className="cursor-pointer underline hover:no-underline"
+                      onClick={() =>
+                        setValue("contribution", maxPayTokenForBaseTokenBalance)
+                      }
+                    >
+                      lower your contribution to{" "}
+                      {prettyPrintDecimal(maxPayTokenForBaseTokenBalance)}{" "}
+                      {payToken.symbol}
+                    </span>{" "}
+                    or purchase more {baseToken.symbol}.
+                  </>
+                ) : (
+                  ` Purchase more ${baseToken.symbol}.`
+                )}
+              </p>
+            )}
 
             {swapError && <p className="mt-2 text-orange">{swapError}</p>}
           </>

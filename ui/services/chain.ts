@@ -18,7 +18,7 @@ import {
   escrowAddressRegex,
   parseError,
 } from "@/helpers"
-import { baseToken, getBaseTokenForDesiredAmount } from "@/services"
+import { baseToken, getBaseTokenForMinPayToken } from "@/services"
 import { CommonError } from "@/types"
 
 export const getClient = async () => CosmWasmClient.connect(rpcEndpoint)
@@ -207,7 +207,11 @@ export const swapToken = async (
   swapPrice: number
 ): Promise<any> => {
   // Get base token amount that will yield at least the desired minOutput.
-  const inputAmount = getBaseTokenForDesiredAmount(minOutput, swapPrice)
+  const inputAmount = getBaseTokenForMinPayToken(
+    minOutput,
+    swapPrice,
+    baseToken.decimals
+  )
 
   const microInputAmount = Math.round(
     inputAmount * Math.pow(10, baseToken.decimals)
