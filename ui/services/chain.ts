@@ -2,6 +2,7 @@ import {
   CosmWasmClient,
   SigningCosmWasmClient,
 } from "@cosmjs/cosmwasm-stargate"
+import { coin } from "@cosmjs/stargate"
 import { findAttribute } from "@cosmjs/stargate/build/logs"
 
 import {
@@ -12,12 +13,18 @@ import {
   featuredListContractAddress,
   rpcEndpoint,
 } from "@/config"
-import { escrowAddressRegex, parseError } from "@/helpers"
+import {
+  convertDenomToMicroDenom,
+  convertMicroDenomToDenom,
+  escrowAddressRegex,
+  parseError,
+} from "@/helpers"
+import { baseToken, getBaseTokenForMinPayToken } from "@/services"
 import { CommonError } from "@/types"
 
 export const getClient = async () => CosmWasmClient.connect(rpcEndpoint)
 
-export const getWalletTokenBalance = async (
+export const getCW20WalletTokenBalance = async (
   client: CosmWasmClient,
   tokenAddress: string,
   walletAddress: string
@@ -25,7 +32,7 @@ export const getWalletTokenBalance = async (
   const { balance } = await client.queryContractSmart(tokenAddress, {
     balance: { address: walletAddress },
   })
-  return Number(balance) / 1e6
+  return convertMicroDenomToDenom(balance, 6)
 }
 
 export const getFeaturedAddresses = async (client: CosmWasmClient) =>
@@ -165,4 +172,72 @@ export const createDAOProposalForCampaign = async (
   )
 
   return findAttribute(response.logs, "wasm", "proposal_id").value
+}
+
+export const getNativeTokenBalance = async (
+  client: SigningCosmWasmClient,
+  walletAddress: string,
+  token: PayToken
+): Promise<number> => {
+  const coin = await client.getBalance(walletAddress, token.denom)
+  return convertMicroDenomToDenom(coin?.amount ?? 0, token.decimals)
+}
+
+// Price of token in baseToken.
+export const getTokenPricePerBase = async (
+  client: CosmWasmClient,
+  token: PayToken,
+  baseAmount: number
+): Promise<number> => {
+  const { token2_amount } = await client.queryContractSmart(token.swapAddress, {
+    token1_for_token2_price: {
+      token1_amount: convertDenomToMicroDenom(
+        baseAmount,
+        baseToken.decimals
+      ).toString(),
+    },
+  })
+  return convertMicroDenomToDenom(token2_amount, token.decimals)
+}
+
+// Swaps baseToken for outputToken and receive at least minOutput outputTokens.
+export const swapToken = async (
+  client: SigningCosmWasmClient,
+  walletAddress: string,
+  outputToken: PayToken,
+  minOutput: number,
+  swapPrice: number
+): Promise<any> => {
+  // Get base token amount that will yield at least the desired minOutput.
+  const inputAmount = getBaseTokenForMinPayToken(
+    minOutput,
+    swapPrice,
+    baseToken.decimals
+  )
+
+  const microInputAmount = convertDenomToMicroDenom(
+    inputAmount,
+    baseToken.decimals
+  ).toString()
+  const microMinOutputAmount = convertDenomToMicroDenom(
+    minOutput,
+    outputToken.decimals
+  ).toString()
+
+  const msg = {
+    swap: {
+      input_token: "Token1",
+      input_amount: microInputAmount,
+      min_output: microMinOutputAmount,
+    },
+  }
+  const response = await client.execute(
+    walletAddress,
+    outputToken.swapAddress,
+    msg,
+    "auto",
+    undefined,
+    [coin(microInputAmount, baseToken.denom)]
+  )
+  return response
 }

@@ -17,12 +17,11 @@ import {
   cw20CodeId,
   daoUpDAOAddress,
   daoUpFee,
-  minPayTokenSymbol,
   title,
 } from "@/config"
-import { parseError } from "@/helpers"
+import { convertDenomToMicroDenom, parseError } from "@/helpers"
 import { useWallet } from "@/hooks"
-import { defaultNewCampaign } from "@/services"
+import { defaultNewCampaign, findPayTokenByDenom } from "@/services"
 import { signedCosmWasmClient } from "@/state"
 
 const Create: NextPage = () => (
@@ -72,14 +71,19 @@ const CreateContent = () => {
         return
       }
 
+      const payToken = findPayTokenByDenom(newCampaign.payTokenDenom)
+      if (!payToken) {
+        setCreateCampaignError("Invalid funding goal token selected.")
+        return
+      }
+
       const msg = {
         dao_address: newCampaign.daoAddress,
         cw20_code_id: cw20CodeId,
 
-        // Round so that this value is an integer in case JavaScript does any weird floating point stuff.
         funding_goal: coin(
-          Math.round(newCampaign.goal * 1e6),
-          minPayTokenSymbol
+          convertDenomToMicroDenom(newCampaign.goal, payToken.decimals),
+          payToken.denom
         ),
         funding_token_name: newCampaign.tokenName,
         funding_token_symbol: newCampaign.tokenSymbol,
@@ -146,7 +150,7 @@ const CreateContent = () => {
           submitLabel="Create campaign"
           error={createCampaignError}
           creating
-          defaultValues={defaultNewCampaign}
+          defaultValues={defaultNewCampaign()}
           onSubmit={createCampaign}
         />
       </CenteredColumn>

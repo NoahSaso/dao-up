@@ -12,7 +12,7 @@ import {
   Loader,
 } from "@/components"
 import { prettyPrintDecimal } from "@/helpers"
-import { walletTokenBalance } from "@/state"
+import { cw20WalletTokenBalance } from "@/state"
 
 interface CampaignCardWrapperProps extends PropsWithChildren<CampaignProps> {
   contentClassName?: string
@@ -118,7 +118,7 @@ export const FavoriteCampaignCard: FunctionComponent<CampaignProps> = ({
   } = campaign
 
   const { state, contents } = useRecoilValueLoadable(
-    walletTokenBalance(fundingTokenAddress)
+    cw20WalletTokenBalance(fundingTokenAddress)
   )
   const balance = state === "hasValue" ? contents.balance : undefined
   const balancePercent =

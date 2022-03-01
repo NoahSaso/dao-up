@@ -7,10 +7,9 @@ import {
   ControlledFormPercentTokenDoubleInput,
   Suspense,
 } from "@/components"
-import { payTokenSymbol } from "@/config"
-import { prettyPrintDecimal } from "@/helpers"
+import { convertMicroDenomToDenom, prettyPrintDecimal } from "@/helpers"
 import { useRefundJoinDAOForm } from "@/hooks"
-import { walletTokenBalance } from "@/state"
+import { cw20WalletTokenBalance } from "@/state"
 import { CampaignStatus } from "@/types"
 
 interface BalanceRefundJoinCardProps {
@@ -45,6 +44,8 @@ const BalanceRefundJoinCardContents: FunctionComponent<
   const {
     status,
 
+    payToken,
+
     fundingToken: {
       address: fundingTokenAddress,
       supply: fundingTokenSupply,
@@ -56,10 +57,10 @@ const BalanceRefundJoinCardContents: FunctionComponent<
   } = campaign
 
   const { balance: fundingTokenBalance, error: fundingTokenBalanceError } =
-    useRecoilValue(walletTokenBalance(fundingTokenAddress))
+    useRecoilValue(cw20WalletTokenBalance(fundingTokenAddress))
 
   const { balance: govTokenBalance, error: govTokenBalanceError } =
-    useRecoilValue(walletTokenBalance(govTokenAddress))
+    useRecoilValue(cw20WalletTokenBalance(govTokenAddress))
 
   // Refund Form
   const { onSubmit, control, errors, watch, refundCampaignError } =
@@ -77,10 +78,13 @@ const BalanceRefundJoinCardContents: FunctionComponent<
     watchRefund && watchRefund > 0 && fundingTokenPrice
       ? watchRefund / fundingTokenPrice
       : 0
-  // Minimum refund is how many funding tokens (WITH decimals) per 1 ujuno(x).
-  // fundingTokenPrice is funding tokens (withOUT decimals) per 1 ujuno(x), so divide.
-  // Use ceiling in case fundingTokenPrice is nonzero after the 6th decimal and we need to set a minimum within the 6 decimal range.
-  const minRefund = Math.ceil(fundingTokenPrice ?? 0) / 1e6
+  // Minimum refund is how many non-micro funding tokens per 1 micro payToken.
+  // fundingTokenPrice is micro funding tokens per 1 micro payToken, so convert to non-micro.
+  // Use ceiling in case fundingTokenPrice is nonzero after the nth decimal and we need to set a minimum within the n decimal range.
+  const minRefund = convertMicroDenomToDenom(
+    Math.ceil(fundingTokenPrice ?? 0),
+    payToken.decimals
+  )
 
   return (
     <>
@@ -181,7 +185,7 @@ const BalanceRefundJoinCardContents: FunctionComponent<
                     expectedPayTokensReceived
                       ? `You will receive about ${prettyPrintDecimal(
                           expectedPayTokensReceived
-                        )} ${payTokenSymbol}`
+                        )} ${payToken.symbol}`
                       : undefined
                   }
                   error={

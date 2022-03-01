@@ -1,16 +1,16 @@
 import { useSetRecoilState } from "recoil"
 
-import { campaignStateId, tokenAddressBalanceId } from "@/state"
+import { campaignStateId, tokenBalanceId } from "@/state"
 
 export const useRefreshCampaign = (campaign: Campaign | null) => {
   const setCampaignStateId = useSetRecoilState(
     campaignStateId(campaign?.address)
   )
   const setFundingTokenAddressBalanceId = useSetRecoilState(
-    tokenAddressBalanceId(campaign?.fundingToken.address)
+    tokenBalanceId(campaign?.fundingToken.address)
   )
   const setGovTokenAddressBalanceId = useSetRecoilState(
-    tokenAddressBalanceId(campaign?.govToken.address)
+    tokenBalanceId(campaign?.govToken.address)
   )
 
   const refreshCampaign = () => {

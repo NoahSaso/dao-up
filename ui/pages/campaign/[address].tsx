@@ -31,17 +31,17 @@ import {
   createDENSAddressMap,
   getCampaignState,
   getClient,
+  getCW20WalletTokenBalance,
   getDENSAddress,
   getDENSNames,
   getFeaturedAddresses,
-  getWalletTokenBalance,
   suggestToken,
   transformCampaign,
 } from "@/services"
 import {
+  cw20WalletTokenBalance,
   fetchCampaign,
   fetchCampaignActions,
-  walletTokenBalance,
 } from "@/state"
 import { CampaignContractVersion, CampaignStatus } from "@/types"
 
@@ -156,7 +156,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
     state: fundingTokenBalanceState,
     contents: { balance: fundingTokenBalanceContents },
   } = useRecoilValueLoadable(
-    walletTokenBalance(campaign?.fundingToken?.address)
+    cw20WalletTokenBalance(campaign?.fundingToken?.address)
   )
   // No need to prevent page from displaying until this is ready.
   const fundingTokenBalance: number | null =
@@ -166,7 +166,9 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   const {
     state: govTokenBalanceState,
     contents: { balance: govTokenBalanceContents },
-  } = useRecoilValueLoadable(walletTokenBalance(campaign?.govToken?.address))
+  } = useRecoilValueLoadable(
+    cw20WalletTokenBalance(campaign?.govToken?.address)
+  )
   // No need to prevent page from displaying until this is ready.
   const hasGovToken =
     govTokenBalanceState === "hasValue" ? !!govTokenBalanceContents : null
@@ -329,7 +331,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
         <h2 className="text-green text-xl mt-8 mb-2">Activity</h2>
 
         <Suspense>
-          <CampaignActionsContent campaignAddress={campaignAddress} />
+          <CampaignActionsContent campaign={campaign} />
         </Suspense>
       </CenteredColumn>
 
@@ -501,14 +503,14 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
 }
 
 interface CampaignActionsContentProps {
-  campaignAddress: string
+  campaign: Campaign
 }
 
 const CampaignActionsContent: React.FC<CampaignActionsContentProps> = ({
-  campaignAddress,
+  campaign,
 }) => {
   const { actions, error: campaignActionsError } = useRecoilValue(
-    fetchCampaignActions(campaignAddress)
+    fetchCampaignActions(campaign.address)
   )
 
   return campaignActionsError ? (
@@ -517,13 +519,15 @@ const CampaignActionsContent: React.FC<CampaignActionsContentProps> = ({
     <>
       {actions && actions.length > 1 && (
         <div className="flex-1 max-w-sm my-4">
-          <ContributionGraph actions={actions} />
+          <ContributionGraph campaign={campaign} actions={actions} />
         </div>
       )}
 
       <div className="w-full lg:w-3/5 max-h-[80vh] overflow-y-auto visible-scrollbar">
         {actions?.length ? (
-          actions.map((item, idx) => <CampaignAction key={idx} action={item} />)
+          actions.map((item, idx) => (
+            <CampaignAction key={idx} campaign={campaign} action={item} />
+          ))
         ) : (
           <p>None yet.</p>
         )}
@@ -565,12 +569,12 @@ export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
     const state = await getCampaignState(client, campaignAddress)
 
     // Get gov token balances.
-    const campaignGovTokenBalance = await getWalletTokenBalance(
+    const campaignGovTokenBalance = await getCW20WalletTokenBalance(
       client,
       state.gov_token_addr,
       campaignAddress
     )
-    const daoGovTokenBalance = await getWalletTokenBalance(
+    const daoGovTokenBalance = await getCW20WalletTokenBalance(
       client,
       state.gov_token_addr,
       state.dao_addr

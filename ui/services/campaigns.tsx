@@ -2,18 +2,21 @@ import fuzzysort from "fuzzysort"
 import _merge from "lodash.merge"
 
 import { daoUrlPrefix } from "@/config"
-import { getFilterFns, parseError } from "@/helpers"
+import { convertMicroDenomToDenom, getFilterFns, parseError } from "@/helpers"
+import { baseToken, findPayTokenByDenom } from "@/services"
 import {
   CampaignContractVersion,
   CampaignStatus,
   CampaignVersionedStatus,
 } from "@/types"
 
-export const defaultNewCampaign: Partial<NewCampaignInfo> = {
+export const defaultNewCampaign = (): Partial<NewCampaignInfo> => ({
+  // Default to first payToken, which should be juno(x).
+  payTokenDenom: baseToken.denom,
   hidden: false,
   descriptionImageUrls: [],
   _descriptionImageUrls: [],
-}
+})
 
 export const requiredNewCampaignFields: (keyof NewCampaignInfo)[] = [
   "name",
@@ -102,14 +105,16 @@ export const transformVersionedCampaignFields = (
           campaignBalance:
             status === CampaignStatus.Pending
               ? 0
-              : Number(
+              : convertMicroDenomToDenom(
                   (
                     statusFields as CampaignVersionedStatus<
                       typeof version,
                       typeof status
                     >
-                  ).initial_gov_token_balance
-                ) / 1e6,
+                  ).initial_gov_token_balance,
+                  // Governance tokens use 6 decimals.
+                  6
+                ),
         },
       }
     default: {
@@ -150,6 +155,8 @@ export const transformCampaign = (
     ...state
   } = campaignState ?? {}
 
+  const payToken = findPayTokenByDenom(state.funding_goal.denom)
+
   if (
     typeof campaignGovTokenBalance !== "number" ||
     typeof daoGovTokenBalance !== "number" ||
@@ -157,7 +164,8 @@ export const transformCampaign = (
     !fundingTokenInfo ||
     !govTokenInfo ||
     !state ||
-    !campaignState
+    !campaignState ||
+    !payToken
   ) {
     return null
   }
@@ -195,8 +203,15 @@ export const transformCampaign = (
     hidden: campaignInfo.hidden,
     featured: featuredAddresses?.includes(address) ?? false,
 
-    goal: Number(state.funding_goal.amount) / 1e6,
-    pledged: Number(state.funds_raised.amount) / 1e6,
+    payToken,
+    goal: convertMicroDenomToDenom(
+      state.funding_goal.amount,
+      payToken.decimals
+    ),
+    pledged: convertMicroDenomToDenom(
+      state.funds_raised.amount,
+      payToken.decimals
+    ),
     // backers: ,
 
     dao: {
@@ -209,7 +224,8 @@ export const transformCampaign = (
       name: govTokenInfo.name,
       symbol: govTokenInfo.symbol,
       daoBalance: daoGovTokenBalance,
-      supply: Number(govTokenInfo.total_supply) / 1e6,
+      // Governance tokens use 6 decimals.
+      supply: convertMicroDenomToDenom(govTokenInfo.total_supply, 6),
     },
 
     fundingToken: {
@@ -225,9 +241,9 @@ export const transformCampaign = (
               ).token_price
             ),
             // Funding tokens are minted on-demand, so calculate the total that will ever exist
-            // by multiplying the price of one token (in JUNO) by the goal (in JUNO).
-            supply:
-              (Number(state.funding_goal.amount) *
+            // by multiplying the price of one token (in payToken) by the goal (in payToken).
+            supply: convertMicroDenomToDenom(
+              Number(state.funding_goal.amount) *
                 Number(
                   (
                     statusFields as CampaignVersionedStatus<
@@ -235,8 +251,10 @@ export const transformCampaign = (
                       typeof status
                     >
                   ).token_price
-                )) /
-              1e6,
+                ),
+              // Funding tokens use 6 decimals.
+              6
+            ),
           }
         : {
             price: null,

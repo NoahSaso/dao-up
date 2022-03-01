@@ -35,6 +35,7 @@ declare global {
     hidden: boolean
     featured: boolean
 
+    payToken: PayToken
     goal: number
     pledged: number
     // TODO: Figure out how best to retrieve this.
@@ -85,6 +86,7 @@ declare global {
 
   interface NewCampaignInfo extends BaseCampaignInfo {
     goal: number
+    payTokenDenom: string
     daoAddress: string
     tokenName: string
     tokenSymbol: string
@@ -93,6 +95,13 @@ declare global {
   interface UpdateCampaignInfo extends BaseCampaignInfo {}
 
   type DENSAddressMap = Record<string, string | undefined>
+
+  interface PayToken {
+    symbol: string
+    denom: string
+    decimals: number
+    swapAddress: string
+  }
 }
 
 export enum CampaignContractVersion {

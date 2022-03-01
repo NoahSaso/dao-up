@@ -36,6 +36,8 @@ export const densRootTokenOwner = process.env.NEXT_PUBLIC_DENS_ROOT_TOKEN_OWNER
 export const sentryDSN = process.env.NEXT_PUBLIC_SENTRY_DSN!
 
 export const gasPrice = process.env.NEXT_PUBLIC_GAS_PRICE!
+export const swapSlippage = Number(process.env.NEXT_PUBLIC_SWAP_SLIPPAGE)
+export const swapFee = Number(process.env.NEXT_PUBLIC_SWAP_FEE)
 
 export const title = "DAO Up!"
 export const description =

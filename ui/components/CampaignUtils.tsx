@@ -7,7 +7,6 @@ import TimeAgo from "react-timeago"
 import { useRecoilState } from "recoil"
 
 import { Button, StatusIndicator } from "@/components"
-import { payTokenSymbol } from "@/config"
 import { prettyPrintDecimal } from "@/helpers"
 import { favoriteCampaignAddressesAtom } from "@/state"
 import { CampaignActionType, CampaignStatus, Color } from "@/types"
@@ -54,7 +53,7 @@ interface CampaignProgressProps extends CampaignProps {
 }
 
 export const CampaignProgress: FunctionComponent<CampaignProgressProps> = ({
-  campaign: { status, pledged, goal },
+  campaign: { status, payToken, pledged, goal },
   className,
   thin,
   showPledged = false,
@@ -76,7 +75,7 @@ export const CampaignProgress: FunctionComponent<CampaignProgressProps> = ({
         >
           {showPledged && (
             <p className="sm:text-lg text-green">
-              {pledged.toLocaleString()} {payTokenSymbol} pledged
+              {pledged.toLocaleString()} {payToken.symbol} pledged
             </p>
           )}
           {!hidePercent && (
@@ -182,10 +181,12 @@ export const CampaignPlatformLink: FunctionComponent<
 )
 
 interface CampaignActionProps {
+  campaign: Campaign
   action: CampaignAction
 }
 
 export const CampaignAction: FunctionComponent<CampaignActionProps> = ({
+  campaign: { payToken },
   action: { when, address, amount, type },
 }) => (
   <div className="py-5 border-b border-light">
@@ -197,7 +198,7 @@ export const CampaignAction: FunctionComponent<CampaignActionProps> = ({
         })}
       >
         {type === CampaignActionType.Fund ? "+" : "-"}{" "}
-        {prettyPrintDecimal(amount)} {payTokenSymbol}
+        {prettyPrintDecimal(amount)} {payToken.symbol}
       </p>
       {!!when && <TimeAgo date={when} className="text-placeholder" />}
     </div>
