@@ -51,7 +51,6 @@ interface CampaignStaticProps {
   campaign?: Campaign
 }
 
-// TODO: Add ability to edit campaign details. Abstract create form.
 export const Campaign: NextPage<CampaignStaticProps> = ({ campaign }) => {
   const router = useRouter()
 
