@@ -13,7 +13,11 @@ import { Control, Controller, FieldValues } from "react-hook-form"
 import { IoCaretDown } from "react-icons/io5"
 
 import { Button } from "@/components"
-import { numberPattern, prettyPrintDecimal } from "@/helpers"
+import {
+  convertMicroDenomToDenom,
+  numberPattern,
+  prettyPrintDecimal,
+} from "@/helpers"
 
 // Input
 
@@ -58,7 +62,9 @@ export const Input = forwardRef<HTMLInputElement, UnforwardedInputProps>(
             className
           )}
           disabled={disabled}
-          {...(props.type === "number" ? { step: 1e-6 } : {})}
+          {...(props.type === "number"
+            ? { step: convertMicroDenomToDenom(1, 6) }
+            : {})}
           {...props}
           ref={ref}
         />
@@ -605,7 +611,7 @@ export const ControlledFormPercentTokenDoubleInput: FunctionComponent<
   second,
   ...props
 }) => {
-  const min = minValue ?? 1e-6
+  const min = minValue ?? convertMicroDenomToDenom(1, 6)
 
   return (
     <Controller

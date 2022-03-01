@@ -19,9 +19,9 @@ import {
   daoUpFee,
   title,
 } from "@/config"
-import { parseError } from "@/helpers"
+import { convertDenomToMicroDenom, parseError } from "@/helpers"
 import { useWallet } from "@/hooks"
-import { defaultNewCampaign } from "@/services"
+import { baseToken, defaultNewCampaign, payTokens } from "@/services"
 import { signedCosmWasmClient } from "@/state"
 
 const Create: NextPage = () => (
@@ -71,14 +71,17 @@ const CreateContent = () => {
         return
       }
 
+      const payToken =
+        payTokens.find(({ denom }) => denom === newCampaign.payTokenDenom) ??
+        baseToken
+
       const msg = {
         dao_address: newCampaign.daoAddress,
         cw20_code_id: cw20CodeId,
 
-        // Round so that this value is an integer in case JavaScript does any weird floating point stuff.
         funding_goal: coin(
-          Math.round(newCampaign.goal * 1e6),
-          newCampaign.payTokenDenom
+          convertDenomToMicroDenom(newCampaign.goal, payToken.decimals),
+          payToken.denom
         ),
         funding_token_name: newCampaign.tokenName,
         funding_token_symbol: newCampaign.tokenSymbol,

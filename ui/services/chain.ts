@@ -13,7 +13,11 @@ import {
   featuredListContractAddress,
   rpcEndpoint,
 } from "@/config"
-import { escrowAddressRegex, parseError } from "@/helpers"
+import {
+  convertMicroDenomToDenom,
+  escrowAddressRegex,
+  parseError,
+} from "@/helpers"
 import { baseToken, getBaseTokenForDesiredAmount } from "@/services"
 import { CommonError } from "@/types"
 
@@ -27,7 +31,7 @@ export const getCW20WalletTokenBalance = async (
   const { balance } = await client.queryContractSmart(tokenAddress, {
     balance: { address: walletAddress },
   })
-  return Number(balance) / 1e6
+  return convertMicroDenomToDenom(balance, 6)
 }
 
 export const getFeaturedAddresses = async (client: CosmWasmClient) =>

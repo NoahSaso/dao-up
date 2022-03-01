@@ -2,7 +2,7 @@ import fuzzysort from "fuzzysort"
 import _merge from "lodash.merge"
 
 import { daoUrlPrefix } from "@/config"
-import { getFilterFns, parseError } from "@/helpers"
+import { convertMicroDenomToDenom, getFilterFns, parseError } from "@/helpers"
 import { baseToken, payTokens } from "@/services"
 import {
   CampaignContractVersion,
@@ -105,14 +105,16 @@ export const transformVersionedCampaignFields = (
           campaignBalance:
             status === CampaignStatus.Pending
               ? 0
-              : Number(
+              : convertMicroDenomToDenom(
                   (
                     statusFields as CampaignVersionedStatus<
                       typeof version,
                       typeof status
                     >
-                  ).initial_gov_token_balance
-                ) / 1e6,
+                  ).initial_gov_token_balance,
+                  // Governance tokens use 6 decimals.
+                  6
+                ),
         },
       }
     default: {
@@ -204,8 +206,14 @@ export const transformCampaign = (
     featured: featuredAddresses?.includes(address) ?? false,
 
     payToken,
-    goal: Number(state.funding_goal.amount) / 1e6,
-    pledged: Number(state.funds_raised.amount) / 1e6,
+    goal: convertMicroDenomToDenom(
+      state.funding_goal.amount,
+      payToken.decimals
+    ),
+    pledged: convertMicroDenomToDenom(
+      state.funds_raised.amount,
+      payToken.decimals
+    ),
     // backers: ,
 
     dao: {
@@ -218,7 +226,8 @@ export const transformCampaign = (
       name: govTokenInfo.name,
       symbol: govTokenInfo.symbol,
       daoBalance: daoGovTokenBalance,
-      supply: Number(govTokenInfo.total_supply) / 1e6,
+      // Governance tokens use 6 decimals.
+      supply: convertMicroDenomToDenom(govTokenInfo.total_supply, 6),
     },
 
     fundingToken: {
@@ -234,9 +243,9 @@ export const transformCampaign = (
               ).token_price
             ),
             // Funding tokens are minted on-demand, so calculate the total that will ever exist
-            // by multiplying the price of one token (in JUNO) by the goal (in JUNO).
-            supply:
-              (Number(state.funding_goal.amount) *
+            // by multiplying the price of one token (in payToken) by the goal (in payToken).
+            supply: convertMicroDenomToDenom(
+              Number(state.funding_goal.amount) *
                 Number(
                   (
                     statusFields as CampaignVersionedStatus<
@@ -244,8 +253,10 @@ export const transformCampaign = (
                       typeof status
                     >
                   ).token_price
-                )) /
-              1e6,
+                ),
+              // Funding tokens use 6 decimals.
+              6
+            ),
           }
         : {
             price: null,

@@ -3,7 +3,11 @@ import { useForm } from "react-hook-form"
 import { useSetRecoilState } from "recoil"
 
 import { Alert, Button, FormInput, Suspense } from "@/components"
-import { numberPattern, prettyPrintDecimal } from "@/helpers"
+import {
+  convertMicroDenomToDenom,
+  numberPattern,
+  prettyPrintDecimal,
+} from "@/helpers"
 import { useContributeCampaign, usePayTokenUtil, useWallet } from "@/hooks"
 import { baseToken, getBaseTokenForDesiredAmount } from "@/services"
 import { favoriteCampaignAddressesAtom } from "@/state"
@@ -77,18 +81,21 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
       ? fundingTokenPrice * watchContribution
       : 0
   // Minimum contribution is how many juno(x) per funding token (without decimals).
-  const minContribution = Math.max(
-    // Cannot fund less than 1 ujuno(x).
-    1e-6,
-    // fundingTokenPrice is funding tokens (without decimals) per 1 ujuno(x), so invert and divide.
-    // Use ceiling in case 1/fundingTokenPrice is nonzero after the 6th decimal and we need to set a minimum within the 6 decimal range.
-    Math.ceil(1 / (fundingTokenPrice ?? 1)) / 1e6
+  const minContribution = convertMicroDenomToDenom(
+    Math.max(
+      // Cannot fund less than 1 ujuno(x).
+      1,
+      // fundingTokenPrice is funding tokens (without decimals) per 1 ujuno(x), so invert and convert to non-micro.
+      // Use ceiling in case 1/fundingTokenPrice is nonzero after the nth decimal and we need to set a minimum within the n decimal range.
+      Math.ceil(1 / (fundingTokenPrice ?? 1))
+    ),
+    payToken.decimals
   )
   // Max contribution is remaining amount left to fund. Cannot fund more than goal.
   const maxContribution = Math.min(
     // Weird subtraction issues. JavaScript thinks 11 - 10.999 = 0.0009999999999994458
-    Number((goal - pledged).toFixed(6)),
-    Number.MAX_SAFE_INTEGER / 1e6
+    Number((goal - pledged).toFixed(payToken.decimals)),
+    convertMicroDenomToDenom(Number.MAX_SAFE_INTEGER, payToken.decimals)
   )
 
   // Swap for pay token if necessary.

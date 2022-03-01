@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
-import { parseError } from "@/helpers"
+import { convertDenomToMicroDenom, parseError } from "@/helpers"
 import { useRefreshCampaign, useWallet } from "@/hooks"
 import { globalLoadingAtom, signedCosmWasmClient } from "@/state"
 
@@ -38,8 +38,10 @@ export const useRefundCampaign = (campaign: Campaign | null) => {
         const msg = {
           send: {
             contract: campaign.address,
-            // Round so that this value is an integer in case JavaScript does any weird floating point stuff.
-            amount: Math.round(amount * 1e6).toString(),
+            amount: convertDenomToMicroDenom(
+              amount,
+              campaign.payToken.decimals
+            ).toString(),
             msg: "",
           },
         }

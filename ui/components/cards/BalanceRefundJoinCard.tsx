@@ -7,7 +7,7 @@ import {
   ControlledFormPercentTokenDoubleInput,
   Suspense,
 } from "@/components"
-import { prettyPrintDecimal } from "@/helpers"
+import { convertMicroDenomToDenom, prettyPrintDecimal } from "@/helpers"
 import { useRefundJoinDAOForm } from "@/hooks"
 import { cw20WalletTokenBalance } from "@/state"
 import { CampaignStatus } from "@/types"
@@ -79,9 +79,12 @@ const BalanceRefundJoinCardContents: FunctionComponent<
       ? watchRefund / fundingTokenPrice
       : 0
   // Minimum refund is how many funding tokens (WITH decimals) per 1 ujuno(x).
-  // fundingTokenPrice is funding tokens (withOUT decimals) per 1 ujuno(x), so divide.
-  // Use ceiling in case fundingTokenPrice is nonzero after the 6th decimal and we need to set a minimum within the 6 decimal range.
-  const minRefund = Math.ceil(fundingTokenPrice ?? 0) / 1e6
+  // fundingTokenPrice is micro funding tokens (withOUT decimals) per 1 ujuno(x), so convert to non-micro.
+  // Use ceiling in case fundingTokenPrice is nonzero after the nth decimal and we need to set a minimum within the n decimal range.
+  const minRefund = convertMicroDenomToDenom(
+    Math.ceil(fundingTokenPrice ?? 0),
+    payToken.decimals
+  )
 
   return (
     <>

@@ -2,7 +2,11 @@ import { QueryContractsByCodeResponse } from "cosmjs-types/cosmwasm/wasm/v1/quer
 import { atom, atomFamily, selector, selectorFamily, waitForAll } from "recoil"
 
 import { escrowContractCodeIds } from "@/config"
-import { extractPageInfo, parseError } from "@/helpers"
+import {
+  convertMicroDenomToDenom,
+  extractPageInfo,
+  parseError,
+} from "@/helpers"
 import {
   campaignsFromResponses,
   createDENSAddressMap,
@@ -63,9 +67,11 @@ export const fetchCampaignActions = selectorFamily<
   get:
     (address) =>
     async ({ get }) => {
-      get(campaignStateId(address))
-
       if (!address) return { actions: null, error: CommonError.InvalidAddress }
+
+      const { campaign, error: campaignError } = get(fetchCampaign(address))
+      if (!campaign || campaignError)
+        return { actions: null, error: campaignError }
 
       const client = get(cosmWasmClient)
       if (!client) return { actions: null, error: CommonError.GetClientFailed }
@@ -101,10 +107,10 @@ export const fetchCampaignActions = selectorFamily<
 
         // Extract the amount and sender.
         const fundActions: CampaignAction[] = funds.map((fund) => {
-          let amount =
-            Number(
-              fund.wasm.attributes.find((a: any) => a.key === "amount")?.value
-            ) / 1e6
+          let amount = convertMicroDenomToDenom(
+            fund.wasm.attributes.find((a: any) => a.key === "amount")?.value,
+            campaign.payToken.decimals
+          )
           let address = fund.wasm.attributes.find(
             (a: any) => a.key === "sender"
           )?.value as string
@@ -127,11 +133,11 @@ export const fetchCampaignActions = selectorFamily<
           }
         })
         const refundActions: CampaignAction[] = refunds.map((fund) => {
-          let amount =
-            Number(
-              fund.wasm.attributes.find((a: any) => a.key === "native_returned")
-                ?.value
-            ) / 1e6
+          let amount = convertMicroDenomToDenom(
+            fund.wasm.attributes.find((a: any) => a.key === "native_returned")
+              ?.value,
+            campaign.payToken.decimals
+          )
           let address = fund.wasm.attributes.find(
             (a: any) => a.key === "sender"
           )?.value as string

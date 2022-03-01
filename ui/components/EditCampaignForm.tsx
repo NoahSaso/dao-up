@@ -41,6 +41,7 @@ import {
 } from "@/components"
 import { daoUpFeeNum } from "@/config"
 import {
+  convertMicroDenomToDenom,
   daoAddressPattern,
   getScrollableParent,
   numberPattern,
@@ -531,7 +532,7 @@ const FundingDetailsContent: FunctionComponent<FundingDetailsContentProps> = ({
             valueAsNumber: true,
             pattern: numberPattern,
             min: {
-              value: 1e-6,
+              value: convertMicroDenomToDenom(1, 6),
               message: "Must be at least 0.000001.",
             },
           })}
