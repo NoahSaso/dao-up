@@ -39,16 +39,19 @@ export const gasPrice = process.env.NEXT_PUBLIC_GAS_PRICE!
 export const swapSlippage = Number(process.env.NEXT_PUBLIC_SWAP_SLIPPAGE)
 export const swapFee = Number(process.env.NEXT_PUBLIC_SWAP_FEE)
 
-export const title = "DAO Up!"
-export const description =
-  "DAO Up! is a crowdfunding tool for communities. Refunds are guaranteed if a project doesn't hit its funding goal, and successful campaigns have their treasury transferred to a DAO controlled by the backers."
+const vercelEnv = process.env.NEXT_PUBLIC_VERCEL_ENV
 export const baseUrl = `http${
   process.env.NODE_ENV === "development" ? "" : "s"
 }://${
-  process.env.NEXT_PUBLIC_VERCEL_URL ??
-  process.env.NEXT_PUBLIC_DOMAIN ??
-  "daoup.zone"
+  // Use vercel deployment URL by default if on preview or development vercel build. Otherwise (on dev or production vercel, use manually set domain).
+  vercelEnv && vercelEnv !== "production"
+    ? process.env.NEXT_PUBLIC_VERCEL_URL!
+    : process.env.NEXT_PUBLIC_DOMAIN!
 }`
+
+export const title = "DAO Up!"
+export const description =
+  "DAO Up! is a crowdfunding tool for communities. Refunds are guaranteed if a project doesn't hit its funding goal, and successful campaigns have their treasury transferred to a DAO controlled by the backers."
 export const imageUrl = `${baseUrl}/images/banner.jpg`
 
 export const visibleDescriptionChars = parseInt(
