@@ -29,7 +29,9 @@ export const parseError = (
     message.includes("decoding bech32 failed: invalid checksum") ||
     message.includes("contract: not found") ||
     // Provided non-DAO address where a DAO address was expected.
-    message.includes("unknown variant `get_config`")
+    message.includes("unknown variant `get_config`") ||
+    // Provided non-campaign address where a campaign address was expected.
+    message.includes("unknown variant `dump_state`")
   ) {
     recognizedError = CommonError.InvalidAddress
   } else if (message.includes("Failed to fetch")) {
