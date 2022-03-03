@@ -31,4 +31,6 @@ export enum CommonError {
   PendingTransaction = "You have another pending transaction. Please try again in a minute or so.",
   CampaignNotOpen = "This campaign is not open, so it cannot accept or return funds.",
   NotFound = "Not found.",
+  UnknownError = "Unknown error.",
+  TextEncodingError = "Text encoding error.",
 }

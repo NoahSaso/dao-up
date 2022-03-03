@@ -44,6 +44,16 @@ export const parseError = (
     recognizedError = CommonError.CampaignNotOpen
   } else if (message.includes("not found")) {
     recognizedError = CommonError.NotFound
+  } else if (message.includes("Bad status on response: 403")) {
+    recognizedError = CommonError.GetClientFailed
+  } else if (message.includes("Bad status on response: 520")) {
+    recognizedError = CommonError.UnknownError
+  } else if (
+    message.includes(
+      "Cannot encode character that is out of printable ASCII range"
+    )
+  ) {
+    recognizedError = CommonError.TextEncodingError
   }
 
   // If recognized error, try to find it in the map, or else return the recognized error.
