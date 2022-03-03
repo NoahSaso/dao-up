@@ -56,6 +56,8 @@ export const parseError = (
     )
   ) {
     recognizedError = CommonError.TextEncodingError
+  } else if (message.includes("Funding overflow")) {
+    recognizedError = CommonError.AlreadyFunded
   }
 
   // If recognized error, try to find it in the map, or else return the recognized error.
