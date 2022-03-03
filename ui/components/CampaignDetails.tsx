@@ -44,7 +44,7 @@ export const CampaignDetails: FunctionComponent<CampaignDetailsProps> = ({
           <h1 className="font-medium text-4xl">{name}</h1>
 
           {!!(website || twitter || discord) && (
-            <div className="flex flex-row items-center justify-center md:justify-start text-green mt-4">
+            <div className="flex flex-row items-center justify-center flex-wrap md:justify-start text-green mt-4">
               {!!website && (
                 <CampaignPlatformLink
                   href={website}
