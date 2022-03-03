@@ -33,4 +33,5 @@ export enum CommonError {
   NotFound = "Not found.",
   UnknownError = "Unknown error.",
   TextEncodingError = "Text encoding error.",
+  AlreadyFunded = "This campaign is already funded and cannot receive more funding.",
 }
