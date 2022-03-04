@@ -34,7 +34,11 @@ export const parseError = (
     message.includes("unknown variant `dump_state`")
   ) {
     recognizedError = CommonError.InvalidAddress
-  } else if (message.includes("Failed to fetch")) {
+  } else if (
+    message.includes("Failed to fetch") ||
+    message.includes("socket disconnected") ||
+    message.includes("socket hang up")
+  ) {
     recognizedError = CommonError.Network
   } else if (message.includes("Unauthorized")) {
     recognizedError = CommonError.Unauthorized
@@ -46,7 +50,10 @@ export const parseError = (
     recognizedError = CommonError.CampaignNotOpen
   } else if (message.includes("not found")) {
     recognizedError = CommonError.NotFound
-  } else if (message.includes("Bad status on response: 403")) {
+  } else if (
+    message.includes("Bad status on response: 403") ||
+    message.includes("Failed to retrieve account from signer")
+  ) {
     recognizedError = CommonError.GetClientFailed
   } else if (message.includes("Bad status on response: 520")) {
     recognizedError = CommonError.UnknownError
