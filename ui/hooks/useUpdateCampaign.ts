@@ -3,11 +3,10 @@ import { useCallback, useMemo, useState } from "react"
 import { useRecoilValue } from "recoil"
 
 import { baseUrl } from "@/config"
-import { parseError } from "@/helpers"
+import { CommonError, parseError } from "@/helpers"
 import { useRefreshCampaign, useWallet } from "@/hooks"
 import { createDAOProposalForCampaign } from "@/services"
 import { daoConfig, signedCosmWasmClient } from "@/state"
-import { CommonError } from "@/types"
 
 export const useUpdateCampaign = (
   campaign: Campaign | null,
@@ -115,6 +114,7 @@ export const useUpdateCampaign = (
               wallet: walletAddress,
               campaign: campaign.address,
             },
+            undefined,
             {
               [CommonError.Unauthorized]:
                 "Unauthorized. You must stake tokens in the DAO on DAO DAO before you can create a proposal.",

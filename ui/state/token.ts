@@ -1,13 +1,12 @@
 import { atomFamily, selectorFamily } from "recoil"
 
-import { parseError } from "@/helpers"
+import { CommonError, parseError } from "@/helpers"
 import {
   findPayTokenByDenom,
   getCW20WalletTokenBalance,
   getNativeTokenBalance,
 } from "@/services"
 import { cosmWasmClient, signedCosmWasmClient, walletAddress } from "@/state"
-import { CommonError } from "@/types"
 
 export const tokenBalanceId = atomFamily<number, string | undefined>({
   key: "tokenBalanceId",
@@ -124,7 +123,7 @@ export const nativeWalletTokenBalance = selectorFamily<
             source: "nativeWalletTokenBalance",
             wallet: address,
             tokenDenom,
-            payToken,
+            ...payToken,
           }),
         }
       }

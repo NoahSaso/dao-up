@@ -119,12 +119,15 @@ export const transformVersionedCampaignFields = (
       }
     default: {
       console.error(
-        parseError("Unknown campaign contract version.", {
-          source: "transformVersionedCampaignFields",
-          campaign: address,
-          version,
-          campaignState,
-        })
+        parseError(
+          "Unknown campaign contract version.",
+          {
+            source: "transformVersionedCampaignFields",
+            campaign: address,
+            version,
+          },
+          { campaignState }
+        )
       )
 
       return {

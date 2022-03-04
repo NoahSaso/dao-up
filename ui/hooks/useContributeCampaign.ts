@@ -2,7 +2,7 @@ import { coins } from "@cosmjs/stargate"
 import { useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
-import { convertDenomToMicroDenom, parseError } from "@/helpers"
+import { CommonError, convertDenomToMicroDenom, parseError } from "@/helpers"
 import { useRefreshCampaign, useWallet } from "@/hooks"
 import {
   globalLoadingAtom,
@@ -10,8 +10,6 @@ import {
   signedCosmWasmClient,
   tokenBalanceId,
 } from "@/state"
-
-import { CommonError } from "./../types/miscellaneous"
 
 export const useContributeCampaign = (campaign: Campaign | null) => {
   const client = useRecoilValue(signedCosmWasmClient)

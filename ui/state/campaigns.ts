@@ -3,6 +3,7 @@ import { atom, atomFamily, selector, selectorFamily, waitForAll } from "recoil"
 
 import { escrowContractCodeIds } from "@/config"
 import {
+  CommonError,
   convertMicroDenomToDenom,
   extractPageInfo,
   parseError,
@@ -21,7 +22,7 @@ import {
 } from "@/services"
 import { cosmWasmClient, cosmWasmQueryClient, cw20TokenBalance } from "@/state"
 import { localStorageEffectJSON } from "@/state/effects"
-import { CampaignActionType, CommonError } from "@/types"
+import { CampaignActionType } from "@/types"
 
 export const campaignStateId = atomFamily<number, string | undefined>({
   key: "campaignStateId",
@@ -236,13 +237,16 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
 
       if (!campaign) {
         console.error(
-          parseError("Transformed campaign is null.", {
-            source: "fetchCampaign",
-            campaign: address,
-            state,
-            campaignGovTokenBalance,
-            daoGovTokenBalance,
-          })
+          parseError(
+            "Transformed campaign is null.",
+            {
+              source: "fetchCampaign",
+              campaign: address,
+              campaignGovTokenBalance,
+              daoGovTokenBalance,
+            },
+            { state }
+          )
         )
       }
 

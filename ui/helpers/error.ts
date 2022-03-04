@@ -1,11 +1,26 @@
 import * as Sentry from "@sentry/nextjs"
 
-import { CommonError } from "./../types"
+export enum CommonError {
+  RequestRejected = "Wallet rejected transaction.",
+  InvalidAddress = "Invalid address.",
+  InsufficientFunds = "Insufficient funds.",
+  GetClientFailed = "Failed to get client. Try refreshing the page or reconnecting your wallet.",
+  Network = "Network error. Ensure you are connected to the internet, refresh the page, or try again later.",
+  Unauthorized = "Unauthorized.",
+  InsufficientForProposalDeposit = "Insufficient unstaked governance tokens. Ensure you have enough unstaked governance tokens on DAO DAO to pay for the proposal deposit.",
+  PendingTransaction = "You have another pending transaction. Please try again in a minute or so.",
+  CampaignNotOpen = "This campaign is not open, so it cannot accept or return funds.",
+  NotFound = "Not found.",
+  UnknownError = "Unknown error.",
+  TextEncodingError = "Text encoding error.",
+  AlreadyFunded = "This campaign is already funded and cannot receive more funding. You may need to refresh the page if the information is out of sync.",
+}
 
 // Passing a map will allow common errors to be mapped to a custom error message for the given context.
 export const parseError = (
   error: Error | any,
-  context: ErrorContext,
+  tags: ErrorTags,
+  extra?: Record<string, unknown> | undefined,
   map?: Partial<Record<CommonError, string>>
 ) => {
   // Convert to error type.
@@ -73,7 +88,7 @@ export const parseError = (
   }
 
   // Send to Sentry since we were not expecting it.
-  Sentry.captureException(error, { extra: context })
+  Sentry.captureException(error, { tags, extra })
 
   // If no recognized error, return default error message.
   return message

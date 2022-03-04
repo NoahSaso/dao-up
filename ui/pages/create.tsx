@@ -122,11 +122,14 @@ const CreateContent = () => {
         console.error(error)
         // If the campaign was not created successfully, createCampaignError will show.
         setCreateCampaignError(
-          parseError(error, {
-            source: "createCampaign",
-            wallet: walletAddress,
-            msg,
-          })
+          parseError(
+            error,
+            {
+              source: "createCampaign",
+              wallet: walletAddress,
+            },
+            { msg }
+          )
         )
       }
     },

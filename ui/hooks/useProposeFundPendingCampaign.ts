@@ -4,6 +4,7 @@ import { useRecoilValue, useSetRecoilState } from "recoil"
 
 import { baseUrl } from "@/config"
 import {
+  CommonError,
   convertDenomToMicroDenom,
   parseError,
   prettyPrintDecimal,
@@ -11,7 +12,6 @@ import {
 import { useRefreshCampaign, useWallet } from "@/hooks"
 import { createDAOProposalForCampaign } from "@/services"
 import { daoConfig, globalLoadingAtom, signedCosmWasmClient } from "@/state"
-import { CommonError } from "@/types"
 
 export const useProposeFundPendingCampaign = (campaign: Campaign | null) => {
   const client = useRecoilValue(signedCosmWasmClient)
@@ -105,6 +105,7 @@ export const useProposeFundPendingCampaign = (campaign: Campaign | null) => {
               campaign: campaign.address,
               amount,
             },
+            undefined,
             {
               [CommonError.Unauthorized]:
                 "Unauthorized. You must stake tokens in the DAO on DAO DAO before you can create a proposal.",

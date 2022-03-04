@@ -38,7 +38,7 @@ export const usePayTokenUtil = (outputToken: PayToken) => {
         return setSwapError(
           parseError(err, {
             source: "useTokenSwap fetchSwapPrice",
-            to: outputToken,
+            ...outputToken,
           })
         )
       }
@@ -83,9 +83,9 @@ export const usePayTokenUtil = (outputToken: PayToken) => {
           parseError(err, {
             source: "useTokenSwap swap swapToken",
             wallet: walletAddress,
-            outputToken,
             minOutput,
             swapPrice,
+            ...outputToken,
           })
         )
         setLoading(false)
