@@ -81,7 +81,10 @@ export const parseError = (
     message.includes("Failed to retrieve account from signer")
   ) {
     recognizedError = CommonError.GetClientFailed
-  } else if (message.includes("Bad status on response: 520")) {
+  } else if (
+    message.includes("Bad status on response: 520") ||
+    message.includes("Bad status on response: 500")
+  ) {
     recognizedError = CommonError.UnknownError
   } else if (
     message.includes(
