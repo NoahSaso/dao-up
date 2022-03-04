@@ -21,20 +21,42 @@ export enum CommonError {
   TxnSentTimeout = "Transaction sent but has not yet been detected. Refresh this page to view its changes or check back later.",
 }
 
+type ParseErrorExtra = Record<string, unknown>
+type ParseErrorMap = Partial<Record<CommonError, ReactNode>>
+
+// Overload return based on includeTimeoutError.
+interface ParseError {
+  (
+    error: Error | any,
+    tags: ErrorTags,
+    extra: ParseErrorExtra | undefined,
+    map: ParseErrorMap | undefined,
+    includeTimeoutError: true
+  ): ReactNode
+  (
+    error: Error | any,
+    tags: ErrorTags,
+    extra?: ParseErrorExtra,
+    map?: ParseErrorMap,
+    includeTimeoutError?: false
+  ): string
+}
+
 // Passing a map will allow common errors to be mapped to a custom error message for the given context.
-export const parseError = (
+export const parseError: ParseError = (
   error: Error | any,
   tags: ErrorTags,
   extra?: Record<string, unknown> | undefined,
-  map?: Partial<Record<CommonError, ReactNode>>
-): ReactNode => {
+  map?: Partial<Record<CommonError, ReactNode>>,
+  includeTimeoutError?: boolean
+) => {
   // Convert to error type.
   if (!(error instanceof Error)) {
     error = new Error(`${error}`)
   }
 
   // Special handling for TimeoutError.
-  if (error instanceof TimeoutError) {
+  if (includeTimeoutError && error instanceof TimeoutError) {
     return <TxnPollTimeoutError transactionId={error.txId} />
   }
 
@@ -102,7 +124,7 @@ export const parseError = (
 
   // If recognized error, try to find it in the map, or else return the recognized error.
   if (recognizedError) {
-    return (map && map[recognizedError]) || recognizedError
+    return ((map && map[recognizedError]) || recognizedError) as string
   }
 
   // Send to Sentry since we were not expecting it.

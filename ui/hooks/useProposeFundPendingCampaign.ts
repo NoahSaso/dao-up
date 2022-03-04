@@ -1,5 +1,5 @@
 import { toAscii, toBase64 } from "@cosmjs/encoding"
-import { useCallback, useState } from "react"
+import { ReactNode, useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
 import { baseUrl } from "@/config"
@@ -21,7 +21,7 @@ export const useProposeFundPendingCampaign = (campaign: Campaign | null) => {
   const setLoading = useSetRecoilState(globalLoadingAtom)
   const { refreshCampaign } = useRefreshCampaign(campaign)
   const [fundPendingCampaignError, setProposeFundPendingCampaignError] =
-    useState(null as string | null)
+    useState(null as ReactNode | null)
 
   const fundPendingCampaign = useCallback(
     async (amount: number) => {
@@ -109,7 +109,8 @@ export const useProposeFundPendingCampaign = (campaign: Campaign | null) => {
             {
               [CommonError.Unauthorized]:
                 "Unauthorized. You must stake tokens in the DAO on DAO DAO before you can create a proposal.",
-            }
+            },
+            true
           )
         )
       } finally {

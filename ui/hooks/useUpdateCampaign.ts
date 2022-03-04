@@ -1,5 +1,5 @@
 import { toAscii, toBase64 } from "@cosmjs/encoding"
-import { useCallback, useMemo, useState } from "react"
+import { ReactNode, useCallback, useMemo, useState } from "react"
 import { useRecoilValue } from "recoil"
 
 import { baseUrl } from "@/config"
@@ -18,7 +18,7 @@ export const useUpdateCampaign = (
 
   const { refreshCampaign } = useRefreshCampaign(campaign)
   const [editCampaignError, setEditCampaignError] = useState(
-    null as string | null
+    null as ReactNode | null
   )
 
   const editCampaign = useCallback(
@@ -118,7 +118,8 @@ export const useUpdateCampaign = (
             {
               [CommonError.Unauthorized]:
                 "Unauthorized. You must stake tokens in the DAO on DAO DAO before you can create a proposal.",
-            }
+            },
+            true
           )
         )
       }

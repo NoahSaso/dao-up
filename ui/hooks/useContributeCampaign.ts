@@ -86,12 +86,18 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
       } catch (error) {
         console.error(error)
         setContributeCampaignError(
-          parseError(error, {
-            source: "contributeCampaign",
-            wallet: walletAddress,
-            campaign: campaign.address,
-            amount,
-          })
+          parseError(
+            error,
+            {
+              source: "contributeCampaign",
+              wallet: walletAddress,
+              campaign: campaign.address,
+              amount,
+            },
+            undefined,
+            undefined,
+            true
+          )
         )
         return false
       } finally {

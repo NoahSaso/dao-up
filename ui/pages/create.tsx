@@ -2,7 +2,7 @@ import { coin } from "@cosmjs/stargate"
 import type { NextPage } from "next"
 import Head from "next/head"
 import { useRouter } from "next/router"
-import { useCallback, useState } from "react"
+import { ReactNode, useCallback, useState } from "react"
 import { useRecoilValue } from "recoil"
 
 import {
@@ -55,7 +55,7 @@ const CreateContent = () => {
   const { walletAddress } = useWallet()
   const client = useRecoilValue(signedCosmWasmClient)
   const [createCampaignError, setCreateCampaignError] = useState(
-    null as string | null
+    null as ReactNode | null
   )
 
   const createCampaign = useCallback(
