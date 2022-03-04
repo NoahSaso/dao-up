@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { ReactNode, useCallback, useEffect, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
 import { parseError } from "@/helpers"
@@ -21,7 +21,7 @@ export const usePayTokenUtil = (outputToken: PayToken) => {
   const setTokenBalanceId = useSetRecoilState(tokenBalanceId(outputToken.denom))
 
   const setLoading = useSetRecoilState(globalLoadingAtom)
-  const [swapError, setSwapError] = useState<string | null>(null)
+  const [swapError, setSwapError] = useState<ReactNode | null>(null)
 
   const isBase = outputToken.denom === baseToken.denom
 
@@ -38,7 +38,7 @@ export const usePayTokenUtil = (outputToken: PayToken) => {
         return setSwapError(
           parseError(err, {
             source: "useTokenSwap fetchSwapPrice",
-            to: outputToken,
+            ...outputToken,
           })
         )
       }
@@ -80,13 +80,19 @@ export const usePayTokenUtil = (outputToken: PayToken) => {
       } catch (err) {
         console.error(err)
         setSwapError(
-          parseError(err, {
-            source: "useTokenSwap swap swapToken",
-            wallet: walletAddress,
-            outputToken,
-            minOutput,
-            swapPrice,
-          })
+          parseError(
+            err,
+            {
+              source: "useTokenSwap swap swapToken",
+              wallet: walletAddress,
+              minOutput,
+              swapPrice,
+              ...outputToken,
+            },
+            undefined,
+            undefined,
+            true
+          )
         )
         setLoading(false)
         return false

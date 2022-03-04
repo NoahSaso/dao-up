@@ -602,13 +602,16 @@ export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
 
     if (!campaign) {
       console.error(
-        parseError("Transformed campaign is null.", {
-          source: "Campaign.getStaticProps",
-          campaign: campaignAddress,
-          state,
-          campaignGovTokenBalance,
-          daoGovTokenBalance,
-        })
+        parseError(
+          "Transformed campaign is null.",
+          {
+            source: "Campaign.getStaticProps",
+            campaign: campaignAddress,
+            campaignGovTokenBalance,
+            daoGovTokenBalance,
+          },
+          { state }
+        )
       )
       return redirectToCampaigns
     }

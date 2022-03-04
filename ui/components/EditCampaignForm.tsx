@@ -64,7 +64,7 @@ type OnSubmitForm<T extends boolean> = SubmitHandler<FormValues<T>>
 type EditCampaignFormProps = {
   title?: ReactNode
   submitLabel: string
-  error?: string | null
+  error?: ReactNode | null
 } & (
   | {
       creating: true

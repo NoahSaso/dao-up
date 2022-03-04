@@ -1,8 +1,8 @@
 import { coins } from "@cosmjs/stargate"
-import { useCallback, useState } from "react"
+import { ReactNode, useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
-import { convertDenomToMicroDenom, parseError } from "@/helpers"
+import { CommonError, convertDenomToMicroDenom, parseError } from "@/helpers"
 import { useRefreshCampaign, useWallet } from "@/hooks"
 import {
   globalLoadingAtom,
@@ -11,8 +11,6 @@ import {
   tokenBalanceId,
 } from "@/state"
 
-import { CommonError } from "./../types/miscellaneous"
-
 export const useContributeCampaign = (campaign: Campaign | null) => {
   const client = useRecoilValue(signedCosmWasmClient)
   const { walletAddress } = useWallet()
@@ -20,7 +18,7 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
   const setLoading = useSetRecoilState(globalLoadingAtom)
   const { refreshCampaign } = useRefreshCampaign(campaign)
   const [contributeCampaignError, setContributeCampaignError] = useState(
-    null as string | null
+    null as ReactNode | null
   )
 
   const { balance } = useRecoilValue(
@@ -88,12 +86,18 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
       } catch (error) {
         console.error(error)
         setContributeCampaignError(
-          parseError(error, {
-            source: "contributeCampaign",
-            wallet: walletAddress,
-            campaign: campaign.address,
-            amount,
-          })
+          parseError(
+            error,
+            {
+              source: "contributeCampaign",
+              wallet: walletAddress,
+              campaign: campaign.address,
+              amount,
+            },
+            undefined,
+            undefined,
+            true
+          )
         )
         return false
       } finally {

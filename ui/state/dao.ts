@@ -1,9 +1,8 @@
 import { selectorFamily } from "recoil"
 
 import { chainName } from "@/config"
-import { parseError } from "@/helpers"
+import { CommonError, parseError } from "@/helpers"
 import { cosmWasmClient } from "@/state"
-import { CommonError } from "@/types"
 
 const InvalidDAOError = `DAO cannot be found. Ensure you are providing a DAO address (not a token or wallet address) that exists on the ${chainName} chain.`
 
@@ -42,6 +41,7 @@ export const daoConfig = selectorFamily<DAOConfigResponse, string | undefined>({
               source: "daoConfig",
               campaign: address,
             },
+            undefined,
             {
               // Give more specific error for invalid addresses.
               [CommonError.InvalidAddress]: InvalidDAOError,
