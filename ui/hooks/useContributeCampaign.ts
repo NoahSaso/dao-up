@@ -1,5 +1,5 @@
 import { coins } from "@cosmjs/stargate"
-import { useCallback, useState } from "react"
+import { ReactNode, useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
 import { CommonError, convertDenomToMicroDenom, parseError } from "@/helpers"
@@ -18,7 +18,7 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
   const setLoading = useSetRecoilState(globalLoadingAtom)
   const { refreshCampaign } = useRefreshCampaign(campaign)
   const [contributeCampaignError, setContributeCampaignError] = useState(
-    null as string | null
+    null as ReactNode | null
   )
 
   const { balance } = useRecoilValue(

@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { ReactNode, useCallback, useState } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
 import { convertDenomToMicroDenom, parseError } from "@/helpers"
@@ -16,7 +16,7 @@ export const useRefundCampaign = (campaign: Campaign | null) => {
   const setLoading = useSetRecoilState(globalLoadingAtom)
   const { refreshCampaign } = useRefreshCampaign(campaign)
   const [refundCampaignError, setRefundCampaignError] = useState(
-    null as string | null
+    null as ReactNode | null
   )
 
   const setPayTokenBalanceId = useSetRecoilState(
