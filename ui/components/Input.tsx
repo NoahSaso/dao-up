@@ -412,7 +412,7 @@ export const FormWrapper: FunctionComponent<FormWrapperProps> = ({
           {accent}
         </p>
       )}
-      {!!error && <p className="pl-5 text-orange mt-2">{error}</p>}
+      {!!error && <p className="pl-5 text-orange mt-2 break-words">{error}</p>}
     </div>
   </div>
 )

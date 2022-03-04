@@ -1,4 +1,8 @@
+import { TimeoutError } from "@cosmjs/stargate"
 import * as Sentry from "@sentry/nextjs"
+import { ReactNode } from "react"
+
+import { TxnPollTimeoutError } from "@/components"
 
 export enum CommonError {
   RequestRejected = "Wallet rejected transaction.",
@@ -14,6 +18,7 @@ export enum CommonError {
   UnknownError = "Unknown error.",
   TextEncodingError = "Text encoding error.",
   AlreadyFunded = "This campaign is already funded and cannot receive more funding. You may need to refresh the page if the information is out of sync.",
+  TxnSentTimeout = "Transaction sent but has not yet been detected. Refresh this page to view its changes or check back later.",
 }
 
 // Passing a map will allow common errors to be mapped to a custom error message for the given context.
@@ -21,11 +26,16 @@ export const parseError = (
   error: Error | any,
   tags: ErrorTags,
   extra?: Record<string, unknown> | undefined,
-  map?: Partial<Record<CommonError, string>>
-) => {
+  map?: Partial<Record<CommonError, ReactNode>>
+): ReactNode => {
   // Convert to error type.
   if (!(error instanceof Error)) {
     error = new Error(`${error}`)
+  }
+
+  // Special handling for TimeoutError.
+  if (error instanceof TimeoutError) {
+    return <TxnPollTimeoutError transactionId={error.txId} />
   }
 
   const { message } = error
@@ -52,7 +62,8 @@ export const parseError = (
   } else if (
     message.includes("Failed to fetch") ||
     message.includes("socket disconnected") ||
-    message.includes("socket hang up")
+    message.includes("socket hang up") ||
+    message.includes("Bad status on response: 502")
   ) {
     recognizedError = CommonError.Network
   } else if (message.includes("Unauthorized")) {
@@ -80,6 +91,10 @@ export const parseError = (
     recognizedError = CommonError.TextEncodingError
   } else if (message.includes("Funding overflow")) {
     recognizedError = CommonError.AlreadyFunded
+  } else if (
+    message.includes("was submitted but was not yet found on the chain")
+  ) {
+    recognizedError = CommonError.TxnSentTimeout
   }
 
   // If recognized error, try to find it in the map, or else return the recognized error.
@@ -90,6 +105,6 @@ export const parseError = (
   // Send to Sentry since we were not expecting it.
   Sentry.captureException(error, { tags, extra })
 
-  // If no recognized error, return default error message.
+  // If no recognized error, return error message by default.
   return message
 }
