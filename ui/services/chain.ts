@@ -2,8 +2,9 @@ import {
   CosmWasmClient,
   SigningCosmWasmClient,
 } from "@cosmjs/cosmwasm-stargate"
-import { coin } from "@cosmjs/stargate"
+import { coin, GasPrice } from "@cosmjs/stargate"
 import { findAttribute } from "@cosmjs/stargate/build/logs"
+import { Keplr } from "@keplr-wallet/types"
 
 import {
   densContractAddress,
@@ -11,6 +12,7 @@ import {
   densRootTokenOwner,
   denyListContractAddress,
   featuredListContractAddress,
+  gasPrice,
   rpcEndpoint,
 } from "@/config"
 import {
@@ -23,6 +25,13 @@ import { baseToken, getBaseTokenForMinPayToken } from "@/services"
 import { CommonError } from "@/types"
 
 export const getClient = async () => CosmWasmClient.connect(rpcEndpoint)
+
+export const getSigningClient = async (
+  signer: Awaited<ReturnType<Keplr["getOfflineSignerAuto"]>>
+) =>
+  SigningCosmWasmClient.connectWithSigner(rpcEndpoint, signer, {
+    gasPrice: GasPrice.fromString(gasPrice),
+  })
 
 export const getCW20WalletTokenBalance = async (
   client: CosmWasmClient,
