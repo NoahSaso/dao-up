@@ -86,7 +86,8 @@ export const parseError: ParseError = (
     message.includes("socket disconnected") ||
     message.includes("socket hang up") ||
     message.includes("Bad status on response: 502") ||
-    message.includes("Bad status on response: 522")
+    message.includes("Bad status on response: 522") ||
+    message.includes("ECONNREFUSED")
   ) {
     recognizedError = CommonError.Network
   } else if (message.includes("Unauthorized")) {
