@@ -3,6 +3,7 @@ import { atom, atomFamily, selector, selectorFamily, waitForAll } from "recoil"
 
 import { escrowContractCodeIds } from "@/config"
 import {
+  blockHeightToSeconds,
   CommonError,
   convertMicroDenomToDenom,
   extractPageInfo,
@@ -118,10 +119,7 @@ export const fetchCampaignActions = selectorFamily<
 
           let when
           if (blockHeight !== null) {
-            const elapsedBlocks = blockHeight - fund.height
-            // Juno block times are normally in the 6 to 6.5 second
-            // range. This really doesn't need to be terribly accurate.
-            const elapsedTime = elapsedBlocks * 6.3
+            const elapsedTime = blockHeightToSeconds(blockHeight - fund.height)
             when = new Date()
             when.setSeconds(when.getSeconds() - elapsedTime)
           }
@@ -145,8 +143,7 @@ export const fetchCampaignActions = selectorFamily<
 
           let when
           if (blockHeight !== null) {
-            const elapsedBlocks = blockHeight - fund.height
-            const elapsedTime = elapsedBlocks * 6.3
+            const elapsedTime = blockHeightToSeconds(blockHeight - fund.height)
             when = new Date()
             when.setSeconds(when.getSeconds() - elapsedTime)
           }
