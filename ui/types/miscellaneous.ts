@@ -24,8 +24,8 @@ export enum CommonError {
   RequestRejected = "Wallet rejected transaction.",
   InvalidAddress = "Invalid address.",
   InsufficientFunds = "Insufficient funds.",
-  GetClientFailed = "Failed to get client.",
-  Network = "Network error. Ensure you are connected to the internet or try again later.",
+  GetClientFailed = "Failed to get client. Try refreshing the page or reconnecting your wallet.",
+  Network = "Network error. Ensure you are connected to the internet, refresh the page, or try again later.",
   Unauthorized = "Unauthorized.",
   InsufficientForProposalDeposit = "Insufficient unstaked governance tokens. Ensure you have enough unstaked governance tokens on DAO DAO to pay for the proposal deposit.",
   PendingTransaction = "You have another pending transaction. Please try again in a minute or so.",
@@ -33,5 +33,5 @@ export enum CommonError {
   NotFound = "Not found.",
   UnknownError = "Unknown error.",
   TextEncodingError = "Text encoding error.",
-  AlreadyFunded = "This campaign is already funded and cannot receive more funding.",
+  AlreadyFunded = "This campaign is already funded and cannot receive more funding. You may need to refresh the page if the information is out of sync.",
 }
