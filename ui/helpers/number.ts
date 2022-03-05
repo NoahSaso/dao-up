@@ -30,3 +30,8 @@ export const convertDenomToMicroDenom = (
     parseInt((Number(value) * Math.pow(10, decimals)).toFixed(decimals), 10)
   )
 }
+
+// Juno block times are normally in the 6 to 6.5 second
+// range. This really doesn't need to be terribly accurate.
+export const blockHeightToSeconds = (blockHeight: number): number =>
+  blockHeight * 6.3
