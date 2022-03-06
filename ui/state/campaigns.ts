@@ -432,16 +432,11 @@ export const filteredCampaigns = selectorFamily<
         if (addressesError)
           return { campaigns: null, hasMore: false, error: addressesError }
 
-        const pageAddresses = addresses.slice(
-          addressPageInfo.startIndex,
-          addressPageInfo.endIndex
-        )
-
         // If we got the asked-for page size, we might still have addresses left.
-        addressesLeft = pageAddresses.length === addressPageSize
+        addressesLeft = addresses.length === addressPageSize
 
         const campaignResponses = get(
-          waitForAll(pageAddresses.map((address) => fetchCampaign(address)))
+          waitForAll(addresses.map((address) => fetchCampaign(address)))
         )
 
         let relevantCampaigns = campaignsFromResponses(
@@ -450,7 +445,7 @@ export const filteredCampaigns = selectorFamily<
           includePending
         )
         relevantCampaigns = await filterCampaigns(relevantCampaigns, filter)
-        allCampaigns.unshift(...relevantCampaigns)
+        allCampaigns.push(...relevantCampaigns)
 
         addressPage++
 
