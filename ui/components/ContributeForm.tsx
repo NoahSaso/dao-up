@@ -213,18 +213,34 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
           inputMode="decimal"
           placeholder="Contribute..."
           accent={
-            expectedFundingTokensReceived
-              ? `You will receive about ${prettyPrintDecimal(
-                  expectedFundingTokensReceived
-                )} ${tokenSymbol}`
-              : undefined
+            <>
+              {!!watchContribution && watchContribution > maxContribution && (
+                <>
+                  The campaign is only {prettyPrintDecimal(maxContribution)}{" "}
+                  {payToken.symbol} short of reaching their funding goal!{" "}
+                  <Button
+                    bare
+                    className="inline underline"
+                    onClick={() =>
+                      doContribution({ contribution: maxContribution })
+                    }
+                  >
+                    Click here to get them to the finish line.
+                  </Button>{" "}
+                </>
+              )}
+              {expectedFundingTokensReceived
+                ? `You will receive about ${prettyPrintDecimal(
+                    expectedFundingTokensReceived
+                  )} ${tokenSymbol}.`
+                : undefined}
+            </>
           }
-          wrapperClassName="!mb-4 sm:!mb-0 sm:mr-4 sm:flex-1"
+          wrapperClassName="!mb-4 sm:!mb-0 sm:mr-3 sm:flex-1"
           className="!py-3 !px-6 !pr-28"
           tail={payToken.symbol}
           error={
-            errors?.contribution?.message ??
-            contributeCampaignError ??
+            (errors?.contribution?.message || contributeCampaignError) ??
             undefined
           }
           disabled={!connected}
@@ -237,18 +253,17 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
                 minContribution
               )} ${payToken.symbol}.`,
             },
-            max: {
-              value: maxContribution,
-              message: `Must be less than or equal to ${prettyPrintDecimal(
-                maxContribution
-              )} ${payToken.symbol}.`,
-            },
+            max: maxContribution,
           })}
         />
 
         <Button
           className="sm:h-[50px]"
-          disabled={!connected || payTokenBalance === null}
+          disabled={
+            !connected ||
+            payTokenBalance === null ||
+            (!!watchContribution && watchContribution > maxContribution)
+          }
           submitLabel="Support this campaign"
         />
       </form>
