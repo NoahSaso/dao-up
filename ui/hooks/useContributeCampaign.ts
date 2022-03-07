@@ -1,5 +1,5 @@
 import { coins } from "@cosmjs/stargate"
-import { ReactNode, useCallback, useState } from "react"
+import { Dispatch, ReactNode, SetStateAction, useCallback } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
 import { CommonError, convertDenomToMicroDenom, parseError } from "@/helpers"
@@ -11,15 +11,15 @@ import {
   tokenBalanceId,
 } from "@/state"
 
-export const useContributeCampaign = (campaign: Campaign | null) => {
+export const useContributeCampaign = (
+  campaign: Campaign | null,
+  setError: Dispatch<SetStateAction<ReactNode | null>>
+) => {
   const client = useRecoilValue(signedCosmWasmClient)
   const { walletAddress } = useWallet()
 
   const setLoading = useSetRecoilState(globalLoadingAtom)
   const { refreshCampaign } = useRefreshCampaign(campaign)
-  const [contributeCampaignError, setContributeCampaignError] = useState(
-    null as ReactNode | null
-  )
 
   const { balance } = useRecoilValue(
     nativeWalletTokenBalance(campaign?.payToken?.denom)
@@ -34,26 +34,26 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
 
   const contributeCampaign = useCallback(
     async (amount: number) => {
-      setContributeCampaignError(null)
+      setError(null)
 
       if (!client) {
-        setContributeCampaignError("Failed to get signing client.")
+        setError("Failed to get signing client.")
         return false
       }
       if (!walletAddress) {
-        setContributeCampaignError("Wallet not connected.")
+        setError("Wallet not connected.")
         return false
       }
       if (!campaign) {
-        setContributeCampaignError("Campaign is not loaded.")
+        setError("Campaign is not loaded.")
         return false
       }
       if (balance === null) {
-        setContributeCampaignError("Could not check balance.")
+        setError("Could not check balance.")
         return false
       }
       if (amount > balance) {
-        setContributeCampaignError(CommonError.InsufficientFunds)
+        setError(CommonError.InsufficientFunds)
         return false
       }
 
@@ -85,7 +85,7 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
         return true
       } catch (error) {
         console.error(error)
-        setContributeCampaignError(
+        setError(
           parseError(
             error,
             {
@@ -108,7 +108,7 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
       setLoading,
       campaign,
       refreshCampaign,
-      setContributeCampaignError,
+      setError,
       walletAddress,
       client,
       balance,
@@ -116,5 +116,5 @@ export const useContributeCampaign = (campaign: Campaign | null) => {
     ]
   )
 
-  return { contributeCampaign, contributeCampaignError }
+  return contributeCampaign
 }

@@ -1,4 +1,10 @@
-import { FunctionComponent, useCallback, useState } from "react"
+import {
+  FunctionComponent,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useState,
+} from "react"
 import { useForm } from "react-hook-form"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 
@@ -58,8 +64,13 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
 
   const { connected } = useWallet()
 
-  const { contributeCampaign, contributeCampaignError } =
-    useContributeCampaign(campaign)
+  const [contributeCampaignError, setContributeCampaignError] = useState(
+    null as ReactNode | null
+  )
+  const contributeCampaign = useContributeCampaign(
+    campaign,
+    setContributeCampaignError
+  )
 
   const {
     handleSubmit,
@@ -84,10 +95,6 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
   )
 
   const watchContribution = watch("contribution")
-  const expectedFundingTokensReceived =
-    watchContribution && watchContribution > 0 && fundingTokenPrice
-      ? fundingTokenPrice * watchContribution
-      : 0
   // Minimum contribution is how many non-micro payTokens per micro funding token, since each contribution much return at least 1 micro funding token.
   const minContribution = convertMicroDenomToDenom(
     // fundingTokenPrice is micro funding tokens per 1 micro payToken, so invert before converting to non-micro.
@@ -102,7 +109,23 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
     convertMicroDenomToDenom(Number.MAX_SAFE_INTEGER, payToken.decimals)
   )
 
+  // Get contribution capped at max.
+  const cappedContribution =
+    watchContribution && Math.min(watchContribution, maxContribution)
+  // Get expected funding tokens in exchange for given contribution.
+  const expectedFundingTokensReceived =
+    !!cappedContribution && fundingTokenPrice
+      ? fundingTokenPrice * cappedContribution
+      : 0
+  // Attempting to fund more than the max.
+  const isOverFunding =
+    !!watchContribution && watchContribution > maxContribution
+
   // Swap for pay token if necessary.
+  const [swapAlertStatus, setSwapAlertStatus] = useState<SwapAlertStatus>(
+    SwapAlertStatus.Closed
+  )
+
   const {
     canSwap,
     swapForAtLeast,
@@ -114,20 +137,25 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
   const { balance: baseTokenBalance } = useRecoilValue(
     nativeWalletTokenBalance(baseToken.denom)
   )
-  const [swapAlertStatus, setSwapAlertStatus] = useState<SwapAlertStatus>(
-    SwapAlertStatus.Closed
-  )
+
+  // Ensure sufficient funds for given contribution.
+  const insufficientFunds =
+    typeof payTokenBalance === "number" &&
+    !!cappedContribution &&
+    cappedContribution > payTokenBalance
   // Get missing pay token amount.
   const payTokenNeeded =
-    !isBase &&
     typeof payTokenBalance === "number" &&
-    !!watchContribution &&
-    watchContribution > payTokenBalance
-      ? Number((watchContribution - payTokenBalance).toFixed(payToken.decimals))
+    !!cappedContribution &&
+    insufficientFunds
+      ? Number(
+          (cappedContribution - payTokenBalance).toFixed(payToken.decimals)
+        )
       : 0
+
   // Display the associated base token amount that will be swapped.
   const baseTokenForPayTokenNeeded =
-    !!payTokenNeeded && !!swapPrice
+    !isBase && !!payTokenNeeded && !!swapPrice
       ? getBaseTokenForMinPayToken(
           payTokenNeeded,
           swapPrice,
@@ -136,7 +164,19 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
       : 0
   // Check if we can swap for the desired amount.
   const insufficientBaseToken =
-    baseTokenBalance === null || baseTokenForPayTokenNeeded > baseTokenBalance
+    !isBase &&
+    (baseTokenBalance === null || baseTokenForPayTokenNeeded > baseTokenBalance)
+  // Get missing base token amount for swapping.
+  const swapBaseTokenNeeded =
+    typeof baseTokenBalance === "number" &&
+    !!baseTokenForPayTokenNeeded &&
+    insufficientBaseToken
+      ? Number(
+          (baseTokenForPayTokenNeeded - baseTokenBalance).toFixed(
+            baseToken.decimals
+          )
+        )
+      : 0
   // Calculate the maximum pay token the given base token balance can swap for if there is insufficient balance to swap.
   const maxPayTokenForBaseTokenBalance =
     insufficientBaseToken &&
@@ -202,6 +242,11 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
     ]
   )
 
+  // Clear errors on type.
+  useEffect(() => {
+    setContributeCampaignError(null)
+  }, [watchContribution, setContributeCampaignError])
+
   return (
     <>
       <form
@@ -216,16 +261,37 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
             expectedFundingTokensReceived
               ? `You will receive about ${prettyPrintDecimal(
                   expectedFundingTokensReceived
-                )} ${tokenSymbol}`
+                )} ${tokenSymbol}.`
               : undefined
           }
-          wrapperClassName="!mb-4 sm:!mb-0 sm:mr-4 sm:flex-1"
+          wrapperClassName="!mb-4 sm:!mb-0 sm:mr-3 sm:flex-1"
           className="!py-3 !px-6 !pr-28"
           tail={payToken.symbol}
           error={
-            errors?.contribution?.message ??
-            contributeCampaignError ??
-            undefined
+            !!errors?.contribution?.message ||
+            (isBase && insufficientFunds) ||
+            !!contributeCampaignError ? (
+              <>
+                {[
+                  errors?.contribution?.message,
+                  isBase && insufficientFunds
+                    ? `You need ${prettyPrintDecimal(
+                        payTokenNeeded,
+                        payToken.decimals
+                      )} more ${
+                        payToken.symbol
+                      } to contribute ${prettyPrintDecimal(
+                        cappedContribution,
+                        payToken.decimals
+                      )} ${payToken.symbol}.`
+                    : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ") || undefined}
+
+                <span className="block mt-2">{contributeCampaignError}</span>
+              </>
+            ) : undefined
           }
           disabled={!connected}
           {...register("contribution", {
@@ -239,18 +305,38 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
             },
             max: {
               value: maxContribution,
-              message: `Must be less than or equal to ${prettyPrintDecimal(
+              message: `Campaigns can't be funded past their funding goal. Fund the remaining amount (${prettyPrintDecimal(
                 maxContribution
-              )} ${payToken.symbol}.`,
+              )} ${payToken.symbol}) instead by pressing the button.`,
             },
           })}
         />
 
-        <Button
-          className="sm:h-[50px]"
-          disabled={!connected || payTokenBalance === null}
-          submitLabel="Support this campaign"
-        />
+        {isOverFunding ? (
+          <Button
+            className="sm:h-[50px]"
+            disabled={
+              !connected ||
+              payTokenBalance === null ||
+              (isBase && insufficientFunds)
+              // Will handle insufficientBaseToken for swaps in swap popup, so let this button work.
+            }
+            onClick={() => doContribution({ contribution: maxContribution })}
+          >
+            Fund remaining
+          </Button>
+        ) : (
+          <Button
+            className="sm:h-[50px]"
+            disabled={
+              !connected ||
+              payTokenBalance === null ||
+              (isBase && insufficientFunds)
+              // Will handle insufficientBaseToken for swaps in swap popup, so let this button work.
+            }
+            submitLabel="Support this campaign"
+          />
+        )}
       </form>
 
       {/* Swap funds alert. */}
@@ -270,7 +356,7 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
             <p>
               You currently have {prettyPrintDecimal(payTokenBalance ?? 0)}{" "}
               {payToken.symbol} but are trying to contribute{" "}
-              {prettyPrintDecimal(watchContribution ?? 0)} {payToken.symbol}.
+              {prettyPrintDecimal(cappedContribution ?? 0)} {payToken.symbol}.
               Pressing the button below will use{" "}
               <a
                 href="https://junoswap.com/"
@@ -317,7 +403,8 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
                       {prettyPrintDecimal(maxPayTokenForBaseTokenBalance)}{" "}
                       {payToken.symbol}
                     </span>{" "}
-                    or purchase more {baseToken.symbol}.
+                    or purchase {swapBaseTokenNeeded ?? 0} more{" "}
+                    {baseToken.symbol}.
                   </>
                 ) : (
                   ` Purchase more ${baseToken.symbol}.`
@@ -341,10 +428,10 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
             <div className="flex flex-row items-center flex-wrap gap-4 mt-4">
               <Button
                 onClick={() =>
-                  doContribution({ contribution: watchContribution ?? 0 })
+                  doContribution({ contribution: cappedContribution ?? 0 })
                 }
               >
-                Contribute {prettyPrintDecimal(watchContribution ?? 0)}{" "}
+                Contribute {prettyPrintDecimal(cappedContribution ?? 0)}{" "}
                 {payToken.symbol}
               </Button>
 
