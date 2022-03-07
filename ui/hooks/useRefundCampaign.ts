@@ -58,7 +58,7 @@ export const useRefundCampaign = (campaign: Campaign | null) => {
           },
         }
 
-        const response = await client.execute(
+        await client.execute(
           walletAddress,
           campaign.fundingToken.address,
           msg,
