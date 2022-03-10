@@ -35,6 +35,7 @@ import {
   getCampaignState,
   getClient,
   getCW20WalletTokenBalance,
+  getDateFromBlockHeight,
   getDENSAddress,
   getDENSNames,
   getFeaturedAddresses,
@@ -553,6 +554,7 @@ const CampaignActionsContent: React.FC<CampaignActionsContentProps> = ({
   const [loadingActions, setLoadingActions] = useState(false)
   const [actions, setActions] = useState<CampaignAction[]>([])
   const lastAction = actions.length ? actions[actions.length - 1] : undefined
+  const [earliestDate, setEarliestDate] = useState<Date | null>(null)
 
   useEffect(() => {
     const load = async () => {
@@ -570,12 +572,17 @@ const CampaignActionsContent: React.FC<CampaignActionsContentProps> = ({
         const minBlockHeight = campaign.createdBlockHeight ?? 0
 
         while (blockHeight >= minBlockHeight) {
+          // Don't need to load below campaign creation block height.
+          const currMinBlockHeight = Math.max(
+            blockHeight - interval,
+            minBlockHeight
+          )
+
           const actions = await getCampaignActions(
             client,
             campaign,
             currentBlockHeight,
-            // Don't need to load below campaign creation block height.
-            Math.max(blockHeight - interval, minBlockHeight),
+            currMinBlockHeight,
             blockHeight
           )
 
@@ -596,6 +603,16 @@ const CampaignActionsContent: React.FC<CampaignActionsContentProps> = ({
             }
           })
 
+          // Get date of earliest block if possible.
+          let minBlockHeightDate = await getDateFromBlockHeight(
+            client,
+            currMinBlockHeight
+          )
+          // Fallback to date of earliest action (not super precise but good enough).
+          if (!minBlockHeightDate)
+            minBlockHeightDate = actions[actions.length - 1].when ?? null
+          setEarliestDate(minBlockHeightDate)
+
           // Append to end of data.
           setActions((prev) => [...prev, ...actions])
         }
@@ -612,7 +629,14 @@ const CampaignActionsContent: React.FC<CampaignActionsContentProps> = ({
     }
 
     client && !startedLoadingActions && load()
-  }, [client, campaign, loadingActions, setLoadingActions, setActions])
+  }, [
+    client,
+    campaign,
+    loadingActions,
+    setLoadingActions,
+    setActions,
+    setEarliestDate,
+  ])
 
   return (
     <>
@@ -623,9 +647,9 @@ const CampaignActionsContent: React.FC<CampaignActionsContentProps> = ({
           <ContributionGraph campaign={campaign} actions={actions} />
         </div>
       )}
-      {!loadingActions && !!lastAction?.when && (
+      {!!earliestDate && (
         <p className="text-placeholder italic mb-2">
-          Data since {lastAction.when.toLocaleString()}
+          Data since {earliestDate.toLocaleString()}
         </p>
       )}
 
