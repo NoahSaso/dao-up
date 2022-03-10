@@ -13,7 +13,7 @@ import {
   denyListContractAddress,
   featuredListContractAddress,
   gasPrice,
-  rpcEndpoint,
+  rpcEndpoints,
 } from "@/config"
 import {
   CommonError,
@@ -24,15 +24,58 @@ import {
 } from "@/helpers"
 import { baseToken, getBaseTokenForMinPayToken } from "@/services"
 
-export const getClient = async () => CosmWasmClient.connect(rpcEndpoint)
+export const getClient = async () => {
+  let rpcIndex = 0
+  while (rpcIndex < rpcEndpoints.length) {
+    try {
+      return await CosmWasmClient.connect(rpcEndpoints[rpcIndex])
+    } catch (err) {
+      console.error(
+        parseError(err, {
+          source: "getClient",
+          rpcIndex,
+          rpcEndpoint: rpcEndpoints[rpcIndex],
+        })
+      )
+      rpcIndex++
+      // If last RPC node threw error, rethrow.
+      if (rpcIndex === rpcEndpoints.length) {
+        throw err
+      }
+    }
+  }
+}
 
 export const getSigningClient = async (
   signer: Awaited<ReturnType<Keplr["getOfflineSignerAuto"]>>
-) =>
-  SigningCosmWasmClient.connectWithSigner(rpcEndpoint, signer, {
-    gasPrice: GasPrice.fromString(gasPrice),
-    broadcastTimeoutMs: 1000 * 60 * 2, // 2 minutes
-  })
+) => {
+  let rpcIndex = 0
+  while (rpcIndex < rpcEndpoints.length) {
+    try {
+      return await SigningCosmWasmClient.connectWithSigner(
+        rpcEndpoints[rpcIndex],
+        signer,
+        {
+          gasPrice: GasPrice.fromString(gasPrice),
+          broadcastTimeoutMs: 1000 * 60 * 2, // 2 minutes
+        }
+      )
+    } catch (err) {
+      console.error(
+        parseError(err, {
+          source: "getSigningClient",
+          rpcIndex,
+          rpcEndpoint: rpcEndpoints[rpcIndex],
+        })
+      )
+      rpcIndex++
+      // If last RPC node threw error, rethrow.
+      if (rpcIndex === rpcEndpoints.length) {
+        throw err
+      }
+    }
+  }
+}
 
 export const getCW20WalletTokenBalance = async (
   client: CosmWasmClient,
