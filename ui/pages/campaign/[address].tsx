@@ -42,7 +42,11 @@ import {
   transformCampaign,
 } from "@/services"
 import { cosmWasmClient, cw20WalletTokenBalance, fetchCampaign } from "@/state"
-import { CampaignContractVersion, CampaignStatus } from "@/types"
+import {
+  CampaignActionType,
+  CampaignContractVersion,
+  CampaignStatus,
+} from "@/types"
 
 const campaigns404Path = "/campaigns?404"
 
@@ -586,7 +590,9 @@ const CampaignActionsContent: React.FC<CampaignActionsContentProps> = ({
             if (action.total === undefined) {
               action.total = currentTotal
               // Since we are loading most recent first, we need to subtract the amount so the next (earlier) transaction gets the correct total set. The most recent transaction's total should equal the total amount pledged so far.
-              currentTotal -= action.amount
+              currentTotal -=
+                (action.type === CampaignActionType.Fund ? 1 : -1) *
+                action.amount
             }
           })
 
