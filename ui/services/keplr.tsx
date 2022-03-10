@@ -4,10 +4,10 @@ import {
   chainId,
   chainName,
   chainPrefix,
+  defaultRpcEndpoint,
   minPayTokenSymbol,
   payTokenSymbol,
   restEndpoint,
-  rpcEndpoint,
 } from "@/config"
 
 export const suggestToken = async (keplr: Keplr, address: string) =>
@@ -24,7 +24,7 @@ export const suggestChain = async (keplr: Keplr) =>
     // The name of the chain to be displayed to the user.
     chainName,
     // RPC endpoint of the chain.
-    rpc: rpcEndpoint,
+    rpc: defaultRpcEndpoint,
     // REST endpoint of the chain.
     rest: restEndpoint,
     // Staking coin information

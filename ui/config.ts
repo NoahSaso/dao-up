@@ -1,4 +1,5 @@
-export const rpcEndpoint = process.env.NEXT_PUBLIC_RPC_ENDPOINT!
+export const rpcEndpoints = process.env.NEXT_PUBLIC_RPC_ENDPOINTS!.split(",")
+export const defaultRpcEndpoint = rpcEndpoints[0]
 export const restEndpoint = process.env.NEXT_PUBLIC_REST_ENDPOINT!
 
 export const chainId = process.env.NEXT_PUBLIC_CHAIN_ID!
