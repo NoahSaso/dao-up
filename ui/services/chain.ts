@@ -16,6 +16,7 @@ import {
   rpcEndpoint,
 } from "@/config"
 import {
+  blockHeightToSeconds,
   CommonError,
   convertDenomToMicroDenom,
   convertMicroDenomToDenom,
@@ -23,6 +24,7 @@ import {
   parseError,
 } from "@/helpers"
 import { baseToken, getBaseTokenForMinPayToken } from "@/services"
+import { CampaignActionType } from "@/types"
 
 export const getClient = async () => CosmWasmClient.connect(rpcEndpoint)
 
@@ -251,4 +253,143 @@ export const swapToken = async (
     [coin(microInputAmount, baseToken.denom)]
   )
   return response
+}
+
+export const contractInstantiationBlockHeight = async (
+  client: CosmWasmClient,
+  address: string
+): Promise<number | null> => {
+  try {
+    const events = await client.searchTx({
+      tags: [{ key: "instantiate._contract_address", value: address }],
+    })
+    if (!events.length) {
+      return null
+    }
+
+    return events[0].height
+  } catch (error) {
+    console.error(
+      parseError(error, {
+        source: "contractInstantiationBlockHeight",
+        campaign: address,
+      })
+    )
+    return null
+  }
+}
+
+export const getDateFromBlockHeight = async (
+  client: CosmWasmClient,
+  blockHeight: number
+): Promise<Date | null> => {
+  try {
+    const block = await client.getBlock(blockHeight)
+    return new Date(Date.parse(block.header.time))
+  } catch (error) {
+    console.error(
+      parseError(error, {
+        source: "getDateFromBlockHeight",
+        blockHeight,
+      })
+    )
+    return null
+  }
+}
+
+export const getCampaignActions = async (
+  client: CosmWasmClient,
+  campaign: Campaign,
+  currentBlockHeight: number | null,
+  minBlockHeight?: number,
+  maxBlockHeight?: number
+): Promise<CampaignAction[]> => {
+  // Get all of the wasm messages involving this contract.
+  const events = await client.searchTx(
+    {
+      tags: [{ key: "wasm._contract_address", value: campaign.address }],
+    },
+    {
+      minHeight: minBlockHeight && Math.max(minBlockHeight, 0),
+      maxHeight: maxBlockHeight,
+    }
+  )
+
+  const wasms = events
+    // Parse their logs.
+    .map((e) => ({
+      log: JSON.parse(e.rawLog),
+      height: e.height,
+    }))
+    // Get the wasm components of their logs.
+    .map((l) => ({
+      wasm: l.log[0].events.find((e: any) => e.type === "wasm"),
+      height: l.height,
+    }))
+    .filter((w) => !!w.wasm)
+
+  // Get the messages that are fund messages.
+  const funds = wasms.filter((wasm) =>
+    wasm.wasm.attributes.some((a: any) => a.value === "fund")
+  )
+
+  // Get the messages that are refund messages.
+  const refunds = wasms.filter((wasm) =>
+    wasm.wasm.attributes.some((a: any) => a.value === "refund")
+  )
+
+  // Extract the amount and sender.
+  const fundActions: CampaignAction[] = funds.map((fund) => {
+    let amount = convertMicroDenomToDenom(
+      fund.wasm.attributes.find((a: any) => a.key === "amount")?.value,
+      campaign.payToken.decimals
+    )
+    let address = fund.wasm.attributes.find((a: any) => a.key === "sender")
+      ?.value as string
+
+    let when
+    if (currentBlockHeight !== null) {
+      const elapsedTime = blockHeightToSeconds(currentBlockHeight - fund.height)
+      when = new Date()
+      when.setSeconds(when.getSeconds() - elapsedTime)
+    }
+
+    return {
+      type: CampaignActionType.Fund,
+      address,
+      amount,
+      when,
+    }
+  })
+  const refundActions: CampaignAction[] = refunds.map((fund) => {
+    let amount = convertMicroDenomToDenom(
+      fund.wasm.attributes.find((a: any) => a.key === "native_returned")?.value,
+      campaign.payToken.decimals
+    )
+    let address = fund.wasm.attributes.find((a: any) => a.key === "sender")
+      ?.value as string
+
+    let when
+    if (currentBlockHeight !== null) {
+      const elapsedTime = blockHeightToSeconds(currentBlockHeight - fund.height)
+      when = new Date()
+      when.setSeconds(when.getSeconds() - elapsedTime)
+    }
+
+    return {
+      type: CampaignActionType.Refund,
+      address,
+      amount,
+      when,
+    }
+  })
+
+  // Combine and sort descending (most recent first).
+  const actions = [...refundActions, ...fundActions].sort((a, b) => {
+    if (a.when === undefined) return 1
+    if (b.when === undefined) return -1
+    return b.when.getTime() - a.when.getTime()
+  })
+
+  return actions
 }

@@ -35,3 +35,6 @@ export const convertDenomToMicroDenom = (
 // range. This really doesn't need to be terribly accurate.
 export const blockHeightToSeconds = (blockHeight: number): number =>
   blockHeight * 6.3
+
+export const secondsToBlockHeight = (seconds: number): number =>
+  Math.round(seconds / 6.3)
