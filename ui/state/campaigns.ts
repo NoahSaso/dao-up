@@ -217,7 +217,7 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
         }
 
       // Get featured addresses.
-      const featuredAddresses = get(featuredCampaignAddressList)
+      const { addresses: featuredAddresses } = get(featuredCampaignAddressList)
 
       // Get deNS address map.
       const densAddressMap = get(fetchDENSAddressMap)
@@ -302,7 +302,7 @@ export const escrowContractAddresses = selectorFamily<
 
 // Pass null to get all addresses.
 export const pagedEscrowContractAddresses = selectorFamily<
-  EscrowContractAddressesResponse,
+  CampaignAddressListResponse,
   PageInfo | null
 >({
   key: "pagedEscrowContractAddresses",
@@ -315,10 +315,11 @@ export const pagedEscrowContractAddresses = selectorFamily<
       const queryClient = get(cosmWasmQueryClient)
       if (!queryClient) return { addresses, error: CommonError.GetClientFailed }
 
+      const { addresses: addressDenyList } = get(campaignDenyList)
+
       let codeIdIndex = 0
       let startAtKey: number[] | undefined = undefined
       do {
-        const addressDenyList = get(campaignDenyList)
         const response = get(
           escrowContractAddresses({
             codeId: escrowContractCodeIds[codeIdIndex],
@@ -359,40 +360,61 @@ export const pagedEscrowContractAddresses = selectorFamily<
     },
 })
 
-export const campaignDenyList = selector<string[]>({
+export const campaignDenyList = selector<CampaignAddressListResponse>({
   key: "campaignDenyList",
   get: async ({ get }) => {
     const client = get(cosmWasmClient)
-    if (!client) return []
+    if (!client) return { addresses: [], error: CommonError.GetClientFailed }
 
     try {
-      return await getDenyListAddresses(client)
-    } catch (e) {
-      console.error(e)
-      return []
+      return {
+        addresses: await getDenyListAddresses(client),
+        error: null,
+      }
+    } catch (error) {
+      console.error(error)
+      return {
+        addresses: [],
+        error: parseError(error, {
+          source: "campaignDenyList",
+        }),
+      }
     }
   },
 })
 
-export const featuredCampaignAddressList = selector<string[]>({
-  key: "featuredCampaignAddressList",
-  get: async ({ get }) => {
-    const client = get(cosmWasmClient)
-    if (!client) return []
+export const featuredCampaignAddressList =
+  selector<CampaignAddressListResponse>({
+    key: "featuredCampaignAddressList",
+    get: async ({ get }) => {
+      const client = get(cosmWasmClient)
+      if (!client) return { addresses: [], error: CommonError.GetClientFailed }
 
-    try {
-      return await getFeaturedAddresses(client)
-    } catch (e) {
-      console.error(e)
-      return []
-    }
-  },
-})
+      try {
+        return {
+          addresses: await getFeaturedAddresses(client),
+          error: null,
+        }
+      } catch (error) {
+        console.error(error)
+        return {
+          addresses: [],
+          error: parseError(error, {
+            source: "featuredCampaignAddressList",
+          }),
+        }
+      }
+    },
+  })
 
 export const featuredCampaigns = selector<CampaignsResponse>({
   key: "featuredCampaigns",
   get: async ({ get }) => {
-    const addresses = get(featuredCampaignAddressList)
+    const { addresses, error: addressesError } = get(
+      featuredCampaignAddressList
+    )
+    if (addressesError !== null)
+      return { campaigns: null, hasMore: false, error: addressesError }
 
     const campaignResponses = get(
       waitForAll(addresses.map((address) => fetchCampaign(address)))
