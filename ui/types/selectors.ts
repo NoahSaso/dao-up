@@ -28,7 +28,7 @@ declare global {
     balance: number | null
   }>
 
-  type EscrowContractAddressesResponse = AsyncSelectorResponse<{
+  type CampaignAddressListResponse = AsyncSelectorResponse<{
     addresses: string[]
   }>
 

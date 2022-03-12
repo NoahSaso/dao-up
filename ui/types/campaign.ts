@@ -8,6 +8,7 @@ declare global {
     type: CampaignActionType
     address: string
     amount: number
+    total?: number
     when?: Date
   }
 
@@ -23,6 +24,7 @@ declare global {
   interface Campaign extends VersionedCampaignFields {
     version: CampaignContractVersion
 
+    createdBlockHeight: number | null
     address: string
     name: string
     description: string
