@@ -2,15 +2,10 @@ import { QueryContractsByCodeResponse } from "cosmjs-types/cosmwasm/wasm/v1/quer
 import { atom, atomFamily, selector, selectorFamily, waitForAll } from "recoil"
 
 import { escrowContractCodeIds } from "@/config"
-import {
-  blockHeightToSeconds,
-  CommonError,
-  convertMicroDenomToDenom,
-  extractPageInfo,
-  parseError,
-} from "@/helpers"
+import { CommonError, extractPageInfo, parseError } from "@/helpers"
 import {
   campaignsFromResponses,
+  contractInstantiationBlockHeight,
   createDENSAddressMap,
   filterCampaigns,
   getCampaignState,
@@ -23,7 +18,6 @@ import {
 } from "@/services"
 import { cosmWasmClient, cosmWasmQueryClient, cw20TokenBalance } from "@/state"
 import { localStorageEffectJSON } from "@/state/effects"
-import { CampaignActionType } from "@/types"
 
 export const campaignStateId = atomFamily<number, string | undefined>({
   key: "campaignStateId",
@@ -61,127 +55,14 @@ export const campaignState = selectorFamily<CampaignStateResponse, string>({
     },
 })
 
-export const fetchCampaignActions = selectorFamily<
-  CampaignActionsResponse,
-  string
->({
-  key: "fetchCampaignActions",
-  get:
-    (address) =>
-    async ({ get }) => {
-      if (!address) return { actions: null, error: CommonError.InvalidAddress }
-
-      const { campaign, error: campaignError } = get(fetchCampaign(address))
-      if (!campaign || campaignError)
-        return { actions: null, error: campaignError }
-
-      const client = get(cosmWasmClient)
-      if (!client) return { actions: null, error: CommonError.GetClientFailed }
-
-      try {
-        const blockHeight = await client?.getHeight()
-
-        // Get all of the wasm messages involving this contract.
-        const events = await client.searchTx({
-          tags: [{ key: "wasm._contract_address", value: address }],
-        })
-        // Parse their logs.
-        const logs = events.map((e) => ({
-          log: JSON.parse(e.rawLog),
-          height: e.height,
-        }))
-        // Get the wasm components of their logs.
-        const wasms = logs
-          .map((l) => ({
-            wasm: l.log[0].events.find((e: any) => e.type === "wasm"),
-            height: l.height,
-          }))
-          .filter((w) => !!w.wasm)
-        // Get the messages that are fund messages.
-        const funds = wasms.filter((wasm) =>
-          wasm.wasm.attributes.some((a: any) => a.value === "fund")
-        )
-
-        // Get the messages that are refund messages.
-        const refunds = wasms.filter((wasm) =>
-          wasm.wasm.attributes.some((a: any) => a.value === "refund")
-        )
-
-        // Extract the amount and sender.
-        const fundActions: CampaignAction[] = funds.map((fund) => {
-          let amount = convertMicroDenomToDenom(
-            fund.wasm.attributes.find((a: any) => a.key === "amount")?.value,
-            campaign.payToken.decimals
-          )
-          let address = fund.wasm.attributes.find(
-            (a: any) => a.key === "sender"
-          )?.value as string
-
-          let when
-          if (blockHeight !== null) {
-            const elapsedTime = blockHeightToSeconds(blockHeight - fund.height)
-            when = new Date()
-            when.setSeconds(when.getSeconds() - elapsedTime)
-          }
-
-          return {
-            type: CampaignActionType.Fund,
-            address,
-            amount,
-            when,
-          }
-        })
-        const refundActions: CampaignAction[] = refunds.map((fund) => {
-          let amount = convertMicroDenomToDenom(
-            fund.wasm.attributes.find((a: any) => a.key === "native_returned")
-              ?.value,
-            campaign.payToken.decimals
-          )
-          let address = fund.wasm.attributes.find(
-            (a: any) => a.key === "sender"
-          )?.value as string
-
-          let when
-          if (blockHeight !== null) {
-            const elapsedTime = blockHeightToSeconds(blockHeight - fund.height)
-            when = new Date()
-            when.setSeconds(when.getSeconds() - elapsedTime)
-          }
-
-          return {
-            type: CampaignActionType.Refund,
-            address,
-            amount,
-            when,
-          }
-        })
-
-        // Combine and sort descending (most recent first).
-        const actions = [...refundActions, ...fundActions].sort((a, b) => {
-          if (a.when === undefined) return 1
-          if (b.when === undefined) return -1
-          return b.when.getTime() - a.when.getTime()
-        })
-
-        return { actions, error: null }
-      } catch (error) {
-        console.error(error)
-        return {
-          actions: null,
-          error: parseError(error, {
-            source: "fetchCampaignActions",
-            campaign: address,
-          }),
-        }
-      }
-    },
-})
-
 export const fetchCampaign = selectorFamily<CampaignResponse, string>({
   key: "fetchCampaign",
   get:
     (address) =>
     async ({ get }) => {
+      // Get campaign creation.
+      const createdBlockHeight = get(campaignCreationBlockHeight(address))
+
       // Get campaign state.
       const { state, error: campaignStateError } = get(campaignState(address))
       if (campaignStateError || state === null)
@@ -225,6 +106,7 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
       // Transform data into campaign.
       const campaign = transformCampaign(
         address,
+        createdBlockHeight,
         state,
         campaignGovTokenBalance,
         daoGovTokenBalance,
@@ -549,4 +431,21 @@ export const fetchDENSAddressMap = selector<DENSAddressMap>({
 
     return createDENSAddressMap(names, addresses)
   },
+})
+
+export const campaignCreationBlockHeight = selectorFamily<
+  number | null,
+  string
+>({
+  key: "campaignCreationBlockHeight",
+  get:
+    (address: string) =>
+    async ({ get }) => {
+      const client = get(cosmWasmClient)
+      if (!client) {
+        return null
+      }
+
+      return await contractInstantiationBlockHeight(client, address)
+    },
 })

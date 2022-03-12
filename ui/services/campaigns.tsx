@@ -144,6 +144,7 @@ export const transformVersionedCampaignFields = (
 // Transform blockchain data into typed campaign object.
 export const transformCampaign = (
   address: string,
+  createdBlockHeight: number | null,
   campaignState: CampaignDumpStateResponse,
   campaignGovTokenBalance: number | undefined | null,
   daoGovTokenBalance: number | undefined | null,
@@ -195,6 +196,8 @@ export const transformCampaign = (
 
   const baseFields = {
     version,
+
+    createdBlockHeight,
     address,
     name: campaignInfo.name,
     description: campaignInfo.description,
