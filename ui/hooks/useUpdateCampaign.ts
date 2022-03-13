@@ -114,12 +114,13 @@ export const useUpdateCampaign = (
               wallet: walletAddress,
               campaign: campaign.address,
             },
-            undefined,
             {
-              [CommonError.Unauthorized]:
-                "Unauthorized. You must stake tokens in the DAO on DAO DAO before you can create a proposal.",
-            },
-            true
+              transform: {
+                [CommonError.Unauthorized]:
+                  "Unauthorized. You must stake tokens in the DAO on DAO DAO before you can create a proposal.",
+              },
+              includeTimeoutError: true,
+            }
           )
         )
       }

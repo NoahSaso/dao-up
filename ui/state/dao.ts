@@ -41,10 +41,11 @@ export const daoConfig = selectorFamily<DAOConfigResponse, string | undefined>({
               source: "daoConfig",
               campaign: address,
             },
-            undefined,
             {
-              // Give more specific error for invalid addresses.
-              [CommonError.InvalidAddress]: InvalidDAOError,
+              transform: {
+                // Give more specific error for invalid addresses.
+                [CommonError.InvalidAddress]: InvalidDAOError,
+              },
             }
           ),
         }

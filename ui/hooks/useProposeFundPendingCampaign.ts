@@ -105,12 +105,13 @@ export const useProposeFundPendingCampaign = (campaign: Campaign | null) => {
               campaign: campaign.address,
               amount,
             },
-            undefined,
             {
-              [CommonError.Unauthorized]:
-                "Unauthorized. You must stake tokens in the DAO on DAO DAO before you can create a proposal.",
-            },
-            true
+              transform: {
+                [CommonError.Unauthorized]:
+                  "Unauthorized. You must stake tokens in the DAO on DAO DAO before you can create a proposal.",
+              },
+              includeTimeoutError: true,
+            }
           )
         )
       } finally {

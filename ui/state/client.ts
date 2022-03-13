@@ -4,6 +4,7 @@ import { Keplr } from "@keplr-wallet/types"
 import { atom, selector } from "recoil"
 
 import { chainId } from "@/config"
+import { parseError } from "@/helpers"
 import { getClient, getSigningClient } from "@/services"
 import { localStorageEffect } from "@/state/effects"
 
@@ -58,7 +59,11 @@ export const keplrOfflineSigner = selector({
       await keplr.enable(chainId)
       return await keplr.getOfflineSignerAuto(chainId)
     } catch (error) {
-      console.error(error)
+      console.error(
+        parseError(error, {
+          source: "keplrOfflineSigner",
+        })
+      )
 
       // If failed to connect and was previously connected, stop trying to connect automatically in the future.
       if (localStorage.getItem(keplrConnectedBeforeKey) === "true") {
@@ -70,13 +75,7 @@ export const keplrOfflineSigner = selector({
 
 export const cosmWasmClient = selector({
   key: "cosmWasmClient",
-  get: async () => {
-    try {
-      return await getClient()
-    } catch (error) {
-      console.error(error)
-    }
-  },
+  get: async () => await getClient(),
 })
 
 export const cosmWasmQueryClient = selector({
@@ -94,11 +93,7 @@ export const signedCosmWasmClient = selector({
     const signer = get(keplrOfflineSigner)
     if (!signer) return
 
-    try {
-      return await getSigningClient(signer)
-    } catch (error) {
-      console.error(error)
-    }
+    return await getSigningClient(signer)
   },
   // DAO DAO:
   // We have to do this because of how SigningCosmWasmClient

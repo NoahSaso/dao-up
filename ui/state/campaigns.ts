@@ -124,7 +124,9 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
               campaignGovTokenBalance,
               daoGovTokenBalance,
             },
-            { state }
+            {
+              extra: { state },
+            }
           )
         )
       }

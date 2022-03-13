@@ -83,9 +83,10 @@ export const useRefundCampaign = (campaign: Campaign | null) => {
               campaign: campaign.address,
               amount,
             },
-            { msg },
-            undefined,
-            true
+            {
+              extra: { msg },
+              includeTimeoutError: true,
+            }
           )
         )
         return false
