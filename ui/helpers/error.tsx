@@ -7,6 +7,7 @@ import { TxnPollTimeoutError } from "@/components"
 export enum CommonError {
   RequestRejected = "Wallet rejected transaction.",
   InvalidAddress = "Invalid address.",
+  InsufficientFees = "Insufficient fees. Reconnect your wallet, ensure you're on the right chain, and try again.",
   InsufficientFunds = "Insufficient funds.",
   GetClientFailed = "Failed to get client. Try refreshing the page or reconnecting your wallet.",
   Network = "Network error. Ensure you are connected to the internet, refresh the page, or try again later. If your network is working, the blockchain nodes may be having problems.",
@@ -19,12 +20,15 @@ export enum CommonError {
   AlreadyFunded = "This campaign is already funded and cannot receive more funding. You may need to refresh the page if the information is out of sync.",
   TxnSentTimeout = "Transaction sent but has not yet been detected. Refresh this page to view its changes or check back later.",
   InvalidJSONResponse = "Invalid JSON response from server.",
+  OutOfPrintableEncodingRange = "Invalid character present in text.",
+  NodeFailure = "The blockchain nodes seem to be having problems. Try again later.",
 }
 
 // Whether or not to send the error to Sentry. Some errors we want to clean up for the user but still investigate (e.g. InvalidJSONResponse), so let's send them to Sentry even if we recognize them.
 const captureCommonErrorMap: Record<CommonError, boolean> = {
   [CommonError.RequestRejected]: false,
   [CommonError.InvalidAddress]: false,
+  [CommonError.InsufficientFees]: false,
   [CommonError.InsufficientFunds]: false,
   [CommonError.GetClientFailed]: false,
   [CommonError.Network]: false,
@@ -37,6 +41,8 @@ const captureCommonErrorMap: Record<CommonError, boolean> = {
   [CommonError.AlreadyFunded]: false,
   [CommonError.TxnSentTimeout]: false,
   [CommonError.InvalidJSONResponse]: true,
+  [CommonError.OutOfPrintableEncodingRange]: false,
+  [CommonError.NodeFailure]: false,
 }
 
 type ParseErrorExtra = Record<string, unknown>
@@ -87,10 +93,14 @@ export const parseError: ParseError = (
   // Attempt to recognize error.
   if (message.includes("Request rejected")) {
     recognizedError = CommonError.RequestRejected
+  } else if (message.includes("insufficient fees")) {
+    recognizedError = CommonError.InsufficientFees
   } else if (
     message.includes("insufficient funds") ||
     // Try to send money with no balance.
-    message.includes("Account does not exist on chain.")
+    message.includes("Account does not exist on chain.") ||
+    (message.includes("fee payer address") &&
+      message.includes("does not exist"))
   ) {
     recognizedError = CommonError.InsufficientFunds
   } else if (
@@ -109,7 +119,8 @@ export const parseError: ParseError = (
     message.includes("Bad status on response: 5") ||
     message.includes("ECONNREFUSED") ||
     message.includes("ETIMEDOUT") ||
-    message.includes("panic: invalid request")
+    message.includes("panic: invalid request") ||
+    message.includes("tx already exists in cache")
   ) {
     recognizedError = CommonError.Network
   } else if (message.includes("Unauthorized")) {
@@ -144,6 +155,10 @@ export const parseError: ParseError = (
     message.includes("was submitted but was not yet found on the chain")
   ) {
     recognizedError = CommonError.TxnSentTimeout
+  } else if (message.includes("out of printable ASCII range")) {
+    recognizedError = CommonError.OutOfPrintableEncodingRange
+  } else if (message.includes("goroutine")) {
+    recognizedError = CommonError.NodeFailure
   }
 
   // If recognized error, try to find it in the map, or else return the recognized error.
