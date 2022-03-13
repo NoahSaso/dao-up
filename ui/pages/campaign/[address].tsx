@@ -26,25 +26,28 @@ import {
   WalletMessage,
 } from "@/components"
 import { baseUrl, daoUrlPrefix, title } from "@/config"
-import { escrowAddressRegex, parseError } from "@/helpers"
+import { escrowAddressRegex, parseError, secondsToBlockHeight } from "@/helpers"
 import { useRefundJoinDAOForm, useUpdateCampaign, useWallet } from "@/hooks"
 import {
+  contractInstantiationBlockHeight,
   createDENSAddressMap,
+  getCampaignActions,
   getCampaignState,
   getClient,
   getCW20WalletTokenBalance,
+  getDateFromBlockHeight,
   getDENSAddress,
   getDENSNames,
   getFeaturedAddresses,
   suggestToken,
   transformCampaign,
 } from "@/services"
+import { cosmWasmClient, cw20WalletTokenBalance, fetchCampaign } from "@/state"
 import {
-  cw20WalletTokenBalance,
-  fetchCampaign,
-  fetchCampaignActions,
-} from "@/state"
-import { CampaignContractVersion, CampaignStatus } from "@/types"
+  CampaignActionType,
+  CampaignContractVersion,
+  CampaignStatus,
+} from "@/types"
 
 const campaigns404Path = "/campaigns?404"
 
@@ -538,6 +541,8 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   )
 }
 
+let startedLoadingActions = false
+
 interface CampaignActionsContentProps {
   campaign: Campaign
 }
@@ -545,18 +550,107 @@ interface CampaignActionsContentProps {
 const CampaignActionsContent: React.FC<CampaignActionsContentProps> = ({
   campaign,
 }) => {
-  const { actions, error: campaignActionsError } = useRecoilValue(
-    fetchCampaignActions(campaign.address)
-  )
+  const client = useRecoilValue(cosmWasmClient)
+  const [loadingActions, setLoadingActions] = useState(false)
+  const [actions, setActions] = useState<CampaignAction[]>([])
+  const lastAction = actions.length ? actions[actions.length - 1] : undefined
+  const [earliestDate, setEarliestDate] = useState<Date | null>(null)
 
-  return campaignActionsError ? (
-    <p className="text-orange my-4 w-full lg:w-3/5">{campaignActionsError}</p>
-  ) : (
+  useEffect(() => {
+    const load = async () => {
+      if (!client || startedLoadingActions) return
+      startedLoadingActions = true
+      setLoadingActions(true)
+
+      try {
+        let blockHeight = await client?.getHeight()
+        const currentBlockHeight = blockHeight
+        let currentTotal = campaign.pledged
+        // Load one day at a time.
+        const interval = secondsToBlockHeight(60 * 60 * 24)
+        // Stop once hitting campaign's creation block height.
+        const minBlockHeight = campaign.createdBlockHeight ?? 0
+
+        while (blockHeight >= minBlockHeight) {
+          // Don't need to load below campaign creation block height.
+          const currMinBlockHeight = Math.max(
+            blockHeight - interval,
+            minBlockHeight
+          )
+
+          const actions = await getCampaignActions(
+            client,
+            campaign,
+            currentBlockHeight,
+            currMinBlockHeight,
+            blockHeight
+          )
+
+          // Iterate to the next block set.
+          blockHeight -= interval
+
+          // If no actions, nothing to do.
+          if (!actions.length) continue
+
+          // Transform totals into correct values.
+          actions.forEach((action) => {
+            if (action.total === undefined) {
+              action.total = currentTotal
+              // Since we are loading most recent first, we need to subtract the amount so the next (earlier) transaction gets the correct total set. The most recent transaction's total should equal the total amount pledged so far.
+              currentTotal -=
+                (action.type === CampaignActionType.Fund ? 1 : -1) *
+                action.amount
+            }
+          })
+
+          // Get date of earliest block if possible.
+          let minBlockHeightDate = await getDateFromBlockHeight(
+            client,
+            currMinBlockHeight
+          )
+          // Fallback to date of earliest action (not super precise but good enough).
+          if (!minBlockHeightDate)
+            minBlockHeightDate = actions[actions.length - 1].when ?? null
+          setEarliestDate(minBlockHeightDate)
+
+          // Append to end of data.
+          setActions((prev) => [...prev, ...actions])
+        }
+      } catch (error) {
+        console.error(
+          parseError(error, {
+            source: "CampaignActionsContent load",
+            campaign: campaign.address,
+          })
+        )
+      } finally {
+        setLoadingActions(false)
+      }
+    }
+
+    client && !startedLoadingActions && load()
+  }, [
+    client,
+    campaign,
+    loadingActions,
+    setLoadingActions,
+    setActions,
+    setEarliestDate,
+  ])
+
+  return (
     <>
-      {actions && actions.length > 1 && (
+      {loadingActions && <Loader />}
+
+      {actions.length > 1 && (
         <div className="flex-1 max-w-sm my-4">
           <ContributionGraph campaign={campaign} actions={actions} />
         </div>
+      )}
+      {!!earliestDate && (
+        <p className="text-placeholder italic mb-2">
+          Data since {earliestDate.toLocaleString()}
+        </p>
       )}
 
       <div className="w-full lg:w-3/5 max-h-[80vh] overflow-y-auto visible-scrollbar">
@@ -564,9 +658,9 @@ const CampaignActionsContent: React.FC<CampaignActionsContentProps> = ({
           actions.map((item, idx) => (
             <CampaignAction key={idx} campaign={campaign} action={item} />
           ))
-        ) : (
+        ) : !loadingActions ? (
           <p>None yet.</p>
-        )}
+        ) : null}
       </div>
     </>
   )
@@ -601,6 +695,11 @@ export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
 
     if (!campaignAddress) return redirectToCampaigns
 
+    const createdBlockHeight = await contractInstantiationBlockHeight(
+      client,
+      campaignAddress
+    )
+
     // Get campaign state.
     const state = await getCampaignState(client, campaignAddress)
 
@@ -629,6 +728,7 @@ export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
     // Transform data into campaign.
     const campaign = transformCampaign(
       campaignAddress,
+      createdBlockHeight,
       state,
       campaignGovTokenBalance,
       daoGovTokenBalance,
