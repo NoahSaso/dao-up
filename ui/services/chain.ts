@@ -31,11 +31,24 @@ export const getClient = async () => {
       return await CosmWasmClient.connect(rpcEndpoints[rpcIndex])
     } catch (err) {
       console.error(
-        parseError(err, {
-          source: "getClient",
-          rpcIndex,
-          rpcEndpoint: rpcEndpoints[rpcIndex],
-        })
+        parseError(
+          err,
+          {
+            source: "getClient",
+            rpcIndex,
+            rpcEndpoint: rpcEndpoints[rpcIndex],
+          },
+          undefined,
+          {
+            // When connecting to the RPC node, an invalid JSON response indicates a problem with the node (e.g. the node is down).
+            [CommonError.InvalidJSONResponse]: CommonError.Network,
+          },
+          undefined,
+          // Don't capture invalid JSON response since we know it indicates RPC node error.
+          {
+            [CommonError.InvalidJSONResponse]: false,
+          }
+        )
       )
       rpcIndex++
       // If last RPC node threw error, rethrow.
@@ -62,11 +75,24 @@ export const getSigningClient = async (
       )
     } catch (err) {
       console.error(
-        parseError(err, {
-          source: "getSigningClient",
-          rpcIndex,
-          rpcEndpoint: rpcEndpoints[rpcIndex],
-        })
+        parseError(
+          err,
+          {
+            source: "getSigningClient",
+            rpcIndex,
+            rpcEndpoint: rpcEndpoints[rpcIndex],
+          },
+          undefined,
+          {
+            // When connecting to the RPC node, an invalid JSON response indicates a problem with the node (e.g. the node is down).
+            [CommonError.InvalidJSONResponse]: CommonError.Network,
+          },
+          undefined,
+          // Don't capture invalid JSON response since we know it indicates RPC node error.
+          {
+            [CommonError.InvalidJSONResponse]: false,
+          }
+        )
       )
       rpcIndex++
       // If last RPC node threw error, rethrow.
