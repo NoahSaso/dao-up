@@ -51,7 +51,7 @@ export const cw20TokenBalance = selectorFamily<
         return {
           balance: null,
           error: parseError(error, {
-            source: "tokenBalance",
+            source: "cw20TokenBalance",
             wallet: walletAddress,
             token: tokenAddress,
           }),
