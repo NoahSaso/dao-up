@@ -89,9 +89,7 @@ export const usePayTokenUtil = (outputToken: PayToken) => {
               swapPrice,
               ...outputToken,
             },
-            undefined,
-            undefined,
-            true
+            { includeTimeoutError: true }
           )
         )
         setLoading(false)

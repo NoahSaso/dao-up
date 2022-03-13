@@ -746,7 +746,9 @@ export const getStaticProps: GetStaticProps<CampaignStaticProps> = async ({
             campaignGovTokenBalance,
             daoGovTokenBalance,
           },
-          { state }
+          {
+            extra: { state },
+          }
         )
       )
       return redirectToCampaigns

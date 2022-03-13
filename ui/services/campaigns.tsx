@@ -126,7 +126,9 @@ export const transformVersionedCampaignFields = (
             campaign: address,
             version,
           },
-          { campaignState }
+          {
+            extra: { campaignState },
+          }
         )
       )
 

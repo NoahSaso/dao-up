@@ -94,9 +94,7 @@ export const useContributeCampaign = (
               campaign: campaign.address,
               amount,
             },
-            undefined,
-            undefined,
-            true
+            { includeTimeoutError: true }
           )
         )
         return false

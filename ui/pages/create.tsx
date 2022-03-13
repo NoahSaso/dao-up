@@ -128,7 +128,9 @@ const CreateContent = () => {
               source: "createCampaign",
               wallet: walletAddress,
             },
-            { msg }
+            {
+              extra: { msg },
+            }
           )
         )
       }
