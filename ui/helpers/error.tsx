@@ -108,6 +108,7 @@ export const parseError: ParseError = (
     message.includes("socket hang up") ||
     message.includes("Bad status on response: 5") ||
     message.includes("ECONNREFUSED") ||
+    message.includes("ETIMEDOUT") ||
     message.includes("panic: invalid request")
   ) {
     recognizedError = CommonError.Network
