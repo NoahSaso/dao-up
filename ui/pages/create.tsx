@@ -15,8 +15,6 @@ import {
   baseUrl,
   currentEscrowContractCodeId,
   cw20CodeId,
-  daoUpDAOAddress,
-  daoUpFee,
   title,
 } from "@/config"
 import { convertDenomToMicroDenom, parseError } from "@/helpers"
@@ -87,9 +85,6 @@ const CreateContent = () => {
         ),
         funding_token_name: newCampaign.tokenName,
         funding_token_symbol: newCampaign.tokenSymbol,
-
-        fee: daoUpFee,
-        fee_receiver: daoUpDAOAddress,
 
         campaign_info: {
           name: newCampaign.name,

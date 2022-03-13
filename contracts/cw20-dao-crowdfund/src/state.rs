@@ -59,9 +59,6 @@ pub struct State {
     pub dao_addr: Addr,
     pub creator: Addr,
 
-    pub fee_receiver: Addr,
-    pub fee: Decimal,
-
     pub funding_goal: Coin,
     pub funds_raised: Coin,
 

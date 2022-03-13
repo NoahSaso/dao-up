@@ -1,8 +1,8 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Addr, BankMsg, Binary, Coin, Decimal, Deps, DepsMut, Env, Fraction, MessageInfo,
-    Reply, Response, StdResult, SubMsg, Uint128, WasmMsg,
+    to_binary, Addr, BankMsg, Binary, BlockInfo, Coin, Decimal, Deps, DepsMut, Env, Fraction,
+    MessageInfo, Reply, Response, StdResult, SubMsg, Uint128, WasmMsg,
 };
 use cw2::set_contract_version;
 use cw20::Cw20ReceiveMsg;
@@ -15,6 +15,12 @@ use crate::state::{State, FUNDING_TOKEN_ADDR, GOV_TOKEN_ADDR, STATE};
 
 const CONTRACT_NAME: &str = "crates.io:cw20-dao-crowdfund";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
+
+const MAINNET_CHAIN_ID: &str = "juno-1";
+const MAINNET_DAO_UP_ADDR: &str = "juno1puc0wp0dhzp9hyvp7tw7edvx496ekewsz0ahrmhtnfaq0tzr0ggs2t42tx";
+const TESTNET_DAO_UP_ADDR: &str = "juno1pla9cky8drecdsqwp3uh6l76yhpkfkaeqz9xkn3xwk6vjlr2y22s255x3t";
+
+const FEE_PERCENT: u64 = 3;
 
 const INSTANTIATE_FUNDING_TOKEN_REPLY_ID: u64 = 0;
 
@@ -37,14 +43,6 @@ pub fn instantiate(
     let gov_token_addr = deps.api.addr_validate(dao_config.gov_token.as_str())?;
     GOV_TOKEN_ADDR.save(deps.storage, &gov_token_addr)?;
 
-    let fee_receiver = deps.api.addr_validate(msg.fee_receiver.as_str())?;
-    if msg.fee > Decimal::percent(100) {
-        return Err(ContractError::Instantiation(format!(
-            "fee ({}) is greater than 100%",
-            msg.fee
-        )));
-    }
-
     if msg.funding_goal.amount == Uint128::zero() {
         return Err(ContractError::Instantiation(format!(
             "funding goal is zero ({})",
@@ -56,8 +54,6 @@ pub fn instantiate(
         status: Status::Uninstantiated {},
         dao_addr,
         creator: info.sender,
-        fee_receiver,
-        fee: msg.fee,
         funding_goal: msg.funding_goal.clone(),
         funds_raised: Coin {
             denom: msg.funding_goal.denom,
@@ -102,7 +98,7 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::Fund {} => execute_fund(deps, &info.funds, info.sender),
-        ExecuteMsg::Receive(msg) => execute_receive(deps, msg, info.sender),
+        ExecuteMsg::Receive(msg) => execute_receive(deps, &env.block, msg, info.sender),
         ExecuteMsg::Close {} => execute_close(deps, env, info.sender),
         ExecuteMsg::UpdateCampaign { campaign } => {
             execute_update_campaign(deps, campaign, info.sender)
@@ -238,6 +234,7 @@ pub fn execute_fund(
 
 pub fn execute_receive(
     deps: DepsMut,
+    block: &BlockInfo,
     msg: Cw20ReceiveMsg,
     sender: Addr,
 ) -> Result<Response, ContractError> {
@@ -246,7 +243,7 @@ pub fn execute_receive(
     if sender == gov_token_addr {
         execute_receive_gov_tokens(deps, msg)
     } else if sender == funding_token_addr {
-        execute_receive_funding_tokens(deps, msg, funding_token_addr)
+        execute_receive_funding_tokens(deps, block, msg, funding_token_addr)
     } else {
         Err(ContractError::Unauthorized {})
     }
@@ -281,6 +278,7 @@ pub fn execute_receive_gov_tokens(
 
 pub fn execute_receive_funding_tokens(
     deps: DepsMut,
+    block: &BlockInfo,
     msg: Cw20ReceiveMsg,
     funding_token_addr: Addr,
 ) -> Result<Response, ContractError> {
@@ -363,7 +361,7 @@ pub fn execute_receive_funding_tokens(
             };
 
             let native_to_transfer = msg.amount * token_price.inv().unwrap();
-            let fee_amount = native_to_transfer * state.fee;
+            let fee_amount = native_to_transfer * Decimal::percent(FEE_PERCENT);
             let dao_amount = native_to_transfer - fee_amount;
 
             // Transfer a proportional amount of funds to the DAO.
@@ -375,9 +373,17 @@ pub fn execute_receive_funding_tokens(
                 }],
             };
 
+            // Get DAO address that receives the fee.
+            let is_mainnet = block.chain_id == MAINNET_CHAIN_ID.to_string();
+            let fee_receiver = deps.api.addr_validate(if is_mainnet {
+                MAINNET_DAO_UP_ADDR
+            } else {
+                TESTNET_DAO_UP_ADDR
+            })?;
+
             // Transfer fee to the fee account.
             let fee_transfer = BankMsg::Send {
-                to_address: state.fee_receiver.to_string(),
+                to_address: fee_receiver.to_string(),
                 amount: vec![Coin {
                     denom: state.funding_goal.denom,
                     amount: fee_amount,
@@ -450,8 +456,6 @@ pub fn query_dump_state(deps: Deps) -> StdResult<Binary> {
         campaign_info: state.campaign_info,
         gov_token_addr,
         funding_token_addr,
-        fee_receiver: state.fee_receiver,
-        fee: state.fee,
         version: CONTRACT_VERSION.to_string(),
     })
 }

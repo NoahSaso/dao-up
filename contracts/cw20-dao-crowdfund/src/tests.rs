@@ -145,8 +145,6 @@ fn instantiate_escrow(
     let instantiate = InstantiateMsg {
         dao_address: dao_addr.to_string(),
         cw20_code_id: cw20_id,
-        fee: Decimal::percent(3),
-        fee_receiver: DAO_UP_ADDR.to_string(),
         funding_goal: Coin {
             denom: CHAIN_DENOM.to_string(),
             amount: Uint128::from(funding_goal),
