@@ -46,18 +46,17 @@ export const useRefundCampaign = (campaign: Campaign | null) => {
 
       setLoading(true)
 
+      const msg = {
+        send: {
+          contract: campaign.address,
+          amount: convertDenomToMicroDenom(
+            amount,
+            campaign.payToken.decimals
+          ).toString(),
+          msg: "",
+        },
+      }
       try {
-        const msg = {
-          send: {
-            contract: campaign.address,
-            amount: convertDenomToMicroDenom(
-              amount,
-              campaign.payToken.decimals
-            ).toString(),
-            msg: "",
-          },
-        }
-
         await client.execute(
           walletAddress,
           campaign.fundingToken.address,
@@ -84,7 +83,7 @@ export const useRefundCampaign = (campaign: Campaign | null) => {
               campaign: campaign.address,
               amount,
             },
-            undefined,
+            { msg },
             undefined,
             true
           )
