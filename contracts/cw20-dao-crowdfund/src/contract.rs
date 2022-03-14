@@ -369,10 +369,10 @@ pub fn execute_receive_funding_tokens(
             };
 
             // Get fee manager information.
-            let fee_manager_state = get_fee_manager_config(&deps, &state)?;
+            let fee_manager_config = get_fee_manager_config(&deps, &state)?;
 
             let native_to_transfer = msg.amount * token_price.inv().unwrap();
-            let fee_amount = native_to_transfer * fee_manager_state.fee;
+            let fee_amount = native_to_transfer * fee_manager_config.fee;
             let dao_amount = native_to_transfer - fee_amount;
 
             // Transfer a proportional amount of funds to the DAO.
@@ -386,7 +386,7 @@ pub fn execute_receive_funding_tokens(
 
             // Transfer fee to the fee account.
             let fee_transfer = BankMsg::Send {
-                to_address: fee_manager_state.receiver_addr.to_string(),
+                to_address: fee_manager_config.receiver_addr.to_string(),
                 amount: vec![Coin {
                     denom: state.funding_goal.denom,
                     amount: fee_amount,
@@ -422,25 +422,26 @@ pub fn take_public_payment(
     state: &State,
 ) -> Result<BankMsg, ContractError> {
     // Get fee manager information.
-    let fee_manager_state = get_fee_manager_config(deps, state)?;
+    let fee_manager_config = get_fee_manager_config(deps, state)?;
 
     let payment = info
         .funds
         .iter()
-        .filter(|coin| coin.denom == fee_manager_state.public_listing_fee.denom)
+        .filter(|coin| coin.denom == fee_manager_config.public_listing_fee.denom)
         .fold(Uint128::zero(), |accum, coin| coin.amount + accum);
 
-    if payment != fee_manager_state.public_listing_fee.amount {
+    if payment != fee_manager_config.public_listing_fee.amount {
         return Err(ContractError::InvalidPublicPayment(format!(
             "not equal to {}{}",
-            fee_manager_state.public_listing_fee.amount, fee_manager_state.public_listing_fee.denom
+            fee_manager_config.public_listing_fee.amount,
+            fee_manager_config.public_listing_fee.denom
         )));
     }
 
     // Transfer public listing fee to the fee account.
     Ok(BankMsg::Send {
-        to_address: fee_manager_state.receiver_addr.to_string(),
-        amount: vec![fee_manager_state.public_listing_fee.clone()],
+        to_address: fee_manager_config.receiver_addr.to_string(),
+        amount: vec![fee_manager_config.public_listing_fee.clone()],
     })
 }
 
