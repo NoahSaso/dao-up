@@ -15,6 +15,7 @@ import {
   baseUrl,
   currentEscrowContractCodeId,
   cw20CodeId,
+  feeManagerAddress,
   publicPaymentFeeMicroNum,
   title,
 } from "@/config"
@@ -79,6 +80,7 @@ const CreateContent = () => {
       const msg = {
         dao_address: newCampaign.daoAddress,
         cw20_code_id: cw20CodeId,
+        fee_manager_address: feeManagerAddress,
 
         funding_goal: coin(
           convertDenomToMicroDenom(newCampaign.goal, payToken.decimals),

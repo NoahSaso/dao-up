@@ -20,6 +20,7 @@ export const daoUrlPrefix = process.env.NEXT_PUBLIC_DAO_URL_PREFIX!
 
 const daoUpFee = process.env.NEXT_PUBLIC_DAO_UP_FEE!
 export const daoUpFeeNum = Number(daoUpFee)
+export const feeManagerAddress = process.env.NEXT_PUBLIC_FEE_MANAGER_ADDRESS!
 
 const publicPaymentFeeMicro = process.env.NEXT_PUBLIC_PUBLIC_PAYMENT_FEE_MICRO!
 export const publicPaymentFeeMicroNum = Number(publicPaymentFeeMicro)
