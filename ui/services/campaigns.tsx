@@ -41,7 +41,9 @@ export const requiredUpdateCampaignFields: (keyof UpdateCampaignInfo)[] = [
 export const campaignsFromResponses = (
   campaignResponses: CampaignResponse[],
   includeHidden = false,
-  includePending = false
+  includePending = false,
+  // Include if no fee manager set. For backwards compatibility.
+  includeNoFeeManager = false
 ): Campaign[] =>
   campaignResponses
     .filter(
@@ -50,7 +52,8 @@ export const campaignsFromResponses = (
         (includeHidden || !campaign.hidden) &&
         (includePending || campaign.status !== CampaignStatus.Pending) &&
         // Only show campaigns that use our fee manager.
-        campaign.feeManagerAddress === feeManagerAddress
+        (campaign.feeManagerAddress === feeManagerAddress ||
+          (includeNoFeeManager && campaign.feeManagerAddress === null))
     )
     .map(({ campaign }) => campaign!)
 
