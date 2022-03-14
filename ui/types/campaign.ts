@@ -14,6 +14,7 @@ declare global {
 
   // These are retrieved differently for different Campaign contract versions.
   interface VersionedCampaignFields {
+    feeManagerAddress: string | null
     profileImageUrl: string | null
     descriptionImageUrls: string[]
     govToken: {
@@ -109,6 +110,7 @@ declare global {
 export enum CampaignContractVersion {
   v1 = "0.1.0",
   v2 = "0.2.0",
+  v3 = "0.3.0",
 }
 
 export enum CampaignStatus {
@@ -127,7 +129,7 @@ export type CampaignVersionedStatus<
     : {
         token_price: string
       }
-  : V extends CampaignContractVersion.v2
+  : V extends CampaignContractVersion.v2 | CampaignContractVersion.v3
   ? S extends CampaignStatus.Pending
     ? {}
     : {

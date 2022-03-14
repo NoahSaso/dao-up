@@ -1,7 +1,7 @@
 import fuzzysort from "fuzzysort"
 import _merge from "lodash.merge"
 
-import { daoUrlPrefix } from "@/config"
+import { daoUrlPrefix, feeManagerAddress } from "@/config"
 import { convertMicroDenomToDenom, getFilterFns, parseError } from "@/helpers"
 import { baseToken, findPayTokenByDenom } from "@/services"
 import {
@@ -48,7 +48,9 @@ export const campaignsFromResponses = (
       ({ campaign }) =>
         !!campaign &&
         (includeHidden || !campaign.hidden) &&
-        (includePending || campaign.status !== CampaignStatus.Pending)
+        (includePending || campaign.status !== CampaignStatus.Pending) &&
+        // Only show campaigns that use our fee manager.
+        campaign.feeManagerAddress === feeManagerAddress
     )
     .map(({ campaign }) => campaign!)
 
@@ -90,6 +92,7 @@ export const transformVersionedCampaignFields = (
   switch (version) {
     case CampaignContractVersion.v1:
       return {
+        feeManagerAddress: null,
         profileImageUrl: campaignInfo.image_url ?? null,
         // Introduced in v2.
         descriptionImageUrls: [],
@@ -98,7 +101,9 @@ export const transformVersionedCampaignFields = (
         },
       }
     case CampaignContractVersion.v2:
+    case CampaignContractVersion.v3:
       return {
+        feeManagerAddress: campaignState.fee_manager_addr ?? null,
         profileImageUrl: campaignInfo.profile_image_url ?? null,
         descriptionImageUrls: campaignInfo.description_image_urls ?? [],
         govToken: {
@@ -133,6 +138,7 @@ export const transformVersionedCampaignFields = (
       )
 
       return {
+        feeManagerAddress: null,
         profileImageUrl: null,
         descriptionImageUrls: [],
         govToken: {

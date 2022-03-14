@@ -14,6 +14,7 @@ declare global {
     campaign_info: CampaignInfo
     creator: string
     dao_addr: string
+    fee_manager_addr?: string // v3
     funding_goal: Coin
     funding_token_addr: string
     funding_token_info: TokenInfoResponse
