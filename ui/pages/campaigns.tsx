@@ -222,7 +222,8 @@ const CampaignsContent: FunctionComponent<CampaignsContentProps> = ({
       filter,
       // Don't page if not showing all.
       page: showFeatured ? minPage : page,
-      size: pageSize,
+      // Don't load any campaigns until displaying.
+      size: showFeatured ? 0 : pageSize,
     })
   )
 

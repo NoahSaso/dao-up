@@ -178,7 +178,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   const {
     state: latestCampaignState,
     contents: { campaign: latestCampaign },
-  } = useRecoilValueLoadable(fetchCampaign(campaignAddress))
+  } = useRecoilValueLoadable(fetchCampaign({ address: campaignAddress }))
   // Use just-fetched campaign over pre-loaded campaign, defaulting to pre-loaded.
   const campaign: Campaign =
     (latestCampaignState === "hasValue" && latestCampaign) || preLoadedCampaign
