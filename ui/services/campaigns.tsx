@@ -13,7 +13,7 @@ import {
 export const defaultNewCampaign = (): Partial<NewCampaignInfo> => ({
   // Default to first payToken, which should be juno(x).
   payTokenDenom: baseToken.denom,
-  hidden: false,
+  hidden: true,
   descriptionImageUrls: [],
   _descriptionImageUrls: [],
 })

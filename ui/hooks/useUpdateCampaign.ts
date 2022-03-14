@@ -1,11 +1,12 @@
 import { toAscii, toBase64 } from "@cosmjs/encoding"
+import { coin } from "@cosmjs/stargate"
 import { ReactNode, useCallback, useMemo, useState } from "react"
 import { useRecoilValue } from "recoil"
 
-import { baseUrl } from "@/config"
+import { baseUrl, publicPaymentFeeMicroNum } from "@/config"
 import { CommonError, parseError } from "@/helpers"
 import { useRefreshCampaign, useWallet } from "@/hooks"
-import { createDAOProposalForCampaign } from "@/services"
+import { baseToken, createDAOProposalForCampaign } from "@/services"
 import { daoConfig, signedCosmWasmClient } from "@/state"
 
 export const useUpdateCampaign = (
@@ -75,7 +76,11 @@ export const useUpdateCampaign = (
                 })
               )
             ),
-            funds: [],
+            funds:
+              // If changing displaying publicly, send fee.
+              !updateCampaign.hidden && campaign.hidden
+                ? [coin(publicPaymentFeeMicroNum, baseToken.denom)]
+                : [],
           },
         },
       }

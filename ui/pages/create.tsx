@@ -15,11 +15,12 @@ import {
   baseUrl,
   currentEscrowContractCodeId,
   cw20CodeId,
+  publicPaymentFeeMicroNum,
   title,
 } from "@/config"
 import { convertDenomToMicroDenom, parseError } from "@/helpers"
 import { useWallet } from "@/hooks"
-import { defaultNewCampaign, findPayTokenByDenom } from "@/services"
+import { baseToken, defaultNewCampaign, findPayTokenByDenom } from "@/services"
 import { signedCosmWasmClient } from "@/state"
 
 const Create: NextPage = () => (
@@ -108,7 +109,13 @@ const CreateContent = () => {
           currentEscrowContractCodeId,
           msg,
           `[DAO Up!] ${newCampaign.name}`,
-          "auto"
+          "auto",
+          // If displaying publicly, send fee.
+          !newCampaign.hidden
+            ? {
+                funds: [coin(publicPaymentFeeMicroNum, baseToken.denom)],
+              }
+            : undefined
         )
 
         // If the campaign was created successfully, redirect to the campaign page.

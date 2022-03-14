@@ -255,6 +255,7 @@ dependencies = [
 name = "cw20-dao-crowdfund"
 version = "0.2.0"
 dependencies = [
+ "anyhow",
  "cosmwasm-schema",
  "cosmwasm-std",
  "cosmwasm-storage",

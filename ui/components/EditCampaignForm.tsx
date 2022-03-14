@@ -39,7 +39,7 @@ import {
   ImageUrlField,
   Loader,
 } from "@/components"
-import { daoUpFeeNum } from "@/config"
+import { daoUpFeeNum, publicPaymentFeeMicroNum } from "@/config"
 import {
   convertMicroDenomToDenom,
   daoAddressPattern,
@@ -50,7 +50,7 @@ import {
   urlPattern,
 } from "@/helpers"
 import { useRefCallback, useWallet } from "@/hooks"
-import { getNextPayTokenDenom, getPayTokenLabel } from "@/services"
+import { baseToken, getNextPayTokenDenom, getPayTokenLabel } from "@/services"
 import { globalLoadingAtom, validateDAO } from "@/state"
 
 const validUrlOrUndefined = (u: string | undefined) =>
@@ -414,11 +414,20 @@ export const EditCampaignForm: FunctionComponent<EditCampaignFormProps> = ({
             name="hidden"
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <FormSwitch
-                label="Hide from public campaigns list"
-                description="Whether or not to hide this campaign from the public directory of active campaigns. You may want to turn this on if you plan to send a direct link to your community. Default is no."
+                label="Display in public campaigns list"
+                description={`Costs ${prettyPrintDecimal(
+                  convertMicroDenomToDenom(
+                    publicPaymentFeeMicroNum,
+                    baseToken.decimals
+                  )
+                )} ${baseToken.symbol} to prevent spam.${
+                  !props.creating
+                    ? " Fee will be charged to the DAO once the proposal executes."
+                    : ""
+                }`}
                 error={error?.message}
                 onClick={() => onChange(!value)}
-                on={!!value}
+                on={!value}
               />
             )}
           />

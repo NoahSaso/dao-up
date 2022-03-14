@@ -2,7 +2,7 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
     to_binary, Addr, BankMsg, Binary, BlockInfo, Coin, Decimal, Deps, DepsMut, Env, Fraction,
-    MessageInfo, Reply, Response, StdResult, SubMsg, Uint128, WasmMsg,
+    MessageInfo, Reply, Response, StdError, StdResult, SubMsg, Uint128, WasmMsg,
 };
 use cw2::set_contract_version;
 use cw20::Cw20ReceiveMsg;
@@ -18,9 +18,15 @@ const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 const MAINNET_CHAIN_ID: &str = "juno-1";
 const MAINNET_DAO_UP_ADDR: &str = "juno1puc0wp0dhzp9hyvp7tw7edvx496ekewsz0ahrmhtnfaq0tzr0ggs2t42tx";
+const MAINNET_PUBLIC_PAYMENT_DENOM: &str = "ujuno";
 const TESTNET_DAO_UP_ADDR: &str = "juno1pla9cky8drecdsqwp3uh6l76yhpkfkaeqz9xkn3xwk6vjlr2y22s255x3t";
+const TESTNET_PUBLIC_PAYMENT_DENOM: &str = "ujunox";
+
+const TESTS_CHAIN_ID: &str = "cosmos-testnet-14002";
+const TESTS_DAO_UP_ADDR: &str = "daoup";
 
 const FEE_PERCENT: u64 = 3;
+const PUBLIC_PAYMENT_AMOUNT: u128 = 500000;
 
 const INSTANTIATE_FUNDING_TOKEN_REPLY_ID: u64 = 0;
 
@@ -49,6 +55,13 @@ pub fn instantiate(
             msg.funding_goal
         )));
     }
+
+    // Require fee to display the campaign publicly.
+    let public_payment_message = if !msg.campaign_info.hidden {
+        Some(take_public_payment(&deps, &info, &env.block)?)
+    } else {
+        None
+    };
 
     let state = State {
         status: Status::Uninstantiated {},
@@ -84,9 +97,15 @@ pub fn instantiate(
 
     let msg = SubMsg::reply_on_success(birth_msg, INSTANTIATE_FUNDING_TOKEN_REPLY_ID);
 
-    Ok(Response::default()
+    let mut response = Response::default()
         .add_attribute("method", "instantiate")
-        .add_submessage(msg))
+        .add_submessage(msg);
+
+    if let Some(msg) = public_payment_message {
+        response = response.add_message(msg);
+    }
+
+    Ok(response)
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -101,27 +120,41 @@ pub fn execute(
         ExecuteMsg::Receive(msg) => execute_receive(deps, &env.block, msg, info.sender),
         ExecuteMsg::Close {} => execute_close(deps, env, info.sender),
         ExecuteMsg::UpdateCampaign { campaign } => {
-            execute_update_campaign(deps, campaign, info.sender)
+            execute_update_campaign(deps, info, &env.block, campaign)
         }
     }
 }
 
 pub fn execute_update_campaign(
     deps: DepsMut,
+    info: MessageInfo,
+    block: &BlockInfo,
     new_campaign_info: Campaign,
-    sender: Addr,
 ) -> Result<Response, ContractError> {
     let mut state = STATE.load(deps.storage)?;
-    if sender != state.dao_addr {
+    if info.sender != state.dao_addr {
         return Err(ContractError::Unauthorized {});
     }
+
+    // Require fee to display the campaign publicly.
+    let public_payment_message = if !new_campaign_info.hidden && state.campaign_info.hidden {
+        Some(take_public_payment(&deps, &info, &block)?)
+    } else {
+        None
+    };
 
     state.campaign_info = new_campaign_info;
     STATE.save(deps.storage, &state)?;
 
-    Ok(Response::default()
+    let mut response = Response::default()
         .add_attribute("action", "update_campaign")
-        .add_attribute("sender", sender))
+        .add_attribute("sender", info.sender);
+
+    if let Some(msg) = public_payment_message {
+        response = response.add_message(msg);
+    }
+
+    Ok(response)
 }
 
 pub fn execute_close(deps: DepsMut, env: Env, sender: Addr) -> Result<Response, ContractError> {
@@ -373,17 +406,10 @@ pub fn execute_receive_funding_tokens(
                 }],
             };
 
-            // Get DAO address that receives the fee.
-            let is_mainnet = block.chain_id == MAINNET_CHAIN_ID.to_string();
-            let fee_receiver = deps.api.addr_validate(if is_mainnet {
-                MAINNET_DAO_UP_ADDR
-            } else {
-                TESTNET_DAO_UP_ADDR
-            })?;
-
             // Transfer fee to the fee account.
+            let fee_receiver = get_fee_receiver(&deps, block)?;
             let fee_transfer = BankMsg::Send {
-                to_address: fee_receiver.to_string(),
+                to_address: fee_receiver,
                 amount: vec![Coin {
                     denom: state.funding_goal.denom,
                     amount: fee_amount,
@@ -398,6 +424,59 @@ pub fn execute_receive_funding_tokens(
                 .add_message(fee_transfer))
         }
     }
+}
+
+// Get DAO address that receives the fee based on the current chain.
+pub fn get_fee_receiver(deps: &DepsMut, block: &BlockInfo) -> Result<String, StdError> {
+    let is_tests = block.chain_id == TESTS_CHAIN_ID.to_string();
+    let is_mainnet = block.chain_id == MAINNET_CHAIN_ID.to_string();
+    let address = if is_tests {
+        TESTS_DAO_UP_ADDR
+    } else if is_mainnet {
+        MAINNET_DAO_UP_ADDR
+    } else {
+        TESTNET_DAO_UP_ADDR
+    };
+
+    Ok(deps.api.addr_validate(address)?.to_string())
+}
+
+// Ensure public payment funds were sent and create a message to forward them to the fee receiver.
+// Return a ContractError::InvalidPublicPayment if funds were not properly sent.
+pub fn take_public_payment(
+    deps: &DepsMut,
+    info: &MessageInfo,
+    block: &BlockInfo,
+) -> Result<BankMsg, ContractError> {
+    let is_mainnet = block.chain_id == MAINNET_CHAIN_ID.to_string();
+    let public_payment_denom = if is_mainnet {
+        MAINNET_PUBLIC_PAYMENT_DENOM
+    } else {
+        TESTNET_PUBLIC_PAYMENT_DENOM
+    };
+
+    let payment = info
+        .funds
+        .iter()
+        .filter(|coin| coin.denom == public_payment_denom)
+        .fold(Uint128::zero(), |accum, coin| coin.amount + accum);
+
+    if payment != Uint128::from(PUBLIC_PAYMENT_AMOUNT) {
+        return Err(ContractError::InvalidPublicPayment(format!(
+            "not equal to 0.5 {}",
+            public_payment_denom[1..].to_string().to_uppercase()
+        )));
+    }
+
+    // Transfer fee to the fee account.
+    let fee_receiver = get_fee_receiver(deps, block)?;
+    Ok(BankMsg::Send {
+        to_address: fee_receiver,
+        amount: vec![Coin {
+            denom: public_payment_denom.to_string(),
+            amount: payment,
+        }],
+    })
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]

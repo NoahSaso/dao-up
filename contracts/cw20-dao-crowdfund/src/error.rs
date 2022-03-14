@@ -38,4 +38,7 @@ pub enum ContractError {
 
     #[error("Too few gov tokens sent. This would result in a funding token price of zero.")]
     InvalidGovTokenAmount {},
+
+    #[error("Invalid public payment: {0}.")]
+    InvalidPublicPayment(String),
 }
