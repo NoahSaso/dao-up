@@ -10,7 +10,7 @@ use cw_utils::parse_reply_instantiate_data;
 
 use crate::error::ContractError;
 use crate::msg::{DumpStateResponse, ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::state::{Campaign, FeeManagerState, Status};
+use crate::state::{Campaign, Status};
 use crate::state::{State, FUNDING_TOKEN_ADDR, GOV_TOKEN_ADDR, STATE};
 
 const CONTRACT_NAME: &str = "crates.io:cw20-dao-crowdfund";
@@ -369,10 +369,10 @@ pub fn execute_receive_funding_tokens(
             };
 
             // Get fee manager information.
-            let fee_manager_state = get_fee_manager_state(&deps, &state)?;
+            let fee_manager_state = get_fee_manager_config(&deps, &state)?;
 
             let native_to_transfer = msg.amount * token_price.inv().unwrap();
-            let fee_amount = native_to_transfer * fee_manager_state.fee_percent;
+            let fee_amount = native_to_transfer * fee_manager_state.fee;
             let dao_amount = native_to_transfer - fee_amount;
 
             // Transfer a proportional amount of funds to the DAO.
@@ -403,12 +403,15 @@ pub fn execute_receive_funding_tokens(
     }
 }
 
-pub fn get_fee_manager_state(deps: &DepsMut, state: &State) -> Result<FeeManagerState, StdError> {
-    Ok(deps.querier.query_wasm_smart(
+pub fn get_fee_manager_config(
+    deps: &DepsMut,
+    state: &State,
+) -> Result<fee_manager::state::Config, StdError> {
+    let response: fee_manager::msg::ConfigResponse = deps.querier.query_wasm_smart(
         state.fee_manager_addr.clone(),
-        // TODO: Change to correct msg.
-        &cw3_dao::msg::QueryMsg::GetConfig {},
-    )?)
+        &fee_manager::msg::QueryMsg::GetConfig {},
+    )?;
+    Ok(response.config)
 }
 
 // Ensure public payment funds were sent and create a message to forward them to the fee receiver.
@@ -419,7 +422,7 @@ pub fn take_public_payment(
     state: &State,
 ) -> Result<BankMsg, ContractError> {
     // Get fee manager information.
-    let fee_manager_state = get_fee_manager_state(deps, state)?;
+    let fee_manager_state = get_fee_manager_config(deps, state)?;
 
     let payment = info
         .funds

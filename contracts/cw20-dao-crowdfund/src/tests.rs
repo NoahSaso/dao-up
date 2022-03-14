@@ -10,7 +10,7 @@ use anyhow::Result as AnyResult;
 
 use crate::{
     msg::{DumpStateResponse, ExecuteMsg, InstantiateMsg, QueryMsg},
-    state::{Campaign, FeeManagerState, Status},
+    state::{Campaign, Status},
     ContractError,
 };
 
@@ -76,23 +76,18 @@ fn escrow_contract() -> Box<dyn Contract<Empty>> {
 }
 
 fn fee_manager_contract() -> Box<dyn Contract<Empty>> {
-    // TODO: Change to correct contracts.
     let contract = ContractWrapper::new(
-        crate::contract::execute,
-        crate::contract::instantiate,
-        crate::contract::query,
-    )
-    .with_reply(crate::contract::reply);
+        fee_manager::contract::execute,
+        fee_manager::contract::instantiate,
+        fee_manager::contract::query,
+    );
     Box::new(contract)
 }
 
-fn instantiate_dao(
-    app: &mut App,
-    dao_id: u64,
-    cw20_id: u64,
-    stake_id: u64,
-    fee_manager_id: u64,
-) -> (Addr, Addr) {
+fn instantiate_dao(app: &mut App, dao_id: u64, cw20_id: u64, stake_id: u64) -> (Addr, Addr) {
+    let fee_manager_id = app.store_code(fee_manager_contract());
+    let fee_manager_addr = instantiate_fee_manager(app, fee_manager_id);
+
     let instantiate = cw3_dao::msg::InstantiateMsg {
         name: "Bong DAO".to_string(),
         description: "A DAO that owns a bong for sharing with friends.".to_string(),
@@ -120,6 +115,8 @@ fn instantiate_dao(
         proposal_deposit_amount: Uint128::zero(),
         refund_failed_proposals: Some(true),
         image_url: None,
+        only_members_execute: true,
+        automatically_add_cw20s: true,
     };
 
     let dao_addr = app
@@ -152,16 +149,13 @@ fn instantiate_dao(
     // Move forward a block so the staked balance shows.
     app.update_block(next_block);
 
-    let fee_manager_addr = instantiate_fee_manager(app, fee_manager_id, &dao_addr);
-
     (dao_addr, fee_manager_addr)
 }
 
-fn instantiate_fee_manager(app: &mut App, fee_manager_id: u64, dao_addr: &Addr) -> Addr {
-    // TODO: Change to msg.
-    let instantiate = FeeManagerState {
-        receiver_addr: dao_addr.clone(),
-        fee_percent: Decimal::percent(3),
+fn instantiate_fee_manager(app: &mut App, fee_manager_id: u64) -> Addr {
+    let instantiate = fee_manager::msg::InstantiateMsg {
+        receiver_address: DAO_UP_ADDR.to_string(),
+        fee: Decimal::percent(3),
         public_listing_fee: Coin {
             denom: CHAIN_DENOM.to_string(),
             amount: Uint128::from(PUBLIC_PAYMENT_AMOUNT),
@@ -170,7 +164,7 @@ fn instantiate_fee_manager(app: &mut App, fee_manager_id: u64, dao_addr: &Addr) 
 
     app.instantiate_contract(
         fee_manager_id,
-        dao_addr.clone(),
+        Addr::unchecked(DAO_UP_ADDR),
         &instantiate,
         &[],
         "Bong DAO Fee Manager",
@@ -410,10 +404,8 @@ fn test_campaign_creation_with_invalid_cw20() {
     let dao_id = app.store_code(dao_dao_dao_contract());
     let stake_id = app.store_code(stake_cw20_contract());
     let escrow_id = app.store_code(escrow_contract());
-    let fee_manager_id = app.store_code(fee_manager_contract());
 
-    let (dao_addr, fee_manager_addr) =
-        instantiate_dao(&mut app, dao_id, cw20_id, stake_id, fee_manager_id);
+    let (dao_addr, fee_manager_addr) = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
     instantiate_escrow(
         &mut app,
         dao_addr.clone(),
@@ -435,10 +427,8 @@ fn test_campaign_creation_with_evil_cw20_no_instantiate() {
     let dao_id = app.store_code(dao_dao_dao_contract());
     let stake_id = app.store_code(stake_cw20_contract());
     let escrow_id = app.store_code(escrow_contract());
-    let fee_manager_id = app.store_code(fee_manager_contract());
 
-    let (dao_addr, fee_manager_addr) =
-        instantiate_dao(&mut app, dao_id, cw20_id, stake_id, fee_manager_id);
+    let (dao_addr, fee_manager_addr) = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
     instantiate_escrow(
         &mut app,
         dao_addr.clone(),
@@ -471,10 +461,8 @@ fn test_campaign_creation_with_evil_cw20_silent_fail() {
     let dao_id = app.store_code(dao_dao_dao_contract());
     let stake_id = app.store_code(stake_cw20_contract());
     let escrow_id = app.store_code(escrow_contract());
-    let fee_manager_id = app.store_code(fee_manager_contract());
 
-    let (dao_addr, fee_manager_addr) =
-        instantiate_dao(&mut app, dao_id, cw20_id, stake_id, fee_manager_id);
+    let (dao_addr, fee_manager_addr) = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
     let escrow_addr = instantiate_escrow(
         &mut app,
         dao_addr.clone(),
@@ -530,10 +518,8 @@ fn test_campaign_update() {
     let dao_id = app.store_code(dao_dao_dao_contract());
     let stake_id = app.store_code(stake_cw20_contract());
     let escrow_id = app.store_code(escrow_contract());
-    let fee_manager_id = app.store_code(fee_manager_contract());
 
-    let (dao_addr, fee_manager_addr) =
-        instantiate_dao(&mut app, dao_id, cw20_id, stake_id, fee_manager_id);
+    let (dao_addr, fee_manager_addr) = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
     let escrow_addr = instantiate_escrow(
         &mut app,
         dao_addr.clone(),
@@ -607,10 +593,8 @@ fn test_campaign_update_with_public_payment() {
     let dao_id = app.store_code(dao_dao_dao_contract());
     let stake_id = app.store_code(stake_cw20_contract());
     let escrow_id = app.store_code(escrow_contract());
-    let fee_manager_id = app.store_code(fee_manager_contract());
 
-    let (dao_addr, fee_manager_addr) =
-        instantiate_dao(&mut app, dao_id, cw20_id, stake_id, fee_manager_id);
+    let (dao_addr, fee_manager_addr) = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
     // Send some tokens to the DAO so it can pay for the public payment.
     app.execute(
         Addr::unchecked(CREATOR_ADDR),
@@ -709,10 +693,8 @@ fn test_campaign_update_without_public_payment() {
     let dao_id = app.store_code(dao_dao_dao_contract());
     let stake_id = app.store_code(stake_cw20_contract());
     let escrow_id = app.store_code(escrow_contract());
-    let fee_manager_id = app.store_code(fee_manager_contract());
 
-    let (dao_addr, fee_manager_addr) =
-        instantiate_dao(&mut app, dao_id, cw20_id, stake_id, fee_manager_id);
+    let (dao_addr, fee_manager_addr) = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
     let escrow_addr = instantiate_escrow(
         &mut app,
         dao_addr.clone(),
@@ -785,10 +767,8 @@ fn test_campaign_creation() {
     let dao_id = app.store_code(dao_dao_dao_contract());
     let stake_id = app.store_code(stake_cw20_contract());
     let escrow_id = app.store_code(escrow_contract());
-    let fee_manager_id = app.store_code(fee_manager_contract());
 
-    let (dao_addr, fee_manager_addr) =
-        instantiate_dao(&mut app, dao_id, cw20_id, stake_id, fee_manager_id);
+    let (dao_addr, fee_manager_addr) = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
     let escrow_addr = instantiate_escrow(
         &mut app,
         dao_addr.clone(),
@@ -901,10 +881,8 @@ fn test_campaign_creation_with_public_payment() {
     let dao_id = app.store_code(dao_dao_dao_contract());
     let stake_id = app.store_code(stake_cw20_contract());
     let escrow_id = app.store_code(escrow_contract());
-    let fee_manager_id = app.store_code(fee_manager_contract());
 
-    let (dao_addr, fee_manager_addr) =
-        instantiate_dao(&mut app, dao_id, cw20_id, stake_id, fee_manager_id);
+    let (dao_addr, fee_manager_addr) = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
 
     let instantiate = instantiate_msg_factory(
         dao_addr.clone(),
@@ -954,10 +932,8 @@ fn test_campaign_creation_without_public_payment() {
     let dao_id = app.store_code(dao_dao_dao_contract());
     let stake_id = app.store_code(stake_cw20_contract());
     let escrow_id = app.store_code(escrow_contract());
-    let fee_manager_id = app.store_code(fee_manager_contract());
 
-    let (dao_addr, fee_manager_addr) =
-        instantiate_dao(&mut app, dao_id, cw20_id, stake_id, fee_manager_id);
+    let (dao_addr, fee_manager_addr) = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
     let err: ContractError = instantiate_escrow(
         &mut app,
         dao_addr.clone(),
@@ -1016,10 +992,8 @@ fn do_fund_refund(funding_goal: u64, gov_tokens: u64) {
     let dao_id = app.store_code(dao_dao_dao_contract());
     let stake_id = app.store_code(stake_cw20_contract());
     let escrow_id = app.store_code(escrow_contract());
-    let fee_manager_id = app.store_code(fee_manager_contract());
 
-    let (dao_addr, fee_manager_addr) =
-        instantiate_dao(&mut app, dao_id, cw20_id, stake_id, fee_manager_id);
+    let (dao_addr, fee_manager_addr) = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
     let escrow_addr = instantiate_escrow(
         &mut app,
         dao_addr.clone(),
@@ -1276,10 +1250,8 @@ fn test_campaign_completion() {
     let dao_id = app.store_code(dao_dao_dao_contract());
     let stake_id = app.store_code(stake_cw20_contract());
     let escrow_id = app.store_code(escrow_contract());
-    let fee_manager_id = app.store_code(fee_manager_contract());
 
-    let (dao_addr, fee_manager_addr) =
-        instantiate_dao(&mut app, dao_id, cw20_id, stake_id, fee_manager_id);
+    let (dao_addr, fee_manager_addr) = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
     let escrow_addr = instantiate_escrow(
         &mut app,
         dao_addr.clone(),
@@ -1426,10 +1398,8 @@ fn test_campaign_close() {
     let dao_id = app.store_code(dao_dao_dao_contract());
     let stake_id = app.store_code(stake_cw20_contract());
     let escrow_id = app.store_code(escrow_contract());
-    let fee_manager_id = app.store_code(fee_manager_contract());
 
-    let (dao_addr, fee_manager_addr) =
-        instantiate_dao(&mut app, dao_id, cw20_id, stake_id, fee_manager_id);
+    let (dao_addr, fee_manager_addr) = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
     let escrow_addr = instantiate_escrow(
         &mut app,
         dao_addr.clone(),

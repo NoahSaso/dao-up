@@ -15,17 +15,6 @@ exclude = [
 [lib]
 crate-type = ["cdylib", "rlib"]
 
-[profile.release]
-opt-level = 3
-debug = false
-rpath = false
-lto = true
-debug-assertions = false
-codegen-units = 1
-panic = 'abort'
-incremental = false
-overflow-checks = true
-
 [features]
 # for more explicit tests, cargo test --features=backtraces
 backtraces = ["cosmwasm-std/backtraces"]
@@ -53,6 +42,7 @@ thiserror = { version = "1.0" }
 cw3-dao = { version = "0.2.5", git = "https://github.com/DA0-DA0/dao-contracts" }
 stake-cw20 = { version = "0.2.5", git = "https://github.com/DA0-DA0/dao-contracts" }
 cw20-base = "0.11"
+fee-manager = { version = "0.1.0", path = "../fee-manager" }
 
 [dev-dependencies]
 cosmwasm-schema = { version = "1.0.0-beta4" }

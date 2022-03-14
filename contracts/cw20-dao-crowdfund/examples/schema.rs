@@ -10,7 +10,7 @@ use cw20_dao_crowdfund::state::State;
 
 fn main() {
     let mut out_dir = current_dir().unwrap();
-    out_dir.push("schema");
+    out_dir.push("cw20-dao-crowdfund_schema");
     create_dir_all(&out_dir).unwrap();
     remove_schemas(&out_dir).unwrap();
 

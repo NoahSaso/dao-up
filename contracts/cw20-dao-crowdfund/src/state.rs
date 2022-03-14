@@ -70,11 +70,3 @@ pub const STATE: Item<State> = Item::new("state");
 
 pub const GOV_TOKEN_ADDR: Item<Addr> = Item::new("gov_token_addr");
 pub const FUNDING_TOKEN_ADDR: Item<Addr> = Item::new("funding_token_addr");
-
-// TODO: move to other contract code
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct FeeManagerState {
-    pub receiver_addr: Addr,
-    pub fee_percent: Decimal,
-    pub public_listing_fee: Coin,
-}

@@ -1,27 +1,41 @@
+use cosmwasm_std::{Coin, Decimal};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::state::Config;
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
-    pub count: i32,
+    pub receiver_address: String,
+    pub fee: Decimal,
+    pub public_listing_fee: Coin,
 }
+
+// EXECUTE
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    Increment {},
-    Reset { count: i32 },
+    Update { config: ConfigUpdate },
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct ConfigUpdate {
+    pub receiver_address: Option<String>,
+    pub fee: Option<Decimal>,
+    pub public_listing_fee: Option<Coin>,
+}
+
+// QUERY
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    // GetCount returns the current count as a json-encoded number
-    GetCount {},
+    // GetConfig returns the config of the fee manager.
+    GetConfig {},
 }
 
-// We define a custom struct for each query response
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct CountResponse {
-    pub count: i32,
+pub struct ConfigResponse {
+    pub config: Config,
 }
