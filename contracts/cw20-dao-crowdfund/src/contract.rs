@@ -57,10 +57,10 @@ pub fn instantiate(
     }
 
     // Require fee to display the campaign publicly.
-    let public_payment_message = if !msg.campaign_info.hidden {
-        Some(take_public_payment(&deps, &info, &env.block)?)
+    let response = if !msg.campaign_info.hidden {
+        Response::default().add_message(take_public_payment(&deps, &info, &env.block)?)
     } else {
-        None
+        Response::default()
     };
 
     let state = State {
@@ -97,15 +97,9 @@ pub fn instantiate(
 
     let msg = SubMsg::reply_on_success(birth_msg, INSTANTIATE_FUNDING_TOKEN_REPLY_ID);
 
-    let mut response = Response::default()
+    Ok(response
         .add_attribute("method", "instantiate")
-        .add_submessage(msg);
-
-    if let Some(msg) = public_payment_message {
-        response = response.add_message(msg);
-    }
-
-    Ok(response)
+        .add_submessage(msg))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -137,24 +131,18 @@ pub fn execute_update_campaign(
     }
 
     // Require fee to display the campaign publicly.
-    let public_payment_message = if !new_campaign_info.hidden && state.campaign_info.hidden {
-        Some(take_public_payment(&deps, &info, &block)?)
+    let response = if !new_campaign_info.hidden && state.campaign_info.hidden {
+        Response::default().add_message(take_public_payment(&deps, &info, &block)?)
     } else {
-        None
+        Response::default()
     };
 
     state.campaign_info = new_campaign_info;
     STATE.save(deps.storage, &state)?;
 
-    let mut response = Response::default()
+    Ok(response
         .add_attribute("action", "update_campaign")
-        .add_attribute("sender", info.sender);
-
-    if let Some(msg) = public_payment_message {
-        response = response.add_message(msg);
-    }
-
-    Ok(response)
+        .add_attribute("sender", info.sender))
 }
 
 pub fn execute_close(deps: DepsMut, env: Env, sender: Addr) -> Result<Response, ContractError> {
