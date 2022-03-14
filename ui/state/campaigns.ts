@@ -177,10 +177,19 @@ export const escrowContractAddresses = selectorFamily<
       const queryClient = get(cosmWasmQueryClient)
       if (!queryClient) return
 
-      return await queryClient.wasm.listContractsByCodeId(
-        codeId,
-        startAtKey && new Uint8Array(startAtKey)
-      )
+      try {
+        return await queryClient.wasm.listContractsByCodeId(
+          codeId,
+          startAtKey && new Uint8Array(startAtKey)
+        )
+      } catch (error) {
+        console.error(
+          parseError(error, {
+            source: "escrowContractAddresses",
+            codeId,
+          })
+        )
+      }
     },
 })
 
