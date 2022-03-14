@@ -55,13 +55,19 @@ export const campaignState = selectorFamily<CampaignStateResponse, string>({
     },
 })
 
-export const fetchCampaign = selectorFamily<CampaignResponse, string>({
+export const fetchCampaign = selectorFamily<
+  CampaignResponse,
+  // Pass full to get all data.
+  { address: string; full?: boolean }
+>({
   key: "fetchCampaign",
   get:
-    (address) =>
+    ({ address, full = true }) =>
     async ({ get }) => {
       // Get campaign creation.
-      const createdBlockHeight = get(campaignCreationBlockHeight(address))
+      const createdBlockHeight = full
+        ? get(campaignCreationBlockHeight(address))
+        : null
 
       // Get campaign state.
       const { state, error: campaignStateError } = get(campaignState(address))
@@ -310,7 +316,14 @@ export const featuredCampaigns = selector<CampaignsResponse>({
       return { campaigns: null, hasMore: false, error: addressesError }
 
     const campaignResponses = get(
-      waitForAll(addresses.map((address) => fetchCampaign(address)))
+      waitForAll(
+        addresses.map((address) =>
+          fetchCampaign({
+            address,
+            full: false,
+          })
+        )
+      )
     )
     const campaigns = campaignsFromResponses(campaignResponses, true, true)
 
@@ -332,14 +345,16 @@ export const filteredCampaigns = selectorFamily<
   get:
     ({ filter, includeHidden = false, includePending = true, page, size }) =>
     async ({ get }) => {
+      // Prevent infinite loop and return no data.
+      if (size <= 0) return { campaigns: [], hasMore: true, error: null }
+
       const allCampaigns: Campaign[] = []
       const pageInfo = extractPageInfo(page, size)
 
       let addressPage = 1
-      const addressPageSize = 50
       let addressesLeft = true
       do {
-        const addressPageInfo = extractPageInfo(addressPage, addressPageSize)
+        const addressPageInfo = extractPageInfo(addressPage, size)
 
         const { addresses, error: addressesError } = get(
           pagedEscrowContractAddresses(addressPageInfo)
@@ -348,10 +363,17 @@ export const filteredCampaigns = selectorFamily<
           return { campaigns: null, hasMore: false, error: addressesError }
 
         // If we got the asked-for page size, we might still have addresses left.
-        addressesLeft = addresses.length === addressPageSize
+        addressesLeft = addresses.length === size
 
         const campaignResponses = get(
-          waitForAll(addresses.map((address) => fetchCampaign(address)))
+          waitForAll(
+            addresses.map((address) =>
+              fetchCampaign({
+                address,
+                full: false,
+              })
+            )
+          )
         )
 
         let relevantCampaigns = campaignsFromResponses(
@@ -386,7 +408,14 @@ export const allCampaigns = selector<CampaignsResponse>({
       return { campaigns: [], hasMore: false, error: addressesError }
 
     const campaignResponses = get(
-      waitForAll(addresses.map((address) => fetchCampaign(address)))
+      waitForAll(
+        addresses.map((address) =>
+          fetchCampaign({
+            address,
+            full: false,
+          })
+        )
+      )
     )
     const campaigns = campaignsFromResponses(campaignResponses, true, true)
 
@@ -408,7 +437,14 @@ export const favoriteCampaigns = selector<CampaignsResponse>({
   get: async ({ get }) => {
     const addresses = get(favoriteCampaignAddressesAtom)
     const campaignResponses = get(
-      waitForAll(addresses.map((address) => fetchCampaign(address)))
+      waitForAll(
+        addresses.map((address) =>
+          fetchCampaign({
+            address,
+            full: false,
+          })
+        )
+      )
     )
     const campaigns = campaignsFromResponses(campaignResponses, true, true)
 
