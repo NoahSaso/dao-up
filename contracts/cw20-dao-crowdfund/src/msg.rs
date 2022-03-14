@@ -8,6 +8,7 @@ use crate::state::{Campaign, Status};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
     pub dao_address: String,
+    pub fee_manager_address: String,
     /// Code ID for the cw20 contract we should use for the
     /// fundraising token.
     pub cw20_code_id: u64,
@@ -65,6 +66,7 @@ pub enum QueryMsg {
 pub struct DumpStateResponse {
     pub status: Status,
     pub dao_addr: Addr,
+    pub fee_manager_addr: Addr,
     pub creator: Addr,
     pub funding_goal: Coin,
     pub funds_raised: Coin,

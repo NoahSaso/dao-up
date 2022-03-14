@@ -1,8 +1,8 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Addr, BankMsg, Binary, BlockInfo, Coin, Decimal, Deps, DepsMut, Env, Fraction,
-    MessageInfo, Reply, Response, StdError, StdResult, SubMsg, Uint128, WasmMsg,
+    to_binary, Addr, BankMsg, Binary, Coin, Decimal, Deps, DepsMut, Env, Fraction, MessageInfo,
+    Reply, Response, StdError, StdResult, SubMsg, Uint128, WasmMsg,
 };
 use cw2::set_contract_version;
 use cw20::Cw20ReceiveMsg;
@@ -10,23 +10,11 @@ use cw_utils::parse_reply_instantiate_data;
 
 use crate::error::ContractError;
 use crate::msg::{DumpStateResponse, ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::state::{Campaign, Status};
+use crate::state::{Campaign, FeeManagerState, Status};
 use crate::state::{State, FUNDING_TOKEN_ADDR, GOV_TOKEN_ADDR, STATE};
 
 const CONTRACT_NAME: &str = "crates.io:cw20-dao-crowdfund";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
-
-const MAINNET_CHAIN_ID: &str = "juno-1";
-const MAINNET_DAO_UP_ADDR: &str = "juno1puc0wp0dhzp9hyvp7tw7edvx496ekewsz0ahrmhtnfaq0tzr0ggs2t42tx";
-const MAINNET_PUBLIC_PAYMENT_DENOM: &str = "ujuno";
-const TESTNET_DAO_UP_ADDR: &str = "juno1pla9cky8drecdsqwp3uh6l76yhpkfkaeqz9xkn3xwk6vjlr2y22s255x3t";
-const TESTNET_PUBLIC_PAYMENT_DENOM: &str = "ujunox";
-
-const TESTS_CHAIN_ID: &str = "cosmos-testnet-14002";
-const TESTS_DAO_UP_ADDR: &str = "daoup";
-
-const FEE_PERCENT: u64 = 3;
-const PUBLIC_PAYMENT_AMOUNT: u128 = 500000;
 
 const INSTANTIATE_FUNDING_TOKEN_REPLY_ID: u64 = 0;
 
@@ -44,6 +32,9 @@ pub fn instantiate(
         .querier
         .query_wasm_smart(dao_addr.clone(), &cw3_dao::msg::QueryMsg::GetConfig {})?;
 
+    // Verify fee manager address.
+    let fee_manager_addr = deps.api.addr_validate(msg.fee_manager_address.as_str())?;
+
     // DAO shouldn't have an invalid gov token address but lets verify
     // just to be sure.
     let gov_token_addr = deps.api.addr_validate(dao_config.gov_token.as_str())?;
@@ -56,17 +47,11 @@ pub fn instantiate(
         )));
     }
 
-    // Require fee to display the campaign publicly.
-    let response = if !msg.campaign_info.hidden {
-        Response::default().add_message(take_public_payment(&deps, &info, &env.block)?)
-    } else {
-        Response::default()
-    };
-
     let state = State {
         status: Status::Uninstantiated {},
         dao_addr,
-        creator: info.sender,
+        fee_manager_addr,
+        creator: info.sender.clone(),
         funding_goal: msg.funding_goal.clone(),
         funds_raised: Coin {
             denom: msg.funding_goal.denom,
@@ -75,6 +60,13 @@ pub fn instantiate(
         campaign_info: msg.campaign_info.clone(),
     };
     STATE.save(deps.storage, &state)?;
+
+    // Require fee to display the campaign publicly.
+    let response = if !msg.campaign_info.hidden {
+        Response::default().add_message(take_public_payment(&deps, &info, &state)?)
+    } else {
+        Response::default()
+    };
 
     let code_id = msg.cw20_code_id;
     let birth_msg = WasmMsg::Instantiate {
@@ -111,18 +103,15 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::Fund {} => execute_fund(deps, &info.funds, info.sender),
-        ExecuteMsg::Receive(msg) => execute_receive(deps, &env.block, msg, info.sender),
+        ExecuteMsg::Receive(msg) => execute_receive(deps, msg, info.sender),
         ExecuteMsg::Close {} => execute_close(deps, env, info.sender),
-        ExecuteMsg::UpdateCampaign { campaign } => {
-            execute_update_campaign(deps, info, &env.block, campaign)
-        }
+        ExecuteMsg::UpdateCampaign { campaign } => execute_update_campaign(deps, info, campaign),
     }
 }
 
 pub fn execute_update_campaign(
     deps: DepsMut,
     info: MessageInfo,
-    block: &BlockInfo,
     new_campaign_info: Campaign,
 ) -> Result<Response, ContractError> {
     let mut state = STATE.load(deps.storage)?;
@@ -132,7 +121,7 @@ pub fn execute_update_campaign(
 
     // Require fee to display the campaign publicly.
     let response = if !new_campaign_info.hidden && state.campaign_info.hidden {
-        Response::default().add_message(take_public_payment(&deps, &info, &block)?)
+        Response::default().add_message(take_public_payment(&deps, &info, &state)?)
     } else {
         Response::default()
     };
@@ -255,7 +244,6 @@ pub fn execute_fund(
 
 pub fn execute_receive(
     deps: DepsMut,
-    block: &BlockInfo,
     msg: Cw20ReceiveMsg,
     sender: Addr,
 ) -> Result<Response, ContractError> {
@@ -264,7 +252,7 @@ pub fn execute_receive(
     if sender == gov_token_addr {
         execute_receive_gov_tokens(deps, msg)
     } else if sender == funding_token_addr {
-        execute_receive_funding_tokens(deps, block, msg, funding_token_addr)
+        execute_receive_funding_tokens(deps, msg, funding_token_addr)
     } else {
         Err(ContractError::Unauthorized {})
     }
@@ -299,7 +287,6 @@ pub fn execute_receive_gov_tokens(
 
 pub fn execute_receive_funding_tokens(
     deps: DepsMut,
-    block: &BlockInfo,
     msg: Cw20ReceiveMsg,
     funding_token_addr: Addr,
 ) -> Result<Response, ContractError> {
@@ -369,7 +356,7 @@ pub fn execute_receive_funding_tokens(
                 &cw3_dao::msg::QueryMsg::GetConfig {},
             )?;
             let gov_addr = dao_config.gov_token;
-            let dao_addr = state.dao_addr;
+            let dao_addr = state.dao_addr.to_string();
 
             // Transfer gov tokens to the sender.
             let token_transfer = WasmMsg::Execute {
@@ -381,13 +368,16 @@ pub fn execute_receive_funding_tokens(
                 funds: vec![],
             };
 
+            // Get fee manager information.
+            let fee_manager_state = get_fee_manager_state(&deps, &state)?;
+
             let native_to_transfer = msg.amount * token_price.inv().unwrap();
-            let fee_amount = native_to_transfer * Decimal::percent(FEE_PERCENT);
+            let fee_amount = native_to_transfer * fee_manager_state.fee_percent;
             let dao_amount = native_to_transfer - fee_amount;
 
             // Transfer a proportional amount of funds to the DAO.
             let dao_transfer = BankMsg::Send {
-                to_address: dao_addr.to_string(),
+                to_address: dao_addr,
                 amount: vec![Coin {
                     denom: state.funding_goal.denom.clone(),
                     amount: dao_amount,
@@ -395,9 +385,8 @@ pub fn execute_receive_funding_tokens(
             };
 
             // Transfer fee to the fee account.
-            let fee_receiver = get_fee_receiver(&deps, block)?;
             let fee_transfer = BankMsg::Send {
-                to_address: fee_receiver,
+                to_address: fee_manager_state.receiver_addr.to_string(),
                 amount: vec![Coin {
                     denom: state.funding_goal.denom,
                     amount: fee_amount,
@@ -414,19 +403,12 @@ pub fn execute_receive_funding_tokens(
     }
 }
 
-// Get DAO address that receives the fee based on the current chain.
-pub fn get_fee_receiver(deps: &DepsMut, block: &BlockInfo) -> Result<String, StdError> {
-    let is_tests = block.chain_id == TESTS_CHAIN_ID.to_string();
-    let is_mainnet = block.chain_id == MAINNET_CHAIN_ID.to_string();
-    let address = if is_tests {
-        TESTS_DAO_UP_ADDR
-    } else if is_mainnet {
-        MAINNET_DAO_UP_ADDR
-    } else {
-        TESTNET_DAO_UP_ADDR
-    };
-
-    Ok(deps.api.addr_validate(address)?.to_string())
+pub fn get_fee_manager_state(deps: &DepsMut, state: &State) -> Result<FeeManagerState, StdError> {
+    Ok(deps.querier.query_wasm_smart(
+        state.fee_manager_addr.clone(),
+        // TODO: Change to correct msg.
+        &cw3_dao::msg::QueryMsg::GetConfig {},
+    )?)
 }
 
 // Ensure public payment funds were sent and create a message to forward them to the fee receiver.
@@ -434,36 +416,28 @@ pub fn get_fee_receiver(deps: &DepsMut, block: &BlockInfo) -> Result<String, Std
 pub fn take_public_payment(
     deps: &DepsMut,
     info: &MessageInfo,
-    block: &BlockInfo,
+    state: &State,
 ) -> Result<BankMsg, ContractError> {
-    let is_mainnet = block.chain_id == MAINNET_CHAIN_ID.to_string();
-    let public_payment_denom = if is_mainnet {
-        MAINNET_PUBLIC_PAYMENT_DENOM
-    } else {
-        TESTNET_PUBLIC_PAYMENT_DENOM
-    };
+    // Get fee manager information.
+    let fee_manager_state = get_fee_manager_state(deps, state)?;
 
     let payment = info
         .funds
         .iter()
-        .filter(|coin| coin.denom == public_payment_denom)
+        .filter(|coin| coin.denom == fee_manager_state.public_listing_fee.denom)
         .fold(Uint128::zero(), |accum, coin| coin.amount + accum);
 
-    if payment != Uint128::from(PUBLIC_PAYMENT_AMOUNT) {
+    if payment != fee_manager_state.public_listing_fee.amount {
         return Err(ContractError::InvalidPublicPayment(format!(
-            "not equal to 0.5 {}",
-            public_payment_denom[1..].to_string().to_uppercase()
+            "not equal to {}{}",
+            fee_manager_state.public_listing_fee.amount, fee_manager_state.public_listing_fee.denom
         )));
     }
 
-    // Transfer fee to the fee account.
-    let fee_receiver = get_fee_receiver(deps, block)?;
+    // Transfer public listing fee to the fee account.
     Ok(BankMsg::Send {
-        to_address: fee_receiver,
-        amount: vec![Coin {
-            denom: public_payment_denom.to_string(),
-            amount: payment,
-        }],
+        to_address: fee_manager_state.receiver_addr.to_string(),
+        amount: vec![fee_manager_state.public_listing_fee.clone()],
     })
 }
 
@@ -515,6 +489,7 @@ pub fn query_dump_state(deps: Deps) -> StdResult<Binary> {
     to_binary(&DumpStateResponse {
         status: state.status,
         dao_addr: state.dao_addr,
+        fee_manager_addr: state.fee_manager_addr,
         funding_goal: state.funding_goal,
         creator: state.creator,
         funds_raised: state.funds_raised,
