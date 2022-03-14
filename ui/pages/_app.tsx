@@ -5,7 +5,14 @@ import Head from "next/head"
 import { FunctionComponent } from "react"
 import { RecoilRoot, useRecoilValue } from "recoil"
 
-import { BetaAlert, Footer, Header, Loader, Suspense } from "@/components"
+import {
+  BetaAlert,
+  ErrorBoundary,
+  Footer,
+  Header,
+  Loader,
+  Suspense,
+} from "@/components"
 import { description, imageUrl, title } from "@/config"
 import { globalLoadingAtom } from "@/state"
 
@@ -14,18 +21,20 @@ const DAOUp: FunctionComponent<AppProps> = ({ Component, pageProps }) => {
 
   return (
     <>
-      <Header />
+      <ErrorBoundary>
+        <Header />
 
-      {loading && <Loader overlay />}
+        {loading && <Loader overlay />}
 
-      <Suspense loader={{ overlay: true }}>
-        <main>
-          <Component {...pageProps} />
+        <Suspense loader={{ overlay: true }}>
+          <main>
+            <Component {...pageProps} />
 
-          {/* Manages its own visibility and state localStorage. */}
-          <BetaAlert />
-        </main>
-      </Suspense>
+            {/* Manages its own visibility and state localStorage. */}
+            <BetaAlert />
+          </main>
+        </Suspense>
+      </ErrorBoundary>
 
       <Footer />
     </>
