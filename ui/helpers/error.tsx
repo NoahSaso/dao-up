@@ -110,8 +110,7 @@ const captureCommonErrorMap: Record<CommonError, boolean> = {
   [CommonError.InvalidJSONResponse]: true,
   [CommonError.NodeFailure]: false,
   [CommonError.BlockHeightTooLow]: false,
-  // TODO: Find out why this keeps happening and stop capturing it.
-  [CommonError.TxPageOutOfRange]: true,
+  [CommonError.TxPageOutOfRange]: false,
 }
 
 type ParseErrorExtra = Record<string, unknown>
