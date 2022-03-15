@@ -366,16 +366,29 @@ export const getCampaignActions = async (
   minBlockHeight?: number,
   maxBlockHeight?: number
 ): Promise<CampaignAction[]> => {
-  // Get all of the wasm messages involving this contract.
-  const events = await client.searchTx(
-    {
-      tags: [{ key: "wasm._contract_address", value: campaign.address }],
-    },
-    {
-      minHeight: minBlockHeight && Math.max(minBlockHeight, 0),
-      maxHeight: maxBlockHeight,
-    }
-  )
+  let events: Awaited<ReturnType<typeof client["searchTx"]>> = []
+  try {
+    // Get all of the wasm messages involving this contract.
+    events = await client.searchTx(
+      {
+        tags: [{ key: "wasm._contract_address", value: campaign.address }],
+      },
+      {
+        minHeight: minBlockHeight && Math.max(minBlockHeight, 0),
+        maxHeight: maxBlockHeight,
+      }
+    )
+  } catch (error) {
+    console.error(
+      parseError(error, {
+        source: "getCampaignActions",
+        campaign: campaign.address,
+        currentBlockHeight,
+        minBlockHeight,
+        maxBlockHeight,
+      })
+    )
+  }
 
   const wasms = events
     // Parse their logs.

@@ -553,7 +553,6 @@ const CampaignActionsContent: React.FC<CampaignActionsContentProps> = ({
   const client = useRecoilValue(cosmWasmClient)
   const [loadingActions, setLoadingActions] = useState(false)
   const [actions, setActions] = useState<CampaignAction[]>([])
-  const lastAction = actions.length ? actions[actions.length - 1] : undefined
   const [earliestDate, setEarliestDate] = useState<Date | null>(null)
 
   useEffect(() => {
