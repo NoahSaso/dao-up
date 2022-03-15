@@ -734,8 +734,8 @@ fn test_campaign_update_without_public_payment() {
     assert_eq!(
         err,
         ContractError::InvalidPublicPayment(format!(
-            "not equal to 0.5 {}",
-            CHAIN_DENOM[1..].to_string().to_uppercase()
+            "not equal to {}{}",
+            PUBLIC_PAYMENT_AMOUNT, CHAIN_DENOM
         ))
     );
 
@@ -950,8 +950,8 @@ fn test_campaign_creation_without_public_payment() {
     assert_eq!(
         err,
         ContractError::InvalidPublicPayment(format!(
-            "not equal to 0.5 {}",
-            CHAIN_DENOM[1..].to_string().to_uppercase()
+            "not equal to {}{}",
+            PUBLIC_PAYMENT_AMOUNT, CHAIN_DENOM
         ))
     );
 }
