@@ -381,7 +381,7 @@ export const getCampaignActions = async (
   } catch (error) {
     console.error(
       parseError(error, {
-        source: "getCampaignActions",
+        source: "getCampaignActions searchTx",
         campaign: campaign.address,
         currentBlockHeight,
         minBlockHeight,
