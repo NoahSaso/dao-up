@@ -97,15 +97,24 @@ export const getSigningClient = async (
   }
 }
 
+export const getCW20TokenInfo = async (
+  client: CosmWasmClient,
+  tokenAddress: string
+): Promise<TokenInfoResponse> =>
+  client.queryContractSmart(tokenAddress, {
+    token_info: {},
+  })
+
 export const getCW20WalletTokenBalance = async (
   client: CosmWasmClient,
   tokenAddress: string,
   walletAddress: string
 ) => {
+  const info = await getCW20TokenInfo(client, tokenAddress)
   const { balance } = await client.queryContractSmart(tokenAddress, {
     balance: { address: walletAddress },
   })
-  return convertMicroDenomToDenom(balance, 6)
+  return convertMicroDenomToDenom(balance, info.decimals)
 }
 
 export const getFeaturedAddresses = async (client: CosmWasmClient) =>
@@ -128,14 +137,6 @@ export const getCampaignState = async (
 ): Promise<CampaignDumpStateResponse> =>
   client.queryContractSmart(campaignAddress, {
     dump_state: {},
-  })
-
-export const getTokenInfo = async (
-  client: CosmWasmClient,
-  tokenAddress: string
-): Promise<TokenInfoResponse> =>
-  client.queryContractSmart(tokenAddress, {
-    token_info: {},
   })
 
 export const getDENSAddress = async (client: CosmWasmClient, name: string) => {
@@ -366,16 +367,29 @@ export const getCampaignActions = async (
   minBlockHeight?: number,
   maxBlockHeight?: number
 ): Promise<CampaignAction[]> => {
-  // Get all of the wasm messages involving this contract.
-  const events = await client.searchTx(
-    {
-      tags: [{ key: "wasm._contract_address", value: campaign.address }],
-    },
-    {
-      minHeight: minBlockHeight && Math.max(minBlockHeight, 0),
-      maxHeight: maxBlockHeight,
-    }
-  )
+  let events: Awaited<ReturnType<typeof client["searchTx"]>> = []
+  try {
+    // Get all of the wasm messages involving this contract.
+    events = await client.searchTx(
+      {
+        tags: [{ key: "wasm._contract_address", value: campaign.address }],
+      },
+      {
+        minHeight: minBlockHeight && Math.max(minBlockHeight, 0),
+        maxHeight: maxBlockHeight,
+      }
+    )
+  } catch (error) {
+    console.error(
+      parseError(error, {
+        source: "getCampaignActions searchTx",
+        campaign: campaign.address,
+        currentBlockHeight,
+        minBlockHeight,
+        maxBlockHeight,
+      })
+    )
+  }
 
   const wasms = events
     // Parse their logs.

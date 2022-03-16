@@ -53,18 +53,20 @@ declare global {
       address: string
       name: string
       symbol: string
+      decimals: number
+      supply: number
       campaignBalance: number
       daoBalance: number
-      supply: number
     }
 
     fundingToken: {
       address: string
-      // fundingToken/JUNO
-      price: number | null
-      supply: number | null
       name: string
       symbol: string
+      decimals: number
+      supply: number | null
+      // fundingToken/JUNO
+      price: number | null
     }
 
     website: string | null

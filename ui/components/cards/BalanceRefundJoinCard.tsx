@@ -51,9 +51,14 @@ const BalanceRefundJoinCardContents: FunctionComponent<
       supply: fundingTokenSupply,
       price: fundingTokenPrice,
       symbol: fundingTokenSymbol,
+      decimals: fundingTokenDecimals,
     },
 
-    govToken: { address: govTokenAddress, symbol: govTokenSymbol },
+    govToken: {
+      address: govTokenAddress,
+      symbol: govTokenSymbol,
+      decimals: govTokenDecimals,
+    },
   } = campaign
 
   const { balance: fundingTokenBalance, error: fundingTokenBalanceError } =
@@ -93,7 +98,11 @@ const BalanceRefundJoinCardContents: FunctionComponent<
       {!!govTokenBalance && (
         <>
           <p className="text-light mt-2">
-            {prettyPrintDecimal(govTokenBalance)} {govTokenSymbol}
+            {prettyPrintDecimal(
+              govTokenBalance,
+              govTokenDecimals,
+              govTokenSymbol
+            )}
           </p>
           <p className="text-placeholder italic">
             You have voting power in the DAO.
@@ -121,11 +130,15 @@ const BalanceRefundJoinCardContents: FunctionComponent<
         !govTokenBalance) && (
         <>
           <p className="text-light mt-2">
-            {prettyPrintDecimal(fundingTokenBalance ?? 0)} {fundingTokenSymbol}
+            {prettyPrintDecimal(
+              fundingTokenBalance ?? 0,
+              fundingTokenDecimals,
+              fundingTokenSymbol
+            )}
             {fundingTokenBalancePercent && (
               <span className="text-placeholder ml-2">
-                {prettyPrintDecimal(fundingTokenBalancePercent, 2)}% of total
-                supply
+                {prettyPrintDecimal(fundingTokenBalancePercent, 2, "%")} of
+                total supply
               </span>
             )}
           </p>
@@ -170,12 +183,16 @@ const BalanceRefundJoinCardContents: FunctionComponent<
                   control={control}
                   minValue={minRefund}
                   maxValue={fundingTokenBalance}
-                  currency={fundingTokenSymbol}
+                  currencySymbol={fundingTokenSymbol}
+                  currencyDecimals={fundingTokenDecimals}
                   first={{
                     placeholder: "50",
                   }}
                   second={{
-                    placeholder: prettyPrintDecimal(fundingTokenBalance * 0.5),
+                    placeholder: prettyPrintDecimal(
+                      fundingTokenBalance * 0.5,
+                      fundingTokenDecimals
+                    ),
                   }}
                   shared={{
                     disabled: status !== CampaignStatus.Open,
@@ -184,8 +201,10 @@ const BalanceRefundJoinCardContents: FunctionComponent<
                   accent={
                     expectedPayTokensReceived
                       ? `You will receive about ${prettyPrintDecimal(
-                          expectedPayTokensReceived
-                        )} ${payToken.symbol}`
+                          expectedPayTokensReceived,
+                          payToken.decimals,
+                          payToken.symbol
+                        )}`
                       : undefined
                   }
                   error={

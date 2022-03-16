@@ -80,7 +80,7 @@ export const CampaignProgress: FunctionComponent<CampaignProgressProps> = ({
           )}
           {!hidePercent && (
             <p className="text-placeholder italic text-right">
-              {prettyPrintDecimal(fundedPercent, 0)}%
+              {prettyPrintDecimal(fundedPercent, 0, "%")}
             </p>
           )}
         </div>
@@ -198,7 +198,7 @@ export const CampaignAction: FunctionComponent<CampaignActionProps> = ({
         })}
       >
         {type === CampaignActionType.Fund ? "+" : "-"}{" "}
-        {prettyPrintDecimal(amount)} {payToken.symbol}
+        {prettyPrintDecimal(amount, payToken.decimals, payToken.symbol)}
       </p>
       {!!when && <TimeAgo date={when} className="text-placeholder" />}
     </div>

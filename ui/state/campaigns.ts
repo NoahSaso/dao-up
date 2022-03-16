@@ -9,11 +9,11 @@ import {
   createDENSAddressMap,
   filterCampaigns,
   getCampaignState,
+  getCW20TokenInfo,
   getDENSAddress,
   getDENSNames,
   getDenyListAddresses,
   getFeaturedAddresses,
-  getTokenInfo,
   transformCampaign,
 } from "@/services"
 import { cosmWasmClient, cosmWasmQueryClient, cw20TokenBalance } from "@/state"
@@ -55,13 +55,19 @@ export const campaignState = selectorFamily<CampaignStateResponse, string>({
     },
 })
 
-export const fetchCampaign = selectorFamily<CampaignResponse, string>({
+export const fetchCampaign = selectorFamily<
+  CampaignResponse,
+  // Pass full to get all data.
+  { address: string; full?: boolean }
+>({
   key: "fetchCampaign",
   get:
-    (address) =>
+    ({ address, full = true }) =>
     async ({ get }) => {
       // Get campaign creation.
-      const createdBlockHeight = get(campaignCreationBlockHeight(address))
+      const createdBlockHeight = full
+        ? get(campaignCreationBlockHeight(address))
+        : null
 
       // Get campaign state.
       const { state, error: campaignStateError } = get(campaignState(address))
@@ -138,8 +144,8 @@ export const fetchCampaign = selectorFamily<CampaignResponse, string>({
     },
 })
 
-export const tokenInfo = selectorFamily<TokenInfoSelectorResponse, string>({
-  key: "tokenInfo",
+export const cw20TokenInfo = selectorFamily<TokenInfoSelectorResponse, string>({
+  key: "cw20TokenInfo",
   get:
     (address) =>
     async ({ get }) => {
@@ -150,7 +156,7 @@ export const tokenInfo = selectorFamily<TokenInfoSelectorResponse, string>({
 
       try {
         return {
-          info: await getTokenInfo(client, address),
+          info: await getCW20TokenInfo(client, address),
           error: null,
         }
       } catch (error) {
@@ -158,7 +164,7 @@ export const tokenInfo = selectorFamily<TokenInfoSelectorResponse, string>({
         return {
           info: null,
           error: parseError(error, {
-            source: "tokenInfo",
+            source: "cw20TokenInfo",
             token: address,
           }),
         }
@@ -177,10 +183,19 @@ export const escrowContractAddresses = selectorFamily<
       const queryClient = get(cosmWasmQueryClient)
       if (!queryClient) return
 
-      return await queryClient.wasm.listContractsByCodeId(
-        codeId,
-        startAtKey && new Uint8Array(startAtKey)
-      )
+      try {
+        return await queryClient.wasm.listContractsByCodeId(
+          codeId,
+          startAtKey && new Uint8Array(startAtKey)
+        )
+      } catch (error) {
+        console.error(
+          parseError(error, {
+            source: "escrowContractAddresses",
+            codeId,
+          })
+        )
+      }
     },
 })
 
@@ -301,7 +316,14 @@ export const featuredCampaigns = selector<CampaignsResponse>({
       return { campaigns: null, hasMore: false, error: addressesError }
 
     const campaignResponses = get(
-      waitForAll(addresses.map((address) => fetchCampaign(address)))
+      waitForAll(
+        addresses.map((address) =>
+          fetchCampaign({
+            address,
+            full: false,
+          })
+        )
+      )
     )
     const campaigns = campaignsFromResponses(
       campaignResponses,
@@ -328,14 +350,16 @@ export const filteredCampaigns = selectorFamily<
   get:
     ({ filter, includeHidden = false, includePending = true, page, size }) =>
     async ({ get }) => {
+      // Prevent infinite loop and return no data.
+      if (size <= 0) return { campaigns: [], hasMore: true, error: null }
+
       const allCampaigns: Campaign[] = []
       const pageInfo = extractPageInfo(page, size)
 
       let addressPage = 1
-      const addressPageSize = 50
       let addressesLeft = true
       do {
-        const addressPageInfo = extractPageInfo(addressPage, addressPageSize)
+        const addressPageInfo = extractPageInfo(addressPage, size)
 
         const { addresses, error: addressesError } = get(
           pagedEscrowContractAddresses(addressPageInfo)
@@ -344,10 +368,17 @@ export const filteredCampaigns = selectorFamily<
           return { campaigns: null, hasMore: false, error: addressesError }
 
         // If we got the asked-for page size, we might still have addresses left.
-        addressesLeft = addresses.length === addressPageSize
+        addressesLeft = addresses.length === size
 
         const campaignResponses = get(
-          waitForAll(addresses.map((address) => fetchCampaign(address)))
+          waitForAll(
+            addresses.map((address) =>
+              fetchCampaign({
+                address,
+                full: false,
+              })
+            )
+          )
         )
 
         let relevantCampaigns = campaignsFromResponses(
@@ -382,7 +413,14 @@ export const allCampaigns = selector<CampaignsResponse>({
       return { campaigns: [], hasMore: false, error: addressesError }
 
     const campaignResponses = get(
-      waitForAll(addresses.map((address) => fetchCampaign(address)))
+      waitForAll(
+        addresses.map((address) =>
+          fetchCampaign({
+            address,
+            full: false,
+          })
+        )
+      )
     )
     const campaigns = campaignsFromResponses(campaignResponses, true, true)
 
@@ -404,7 +442,14 @@ export const favoriteCampaigns = selector<CampaignsResponse>({
   get: async ({ get }) => {
     const addresses = get(favoriteCampaignAddressesAtom)
     const campaignResponses = get(
-      waitForAll(addresses.map((address) => fetchCampaign(address)))
+      waitForAll(
+        addresses.map((address) =>
+          fetchCampaign({
+            address,
+            full: false,
+          })
+        )
+      )
     )
     const campaigns = campaignsFromResponses(
       campaignResponses,

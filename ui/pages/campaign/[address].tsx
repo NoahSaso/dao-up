@@ -178,7 +178,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   const {
     state: latestCampaignState,
     contents: { campaign: latestCampaign },
-  } = useRecoilValueLoadable(fetchCampaign(campaignAddress))
+  } = useRecoilValueLoadable(fetchCampaign({ address: campaignAddress }))
   // Use just-fetched campaign over pre-loaded campaign, defaulting to pre-loaded.
   const campaign: Campaign =
     (latestCampaignState === "hasValue" && latestCampaign) || preLoadedCampaign
@@ -553,7 +553,6 @@ const CampaignActionsContent: React.FC<CampaignActionsContentProps> = ({
   const client = useRecoilValue(cosmWasmClient)
   const [loadingActions, setLoadingActions] = useState(false)
   const [actions, setActions] = useState<CampaignAction[]>([])
-  const lastAction = actions.length ? actions[actions.length - 1] : undefined
   const [earliestDate, setEarliestDate] = useState<Date | null>(null)
 
   useEffect(() => {

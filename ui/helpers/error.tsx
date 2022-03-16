@@ -4,6 +4,10 @@ import { ReactNode } from "react"
 
 import { TxnPollTimeoutError } from "@/components"
 
+// To add a new error:
+// 1. Add a value to this enum.
+// 2. Add matching parameters in commonErrorPatterns below.
+// 3. Set if the error should be sent to Sentry or not in captureCommonErrorMap below.
 export enum CommonError {
   RequestRejected = "Wallet rejected transaction.",
   InvalidAddress = "Invalid address.",
@@ -21,6 +25,8 @@ export enum CommonError {
   TxnSentTimeout = "Transaction sent but has not yet been detected. Refresh this page to view its changes or check back later.",
   InvalidJSONResponse = "Invalid JSON response from server.",
   NodeFailure = "The blockchain nodes seem to be having problems. Try again later.",
+  BlockHeightTooLow = "Block height is too low.",
+  TxPageOutOfRange = "Transaction page is out of range.",
 }
 
 // List of error substrings to match to determine the common error.
@@ -73,6 +79,12 @@ const commonErrorPatterns: Record<CommonError, (string | string[])[]> = {
     "Unexpected token < in JSON",
   ],
   [CommonError.NodeFailure]: ["goroutine"],
+  [CommonError.BlockHeightTooLow]: [
+    ["32603", "not available", "lowest height is"],
+  ],
+  [CommonError.TxPageOutOfRange]: [
+    ["32603", "page should be within", "range", "given"],
+  ],
 }
 const commonErrorPatternsEntries = Object.entries(commonErrorPatterns) as [
   CommonError,
@@ -97,6 +109,8 @@ const captureCommonErrorMap: Record<CommonError, boolean> = {
   [CommonError.TxnSentTimeout]: false,
   [CommonError.InvalidJSONResponse]: true,
   [CommonError.NodeFailure]: false,
+  [CommonError.BlockHeightTooLow]: false,
+  [CommonError.TxPageOutOfRange]: false,
 }
 
 type ParseErrorExtra = Record<string, unknown>

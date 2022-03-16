@@ -1,13 +1,14 @@
 // Convert number to string with a given precision, and chop all trailing zeroes.
 export const prettyPrintDecimal = (
   value: number | string,
-  maximumFractionDigits: number = 6,
-  minimumFractionDigits?: number
+  maximumFractionDigits: number,
+  unit?: string
 ): string =>
   Number(value).toLocaleString(undefined, {
-    minimumFractionDigits,
     maximumFractionDigits,
-  })
+  }) +
+  // Add space only if not percent.
+  (unit ? (unit !== "%" ? " " : "") + unit : "")
 
 export const protectAgainstNaN = (value: number) => (isNaN(value) ? 0 : value)
 

@@ -59,7 +59,11 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
     goal,
     pledged,
 
-    fundingToken: { symbol: tokenSymbol, price: fundingTokenPrice },
+    fundingToken: {
+      symbol: tokenSymbol,
+      price: fundingTokenPrice,
+      decimals: fundingTokenDecimals,
+    },
   } = campaign
 
   const { connected } = useWallet()
@@ -257,11 +261,14 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
           type="number"
           inputMode="decimal"
           placeholder="Contribute..."
+          step={convertMicroDenomToDenom(1, payToken.decimals)}
           accent={
             expectedFundingTokensReceived
               ? `You will receive about ${prettyPrintDecimal(
-                  expectedFundingTokensReceived
-                )} ${tokenSymbol}.`
+                  expectedFundingTokensReceived,
+                  fundingTokenDecimals,
+                  tokenSymbol
+                )}.`
               : undefined
           }
           wrapperClassName="!mb-4 sm:!mb-0 sm:mr-3 sm:flex-1"
@@ -282,8 +289,9 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
                         payToken.symbol
                       } to contribute ${prettyPrintDecimal(
                         cappedContribution,
-                        payToken.decimals
-                      )} ${payToken.symbol}.`
+                        payToken.decimals,
+                        payToken.symbol
+                      )}.`
                     : "",
                 ]
                   .filter(Boolean)
@@ -300,14 +308,18 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
             min: {
               value: minContribution,
               message: `Must be at least ${prettyPrintDecimal(
-                minContribution
-              )} ${payToken.symbol}.`,
+                minContribution,
+                payToken.decimals,
+                payToken.symbol
+              )}.`,
             },
             max: {
               value: maxContribution,
               message: `Campaigns can't be funded past their funding goal. Fund the remaining amount (${prettyPrintDecimal(
-                maxContribution
-              )} ${payToken.symbol}) instead by pressing the button.`,
+                maxContribution,
+                payToken.decimals,
+                payToken.symbol
+              )}) instead by pressing the button.`,
             },
           })}
         />
@@ -354,10 +366,19 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
         {swapAlertStatus === SwapAlertStatus.Swapping ? (
           <>
             <p>
-              You currently have {prettyPrintDecimal(payTokenBalance ?? 0)}{" "}
-              {payToken.symbol} but are trying to contribute{" "}
-              {prettyPrintDecimal(cappedContribution ?? 0)} {payToken.symbol}.
-              Pressing the button below will use{" "}
+              You currently have{" "}
+              {prettyPrintDecimal(
+                payTokenBalance ?? 0,
+                payToken.decimals,
+                payToken.symbol
+              )}{" "}
+              but are trying to contribute{" "}
+              {prettyPrintDecimal(
+                cappedContribution ?? 0,
+                payToken.decimals,
+                payToken.symbol
+              )}
+              . Pressing the button below will use{" "}
               <a
                 href="https://junoswap.com/"
                 target="_blank"
@@ -366,9 +387,19 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
               >
                 Junoswap
               </a>{" "}
-              to swap about {prettyPrintDecimal(baseTokenForPayTokenNeeded)}{" "}
-              {baseToken.symbol} for about {prettyPrintDecimal(payTokenNeeded)}{" "}
-              {payToken.symbol}.
+              to swap about{" "}
+              {prettyPrintDecimal(
+                baseTokenForPayTokenNeeded,
+                baseToken.decimals,
+                baseToken.symbol
+              )}{" "}
+              for about{" "}
+              {prettyPrintDecimal(
+                payTokenNeeded,
+                payToken.decimals,
+                payToken.symbol
+              )}
+              .
             </p>
 
             <p className="text-placeholder mt-2 italic">
@@ -387,8 +418,13 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
 
             {insufficientBaseToken && (
               <p className="mt-2 text-orange">
-                You have {prettyPrintDecimal(baseTokenBalance ?? 0)}{" "}
-                {baseToken.symbol} which is insufficient to make this swap.
+                You have{" "}
+                {prettyPrintDecimal(
+                  baseTokenBalance ?? 0,
+                  baseToken.decimals,
+                  baseToken.symbol
+                )}{" "}
+                which is insufficient to make this swap.
                 {maxPayTokenForBaseTokenBalance > 0 ? (
                   <>
                     {" "}
@@ -400,8 +436,11 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
                       }
                     >
                       lower your contribution to{" "}
-                      {prettyPrintDecimal(maxPayTokenForBaseTokenBalance)}{" "}
-                      {payToken.symbol}
+                      {prettyPrintDecimal(
+                        maxPayTokenForBaseTokenBalance,
+                        payToken.decimals,
+                        payToken.symbol
+                      )}
                     </span>{" "}
                     or purchase {swapBaseTokenNeeded ?? 0} more{" "}
                     {baseToken.symbol}.
@@ -417,8 +456,13 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
         ) : (
           <>
             <p>
-              You now have {prettyPrintDecimal(payTokenBalance ?? 0)}{" "}
-              {payToken.symbol}.{" "}
+              You now have{" "}
+              {prettyPrintDecimal(
+                payTokenBalance ?? 0,
+                payToken.decimals,
+                payToken.symbol
+              )}
+              .{" "}
               {showRoundUpOption
                 ? "Choose one of the two buttons"
                 : "Press the button"}{" "}
@@ -431,8 +475,12 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
                   doContribution({ contribution: cappedContribution ?? 0 })
                 }
               >
-                Contribute {prettyPrintDecimal(cappedContribution ?? 0)}{" "}
-                {payToken.symbol}
+                Contribute{" "}
+                {prettyPrintDecimal(
+                  cappedContribution ?? 0,
+                  payToken.decimals,
+                  payToken.symbol
+                )}
               </Button>
 
               {showRoundUpOption && (
@@ -448,9 +496,11 @@ const ContributeFormContents: FunctionComponent<ContributeFormProps> = ({
                 >
                   Contribute max (
                   {prettyPrintDecimal(
-                    Math.min(payTokenBalance ?? 0, maxContribution)
-                  )}{" "}
-                  {payToken.symbol})
+                    Math.min(payTokenBalance ?? 0, maxContribution),
+                    payToken.decimals,
+                    payToken.symbol
+                  )}
+                  )
                 </Button>
               )}
             </div>

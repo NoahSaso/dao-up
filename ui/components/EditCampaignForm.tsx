@@ -50,7 +50,11 @@ import {
   urlPattern,
 } from "@/helpers"
 import { useRefCallback, useWallet } from "@/hooks"
-import { baseToken, getNextPayTokenDenom, getPayTokenLabel } from "@/services"
+import {
+  baseToken,
+  findPayTokenByDenom,
+  getNextPayTokenDenom,
+} from "@/services"
 import { globalLoadingAtom, validateDAO } from "@/state"
 
 const validUrlOrUndefined = (u: string | undefined) =>
@@ -419,8 +423,10 @@ export const EditCampaignForm: FunctionComponent<EditCampaignFormProps> = ({
                   convertMicroDenomToDenom(
                     publicPaymentFeeMicroNum,
                     baseToken.decimals
-                  )
-                )} ${baseToken.symbol} to prevent spam.${
+                  ),
+                  baseToken.decimals,
+                  baseToken.symbol
+                )} to prevent spam.${
                   !props.creating
                     ? " Fee will be charged to the DAO once the proposal executes."
                     : ""
@@ -486,7 +492,9 @@ const FundingDetailsContent: FunctionComponent<FundingDetailsContentProps> = ({
 
   // Pay token.
   const watchPayTokenDenom = watch("payTokenDenom")
-  const watchPayTokenLabel = getPayTokenLabel(watchPayTokenDenom)
+  const watchPayToken = findPayTokenByDenom(watchPayTokenDenom)
+  const watchPayTokenDecimals = watchPayToken?.decimals ?? 0
+  const watchPayTokenLabel = watchPayToken?.symbol ?? "Unknown"
 
   return (
     <>
@@ -498,6 +506,7 @@ const FundingDetailsContent: FunctionComponent<FundingDetailsContentProps> = ({
           placeholder="10,000"
           type="number"
           inputMode="decimal"
+          step={convertMicroDenomToDenom(1, watchPayTokenDecimals)}
           className="!pr-28"
           // Move padding to button so the whole tail is clickable.
           tailClassName="!p-0 bg-light/70"
@@ -522,7 +531,11 @@ const FundingDetailsContent: FunctionComponent<FundingDetailsContentProps> = ({
               <>
                 DAO Up! will take a 3% cut and you&apos;ll receive{" "}
                 <span className="text-light">
-                  {prettyPrintDecimal(goalReceived)} {watchPayTokenLabel}
+                  {prettyPrintDecimal(
+                    goalReceived,
+                    watchPayTokenDecimals,
+                    watchPayTokenLabel
+                  )}
                 </span>
                 .{" "}
                 <Button
@@ -530,9 +543,20 @@ const FundingDetailsContent: FunctionComponent<FundingDetailsContentProps> = ({
                   className="inline underline"
                   onClick={() => setValue("goal", raiseToGoal)}
                 >
-                  Raise {prettyPrintDecimal(raiseToGoal)} {watchPayTokenLabel}
+                  Raise{" "}
+                  {prettyPrintDecimal(
+                    raiseToGoal,
+                    watchPayTokenDecimals,
+                    watchPayTokenLabel
+                  )}
                 </Button>{" "}
-                to receive {prettyPrintDecimal(watchGoal)} {watchPayTokenLabel}.
+                to receive{" "}
+                {prettyPrintDecimal(
+                  watchGoal,
+                  watchPayTokenDecimals,
+                  watchPayTokenLabel
+                )}
+                .
               </>
             ) : undefined
           }
@@ -541,9 +565,15 @@ const FundingDetailsContent: FunctionComponent<FundingDetailsContentProps> = ({
             valueAsNumber: true,
             pattern: numberPattern,
             min: {
-              value: convertMicroDenomToDenom(1, 6),
-              message: "Must be at least 0.000001.",
+              value: convertMicroDenomToDenom(1, watchPayTokenDecimals),
+              message: `Must be at least ${prettyPrintDecimal(
+                convertMicroDenomToDenom(1, watchPayTokenDecimals),
+                watchPayTokenDecimals,
+                watchPayTokenLabel
+              )}.`,
             },
+            // Ensure chosen pay token is valid.
+            validate: () => !!watchPayToken,
           })}
         />
 
