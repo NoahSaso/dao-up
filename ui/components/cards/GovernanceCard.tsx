@@ -57,10 +57,11 @@ export const GovernanceCard: FunctionComponent<GovernanceCardProps> = ({
   return (
     <CardWrapper className="flex flex-col items-start max-w-full">
       <h3 className="text-green text-3xl">
-        {prettyPrintDecimal(campaignVotingPower, 2)}% governance
+        {prettyPrintDecimal(campaignVotingPower, 2, "%")} governance
       </h3>
       <p className="text-light text-sm">
-        Campaign backers will have {prettyPrintDecimal(campaignVotingPower, 2)}%
+        Campaign backers will have{" "}
+        {prettyPrintDecimal(campaignVotingPower, 2, "%")}
         voting power in the DAO. Voting power ignores the DAO&apos;s treasury
         balance. To learn more,{" "}
         <a
