@@ -43,6 +43,22 @@ declare global {
   interface AddressPriorityListResponse {
     members: AddressPriorityListItem[]
   }
+
+  interface FeeManagerGetConfigResponse {
+    config: {
+      receiver_addr: string
+      fee: string
+      public_listing_fee: Coin
+    }
+  }
+
+  interface FeeManagerConfigResponse {
+    fee: number
+    publicListingFee: {
+      token: PayToken
+      coin: Coin
+    }
+  }
 }
 
 interface CampaignInfo {

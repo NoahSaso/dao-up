@@ -194,6 +194,7 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
   const fundingTokenBalance: number | null =
     fundingTokenBalanceState === "hasValue" ? fundingTokenBalanceContents : null
 
+  // TODO: Change to staked gov token.
   // Check gov token balance to show edit campaign form.
   const {
     state: govTokenBalanceState,
@@ -202,8 +203,8 @@ const CampaignContent: FunctionComponent<CampaignContentProps> = ({
     cw20WalletTokenBalance(campaign?.govToken?.address)
   )
   // No need to prevent page from displaying until this is ready.
-  const hasGovToken =
-    govTokenBalanceState === "hasValue" ? !!govTokenBalanceContents : null
+  const hasGovToken = true
+    // govTokenBalanceState === "hasValue" ? !!govTokenBalanceContents : null
 
   // Display buttons to add tokens to wallet.
   const [showAddFundingToken, setShowAddFundingToken] = useState(false)

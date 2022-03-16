@@ -1,5 +1,6 @@
 export * from "./campaigns"
 export * from "./client"
+export * from "./config"
 export * from "./dao"
 export * from "./global"
 export * from "./token"

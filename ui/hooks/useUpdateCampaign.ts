@@ -1,13 +1,12 @@
 import { toAscii, toBase64 } from "@cosmjs/encoding"
-import { coin } from "@cosmjs/stargate"
 import { ReactNode, useCallback, useMemo, useState } from "react"
 import { useRecoilValue } from "recoil"
 
-import { baseUrl, publicPaymentFeeMicroNum } from "@/config"
+import { baseUrl } from "@/config"
 import { CommonError, parseError } from "@/helpers"
 import { useRefreshCampaign, useWallet } from "@/hooks"
-import { baseToken, createDAOProposalForCampaign } from "@/services"
-import { daoConfig, signedCosmWasmClient } from "@/state"
+import { createDAOProposalForCampaign } from "@/services"
+import { daoConfig, feeManagerConfig, signedCosmWasmClient } from "@/state"
 
 export const useUpdateCampaign = (
   campaign: Campaign | null,
@@ -16,6 +15,7 @@ export const useUpdateCampaign = (
   const client = useRecoilValue(signedCosmWasmClient)
   const { config: dao } = useRecoilValue(daoConfig(campaign?.dao.address))
   const { walletAddress } = useWallet()
+  const feeConfig = useRecoilValue(feeManagerConfig)
 
   const { refreshCampaign } = useRefreshCampaign(campaign)
   const [editCampaignError, setEditCampaignError] = useState(
@@ -40,7 +40,11 @@ export const useUpdateCampaign = (
       }
       if (!dao?.config) {
         setEditCampaignError("DAO could not be found.")
-        return false
+        return
+      }
+      if (!feeConfig) {
+        setEditCampaignError("Config not loaded.")
+        return
       }
 
       const cosmMsg = {
@@ -77,9 +81,11 @@ export const useUpdateCampaign = (
               )
             ),
             funds:
-              // If changing displaying publicly, send fee.
-              !updateCampaign.hidden && campaign.hidden
-                ? [coin(publicPaymentFeeMicroNum, baseToken.denom)]
+              // If changing displaying publicly and fee exists, send fee.
+              !updateCampaign.hidden &&
+              campaign.hidden &&
+              feeConfig.publicListingFee.coin.amount !== "0"
+                ? [feeConfig.publicListingFee.coin]
                 : [],
           },
         },
@@ -135,6 +141,7 @@ export const useUpdateCampaign = (
       dao,
       client,
       walletAddress,
+      feeConfig,
       refreshCampaign,
       setEditCampaignError,
       onSuccess,

@@ -16,13 +16,12 @@ import {
   currentEscrowContractCodeId,
   cw20CodeId,
   feeManagerAddress,
-  publicPaymentFeeMicroNum,
   title,
 } from "@/config"
 import { convertDenomToMicroDenom, parseError } from "@/helpers"
 import { useWallet } from "@/hooks"
-import { baseToken, defaultNewCampaign, findPayTokenByDenom } from "@/services"
-import { signedCosmWasmClient } from "@/state"
+import { defaultNewCampaign, findPayTokenByDenom } from "@/services"
+import { feeManagerConfig, signedCosmWasmClient } from "@/state"
 
 const Create: NextPage = () => (
   <>
@@ -57,6 +56,7 @@ const CreateContent = () => {
   const [createCampaignError, setCreateCampaignError] = useState(
     null as ReactNode | null
   )
+  const feeConfig = useRecoilValue(feeManagerConfig)
 
   const createCampaign = useCallback(
     async (newCampaign: NewCampaignInfo) => {
@@ -68,6 +68,10 @@ const CreateContent = () => {
       }
       if (!walletAddress) {
         setCreateCampaignError("Wallet not connected.")
+        return
+      }
+      if (!feeConfig) {
+        setCreateCampaignError("Config not loaded.")
         return
       }
 
@@ -112,10 +116,10 @@ const CreateContent = () => {
           msg,
           `[DAO Up!] ${newCampaign.name}`,
           "auto",
-          // If displaying publicly, send fee.
-          !newCampaign.hidden
+          // If displaying publicly and fee exists, send fee.
+          !newCampaign.hidden && feeConfig.publicListingFee.coin.amount !== "0"
             ? {
-                funds: [coin(publicPaymentFeeMicroNum, baseToken.denom)],
+                funds: [feeConfig.publicListingFee.coin],
               }
             : undefined
         )
@@ -139,7 +143,7 @@ const CreateContent = () => {
         )
       }
     },
-    [client, walletAddress, setCreateCampaignError, routerPush]
+    [client, walletAddress, feeConfig, setCreateCampaignError, routerPush]
   )
 
   return (

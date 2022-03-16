@@ -42,8 +42,8 @@ export const campaignsFromResponses = (
   campaignResponses: CampaignResponse[],
   includeHidden = false,
   includePending = false,
-  // Include if no fee manager set. For backwards compatibility.
-  includeNoFeeManager = false
+  // Include if no fee manager set. Default to true for backwards compatibility.
+  includeNoFeeManager = true
 ): Campaign[] =>
   campaignResponses
     .filter(
@@ -291,6 +291,10 @@ export const transformCampaign = (
     twitter: campaignInfo.twitter ?? null,
     discord: campaignInfo.discord ?? null,
   }
+
+  // Get rid of incorrect supplies.
+  delete baseFields.govToken.total_supply
+  delete baseFields.fundingToken.total_supply
 
   return _merge(baseFields, versionedFields)
 }

@@ -12,6 +12,7 @@ import {
   densRootTokenOwner,
   denyListContractAddress,
   featuredListContractAddress,
+  feeManagerAddress,
   gasPrice,
   rpcEndpoints,
 } from "@/config"
@@ -23,7 +24,11 @@ import {
   escrowAddressRegex,
   parseError,
 } from "@/helpers"
-import { baseToken, getBaseTokenForMinPayToken } from "@/services"
+import {
+  baseToken,
+  findPayTokenByDenom,
+  getBaseTokenForMinPayToken,
+} from "@/services"
 import { CampaignActionType } from "@/types"
 
 export const getClient = async () => {
@@ -468,4 +473,26 @@ export const getCampaignActions = async (
   })
 
   return actions
+}
+
+export const getFeeManagerConfig = async (
+  client: CosmWasmClient
+): Promise<FeeManagerConfigResponse | null> => {
+  const { config }: FeeManagerGetConfigResponse =
+    await client.queryContractSmart(feeManagerAddress, {
+      get_config: {},
+    })
+
+  const publicListingFeeToken = findPayTokenByDenom(
+    config.public_listing_fee.denom
+  )
+  if (!publicListingFeeToken) return null
+
+  return {
+    fee: parseFloat(config.fee),
+    publicListingFee: {
+      token: publicListingFeeToken,
+      coin: config.public_listing_fee,
+    },
+  }
 }
