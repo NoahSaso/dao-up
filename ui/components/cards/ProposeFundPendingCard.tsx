@@ -36,6 +36,7 @@ const ProposeFundPendingCardContents: FunctionComponent<
       daoBalance: govTokenDAOBalance,
       symbol: govTokenSymbol,
       supply: govTokenSupply,
+      decimals: govTokenDecimals,
     },
   } = campaign
 
@@ -80,6 +81,7 @@ const ProposeFundPendingCardContents: FunctionComponent<
             placeholder="1000000"
             wrapperClassName="!mb-4 sm:!mb-0 sm:mr-4 sm:flex-1"
             className="!pr-28 border-light"
+            step={convertMicroDenomToDenom(1, govTokenDecimals)}
             tail={govTokenSymbol}
             error={
               errors?.tokens?.message ?? fundPendingCampaignError ?? undefined
@@ -88,7 +90,8 @@ const ProposeFundPendingCardContents: FunctionComponent<
             accent={
               govTokenSupply
                 ? `This will allocate ${prettyPrintDecimal(
-                    fundPendingTokens
+                    fundPendingTokens,
+                    govTokenDecimals
                   )} ${
                     govTokenSymbol ?? "governance tokens"
                   } (${prettyPrintDecimal(
@@ -102,13 +105,17 @@ const ProposeFundPendingCardContents: FunctionComponent<
               valueAsNumber: true,
               pattern: numberPattern,
               min: {
-                value: convertMicroDenomToDenom(1, 6),
-                message: `Must be at least 0.000001 ${govTokenSymbol}.`,
+                value: convertMicroDenomToDenom(1, govTokenDecimals),
+                message: `Must be at least ${prettyPrintDecimal(
+                  convertMicroDenomToDenom(1, govTokenDecimals),
+                  govTokenDecimals
+                )} ${govTokenSymbol}.`,
               },
               max: {
                 value: govTokenDAOBalance ?? 0,
                 message: `Must be less than or equal to the amount of ${govTokenSymbol} the DAO has in its treasury: ${prettyPrintDecimal(
-                  govTokenDAOBalance ?? 0
+                  govTokenDAOBalance ?? 0,
+                  govTokenDecimals
                 )} ${govTokenSymbol}.`,
               },
             })}

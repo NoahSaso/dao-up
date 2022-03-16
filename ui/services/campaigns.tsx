@@ -83,7 +83,8 @@ export const transformVersionedCampaignFields = (
   campaignState: CampaignDumpStateResponse,
   status: CampaignStatus,
   statusFields: CampaignDumpStateStatus[CampaignStatus],
-  campaignGovTokenBalance: number
+  campaignGovTokenBalance: number,
+  govTokenInfo: TokenInfoResponse
 ): VersionedCampaignFields => {
   const { campaign_info: campaignInfo } = campaignState
 
@@ -112,8 +113,7 @@ export const transformVersionedCampaignFields = (
                       typeof status
                     >
                   ).initial_gov_token_balance,
-                  // Governance tokens use 6 decimals.
-                  6
+                  govTokenInfo.decimals
                 ),
         },
       }
@@ -193,7 +193,8 @@ export const transformCampaign = (
     campaignState,
     status,
     statusFields,
-    campaignGovTokenBalance
+    campaignGovTokenBalance,
+    govTokenInfo
   )
 
   const baseFields = {
@@ -229,25 +230,25 @@ export const transformCampaign = (
 
     govToken: {
       address: state.gov_token_addr,
-      name: govTokenInfo.name,
-      symbol: govTokenInfo.symbol,
+      ...govTokenInfo,
+      // Convert to supply.
+      total_supply: undefined,
+      supply: convertMicroDenomToDenom(
+        govTokenInfo.total_supply,
+        govTokenInfo.decimals
+      ),
+
       daoBalance: daoGovTokenBalance,
-      // Governance tokens use 6 decimals.
-      supply: convertMicroDenomToDenom(govTokenInfo.total_supply, 6),
     },
 
     fundingToken: {
       address: state.funding_token_addr,
+      ...fundingTokenInfo,
+      // Convert to supply.
+      total_supply: undefined,
+
       ...(status !== CampaignStatus.Pending
         ? {
-            price: Number(
-              (
-                statusFields as CampaignVersionedStatus<
-                  typeof version,
-                  typeof status
-                >
-              ).token_price
-            ),
             // Funding tokens are minted on-demand, so calculate the total that will ever exist
             // by multiplying the price of one token (in payToken) by the goal (in payToken).
             supply: convertMicroDenomToDenom(
@@ -260,16 +261,21 @@ export const transformCampaign = (
                     >
                   ).token_price
                 ),
-              // Funding tokens use 6 decimals.
-              6
+              fundingTokenInfo.decimals
+            ),
+            price: Number(
+              (
+                statusFields as CampaignVersionedStatus<
+                  typeof version,
+                  typeof status
+                >
+              ).token_price
             ),
           }
         : {
-            price: null,
             supply: null,
+            price: null,
           }),
-      name: fundingTokenInfo.name,
-      symbol: fundingTokenInfo.symbol,
     },
 
     website: campaignInfo.website ?? null,

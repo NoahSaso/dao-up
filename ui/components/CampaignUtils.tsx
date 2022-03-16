@@ -198,7 +198,7 @@ export const CampaignAction: FunctionComponent<CampaignActionProps> = ({
         })}
       >
         {type === CampaignActionType.Fund ? "+" : "-"}{" "}
-        {prettyPrintDecimal(amount)} {payToken.symbol}
+        {prettyPrintDecimal(amount, payToken.decimals)} {payToken.symbol}
       </p>
       {!!when && <TimeAgo date={when} className="text-placeholder" />}
     </div>

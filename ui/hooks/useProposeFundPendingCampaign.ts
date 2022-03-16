@@ -72,9 +72,10 @@ export const useProposeFundPendingCampaign = (campaign: Campaign | null) => {
       const msg = {
         propose: {
           title: "Activate DAO Up! campaign",
-          description: `Send ${prettyPrintDecimal(amount)} ${
-            campaign.govToken.symbol
-          } to the [${campaign.name}](${
+          description: `Send ${prettyPrintDecimal(
+            amount,
+            campaign.govToken.decimals
+          )} ${campaign.govToken.symbol} to the [${campaign.name}](${
             baseUrl + campaign.urlPath
           }) campaign on DAO Up! in order to launch it.`,
           msgs: [cosmMsg],
