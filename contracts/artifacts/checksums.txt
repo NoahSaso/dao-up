@@ -1,0 +1,2 @@
+212d3ddc4b48d01e705c0693e73058ca77352bcd9e6f2750c4616c28c719196e  cw20_dao_crowdfund.wasm
+e986da144d745b24db93f9ef815ae73ad22bbb50184de59cff1fcc7e884e4dfa  fee_manager.wasm
