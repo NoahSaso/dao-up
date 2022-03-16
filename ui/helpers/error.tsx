@@ -80,10 +80,10 @@ const commonErrorPatterns: Record<CommonError, (string | string[])[]> = {
   ],
   [CommonError.NodeFailure]: ["goroutine"],
   [CommonError.BlockHeightTooLow]: [
-    ["-32603", "not available", "lowest height is"],
+    ["32603", "not available", "lowest height is"],
   ],
   [CommonError.TxPageOutOfRange]: [
-    ["-32603", "page should be within", "range", "given"],
+    ["32603", "page should be within", "range", "given"],
   ],
 }
 const commonErrorPatternsEntries = Object.entries(commonErrorPatterns) as [
