@@ -115,8 +115,6 @@ fn instantiate_dao(app: &mut App, dao_id: u64, cw20_id: u64, stake_id: u64) -> (
         proposal_deposit_amount: Uint128::zero(),
         refund_failed_proposals: Some(true),
         image_url: None,
-        only_members_execute: true,
-        automatically_add_cw20s: true,
     };
 
     let dao_addr = app

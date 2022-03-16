@@ -320,8 +320,8 @@ dependencies = [
 
 [[package]]
 name = "cw3-dao"
-version = "0.2.6"
-source = "git+https://github.com/DA0-DA0/dao-contracts#8674d01516dbc80feab5515215225acbde5744b5"
+version = "0.2.5"
+source = "git+https://github.com/DA0-DA0/dao-contracts?tag=v0.2.5#799b6aac36236b30a0dcbdfbce08b8883f259abf"
 dependencies = [
  "cosmwasm-std",
  "cw-storage-plus",
@@ -726,8 +726,8 @@ dependencies = [
 
 [[package]]
 name = "stake-cw20"
-version = "0.2.6"
-source = "git+https://github.com/DA0-DA0/dao-contracts#8674d01516dbc80feab5515215225acbde5744b5"
+version = "0.2.5"
+source = "git+https://github.com/DA0-DA0/dao-contracts?tag=v0.2.5#799b6aac36236b30a0dcbdfbce08b8883f259abf"
 dependencies = [
  "cosmwasm-std",
  "cosmwasm-storage",
