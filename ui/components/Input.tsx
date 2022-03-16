@@ -62,9 +62,6 @@ export const Input = forwardRef<HTMLInputElement, UnforwardedInputProps>(
             className
           )}
           disabled={disabled}
-          {...(props.type === "number"
-            ? { step: convertMicroDenomToDenom(1, 6) }
-            : {})}
           {...props}
           ref={ref}
         />
@@ -298,7 +295,8 @@ interface UnforwardedPercentTokenDoubleInputProps
   value?: number | undefined
   onChangeAmount: (amount: any) => void
   maxValue: number
-  currency: string
+  currencySymbol: string
+  currencyDecimals: number
 }
 export const PercentTokenDoubleInput = forwardRef<
   HTMLInputElement,
@@ -312,7 +310,8 @@ export const PercentTokenDoubleInput = forwardRef<
       value,
       onChangeAmount,
       maxValue,
-      currency,
+      currencySymbol,
+      currencyDecimals,
       ...props
     },
     ref
@@ -351,9 +350,10 @@ export const PercentTokenDoubleInput = forwardRef<
 
           onChangeAmount(Number(e.target.value))
         },
-        // Only display 6 decimals.
-        value: value ? Number(value.toFixed(6)) : value,
-        tail: currency,
+        // Only display N decimals.
+        value: value ? Number(value.toFixed(currencyDecimals)) : value,
+        tail: currencySymbol,
+        step: convertMicroDenomToDenom(1, currencyDecimals),
       }}
       {...props}
       ref={ref}
@@ -605,13 +605,14 @@ export const ControlledFormPercentTokenDoubleInput: FunctionComponent<
   name,
   minValue,
   maxValue,
-  currency,
+  currencySymbol,
+  currencyDecimals,
   required,
   shared,
   second,
   ...props
 }) => {
-  const min = minValue ?? convertMicroDenomToDenom(1, 6)
+  const min = minValue ?? convertMicroDenomToDenom(1, currencyDecimals)
 
   return (
     <Controller
@@ -625,13 +626,17 @@ export const ControlledFormPercentTokenDoubleInput: FunctionComponent<
           message: `Must be at least ${prettyPrintDecimal(
             min / maxValue,
             2
-          )}% / ${prettyPrintDecimal(min)} ${currency}.`,
+          )}% / ${prettyPrintDecimal(
+            min,
+            currencyDecimals
+          )} ${currencySymbol}.`,
         },
         max: {
           value: maxValue,
           message: `Must be less than or equal to 100% / ${prettyPrintDecimal(
-            maxValue
-          )} ${currency}.`,
+            maxValue,
+            currencyDecimals
+          )} ${currencySymbol}.`,
         },
       }}
       render={({
@@ -641,7 +646,8 @@ export const ControlledFormPercentTokenDoubleInput: FunctionComponent<
         <FormPercentTokenDoubleInput
           error={error?.message}
           maxValue={maxValue}
-          currency={currency}
+          currencySymbol={currencySymbol}
+          currencyDecimals={currencyDecimals}
           value={value}
           onChangeAmount={onChange}
           shared={{

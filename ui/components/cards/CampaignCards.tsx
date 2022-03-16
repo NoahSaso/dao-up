@@ -114,6 +114,7 @@ export const FavoriteCampaignCard: FunctionComponent<CampaignProps> = ({
       address: fundingTokenAddress,
       symbol: fundingTokenSymbol,
       supply: fundingTokenSupply,
+      decimals: fundingTokenDecimals,
     },
   } = campaign
 
@@ -134,11 +135,11 @@ export const FavoriteCampaignCard: FunctionComponent<CampaignProps> = ({
       <CampaignProgress campaign={campaign} thin />
 
       <div className="flex flex-row items-end gap-2 mt-5">
-        {typeof balance === "number" ? (
+        {typeof balance === "number" && typeof balancePercent === "number" ? (
           <>
             <p className="text-green">
               <span className="text-xl font-medium mr-1">
-                {prettyPrintDecimal(balance)}
+                {prettyPrintDecimal(balance, fundingTokenDecimals)}
               </span>
               <span className="text-base font-light">{fundingTokenSymbol}</span>
             </p>

@@ -64,7 +64,7 @@ export const CampaignInfoCard: FunctionComponent<CampaignInfoCardProps> = ({
       <CampaignProgress campaign={campaign} className="mt-2 text-md" />
 
       <h3 className="mt-2 text-green text-3xl">
-        {prettyPrintDecimal(pledged)} {payToken.symbol}
+        {prettyPrintDecimal(pledged, payToken.decimals)} {payToken.symbol}
       </h3>
       <p className="text-light text-sm">
         pledged out of {goal.toLocaleString()} {payToken.symbol} goal.

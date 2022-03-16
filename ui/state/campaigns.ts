@@ -9,11 +9,11 @@ import {
   createDENSAddressMap,
   filterCampaigns,
   getCampaignState,
+  getCW20TokenInfo,
   getDENSAddress,
   getDENSNames,
   getDenyListAddresses,
   getFeaturedAddresses,
-  getTokenInfo,
   transformCampaign,
 } from "@/services"
 import { cosmWasmClient, cosmWasmQueryClient, cw20TokenBalance } from "@/state"
@@ -144,8 +144,8 @@ export const fetchCampaign = selectorFamily<
     },
 })
 
-export const tokenInfo = selectorFamily<TokenInfoSelectorResponse, string>({
-  key: "tokenInfo",
+export const cw20TokenInfo = selectorFamily<TokenInfoSelectorResponse, string>({
+  key: "cw20TokenInfo",
   get:
     (address) =>
     async ({ get }) => {
@@ -156,7 +156,7 @@ export const tokenInfo = selectorFamily<TokenInfoSelectorResponse, string>({
 
       try {
         return {
-          info: await getTokenInfo(client, address),
+          info: await getCW20TokenInfo(client, address),
           error: null,
         }
       } catch (error) {
@@ -164,7 +164,7 @@ export const tokenInfo = selectorFamily<TokenInfoSelectorResponse, string>({
         return {
           info: null,
           error: parseError(error, {
-            source: "tokenInfo",
+            source: "cw20TokenInfo",
             token: address,
           }),
         }
