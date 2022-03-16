@@ -41,4 +41,7 @@ pub enum ContractError {
 
     #[error("Invalid public payment: {0}.")]
     InvalidPublicPayment(String),
+
+    #[error("Invalid fee manager address.")]
+    InvalidFeeManager,
 }

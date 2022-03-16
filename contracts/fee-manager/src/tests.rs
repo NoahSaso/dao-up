@@ -70,6 +70,7 @@ mod tests {
         fn update_allowed() {
             let (mut app, fee_manager_contract_addr) = proper_instantiate();
 
+            // Update.
             let new_config = ConfigUpdate {
                 receiver_address: Some(ADMIN.to_string()),
                 fee: Some(Decimal::percent(5)),
@@ -79,7 +80,6 @@ mod tests {
                 }),
             };
 
-            // Update.
             app.execute_contract(
                 Addr::unchecked(ADMIN),
                 fee_manager_contract_addr.clone(),
@@ -95,14 +95,16 @@ mod tests {
                 .wrap()
                 .query_wasm_smart(fee_manager_contract_addr.clone(), &QueryMsg::GetConfig {})
                 .unwrap();
+            let current_config = response.config;
+
             // Ensure fields updated.
             assert_eq!(
-                response.config.receiver_addr.to_string(),
+                current_config.receiver_addr.to_string(),
                 new_config.receiver_address.unwrap()
             );
-            assert_eq!(response.config.fee, new_config.fee.unwrap());
+            assert_eq!(current_config.fee, new_config.fee.unwrap());
             assert_eq!(
-                response.config.public_listing_fee,
+                current_config.public_listing_fee,
                 new_config.public_listing_fee.unwrap()
             );
         }
@@ -111,14 +113,12 @@ mod tests {
         fn updated_unauthorized() {
             let (mut app, fee_manager_contract_addr) = proper_instantiate();
 
-            let new_config = ConfigUpdate {
-                receiver_address: Some(ADMIN.to_string()),
-                fee: Some(Decimal::percent(5)),
-                public_listing_fee: Some(Coin {
-                    denom: DENOM.to_string(),
-                    amount: Uint128::from(1000000u128),
-                }),
-            };
+            // Get current config for comparison at the end.
+            let response: ConfigResponse = app
+                .wrap()
+                .query_wasm_smart(fee_manager_contract_addr.clone(), &QueryMsg::GetConfig {})
+                .unwrap();
+            let old_config = response.config;
 
             // Attempt update.
             let err: ContractError = app
@@ -127,7 +127,14 @@ mod tests {
                     Addr::unchecked(USER),
                     fee_manager_contract_addr.clone(),
                     &ExecuteMsg::Update {
-                        config: new_config.clone(),
+                        config: ConfigUpdate {
+                            receiver_address: Some(ADMIN.to_string()),
+                            fee: Some(Decimal::percent(5)),
+                            public_listing_fee: Some(Coin {
+                                denom: DENOM.to_string(),
+                                amount: Uint128::from(1000000u128),
+                            }),
+                        },
                     },
                     &[],
                 )
@@ -142,15 +149,14 @@ mod tests {
                 .wrap()
                 .query_wasm_smart(fee_manager_contract_addr.clone(), &QueryMsg::GetConfig {})
                 .unwrap();
-            // Ensure fields not updated.
-            assert_ne!(
-                response.config.receiver_addr.to_string(),
-                new_config.receiver_address.unwrap()
-            );
-            assert_ne!(response.config.fee, new_config.fee.unwrap());
-            assert_ne!(
-                response.config.public_listing_fee,
-                new_config.public_listing_fee.unwrap()
+            let current_config = response.config;
+
+            // Ensure fields stayed the same.
+            assert_eq!(current_config.receiver_addr, old_config.receiver_addr);
+            assert_eq!(current_config.fee, old_config.fee);
+            assert_eq!(
+                current_config.public_listing_fee,
+                old_config.public_listing_fee
             );
         }
     }

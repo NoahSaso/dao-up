@@ -4,11 +4,11 @@ use crate::ContractError;
 
 pub fn validate_config(
     deps: &DepsMut,
-    receiver_address: String,
+    receiver_address: &str,
     fee: Decimal,
 ) -> Result<Addr, ContractError> {
     // Validate receiver address.
-    let receiver_addr = deps.api.addr_validate(receiver_address.as_str())?;
+    let receiver_addr = deps.api.addr_validate(receiver_address)?;
 
     // Verify fee percent is between 0 and 100.
     if fee < Decimal::percent(0) {

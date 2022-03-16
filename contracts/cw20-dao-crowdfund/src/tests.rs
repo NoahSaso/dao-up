@@ -512,6 +512,30 @@ fn test_campaign_creation_with_evil_cw20_silent_fail() {
 }
 
 #[test]
+#[should_panic(expected = "Invalid fee manager address.")]
+fn test_campaign_creation_with_invalid_fee_manager() {
+    let mut app = App::default();
+
+    let cw20_id = app.store_code(cw20_contract());
+    let dao_id = app.store_code(dao_dao_dao_contract());
+    let stake_id = app.store_code(stake_cw20_contract());
+    let escrow_id = app.store_code(escrow_contract());
+
+    let (dao_addr, _) = instantiate_dao(&mut app, dao_id, cw20_id, stake_id);
+    instantiate_escrow(
+        &mut app,
+        dao_addr.clone(),
+        // Pass a DAO address as the fee manager to trigger an error.
+        dao_addr.clone(),
+        escrow_id,
+        cw20_id,
+        100_000_000,
+        true,
+    )
+    .unwrap();
+}
+
+#[test]
 fn test_campaign_update() {
     let mut app = App::default();
     let cw20_id = app.store_code(cw20_contract());
@@ -1344,12 +1368,14 @@ fn test_campaign_completion() {
     let expected_fee = Uint128::from(funding_goal) * Decimal::percent(3);
     let expected_dao = Uint128::from(funding_goal) - expected_fee;
 
+    // Ensure DAO has received all the funds except the fee.
     let dao_balance = app
         .wrap()
         .query_balance(dao_addr.clone(), CHAIN_DENOM)
         .unwrap();
     assert_eq!(dao_balance.amount, expected_dao);
 
+    // Ensure fee has been sent.
     let dao_up_balance = app
         .wrap()
         .query_balance(Addr::unchecked(DAO_UP_ADDR), CHAIN_DENOM)

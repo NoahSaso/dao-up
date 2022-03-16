@@ -2,7 +2,7 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
     to_binary, Addr, BankMsg, Binary, Coin, Decimal, Deps, DepsMut, Env, Fraction, MessageInfo,
-    Reply, Response, StdError, StdResult, SubMsg, Uint128, WasmMsg,
+    Reply, Response, StdResult, SubMsg, Uint128, WasmMsg,
 };
 use cw2::set_contract_version;
 use cw20::Cw20ReceiveMsg;
@@ -27,13 +27,14 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
-    let dao_addr = deps.api.addr_validate(msg.dao_address.as_str())?;
+    let dao_addr = deps.api.addr_validate(&msg.dao_address)?;
     let dao_config: cw3_dao::query::ConfigResponse = deps
         .querier
         .query_wasm_smart(dao_addr.clone(), &cw3_dao::msg::QueryMsg::GetConfig {})?;
 
-    // Verify fee manager address.
-    let fee_manager_addr = deps.api.addr_validate(msg.fee_manager_address.as_str())?;
+    // Verify fee manager.
+    let fee_manager_addr = deps.api.addr_validate(&msg.fee_manager_address)?;
+    get_fee_manager_config(&deps, &fee_manager_addr)?;
 
     // DAO shouldn't have an invalid gov token address but lets verify
     // just to be sure.
@@ -50,7 +51,7 @@ pub fn instantiate(
     let state = State {
         status: Status::Uninstantiated {},
         dao_addr,
-        fee_manager_addr,
+        fee_manager_addr: fee_manager_addr.clone(),
         creator: info.sender.clone(),
         funding_goal: msg.funding_goal.clone(),
         funds_raised: Coin {
@@ -63,7 +64,11 @@ pub fn instantiate(
 
     // Require fee to display the campaign publicly.
     let response = if !msg.campaign_info.hidden {
-        Response::default().add_message(take_public_payment(&deps, &info, &state)?)
+        if let Some(msg) = take_public_payment(&deps, &info, &state)? {
+            Response::default().add_message(msg)
+        } else {
+            Response::default()
+        }
     } else {
         Response::default()
     };
@@ -91,6 +96,7 @@ pub fn instantiate(
 
     Ok(response
         .add_attribute("method", "instantiate")
+        .add_attribute("fee_manager", fee_manager_addr.to_string())
         .add_submessage(msg))
 }
 
@@ -121,7 +127,11 @@ pub fn execute_update_campaign(
 
     // Require fee to display the campaign publicly.
     let response = if !new_campaign_info.hidden && state.campaign_info.hidden {
-        Response::default().add_message(take_public_payment(&deps, &info, &state)?)
+        if let Some(msg) = take_public_payment(&deps, &info, &state)? {
+            Response::default().add_message(msg)
+        } else {
+            Response::default()
+        }
     } else {
         Response::default()
     };
@@ -369,7 +379,7 @@ pub fn execute_receive_funding_tokens(
             };
 
             // Get fee manager information.
-            let fee_manager_config = get_fee_manager_config(&deps, &state)?;
+            let fee_manager_config = get_fee_manager_config(&deps, &state.fee_manager_addr)?;
 
             let native_to_transfer = msg.amount * token_price.inv().unwrap();
             let fee_amount = native_to_transfer * fee_manager_config.fee;
@@ -384,33 +394,42 @@ pub fn execute_receive_funding_tokens(
                 }],
             };
 
-            // Transfer fee to the fee account.
-            let fee_transfer = BankMsg::Send {
-                to_address: fee_manager_config.receiver_addr.to_string(),
-                amount: vec![Coin {
-                    denom: state.funding_goal.denom,
-                    amount: fee_amount,
-                }],
+            // If fee present, transfer fee.
+            let response = if fee_manager_config.fee > Decimal::zero() {
+                // Transfer fee to the fee account.
+                let fee_transfer = BankMsg::Send {
+                    to_address: fee_manager_config.receiver_addr.to_string(),
+                    amount: vec![Coin {
+                        denom: state.funding_goal.denom,
+                        amount: fee_amount,
+                    }],
+                };
+
+                Response::default().add_message(fee_transfer)
+            } else {
+                Response::default()
             };
 
-            Ok(Response::default()
+            Ok(response
                 .add_attribute("action", "swap_for_gov")
                 .add_attribute("sender", sender)
                 .add_message(token_transfer)
-                .add_message(dao_transfer)
-                .add_message(fee_transfer))
+                .add_message(dao_transfer))
         }
     }
 }
 
 pub fn get_fee_manager_config(
     deps: &DepsMut,
-    state: &State,
-) -> Result<fee_manager::state::Config, StdError> {
-    let response: fee_manager::msg::ConfigResponse = deps.querier.query_wasm_smart(
-        state.fee_manager_addr.clone(),
-        &fee_manager::msg::QueryMsg::GetConfig {},
-    )?;
+    fee_manager_addr: &Addr,
+) -> Result<fee_manager::state::Config, ContractError> {
+    let response: fee_manager::msg::ConfigResponse = deps
+        .querier
+        .query_wasm_smart(
+            fee_manager_addr.clone(),
+            &fee_manager::msg::QueryMsg::GetConfig {},
+        )
+        .or(Err(ContractError::InvalidFeeManager))?;
     Ok(response.config)
 }
 
@@ -420,9 +439,14 @@ pub fn take_public_payment(
     deps: &DepsMut,
     info: &MessageInfo,
     state: &State,
-) -> Result<BankMsg, ContractError> {
+) -> Result<Option<BankMsg>, ContractError> {
     // Get fee manager information.
-    let fee_manager_config = get_fee_manager_config(deps, state)?;
+    let fee_manager_config = get_fee_manager_config(deps, &state.fee_manager_addr)?;
+
+    // If there is no fee for public payments, return None.
+    if fee_manager_config.public_listing_fee.amount == Uint128::zero() {
+        return Ok(None);
+    }
 
     let payment = info
         .funds
@@ -439,10 +463,10 @@ pub fn take_public_payment(
     }
 
     // Transfer public listing fee to the fee account.
-    Ok(BankMsg::Send {
+    Ok(Some(BankMsg::Send {
         to_address: fee_manager_config.receiver_addr.to_string(),
         amount: vec![fee_manager_config.public_listing_fee.clone()],
-    })
+    }))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]

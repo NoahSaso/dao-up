@@ -21,21 +21,30 @@ pub fn instantiate(
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
     // Validate config.
-    let receiver_addr = crate::validators::validate_config(&deps, msg.receiver_address, msg.fee)?;
+    let receiver_addr = crate::validators::validate_config(&deps, &msg.receiver_address, msg.fee)?;
 
     let state = State {
         owner: info.sender.clone(),
         config: Config {
-            receiver_addr,
+            receiver_addr: receiver_addr.clone(),
             fee: msg.fee,
-            public_listing_fee: msg.public_listing_fee,
+            public_listing_fee: msg.public_listing_fee.clone(),
         },
     };
     STATE.save(deps.storage, &state)?;
 
-    Ok(Response::new()
+    Ok(Response::default()
         .add_attribute("method", "instantiate")
-        .add_attribute("sender", info.sender))
+        .add_attribute("owner", state.owner.to_string())
+        .add_attribute("receiver", state.config.receiver_addr.to_string())
+        .add_attribute("fee", state.config.fee.to_string())
+        .add_attribute(
+            "public_listing_fee",
+            format!(
+                "{}{}",
+                state.config.public_listing_fee.amount, state.config.public_listing_fee.denom
+            ),
+        ))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -64,7 +73,7 @@ pub fn execute_update(
     // Validate config.
     let receiver_addr = crate::validators::validate_config(
         &deps,
-        config
+        &config
             .receiver_address
             .unwrap_or_else(|| state.config.receiver_addr.to_string()),
         config.fee.unwrap_or_else(|| state.config.fee),
@@ -80,9 +89,18 @@ pub fn execute_update(
     };
     STATE.save(deps.storage, &state)?;
 
-    Ok(Response::new()
+    Ok(Response::default()
         .add_attribute("method", "update")
-        .add_attribute("sender", info.sender))
+        .add_attribute("owner", state.owner.to_string())
+        .add_attribute("receiver", state.config.receiver_addr.to_string())
+        .add_attribute("fee", state.config.fee.to_string())
+        .add_attribute(
+            "public_listing_fee",
+            format!(
+                "{}{}",
+                state.config.public_listing_fee.amount, state.config.public_listing_fee.denom
+            ),
+        ))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
