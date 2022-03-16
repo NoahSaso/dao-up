@@ -98,8 +98,11 @@ const BalanceRefundJoinCardContents: FunctionComponent<
       {!!govTokenBalance && (
         <>
           <p className="text-light mt-2">
-            {prettyPrintDecimal(govTokenBalance, govTokenDecimals)}{" "}
-            {govTokenSymbol}
+            {prettyPrintDecimal(
+              govTokenBalance,
+              govTokenDecimals,
+              govTokenSymbol
+            )}
           </p>
           <p className="text-placeholder italic">
             You have voting power in the DAO.
@@ -127,12 +130,15 @@ const BalanceRefundJoinCardContents: FunctionComponent<
         !govTokenBalance) && (
         <>
           <p className="text-light mt-2">
-            {prettyPrintDecimal(fundingTokenBalance ?? 0, fundingTokenDecimals)}{" "}
-            {fundingTokenSymbol}
+            {prettyPrintDecimal(
+              fundingTokenBalance ?? 0,
+              fundingTokenDecimals,
+              fundingTokenSymbol
+            )}
             {fundingTokenBalancePercent && (
               <span className="text-placeholder ml-2">
-                {prettyPrintDecimal(fundingTokenBalancePercent, 2)}% of total
-                supply
+                {prettyPrintDecimal(fundingTokenBalancePercent, 2, "%")} of
+                total supply
               </span>
             )}
           </p>
@@ -196,8 +202,9 @@ const BalanceRefundJoinCardContents: FunctionComponent<
                     expectedPayTokensReceived
                       ? `You will receive about ${prettyPrintDecimal(
                           expectedPayTokensReceived,
-                          payToken.decimals
-                        )} ${payToken.symbol}`
+                          payToken.decimals,
+                          payToken.symbol
+                        )}`
                       : undefined
                   }
                   error={

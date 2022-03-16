@@ -625,18 +625,17 @@ export const ControlledFormPercentTokenDoubleInput: FunctionComponent<
           value: min,
           message: `Must be at least ${prettyPrintDecimal(
             min / maxValue,
-            2
-          )}% / ${prettyPrintDecimal(
-            min,
-            currencyDecimals
-          )} ${currencySymbol}.`,
+            2,
+            "%"
+          )} / ${prettyPrintDecimal(min, currencyDecimals, currencySymbol)}.`,
         },
         max: {
           value: maxValue,
           message: `Must be less than or equal to 100% / ${prettyPrintDecimal(
             maxValue,
-            currencyDecimals
-          )} ${currencySymbol}.`,
+            currencyDecimals,
+            currencySymbol
+          )}.`,
         },
       }}
       render={({

@@ -91,13 +91,13 @@ const ProposeFundPendingCardContents: FunctionComponent<
               govTokenSupply
                 ? `This will allocate ${prettyPrintDecimal(
                     fundPendingTokens,
-                    govTokenDecimals
-                  )} ${
+                    govTokenDecimals,
                     govTokenSymbol ?? "governance tokens"
-                  } (${prettyPrintDecimal(
+                  )} (${prettyPrintDecimal(
                     (100 * fundPendingTokens) / govTokenSupply,
-                    2
-                  )}% of total supply) from the DAO's treasury to the campaign to be distributed among the backers.`
+                    2,
+                    "%"
+                  )} of total supply) from the DAO's treasury to the campaign to be distributed among the backers.`
                 : undefined
             }
             accentClassName="text-light"
@@ -115,8 +115,9 @@ const ProposeFundPendingCardContents: FunctionComponent<
                 value: govTokenDAOBalance ?? 0,
                 message: `Must be less than or equal to the amount of ${govTokenSymbol} the DAO has in its treasury: ${prettyPrintDecimal(
                   govTokenDAOBalance ?? 0,
-                  govTokenDecimals
-                )} ${govTokenSymbol}.`,
+                  govTokenDecimals,
+                  govTokenSymbol
+                )}.`,
               },
             })}
           />

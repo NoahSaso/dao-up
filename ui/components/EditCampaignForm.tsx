@@ -516,8 +516,11 @@ const FundingDetailsContent: FunctionComponent<FundingDetailsContentProps> = ({
               <>
                 DAO Up! will take a 3% cut and you&apos;ll receive{" "}
                 <span className="text-light">
-                  {prettyPrintDecimal(goalReceived, watchPayTokenDecimals)}{" "}
-                  {watchPayTokenLabel}
+                  {prettyPrintDecimal(
+                    goalReceived,
+                    watchPayTokenDecimals,
+                    watchPayTokenLabel
+                  )}
                 </span>
                 .{" "}
                 <Button
@@ -525,12 +528,20 @@ const FundingDetailsContent: FunctionComponent<FundingDetailsContentProps> = ({
                   className="inline underline"
                   onClick={() => setValue("goal", raiseToGoal)}
                 >
-                  Raise {prettyPrintDecimal(raiseToGoal, watchPayTokenDecimals)}{" "}
-                  {watchPayTokenLabel}
+                  Raise{" "}
+                  {prettyPrintDecimal(
+                    raiseToGoal,
+                    watchPayTokenDecimals,
+                    watchPayTokenLabel
+                  )}
                 </Button>{" "}
                 to receive{" "}
-                {prettyPrintDecimal(watchGoal, watchPayTokenDecimals)}{" "}
-                {watchPayTokenLabel}.
+                {prettyPrintDecimal(
+                  watchGoal,
+                  watchPayTokenDecimals,
+                  watchPayTokenLabel
+                )}
+                .
               </>
             ) : undefined
           }
@@ -542,7 +553,8 @@ const FundingDetailsContent: FunctionComponent<FundingDetailsContentProps> = ({
               value: convertMicroDenomToDenom(1, watchPayTokenDecimals),
               message: `Must be at least ${prettyPrintDecimal(
                 convertMicroDenomToDenom(1, watchPayTokenDecimals),
-                watchPayTokenDecimals
+                watchPayTokenDecimals,
+                watchPayTokenLabel
               )}.`,
             },
             // Ensure chosen pay token is valid.

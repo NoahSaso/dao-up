@@ -144,7 +144,7 @@ export const FavoriteCampaignCard: FunctionComponent<CampaignProps> = ({
               <span className="text-base font-light">{fundingTokenSymbol}</span>
             </p>
             <p className="text-placeholder font-sm text-right">
-              {prettyPrintDecimal(balancePercent, 2)}% of total supply
+              {prettyPrintDecimal(balancePercent, 2, "%")} of total supply
             </p>
           </>
         ) : (
