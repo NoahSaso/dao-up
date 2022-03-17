@@ -1,7 +1,7 @@
 import fuzzysort from "fuzzysort"
 import _merge from "lodash.merge"
 
-import { daoUrlPrefix } from "@/config"
+import { daoUrlPrefix, feeManagerAddress } from "@/config"
 import { convertMicroDenomToDenom, getFilterFns, parseError } from "@/helpers"
 import { baseToken, findPayTokenByDenom } from "@/services"
 import {
@@ -13,7 +13,7 @@ import {
 export const defaultNewCampaign = (): Partial<NewCampaignInfo> => ({
   // Default to first payToken, which should be juno(x).
   payTokenDenom: baseToken.denom,
-  hidden: false,
+  hidden: true,
   descriptionImageUrls: [],
   _descriptionImageUrls: [],
 })
@@ -41,14 +41,19 @@ export const requiredUpdateCampaignFields: (keyof UpdateCampaignInfo)[] = [
 export const campaignsFromResponses = (
   campaignResponses: CampaignResponse[],
   includeHidden = false,
-  includePending = false
+  includePending = false,
+  // Include if no fee manager set. Default to true for backwards compatibility.
+  includeNoFeeManager = true
 ): Campaign[] =>
   campaignResponses
     .filter(
       ({ campaign }) =>
         !!campaign &&
         (includeHidden || !campaign.hidden) &&
-        (includePending || campaign.status !== CampaignStatus.Pending)
+        (includePending || campaign.status !== CampaignStatus.Pending) &&
+        // Only show campaigns that use our fee manager.
+        (campaign.feeManagerAddress === feeManagerAddress ||
+          (includeNoFeeManager && campaign.feeManagerAddress === null))
     )
     .map(({ campaign }) => campaign!)
 
@@ -91,6 +96,7 @@ export const transformVersionedCampaignFields = (
   switch (version) {
     case CampaignContractVersion.v1:
       return {
+        feeManagerAddress: null,
         profileImageUrl: campaignInfo.image_url ?? null,
         // Introduced in v2.
         descriptionImageUrls: [],
@@ -99,7 +105,9 @@ export const transformVersionedCampaignFields = (
         },
       }
     case CampaignContractVersion.v2:
+    case CampaignContractVersion.v3:
       return {
+        feeManagerAddress: campaignState.fee_manager_addr ?? null,
         profileImageUrl: campaignInfo.profile_image_url ?? null,
         descriptionImageUrls: campaignInfo.description_image_urls ?? [],
         govToken: {
@@ -133,6 +141,7 @@ export const transformVersionedCampaignFields = (
       )
 
       return {
+        feeManagerAddress: null,
         profileImageUrl: null,
         descriptionImageUrls: [],
         govToken: {
@@ -282,6 +291,10 @@ export const transformCampaign = (
     twitter: campaignInfo.twitter ?? null,
     discord: campaignInfo.discord ?? null,
   }
+
+  // Get rid of incorrect supplies.
+  delete baseFields.govToken.total_supply
+  delete baseFields.fundingToken.total_supply
 
   return _merge(baseFields, versionedFields)
 }

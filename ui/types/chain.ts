@@ -14,8 +14,7 @@ declare global {
     campaign_info: CampaignInfo
     creator: string
     dao_addr: string
-    fee?: string
-    fee_receiver?: string
+    fee_manager_addr?: string // v3
     funding_goal: Coin
     funding_token_addr: string
     funding_token_info: TokenInfoResponse
@@ -43,6 +42,23 @@ declare global {
 
   interface AddressPriorityListResponse {
     members: AddressPriorityListItem[]
+  }
+
+  interface FeeManagerGetConfigResponse {
+    config: {
+      fee: string
+      fee_receiver: string
+      public_listing_fee: Coin
+      public_listing_fee_receiver: string
+    }
+  }
+
+  interface FeeManagerConfigResponse {
+    fee: number
+    publicListingFee: {
+      token: PayToken
+      coin: Coin
+    }
   }
 }
 

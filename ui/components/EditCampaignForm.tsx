@@ -39,7 +39,6 @@ import {
   ImageUrlField,
   Loader,
 } from "@/components"
-import { daoUpFeeNum } from "@/config"
 import {
   convertMicroDenomToDenom,
   daoAddressPattern,
@@ -51,7 +50,7 @@ import {
 } from "@/helpers"
 import { useRefCallback, useWallet } from "@/hooks"
 import { findPayTokenByDenom, getNextPayTokenDenom } from "@/services"
-import { globalLoadingAtom, validateDAO } from "@/state"
+import { feeManagerConfig, globalLoadingAtom, validateDAO } from "@/state"
 
 const validUrlOrUndefined = (u: string | undefined) =>
   u && u.match(urlPattern.value) ? u : undefined
@@ -90,6 +89,12 @@ export const EditCampaignForm: FunctionComponent<EditCampaignFormProps> = ({
   const [pendingSubmission, setPendingSubmission] = useState(
     null as FormValues | null
   )
+  const { state: feeManagerConfigState, contents: feeManagerConfigContents } =
+    useRecoilValueLoadable(feeManagerConfig)
+  const feeConfig =
+    feeManagerConfigState === "hasValue"
+      ? (feeManagerConfigContents as FeeManagerConfigResponse | null)
+      : null
 
   const {
     handleSubmit,
@@ -405,6 +410,7 @@ export const EditCampaignForm: FunctionComponent<EditCampaignFormProps> = ({
             register={
               register as UseFormRegister<FormValues<typeof props.creating>>
             }
+            feeConfig={feeConfig}
           />
         )}
 
@@ -414,11 +420,30 @@ export const EditCampaignForm: FunctionComponent<EditCampaignFormProps> = ({
             name="hidden"
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <FormSwitch
-                label="Hide from public campaigns list"
-                description="Whether or not to hide this campaign from the public directory of active campaigns. You may want to turn this on if you plan to send a direct link to your community. Default is no."
+                label="Display in public campaigns list"
+                description={
+                  // If already displaying publicly (i.e. not hidden), no fee will be charged, so only show fee message if initially hidden.
+                  defaultValues.hidden &&
+                  feeConfig &&
+                  // If there is no fee, don't show fee message.
+                  feeConfig.publicListingFee.coin.amount !== "0"
+                    ? `Costs ${prettyPrintDecimal(
+                        convertMicroDenomToDenom(
+                          feeConfig.publicListingFee.coin.amount,
+                          feeConfig.publicListingFee.token.decimals
+                        ),
+                        feeConfig.publicListingFee.token.decimals,
+                        feeConfig.publicListingFee.token.symbol
+                      )} to prevent spam.${
+                        !props.creating
+                          ? " Fee will be charged to the DAO's treasury once the proposal executes."
+                          : ""
+                      }`
+                    : undefined
+                }
                 error={error?.message}
                 onClick={() => onChange(!value)}
-                on={!!value}
+                on={!value}
               />
             )}
           />
@@ -430,7 +455,12 @@ export const EditCampaignForm: FunctionComponent<EditCampaignFormProps> = ({
           </p>
         )}
 
-        <Button submitLabel={submitLabel} className="self-end" />
+        <Button
+          submitLabel={submitLabel}
+          className="self-end"
+          // Can't submit until loaded fee config.
+          disabled={!feeConfig}
+        />
       </form>
     </DndProvider>
   )
@@ -443,6 +473,7 @@ interface FundingDetailsContentProps {
   errors: FormState<NewCampaignInfo>["errors"]
   setValue: UseFormSetValue<NewCampaignInfo>
   register: UseFormRegister<NewCampaignInfo>
+  feeConfig: FeeManagerConfigResponse | null
 }
 
 const FundingDetailsContent: FunctionComponent<FundingDetailsContentProps> = ({
@@ -450,6 +481,7 @@ const FundingDetailsContent: FunctionComponent<FundingDetailsContentProps> = ({
   errors,
   setValue,
   register,
+  feeConfig,
 }) => {
   // Automatically verify DAO contract address exists on chain.
   const watchDAOAddress = watch("daoAddress")
@@ -470,10 +502,12 @@ const FundingDetailsContent: FunctionComponent<FundingDetailsContentProps> = ({
 
   // Compute relevant goal fee amounts.
   const watchGoal = watch("goal") ?? 0
-  const goalReceived = watchGoal ? watchGoal * (1 - daoUpFeeNum) : undefined
-  const raiseToGoal = watchGoal
-    ? Math.ceil(watchGoal / (1 - daoUpFeeNum))
-    : undefined
+  const goalReceived =
+    watchGoal && feeConfig ? watchGoal * (1 - feeConfig.fee) : undefined
+  const raiseToGoal =
+    watchGoal && feeConfig
+      ? Math.ceil(watchGoal / (1 - feeConfig.fee))
+      : undefined
 
   // Pay token.
   const watchPayTokenDenom = watch("payTokenDenom")

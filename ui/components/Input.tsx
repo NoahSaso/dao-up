@@ -505,51 +505,39 @@ export const FormSwitch: FunctionComponent<FormSwitchProps> = ({
   label,
   description,
   error,
-  accentClassName,
   wrapperClassName,
   className,
   onClick,
   ...props
-}) => {
-  const labelElem = !!label && (
-    <label
-      className={cn("text-medium text-sm xs:text-lg sm:text-base", {
-        // If screen is larger, description moves to under switch.
-        "sm:mb-1": description,
-      })}
-    >
-      {label}
-    </label>
-  )
-  const descriptionElem = !!description && (
-    <p className="text-sm font-light">{description}</p>
-  )
+}) => (
+  <div
+    className={cn(
+      "mb-10 cursor-pointer flex flex-col items-stretch",
+      wrapperClassName
+    )}
+    onClick={onClick}
+  >
+    <div className="flex flex-row items-center gap-3">
+      <Switch className={cn("shrink-0", className)} {...props} />
 
-  return (
-    <div
-      className={cn(
-        "mb-10 cursor-pointer flex flex-col items-stretch",
-        wrapperClassName
-      )}
-      onClick={onClick}
-    >
-      <div className="flex flex-row items-center gap-3">
-        <Switch className={cn("shrink-0", className)} {...props} />
-
-        <div>
-          {labelElem}
-          <div className="hidden sm:block">{descriptionElem}</div>
-        </div>
+      <div>
+        {!!label && (
+          <label
+            className={cn("text-medium text-lg", {
+              // If screen is larger, description moves to under switch.
+              "sm:mb-1": description,
+            })}
+          >
+            {label}
+          </label>
+        )}
+        {!!description && <p className="text-sm font-light">{description}</p>}
       </div>
-
-      {descriptionElem && (
-        <div className="mt-3 sm:hidden sm:mt-0">{descriptionElem}</div>
-      )}
-
-      {!!error && <p className="text-orange mt-2">{error}</p>}
     </div>
-  )
-}
+
+    {!!error && <p className="text-orange mt-2">{error}</p>}
+  </div>
+)
 
 type UnforwardedFormPercentTokenDoubleInputProps =
   UnforwardedPercentTokenDoubleInputProps & FormItemProps

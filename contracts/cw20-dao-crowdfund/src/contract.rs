@@ -27,23 +27,19 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
-    let dao_addr = deps.api.addr_validate(msg.dao_address.as_str())?;
+    let dao_addr = deps.api.addr_validate(&msg.dao_address)?;
     let dao_config: cw3_dao::query::ConfigResponse = deps
         .querier
         .query_wasm_smart(dao_addr.clone(), &cw3_dao::msg::QueryMsg::GetConfig {})?;
+
+    // Verify fee manager.
+    let fee_manager_addr = deps.api.addr_validate(&msg.fee_manager_address)?;
+    get_fee_manager_config(&deps, &fee_manager_addr)?;
 
     // DAO shouldn't have an invalid gov token address but lets verify
     // just to be sure.
     let gov_token_addr = deps.api.addr_validate(dao_config.gov_token.as_str())?;
     GOV_TOKEN_ADDR.save(deps.storage, &gov_token_addr)?;
-
-    let fee_receiver = deps.api.addr_validate(msg.fee_receiver.as_str())?;
-    if msg.fee > Decimal::percent(100) {
-        return Err(ContractError::Instantiation(format!(
-            "fee ({}) is greater than 100%",
-            msg.fee
-        )));
-    }
 
     if msg.funding_goal.amount == Uint128::zero() {
         return Err(ContractError::Instantiation(format!(
@@ -55,9 +51,8 @@ pub fn instantiate(
     let state = State {
         status: Status::Uninstantiated {},
         dao_addr,
-        creator: info.sender,
-        fee_receiver,
-        fee: msg.fee,
+        fee_manager_addr: fee_manager_addr.clone(),
+        creator: info.sender.clone(),
         funding_goal: msg.funding_goal.clone(),
         funds_raised: Coin {
             denom: msg.funding_goal.denom,
@@ -66,6 +61,17 @@ pub fn instantiate(
         campaign_info: msg.campaign_info.clone(),
     };
     STATE.save(deps.storage, &state)?;
+
+    // Require fee to display the campaign publicly.
+    let response = if !msg.campaign_info.hidden {
+        if let Some(msg) = take_public_payment(&deps, &info, &state)? {
+            Response::default().add_message(msg)
+        } else {
+            Response::default()
+        }
+    } else {
+        Response::default()
+    };
 
     let code_id = msg.cw20_code_id;
     let birth_msg = WasmMsg::Instantiate {
@@ -88,8 +94,9 @@ pub fn instantiate(
 
     let msg = SubMsg::reply_on_success(birth_msg, INSTANTIATE_FUNDING_TOKEN_REPLY_ID);
 
-    Ok(Response::default()
+    Ok(response
         .add_attribute("method", "instantiate")
+        .add_attribute("fee_manager", fee_manager_addr.to_string())
         .add_submessage(msg))
 }
 
@@ -104,28 +111,37 @@ pub fn execute(
         ExecuteMsg::Fund {} => execute_fund(deps, &info.funds, info.sender),
         ExecuteMsg::Receive(msg) => execute_receive(deps, msg, info.sender),
         ExecuteMsg::Close {} => execute_close(deps, env, info.sender),
-        ExecuteMsg::UpdateCampaign { campaign } => {
-            execute_update_campaign(deps, campaign, info.sender)
-        }
+        ExecuteMsg::UpdateCampaign { campaign } => execute_update_campaign(deps, info, campaign),
     }
 }
 
 pub fn execute_update_campaign(
     deps: DepsMut,
+    info: MessageInfo,
     new_campaign_info: Campaign,
-    sender: Addr,
 ) -> Result<Response, ContractError> {
     let mut state = STATE.load(deps.storage)?;
-    if sender != state.dao_addr {
+    if info.sender != state.dao_addr {
         return Err(ContractError::Unauthorized {});
     }
+
+    // Require fee to display the campaign publicly.
+    let response = if !new_campaign_info.hidden && state.campaign_info.hidden {
+        if let Some(msg) = take_public_payment(&deps, &info, &state)? {
+            Response::default().add_message(msg)
+        } else {
+            Response::default()
+        }
+    } else {
+        Response::default()
+    };
 
     state.campaign_info = new_campaign_info;
     STATE.save(deps.storage, &state)?;
 
-    Ok(Response::default()
+    Ok(response
         .add_attribute("action", "update_campaign")
-        .add_attribute("sender", sender))
+        .add_attribute("sender", info.sender))
 }
 
 pub fn execute_close(deps: DepsMut, env: Env, sender: Addr) -> Result<Response, ContractError> {
@@ -350,7 +366,7 @@ pub fn execute_receive_funding_tokens(
                 &cw3_dao::msg::QueryMsg::GetConfig {},
             )?;
             let gov_addr = dao_config.gov_token;
-            let dao_addr = state.dao_addr;
+            let dao_addr = state.dao_addr.to_string();
 
             // Transfer gov tokens to the sender.
             let token_transfer = WasmMsg::Execute {
@@ -362,36 +378,95 @@ pub fn execute_receive_funding_tokens(
                 funds: vec![],
             };
 
+            // Get fee manager information.
+            let fee_manager_config = get_fee_manager_config(&deps, &state.fee_manager_addr)?;
+
             let native_to_transfer = msg.amount * token_price.inv().unwrap();
-            let fee_amount = native_to_transfer * state.fee;
+            let fee_amount = native_to_transfer * fee_manager_config.fee;
             let dao_amount = native_to_transfer - fee_amount;
 
             // Transfer a proportional amount of funds to the DAO.
             let dao_transfer = BankMsg::Send {
-                to_address: dao_addr.to_string(),
+                to_address: dao_addr,
                 amount: vec![Coin {
                     denom: state.funding_goal.denom.clone(),
                     amount: dao_amount,
                 }],
             };
 
-            // Transfer fee to the fee account.
-            let fee_transfer = BankMsg::Send {
-                to_address: state.fee_receiver.to_string(),
-                amount: vec![Coin {
-                    denom: state.funding_goal.denom,
-                    amount: fee_amount,
-                }],
+            // If fee present, transfer fee.
+            let response = if fee_manager_config.fee > Decimal::zero() {
+                // Transfer fee to the fee account.
+                let fee_transfer = BankMsg::Send {
+                    to_address: fee_manager_config.fee_receiver.to_string(),
+                    amount: vec![Coin {
+                        denom: state.funding_goal.denom,
+                        amount: fee_amount,
+                    }],
+                };
+
+                Response::default().add_message(fee_transfer)
+            } else {
+                Response::default()
             };
 
-            Ok(Response::default()
+            Ok(response
                 .add_attribute("action", "swap_for_gov")
                 .add_attribute("sender", sender)
                 .add_message(token_transfer)
-                .add_message(dao_transfer)
-                .add_message(fee_transfer))
+                .add_message(dao_transfer))
         }
     }
+}
+
+pub fn get_fee_manager_config(
+    deps: &DepsMut,
+    fee_manager_addr: &Addr,
+) -> Result<fee_manager::state::Config, ContractError> {
+    let response: fee_manager::msg::ConfigResponse = deps
+        .querier
+        .query_wasm_smart(
+            fee_manager_addr.clone(),
+            &fee_manager::msg::QueryMsg::GetConfig {},
+        )
+        .or(Err(ContractError::InvalidFeeManager))?;
+    Ok(response.config)
+}
+
+// Ensure public payment funds were sent and create a message to forward them to the fee receiver.
+// Return a ContractError::InvalidPublicPayment if funds were not properly sent.
+pub fn take_public_payment(
+    deps: &DepsMut,
+    info: &MessageInfo,
+    state: &State,
+) -> Result<Option<BankMsg>, ContractError> {
+    // Get fee manager information.
+    let fee_manager_config = get_fee_manager_config(deps, &state.fee_manager_addr)?;
+
+    // If there is no fee for public payments, return None.
+    if fee_manager_config.public_listing_fee.amount == Uint128::zero() {
+        return Ok(None);
+    }
+
+    let payment = info
+        .funds
+        .iter()
+        .filter(|coin| coin.denom == fee_manager_config.public_listing_fee.denom)
+        .fold(Uint128::zero(), |accum, coin| coin.amount + accum);
+
+    if payment != fee_manager_config.public_listing_fee.amount {
+        return Err(ContractError::InvalidPublicPayment(format!(
+            "not equal to {}{}",
+            fee_manager_config.public_listing_fee.amount,
+            fee_manager_config.public_listing_fee.denom
+        )));
+    }
+
+    // Transfer public listing fee to the fee account.
+    Ok(Some(BankMsg::Send {
+        to_address: fee_manager_config.public_listing_fee_receiver.to_string(),
+        amount: vec![fee_manager_config.public_listing_fee],
+    }))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -442,6 +517,7 @@ pub fn query_dump_state(deps: Deps) -> StdResult<Binary> {
     to_binary(&DumpStateResponse {
         status: state.status,
         dao_addr: state.dao_addr,
+        fee_manager_addr: state.fee_manager_addr,
         funding_goal: state.funding_goal,
         creator: state.creator,
         funds_raised: state.funds_raised,
@@ -450,8 +526,6 @@ pub fn query_dump_state(deps: Deps) -> StdResult<Binary> {
         campaign_info: state.campaign_info,
         gov_token_addr,
         funding_token_addr,
-        fee_receiver: state.fee_receiver,
-        fee: state.fee,
         version: CONTRACT_VERSION.to_string(),
     })
 }
