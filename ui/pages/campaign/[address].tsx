@@ -62,7 +62,7 @@ export const Campaign: NextPage<CampaignStaticProps> = ({ campaign }) => {
   const showConfetti = useCallback(() => {
     setConfettiVisible(true)
     // Clear in case confetti needs to be shown twice on the same page (probably won't but might as well).
-    setTimeout(() => setConfettiVisible(false), 5000)
+    setTimeout(() => setConfettiVisible(false), 15000)
   }, [setConfettiVisible])
 
   // If no campaign when there should be a campaign, navigate back to campaigns list.
