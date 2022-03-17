@@ -46,9 +46,10 @@ declare global {
 
   interface FeeManagerGetConfigResponse {
     config: {
-      receiver_addr: string
       fee: string
+      fee_receiver: string
       public_listing_fee: Coin
+      public_listing_fee_receiver: string
     }
   }
 

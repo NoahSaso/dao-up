@@ -38,17 +38,21 @@
       "type": "object",
       "required": [
         "fee",
+        "fee_receiver",
         "public_listing_fee",
-        "receiver_addr"
+        "public_listing_fee_receiver"
       ],
       "properties": {
         "fee": {
           "$ref": "#/definitions/Decimal"
         },
+        "fee_receiver": {
+          "$ref": "#/definitions/Addr"
+        },
         "public_listing_fee": {
           "$ref": "#/definitions/Coin"
         },
-        "receiver_addr": {
+        "public_listing_fee_receiver": {
           "$ref": "#/definitions/Addr"
         }
       }

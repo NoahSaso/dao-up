@@ -13,6 +13,12 @@
         }
       ]
     },
+    "fee_receiver": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "public_listing_fee": {
       "anyOf": [
         {
@@ -23,7 +29,7 @@
         }
       ]
     },
-    "receiver_address": {
+    "public_listing_fee_receiver": {
       "type": [
         "string",
         "null"
