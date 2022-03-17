@@ -14,7 +14,7 @@ mod tests {
     }
 
     const USER1: &str = "USER1";
-    const USER2: &str = "USER1";
+    const USER2: &str = "USER2";
     const ADMIN: &str = "ADMIN";
     const DENOM: &str = "denom";
 
