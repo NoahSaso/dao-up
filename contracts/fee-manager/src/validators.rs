@@ -1,15 +1,8 @@
-use cosmwasm_std::{Addr, Decimal, DepsMut};
+use cosmwasm_std::Decimal;
 
 use crate::ContractError;
 
-pub fn validate_config(
-    deps: &DepsMut,
-    receiver_address: &str,
-    fee: Decimal,
-) -> Result<Addr, ContractError> {
-    // Validate receiver address.
-    let receiver_addr = deps.api.addr_validate(receiver_address)?;
-
+pub fn validate_fee(fee: Decimal) -> Result<(), ContractError> {
     // Verify fee percent is between 0 and 100.
     if fee < Decimal::percent(0) {
         return Err(ContractError::InvalidFee(format!(
@@ -24,5 +17,5 @@ pub fn validate_config(
         )));
     }
 
-    Ok(receiver_addr)
+    Ok(())
 }

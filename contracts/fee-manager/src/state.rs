@@ -6,9 +6,11 @@ use cw_storage_plus::Item;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct Config {
-    pub receiver_addr: Addr,
     pub fee: Decimal,
+    pub fee_receiver: Addr,
+
     pub public_listing_fee: Coin,
+    pub public_listing_fee_receiver: Addr,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

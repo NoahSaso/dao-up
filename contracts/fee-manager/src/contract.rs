@@ -21,14 +21,17 @@ pub fn instantiate(
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
     // Validate config.
-    let receiver_addr = crate::validators::validate_config(&deps, &msg.receiver_address, msg.fee)?;
+    crate::validators::validate_fee(msg.fee)?;
+    let fee_receiver = deps.api.addr_validate(&msg.fee_receiver)?;
+    let public_listing_fee_receiver = deps.api.addr_validate(&msg.public_listing_fee_receiver)?;
 
     let state = State {
-        owner: info.sender.clone(),
+        owner: info.sender,
         config: Config {
-            receiver_addr: receiver_addr.clone(),
             fee: msg.fee,
-            public_listing_fee: msg.public_listing_fee.clone(),
+            fee_receiver,
+            public_listing_fee: msg.public_listing_fee,
+            public_listing_fee_receiver,
         },
     };
     STATE.save(deps.storage, &state)?;
@@ -36,14 +39,18 @@ pub fn instantiate(
     Ok(Response::default()
         .add_attribute("method", "instantiate")
         .add_attribute("owner", state.owner.to_string())
-        .add_attribute("receiver", state.config.receiver_addr.to_string())
         .add_attribute("fee", state.config.fee.to_string())
+        .add_attribute("fee_receiver", state.config.fee_receiver.to_string())
         .add_attribute(
             "public_listing_fee",
             format!(
                 "{}{}",
                 state.config.public_listing_fee.amount, state.config.public_listing_fee.denom
             ),
+        )
+        .add_attribute(
+            "public_listing_fee_receiver",
+            state.config.public_listing_fee_receiver.to_string(),
         ))
 }
 
@@ -70,36 +77,40 @@ pub fn execute_update(
         return Err(ContractError::Unauthorized {});
     }
 
-    // Validate config.
-    let receiver_addr = crate::validators::validate_config(
-        &deps,
-        &config
-            .receiver_address
-            .unwrap_or_else(|| state.config.receiver_addr.to_string()),
-        config.fee.unwrap_or_else(|| state.config.fee),
-    )?;
+    // Validate and update config.
+    if let Some(fee) = config.fee {
+        crate::validators::validate_fee(fee)?;
+        state.config.fee = fee;
+    }
+    if let Some(fee_receiver) = config.fee_receiver {
+        state.config.fee_receiver = deps.api.addr_validate(&fee_receiver)?;
+    }
+    if let Some(public_listing_fee) = config.public_listing_fee {
+        state.config.public_listing_fee = public_listing_fee;
+    }
+    if let Some(public_listing_fee_receiver) = config.public_listing_fee_receiver {
+        state.config.public_listing_fee_receiver =
+            deps.api.addr_validate(&public_listing_fee_receiver)?;
+    }
 
-    // Update config.
-    state.config = Config {
-        receiver_addr,
-        fee: config.fee.unwrap_or_else(|| state.config.fee),
-        public_listing_fee: config
-            .public_listing_fee
-            .unwrap_or_else(|| state.config.public_listing_fee.clone()),
-    };
+    // Save config.
     STATE.save(deps.storage, &state)?;
 
     Ok(Response::default()
         .add_attribute("method", "update")
         .add_attribute("owner", state.owner.to_string())
-        .add_attribute("receiver", state.config.receiver_addr.to_string())
         .add_attribute("fee", state.config.fee.to_string())
+        .add_attribute("fee_receiver", state.config.fee_receiver.to_string())
         .add_attribute(
             "public_listing_fee",
             format!(
                 "{}{}",
                 state.config.public_listing_fee.amount, state.config.public_listing_fee.denom
             ),
+        )
+        .add_attribute(
+            "public_listing_fee_receiver",
+            state.config.public_listing_fee_receiver.to_string(),
         ))
 }
 

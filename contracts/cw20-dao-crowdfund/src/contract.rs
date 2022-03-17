@@ -398,7 +398,7 @@ pub fn execute_receive_funding_tokens(
             let response = if fee_manager_config.fee > Decimal::zero() {
                 // Transfer fee to the fee account.
                 let fee_transfer = BankMsg::Send {
-                    to_address: fee_manager_config.receiver_addr.to_string(),
+                    to_address: fee_manager_config.fee_receiver.to_string(),
                     amount: vec![Coin {
                         denom: state.funding_goal.denom,
                         amount: fee_amount,
@@ -464,8 +464,8 @@ pub fn take_public_payment(
 
     // Transfer public listing fee to the fee account.
     Ok(Some(BankMsg::Send {
-        to_address: fee_manager_config.receiver_addr.to_string(),
-        amount: vec![fee_manager_config.public_listing_fee.clone()],
+        to_address: fee_manager_config.public_listing_fee_receiver.to_string(),
+        amount: vec![fee_manager_config.public_listing_fee],
     }))
 }
 

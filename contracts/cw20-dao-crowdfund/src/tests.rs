@@ -16,6 +16,7 @@ use crate::{
 
 const CREATOR_ADDR: &str = "creator";
 const DAO_UP_ADDR: &str = "daoup";
+const ANOTHER_DAO_ADDR: &str = "anotherdao";
 const CHAIN_DENOM: &str = "ujunox";
 const PUBLIC_PAYMENT_AMOUNT: u128 = 500000;
 
@@ -152,12 +153,13 @@ fn instantiate_dao(app: &mut App, dao_id: u64, cw20_id: u64, stake_id: u64) -> (
 
 fn instantiate_fee_manager(app: &mut App, fee_manager_id: u64) -> Addr {
     let instantiate = fee_manager::msg::InstantiateMsg {
-        receiver_address: DAO_UP_ADDR.to_string(),
         fee: Decimal::percent(3),
+        fee_receiver: DAO_UP_ADDR.to_string(),
         public_listing_fee: Coin {
             denom: CHAIN_DENOM.to_string(),
             amount: Uint128::from(PUBLIC_PAYMENT_AMOUNT),
         },
+        public_listing_fee_receiver: ANOTHER_DAO_ADDR.to_string(),
     };
 
     app.instantiate_contract(
@@ -677,7 +679,7 @@ fn test_campaign_update_with_public_payment() {
     // Check that the public payment funds were sent to the fee receiver.
     let dao_up_balance = app
         .wrap()
-        .query_balance(Addr::unchecked(DAO_UP_ADDR), CHAIN_DENOM)
+        .query_balance(Addr::unchecked(ANOTHER_DAO_ADDR), CHAIN_DENOM)
         .unwrap();
     assert_eq!(dao_up_balance.amount, Uint128::from(PUBLIC_PAYMENT_AMOUNT));
 
@@ -703,7 +705,7 @@ fn test_campaign_update_with_public_payment() {
     // Check that no additional public payment was sent to the DAO (i.e. balance stayed the same).
     let new_dao_up_balance = app
         .wrap()
-        .query_balance(Addr::unchecked(DAO_UP_ADDR), CHAIN_DENOM)
+        .query_balance(Addr::unchecked(ANOTHER_DAO_ADDR), CHAIN_DENOM)
         .unwrap();
     assert_eq!(new_dao_up_balance.amount, dao_up_balance.amount);
 }
@@ -929,7 +931,7 @@ fn test_campaign_creation_with_public_payment() {
     // Check that the public payment funds were sent to the fee receiver.
     let dao_up_balance = app
         .wrap()
-        .query_balance(Addr::unchecked(DAO_UP_ADDR), CHAIN_DENOM)
+        .query_balance(Addr::unchecked(ANOTHER_DAO_ADDR), CHAIN_DENOM)
         .unwrap();
     assert_eq!(dao_up_balance.amount, Uint128::from(PUBLIC_PAYMENT_AMOUNT));
 }

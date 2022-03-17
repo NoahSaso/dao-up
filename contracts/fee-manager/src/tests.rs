@@ -13,7 +13,8 @@ mod tests {
         Box::new(contract)
     }
 
-    const USER: &str = "USER";
+    const USER1: &str = "USER1";
+    const USER2: &str = "USER1";
     const ADMIN: &str = "ADMIN";
     const DENOM: &str = "denom";
 
@@ -23,7 +24,7 @@ mod tests {
                 .bank
                 .init_balance(
                     storage,
-                    &Addr::unchecked(USER),
+                    &Addr::unchecked(USER1),
                     vec![Coin {
                         denom: DENOM.to_string(),
                         amount: Uint128::new(1),
@@ -38,12 +39,13 @@ mod tests {
         let fee_manager_id = app.store_code(fee_manager_contract());
 
         let msg = InstantiateMsg {
-            receiver_address: USER.to_string(),
             fee: Decimal::percent(3),
+            fee_receiver: USER1.to_string(),
             public_listing_fee: Coin {
                 denom: DENOM.to_string(),
                 amount: Uint128::from(500000u128),
             },
+            public_listing_fee_receiver: USER2.to_string(),
         };
         let fee_manager_contract_addr = app
             .instantiate_contract(
@@ -72,12 +74,13 @@ mod tests {
 
             // Update.
             let new_config = ConfigUpdate {
-                receiver_address: Some(ADMIN.to_string()),
                 fee: Some(Decimal::percent(5)),
+                fee_receiver: Some(ADMIN.to_string()),
                 public_listing_fee: Some(Coin {
                     denom: DENOM.to_string(),
                     amount: Uint128::from(1000000u128),
                 }),
+                public_listing_fee_receiver: Some(ADMIN.to_string()),
             };
 
             app.execute_contract(
@@ -98,14 +101,18 @@ mod tests {
             let current_config = response.config;
 
             // Ensure fields updated.
-            assert_eq!(
-                current_config.receiver_addr.to_string(),
-                new_config.receiver_address.unwrap()
-            );
             assert_eq!(current_config.fee, new_config.fee.unwrap());
+            assert_eq!(
+                current_config.fee_receiver.to_string(),
+                new_config.fee_receiver.unwrap()
+            );
             assert_eq!(
                 current_config.public_listing_fee,
                 new_config.public_listing_fee.unwrap()
+            );
+            assert_eq!(
+                current_config.public_listing_fee_receiver.to_string(),
+                new_config.public_listing_fee_receiver.unwrap()
             );
         }
 
@@ -123,17 +130,18 @@ mod tests {
             // Attempt update.
             let err: ContractError = app
                 .execute_contract(
-                    // Send as USER instead of ADMIN.
-                    Addr::unchecked(USER),
+                    // Send as USER1 instead of ADMIN.
+                    Addr::unchecked(USER1),
                     fee_manager_contract_addr.clone(),
                     &ExecuteMsg::Update {
                         config: ConfigUpdate {
-                            receiver_address: Some(ADMIN.to_string()),
                             fee: Some(Decimal::percent(5)),
+                            fee_receiver: Some(ADMIN.to_string()),
                             public_listing_fee: Some(Coin {
                                 denom: DENOM.to_string(),
                                 amount: Uint128::from(1000000u128),
                             }),
+                            public_listing_fee_receiver: Some(ADMIN.to_string()),
                         },
                     },
                     &[],
@@ -152,11 +160,18 @@ mod tests {
             let current_config = response.config;
 
             // Ensure fields stayed the same.
-            assert_eq!(current_config.receiver_addr, old_config.receiver_addr);
             assert_eq!(current_config.fee, old_config.fee);
+            assert_eq!(
+                current_config.fee_receiver.to_string(),
+                old_config.fee_receiver.to_string()
+            );
             assert_eq!(
                 current_config.public_listing_fee,
                 old_config.public_listing_fee
+            );
+            assert_eq!(
+                current_config.public_listing_fee_receiver.to_string(),
+                old_config.public_listing_fee_receiver.to_string()
             );
         }
     }

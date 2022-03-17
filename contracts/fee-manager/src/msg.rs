@@ -6,9 +6,11 @@ use crate::state::Config;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
-    pub receiver_address: String,
     pub fee: Decimal,
+    pub fee_receiver: String,
+
     pub public_listing_fee: Coin,
+    pub public_listing_fee_receiver: String,
 }
 
 // EXECUTE
@@ -21,9 +23,11 @@ pub enum ExecuteMsg {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct ConfigUpdate {
-    pub receiver_address: Option<String>,
     pub fee: Option<Decimal>,
+    pub fee_receiver: Option<String>,
+
     pub public_listing_fee: Option<Coin>,
+    pub public_listing_fee_receiver: Option<String>,
 }
 
 // QUERY
