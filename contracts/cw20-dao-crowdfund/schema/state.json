@@ -6,8 +6,7 @@
     "campaign_info",
     "creator",
     "dao_addr",
-    "fee",
-    "fee_receiver",
+    "fee_manager_addr",
     "funding_goal",
     "funds_raised",
     "status"
@@ -22,10 +21,7 @@
     "dao_addr": {
       "$ref": "#/definitions/Addr"
     },
-    "fee": {
-      "$ref": "#/definitions/Decimal"
-    },
-    "fee_receiver": {
+    "fee_manager_addr": {
       "$ref": "#/definitions/Addr"
     },
     "funding_goal": {

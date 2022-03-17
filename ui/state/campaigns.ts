@@ -325,7 +325,12 @@ export const featuredCampaigns = selector<CampaignsResponse>({
         )
       )
     )
-    const campaigns = campaignsFromResponses(campaignResponses, true, true)
+    const campaigns = campaignsFromResponses(
+      campaignResponses,
+      true,
+      true,
+      true
+    )
 
     return { campaigns, hasMore: false, error: null }
   },
@@ -446,7 +451,12 @@ export const favoriteCampaigns = selector<CampaignsResponse>({
         )
       )
     )
-    const campaigns = campaignsFromResponses(campaignResponses, true, true)
+    const campaigns = campaignsFromResponses(
+      campaignResponses,
+      true,
+      true,
+      true
+    )
 
     return { campaigns, hasMore: false, error: null }
   },

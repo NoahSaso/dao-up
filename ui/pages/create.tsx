@@ -15,14 +15,13 @@ import {
   baseUrl,
   currentEscrowContractCodeId,
   cw20CodeId,
-  daoUpDAOAddress,
-  daoUpFee,
+  feeManagerAddress,
   title,
 } from "@/config"
 import { convertDenomToMicroDenom, parseError } from "@/helpers"
 import { useWallet } from "@/hooks"
 import { defaultNewCampaign, findPayTokenByDenom } from "@/services"
-import { signedCosmWasmClient } from "@/state"
+import { feeManagerConfig, signedCosmWasmClient } from "@/state"
 
 const Create: NextPage = () => (
   <>
@@ -57,6 +56,7 @@ const CreateContent = () => {
   const [createCampaignError, setCreateCampaignError] = useState(
     null as ReactNode | null
   )
+  const feeConfig = useRecoilValue(feeManagerConfig)
 
   const createCampaign = useCallback(
     async (newCampaign: NewCampaignInfo) => {
@@ -70,6 +70,10 @@ const CreateContent = () => {
         setCreateCampaignError("Wallet not connected.")
         return
       }
+      if (!feeConfig) {
+        setCreateCampaignError("Config not loaded.")
+        return
+      }
 
       const payToken = findPayTokenByDenom(newCampaign.payTokenDenom)
       if (!payToken) {
@@ -80,6 +84,7 @@ const CreateContent = () => {
       const msg = {
         dao_address: newCampaign.daoAddress,
         cw20_code_id: cw20CodeId,
+        fee_manager_address: feeManagerAddress,
 
         funding_goal: coin(
           convertDenomToMicroDenom(newCampaign.goal, payToken.decimals),
@@ -87,9 +92,6 @@ const CreateContent = () => {
         ),
         funding_token_name: newCampaign.tokenName,
         funding_token_symbol: newCampaign.tokenSymbol,
-
-        fee: daoUpFee,
-        fee_receiver: daoUpDAOAddress,
 
         campaign_info: {
           name: newCampaign.name,
@@ -113,7 +115,13 @@ const CreateContent = () => {
           currentEscrowContractCodeId,
           msg,
           `[DAO Up!] ${newCampaign.name}`,
-          "auto"
+          "auto",
+          // If displaying publicly and fee exists, send fee.
+          !newCampaign.hidden && feeConfig.publicListingFee.coin.amount !== "0"
+            ? {
+                funds: [feeConfig.publicListingFee.coin],
+              }
+            : undefined
         )
 
         // If the campaign was created successfully, redirect to the campaign page.
@@ -135,7 +143,7 @@ const CreateContent = () => {
         )
       }
     },
-    [client, walletAddress, setCreateCampaignError, routerPush]
+    [client, walletAddress, feeConfig, setCreateCampaignError, routerPush]
   )
 
   return (

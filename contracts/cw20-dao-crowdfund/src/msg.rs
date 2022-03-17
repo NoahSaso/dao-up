@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, Coin, Decimal};
+use cosmwasm_std::{Addr, Coin};
 use cw20::Cw20ReceiveMsg;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -8,17 +8,10 @@ use crate::state::{Campaign, Status};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
     pub dao_address: String,
+    pub fee_manager_address: String,
     /// Code ID for the cw20 contract we should use for the
     /// fundraising token.
     pub cw20_code_id: u64,
-
-    /// The contract which will receive the fee when the campaign is
-    /// created.
-    pub fee_receiver: String,
-    /// The percentage of funds that should be sent to the fee
-    /// receiver on campaign completion. Fees are deducted when
-    /// funding tokens are exchanged for gov tokens.
-    pub fee: Decimal,
 
     pub funding_goal: Coin,
     pub funding_token_name: String,
@@ -73,6 +66,7 @@ pub enum QueryMsg {
 pub struct DumpStateResponse {
     pub status: Status,
     pub dao_addr: Addr,
+    pub fee_manager_addr: Addr,
     pub creator: Addr,
     pub funding_goal: Coin,
     pub funds_raised: Coin,
@@ -81,7 +75,5 @@ pub struct DumpStateResponse {
     pub campaign_info: Campaign,
     pub gov_token_addr: Addr,
     pub funding_token_addr: Addr,
-    pub fee_receiver: Addr,
-    pub fee: Decimal,
     pub version: String,
 }
