@@ -81,9 +81,10 @@ export const useUpdateCampaign = (
               )
             ),
             funds:
-              // If changing displaying publicly and fee exists, send fee.
+              // If changing displaying publicly and uses fee manager and fee exists, send fee.
               !updateCampaign.hidden &&
               campaign.hidden &&
+              campaign.feeManagerAddress &&
               feeConfig.publicListingFee.coin.amount !== "0"
                 ? [feeConfig.publicListingFee.coin]
                 : [],
