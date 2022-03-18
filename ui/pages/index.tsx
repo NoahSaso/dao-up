@@ -5,7 +5,6 @@ import Image from "next/image"
 import {
   ButtonLink,
   CenteredColumn,
-  CTACard,
   FAQQuestion,
   HomepageFeaturedCampaigns,
   ResponsiveDecoration,
@@ -51,11 +50,9 @@ const Home: NextPage = () => (
       <p className="my-10 mx-auto w-3/4 md:w-1/2 xl:w-2/5 text-md lg:text-xl xl:text-2xl">
         Kick start your community with the crowdfunding platform for DAOs.
       </p>
-
-      <ButtonLink href="/create">Create Campaign</ButtonLink>
     </CenteredColumn>
 
-    <CenteredColumn topSpace>
+    <CenteredColumn topSpace className="pb-16">
       <div className="w-full md:w-3/5 flex flex-col items-center text-center sm:items-start sm:text-left">
         <h2 className="font-semibold text-2xl lg:text-3xl xl:text-4xl">
           What makes DAO Up! different?
@@ -69,40 +66,6 @@ const Home: NextPage = () => (
         </p>
 
         <ButtonLink href="/campaigns">View All Campaigns</ButtonLink>
-      </div>
-    </CenteredColumn>
-
-    <CenteredColumn topSpace className="pb-16">
-      <h2 className="font-semibold text-center mb-10 text-2xl lg:text-3xl xl:text-4xl">
-        Superior experience for both creators and backers.
-      </h2>
-
-      <div className="flex flex-col justify-start items-center md:flex-row md:justify-between md:items-stretch xl:justify-evenly mt-4 w-full">
-        <CTACard
-          title="Creators"
-          subtitle="Show your community you mean business by using a platform that guarantees refundability and democratized control over your funds."
-          listItems={[
-            "Select your funding goal.",
-            "Create a fundraising token.",
-            "Use your existing DAO DAO DAO.",
-            "Kick start your community.",
-          ]}
-          button={<ButtonLink href="/create">Create Campaign</ButtonLink>}
-          className="mb-5 md:mb-0 md:mr-10"
-          borderAccent
-        />
-
-        <CTACard
-          title="Backers"
-          subtitle="Know that your contribution is safe. DAO Up! smart contracts make funding transparent and guarantee democratized control over all funds raised."
-          listItems={[
-            "Back promising projects.",
-            "Get a refund any time before campaign completion.",
-            "Sleep well knowing you control your funds.",
-            "Join the greatest DAOs in the cosmos.",
-          ]}
-          button={<ButtonLink href="/campaigns">View All Campaigns</ButtonLink>}
-        />
       </div>
     </CenteredColumn>
 

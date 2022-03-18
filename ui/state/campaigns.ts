@@ -1,7 +1,7 @@
 import { QueryContractsByCodeResponse } from "cosmjs-types/cosmwasm/wasm/v1/query"
 import { atom, atomFamily, selector, selectorFamily, waitForAll } from "recoil"
 
-import { escrowContractCodeIds } from "@/config"
+import { addressesHaltCutoff, escrowContractCodeIds } from "@/config"
 import { CommonError, extractPageInfo, parseError } from "@/helpers"
 import {
   campaignsFromResponses,
@@ -252,7 +252,9 @@ export const pagedEscrowContractAddresses = selectorFamily<
 
       return {
         addresses: page
-          ? addresses.slice(page.startIndex, page.endIndex)
+          ? addresses
+              .slice(0, addressesHaltCutoff)
+              .slice(page.startIndex, page.endIndex)
           : addresses,
         error: null,
       }
