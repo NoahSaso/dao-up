@@ -5,7 +5,6 @@ import Image from "next/image"
 import {
   ButtonLink,
   CenteredColumn,
-  CTACard,
   FAQQuestion,
   HomepageFeaturedCampaigns,
   ResponsiveDecoration,
