@@ -77,13 +77,6 @@ export const Header = () => (
         <NavItem href="/me">
           <RiAccountCircleLine size={24} />
         </NavItem>
-
-        <NavItem href="/create" action className="hidden md:inline-block">
-          Create Campaign
-        </NavItem>
-        <NavItem href="/create" action className="md:hidden">
-          Create
-        </NavItem>
       </div>
     </nav>
   </header>

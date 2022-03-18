@@ -107,10 +107,7 @@ const MeContent: FunctionComponent<MeContentProps> = ({
           ))}
         </div>
       ) : (
-        <>
-          <p className="mt-2 mb-8">You haven&apos;t created any campaigns.</p>
-          <ButtonLink href="/create">Create a campaign</ButtonLink>
-        </>
+        <p className="mt-2 mb-8">You haven&apos;t created any campaigns.</p>
       )}
     </>
   )
