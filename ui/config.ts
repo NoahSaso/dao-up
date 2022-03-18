@@ -57,3 +57,7 @@ export const imageUrl = `${baseUrl}/images/banner.jpg`
 export const visibleDescriptionChars = parseInt(
   process.env.NEXT_PUBLIC_VISIBLE_DESCRIPTION_CHARS ?? "400"
 )
+
+export const addressesHaltCutoff = parseInt(
+  process.env.NEXT_PUBLIC_ADDRESSES_HALT_CUTOFF || "0"
+)
