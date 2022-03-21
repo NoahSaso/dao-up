@@ -108,8 +108,9 @@ const ProposeFundPendingCardContents: FunctionComponent<
                 value: convertMicroDenomToDenom(1, govTokenDecimals),
                 message: `Must be at least ${prettyPrintDecimal(
                   convertMicroDenomToDenom(1, govTokenDecimals),
-                  govTokenDecimals
-                )} ${govTokenSymbol}.`,
+                  govTokenDecimals,
+                  govTokenSymbol
+                )}.`,
               },
               max: {
                 value: govTokenDAOBalance ?? 0,
