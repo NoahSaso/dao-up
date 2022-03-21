@@ -61,9 +61,9 @@ export const GovernanceCard: FunctionComponent<GovernanceCardProps> = ({
       </h3>
       <p className="text-light text-sm">
         Campaign backers will have{" "}
-        {prettyPrintDecimal(campaignVotingPower, 2, "%")}
-        voting power in the DAO. Voting power ignores the DAO&apos;s treasury
-        balance. To learn more,{" "}
+        {prettyPrintDecimal(campaignVotingPower, 2, "%")} voting power in the
+        DAO. Voting power ignores the DAO&apos;s treasury balance. To learn
+        more,{" "}
         <a
           href="https://docs.daoup.zone/evaluating-campaigns#what-is-a-good-percentage-of-governance-power"
           target="_blank"
